@@ -1,0 +1,313 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  user
+  admin
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+enum PlanStatus {
+  active
+  disabled
+}
+
+enum MembershipStatus {
+  active
+  expired
+  cancelled
+}
+
+enum ToolType {
+  software
+  online
+}
+
+enum PublishStatus {
+  draft
+  published
+  offline
+}
+
+enum PaymentMethod {
+  alipay
+  wechat
+}
+
+enum OrderStatus {
+  pending_payment
+  pending_review
+  paid
+  activated
+  rejected
+  cancelled
+  refunded
+}
+
+enum ProofReviewStatus {
+  not_submitted
+  pending
+  approved
+  rejected
+}
+
+enum CommentStatus {
+  pending
+  approved
+  rejected
+  deleted
+}
+
+enum ContentStatus {
+  active
+  disabled
+}
+
+model User {
+  id              String          @id @default(cuid())
+  email           String?         @unique
+  phone           String?         @unique
+  passwordHash    String          @map("password_hash")
+  nickname        String?
+  avatar          String?
+  role            UserRole        @default(user)
+  status          UserStatus      @default(active)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  memberships     Membership[]
+  orders          Order[]
+  paymentProofs   PaymentProof[]  @relation("ProofOwner")
+  reviewedProofs  PaymentProof[]  @relation("ProofReviewer")
+  comments        Comment[]
+  downloadLogs    DownloadLog[]
+  toolUsageLogs   ToolUsageLog[]
+
+  @@map("users")
+}
+
+model VipPlan {
+  id             String       @id @default(cuid())
+  name           String
+  durationDays   Int          @map("duration_days")
+  price          Decimal      @db.Decimal(10, 2)
+  originalPrice  Decimal?     @map("original_price") @db.Decimal(10, 2)
+  description    String?
+  isRecommended  Boolean      @default(false) @map("is_recommended")
+  status         PlanStatus   @default(active)
+  sortOrder      Int          @default(0) @map("sort_order")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  memberships    Membership[]
+  orders         Order[]
+
+  @@map("vip_plans")
+}
+
+model Membership {
+  id         String           @id @default(cuid())
+  userId     String           @map("user_id")
+  planId     String?          @map("plan_id")
+  vipType    String           @map("vip_type")
+  startTime  DateTime         @map("start_time")
+  endTime    DateTime?        @map("end_time")
+  isLifetime Boolean          @default(false) @map("is_lifetime")
+  status     MembershipStatus @default(active)
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+  user       User             @relation(fields: [userId], references: [id])
+  plan       VipPlan?         @relation(fields: [planId], references: [id])
+
+  @@index([userId, status])
+  @@map("memberships")
+}
+
+model ToolCategory {
+  id          String        @id @default(cuid())
+  name        String
+  type        ToolType
+  description String?
+  sortOrder   Int           @default(0) @map("sort_order")
+  status      ContentStatus @default(active)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  tools       Tool[]
+
+  @@index([type, status])
+  @@map("tool_categories")
+}
+
+model Tool {
+  id                String         @id @default(cuid())
+  name              String
+  slug              String         @unique
+  type              ToolType
+  categoryId        String?        @map("category_id")
+  shortDescription  String         @map("short_description")
+  content           String
+  coverImage        String?        @map("cover_image")
+  screenshots       String[]       @default([])
+  version           String?
+  systemRequirement String?        @map("system_requirement")
+  isVipRequired     Boolean        @default(true) @map("is_vip_required")
+  onlineUrl         String?        @map("online_url")
+  downloadFileId    String?        @unique @map("download_file_id")
+  downloadCount     Int            @default(0) @map("download_count")
+  usageCount        Int            @default(0) @map("usage_count")
+  status            PublishStatus  @default(draft)
+  sortOrder         Int            @default(0) @map("sort_order")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  category          ToolCategory?  @relation(fields: [categoryId], references: [id])
+  files             File[]         @relation("ToolFiles")
+  downloadFile      File?          @relation("PrimaryDownload", fields: [downloadFileId], references: [id])
+  tutorials         Tutorial[]
+  comments          Comment[]
+  downloadLogs      DownloadLog[]
+  toolUsageLogs     ToolUsageLog[]
+
+  @@index([type, status])
+  @@map("tools")
+}
+
+model File {
+  id            String        @id @default(cuid())
+  toolId        String?       @map("tool_id")
+  fileName      String        @map("file_name")
+  filePath      String        @map("file_path")
+  fileUrl       String?       @map("file_url")
+  fileSize      BigInt?       @map("file_size")
+  version       String?
+  mimeType      String?       @map("mime_type")
+  downloadCount Int           @default(0) @map("download_count")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  tool          Tool?         @relation("ToolFiles", fields: [toolId], references: [id])
+  primaryFor    Tool?         @relation("PrimaryDownload")
+  downloadLogs  DownloadLog[]
+
+  @@map("files")
+}
+
+model Tutorial {
+  id        String        @id @default(cuid())
+  toolId    String        @map("tool_id")
+  title     String
+  content   String
+  imageUrl  String?       @map("image_url")
+  videoUrl  String?       @map("video_url")
+  sortOrder Int           @default(0) @map("sort_order")
+  status    ContentStatus @default(active)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  tool      Tool          @relation(fields: [toolId], references: [id])
+
+  @@index([toolId, status])
+  @@map("tutorials")
+}
+
+model Order {
+  id            String          @id @default(cuid())
+  orderNo       String          @unique @map("order_no")
+  userId        String          @map("user_id")
+  planId        String          @map("plan_id")
+  amount        Decimal         @db.Decimal(10, 2)
+  paymentMethod PaymentMethod?  @map("payment_method")
+  orderStatus   OrderStatus     @default(pending_payment) @map("order_status")
+  paidAt        DateTime?       @map("paid_at")
+  activatedAt   DateTime?       @map("activated_at")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  user          User            @relation(fields: [userId], references: [id])
+  plan          VipPlan         @relation(fields: [planId], references: [id])
+  paymentProof  PaymentProof?
+
+  @@index([userId, orderStatus])
+  @@map("orders")
+}
+
+model PaymentProof {
+  id             String            @id @default(cuid())
+  orderId        String            @unique @map("order_id")
+  userId         String            @map("user_id")
+  paymentMethod  PaymentMethod     @map("payment_method")
+  paymentRemark  String?           @map("payment_remark")
+  proofImage     String            @map("proof_image")
+  reviewStatus   ProofReviewStatus @default(pending) @map("review_status")
+  reviewerId     String?           @map("reviewer_id")
+  reviewedAt     DateTime?         @map("reviewed_at")
+  reviewNote     String?           @map("review_note")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  order          Order             @relation(fields: [orderId], references: [id])
+  user           User              @relation("ProofOwner", fields: [userId], references: [id])
+  reviewer       User?             @relation("ProofReviewer", fields: [reviewerId], references: [id])
+
+  @@index([reviewStatus])
+  @@map("payment_proofs")
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  userId    String        @map("user_id")
+  toolId    String        @map("tool_id")
+  content   String
+  status    CommentStatus @default(pending)
+  likeCount Int           @default(0) @map("like_count")
+  isPinned  Boolean       @default(false) @map("is_pinned")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  user      User          @relation(fields: [userId], references: [id])
+  tool      Tool          @relation(fields: [toolId], references: [id])
+
+  @@index([toolId, status])
+  @@map("comments")
+}
+
+model DownloadLog {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  toolId    String   @map("tool_id")
+  fileId    String   @map("file_id")
+  ip        String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id])
+  tool      Tool     @relation(fields: [toolId], references: [id])
+  file      File     @relation(fields: [fileId], references: [id])
+
+  @@map("download_logs")
+}
+
+model ToolUsageLog {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  toolId    String   @map("tool_id")
+  ip        String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id])
+  tool      Tool     @relation(fields: [toolId], references: [id])
+
+  @@map("tool_usage_logs")
+}
+
+model SiteSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}

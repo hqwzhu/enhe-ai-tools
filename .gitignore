@@ -1,0 +1,10 @@
+.next
+.playwright-cli
+node_modules
+.env
+.env.local
+dist
+coverage
+uploads
+*.log
+*.tsbuildinfo
