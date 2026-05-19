@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { createOrderNo } from "@/lib/order";
 import { getCurrentUser, hashPassword, requireAdmin, requireUser, signInUser, signOutUser, verifyPassword } from "@/lib/auth";
 import { activateVipForOrder } from "@/lib/membership";
+import { validatePasswordChangeInput } from "@/lib/password";
 
 const accountSchema = z.object({
   email: z.string().email("邮箱格式不正确"),
@@ -48,6 +49,30 @@ export async function loginAction(formData: FormData) {
 export async function logoutAction() {
   await signOutUser();
   redirect("/");
+}
+
+export async function changePasswordAction(formData: FormData) {
+  const user = await requireUser();
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const newPassword = String(formData.get("newPassword") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+  const validation = validatePasswordChangeInput(currentPassword, newPassword, confirmPassword);
+
+  if (!validation.ok) {
+    redirect(`/user?password=${encodeURIComponent(validation.message)}`);
+  }
+
+  const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+  if (!dbUser || !(await verifyPassword(currentPassword, dbUser.passwordHash))) {
+    redirect(`/user?password=${encodeURIComponent("当前密码不正确")}`);
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await hashPassword(newPassword) }
+  });
+
+  redirect("/user?password=changed");
 }
 
 export async function createOrderAction(formData: FormData) {

@@ -11,10 +11,38 @@ import {
   parseScreenshotsField,
   slugify
 } from "@/lib/admin-form";
-import { requireAdmin } from "@/lib/auth";
+import { hashPassword, requireAdmin } from "@/lib/auth";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 
 const idSchema = z.string().min(1);
+
+export async function updateUserAdminAction(formData: FormData) {
+  await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const role = z.enum(["user", "admin"]).parse(formData.get("role"));
+  const status = z.enum(["active", "disabled"]).parse(formData.get("status"));
+  const nickname = parseOptionalString(formData.get("nickname"));
+
+  await prisma.user.update({
+    where: { id },
+    data: { role, status, nickname }
+  });
+
+  revalidatePath("/admin/users");
+}
+
+export async function resetUserPasswordAction(formData: FormData) {
+  await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const password = z.string().min(8).parse(formData.get("password"));
+
+  await prisma.user.update({
+    where: { id },
+    data: { passwordHash: await hashPassword(password) }
+  });
+
+  revalidatePath("/admin/users");
+}
 
 export async function upsertCategoryAction(formData: FormData) {
   await requireAdmin();
