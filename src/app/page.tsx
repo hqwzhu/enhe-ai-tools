@@ -1,4 +1,5 @@
-import { ArrowRight, BadgeCheck, Cpu, Layers3, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, BadgeCheck, Cpu, Layers3 } from "lucide-react";
 import { ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { prisma } from "@/lib/db";
@@ -28,29 +29,39 @@ export default async function HomePage() {
               <ButtonLink href="/online-tools" variant="ghost">使用在线工具</ButtonLink>
             </div>
           </div>
-          <div className="glass relative min-h-[430px] overflow-hidden rounded-[2rem] p-8">
-            <div className="absolute right-8 top-8 text-[#48F5D3]"><Sparkles size={28} /></div>
-            <div className="mt-16 space-y-4">
-              {["自动化软件分发", "在线工具权限控制", "VIP 会员开通", "软件下载付费"].map((item, index) => (
-                <div key={item} className="rounded-2xl border border-white/10 bg-white/8 p-5" style={{ marginLeft: `${index * 18}px` }}>
-                  <p className="text-sm text-[#8B95A7]">ENHE Workflow 0{index + 1}</p>
-                  <p className="mt-2 text-xl font-semibold">{item}</p>
-                </div>
-              ))}
+          <div className="enhe-hero-mark relative mx-auto flex min-h-[430px] w-full max-w-[560px] items-center justify-center overflow-hidden">
+            <div className="enhe-orbit enhe-orbit-a" />
+            <div className="enhe-orbit enhe-orbit-b" />
+            <div className="enhe-orbit enhe-orbit-c" />
+            <div className="enhe-logo-aura" />
+            <div className="relative z-10 flex size-56 items-center justify-center rounded-[2rem] border border-white/14 bg-white/7 shadow-[0_0_90px_rgba(72,245,211,0.20)] backdrop-blur-xl sm:size-64">
+              <Image
+                src="/images/enhe-logo.svg"
+                alt="恩禾 ENHE"
+                width={184}
+                height={184}
+                priority
+                className="enhe-logo-float h-40 w-40 drop-shadow-[0_0_34px_rgba(72,245,211,0.28)] sm:h-48 sm:w-48"
+              />
             </div>
+            <span className="enhe-signal enhe-signal-1" />
+            <span className="enhe-signal enhe-signal-2" />
+            <span className="enhe-signal enhe-signal-3" />
           </div>
         </Container>
       </section>
 
       <Container className="space-y-20 pb-24">
-        <section>
-          <SectionTitle eyebrow="Featured Software" title="精选电脑软件工具" intro="面向高频桌面任务的软件工具，VIP 权限和付费下载可独立控制。" />
-          <div className="grid gap-5 md:grid-cols-3">{software.map((tool) => <ToolCard key={tool.id} tool={tool} />)}</div>
-        </section>
-        <section>
-          <SectionTitle eyebrow="Online Tools" title="精选在线网页工具" intro="无需安装，浏览器打开即可处理文本、文件和流程类任务。" />
-          <div className="grid gap-5 md:grid-cols-3">{onlineTools.map((tool) => <ToolCard key={tool.id} tool={tool} />)}</div>
-        </section>
+        <div className="grid gap-10 lg:grid-cols-2">
+          <section>
+            <SectionTitle eyebrow="Featured Software" title="精选电脑软件工具" intro="面向高频桌面任务的软件工具，VIP 权限和付费下载可独立控制。" />
+            <div className="grid gap-5">{software.map((tool) => <ToolCard key={tool.id} tool={tool} />)}</div>
+          </section>
+          <section>
+            <SectionTitle eyebrow="Online Tools" title="精选在线网页工具" intro="无需安装，浏览器打开即可处理文本、文件和流程类任务。" />
+            <div className="grid gap-5">{onlineTools.map((tool) => <ToolCard key={tool.id} tool={tool} />)}</div>
+          </section>
+        </div>
         <section className="grid gap-5 md:grid-cols-3">
           {[
             ["VIP 会员权益", "使用会员在线工具，查看自己的订单、下载和使用记录。", BadgeCheck],
