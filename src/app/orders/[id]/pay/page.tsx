@@ -10,7 +10,7 @@ export default async function PayPage({ params }: { params: Promise<{ id: string
   const user = await requireUser();
   const { id } = await params;
   const [order, settings] = await Promise.all([
-    prisma.order.findFirst({ where: { id, userId: user.id }, include: { plan: true, paymentProof: true } }),
+    prisma.order.findFirst({ where: { id, userId: user.id }, include: { plan: true, tool: true, paymentProof: true } }),
     getSettingsMap()
   ]);
   if (!order) notFound();
@@ -22,8 +22,8 @@ export default async function PayPage({ params }: { params: Promise<{ id: string
         <div className="glass rounded-2xl p-7">
           <p className="text-sm text-[#8B95A7]">订单号</p>
           <h1 className="mt-2 text-2xl font-semibold text-[#48F5D3]">{order.orderNo}</h1>
-          <p className="mt-6 text-sm text-[#8B95A7]">套餐</p>
-          <p className="mt-2 text-xl">{order.plan.name} · {formatCurrency(order.amount.toString())}</p>
+          <p className="mt-6 text-sm text-[#8B95A7]">{order.orderType === "software_download" ? "软件" : "套餐"}</p>
+          <p className="mt-2 text-xl">{order.plan?.name ?? order.tool?.name ?? "订单项目"} · {formatCurrency(order.amount.toString())}</p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <QrBox title="支付宝收款码" value={settings.alipay_qr} />
             <QrBox title="微信收款码" value={settings.wechat_qr} />

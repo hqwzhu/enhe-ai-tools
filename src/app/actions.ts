@@ -62,7 +62,37 @@ export async function createOrderAction(formData: FormData) {
       orderNo: createOrderNo(),
       userId: user.id,
       planId: plan.id,
+      orderType: "vip",
       amount: plan.price,
+      paymentMethod,
+      orderStatus: "pending_payment"
+    }
+  });
+  redirect(`/orders/${order.id}/pay`);
+}
+
+export async function createSoftwareDownloadOrderAction(formData: FormData) {
+  const user = await requireUser();
+  const toolId = z.string().min(1).parse(formData.get("toolId"));
+  const paymentMethod = z.enum(["alipay", "wechat"]).parse(formData.get("paymentMethod") ?? "alipay");
+  const tool = await prisma.tool.findFirst({ where: { id: toolId, type: "software", status: "published" } });
+  if (!tool) throw new Error("软件工具不存在或未发布");
+  if (!tool.isDownloadPaid || Number(tool.downloadPrice) <= 0) {
+    redirect(`/api/tools/${tool.id}/download`);
+  }
+
+  const existingPurchase = await prisma.toolPurchase.findUnique({
+    where: { userId_toolId: { userId: user.id, toolId: tool.id } }
+  });
+  if (existingPurchase) redirect(`/api/tools/${tool.id}/download`);
+
+  const order = await prisma.order.create({
+    data: {
+      orderNo: createOrderNo(),
+      userId: user.id,
+      toolId: tool.id,
+      orderType: "software_download",
+      amount: tool.downloadPrice,
       paymentMethod,
       orderStatus: "pending_payment"
     }

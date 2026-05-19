@@ -11,13 +11,15 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative overflow-hidden py-20 md:py-28">
-        <Container className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="relative overflow-hidden py-18 md:py-24">
+        <Container className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
             <div className="mb-6 inline-flex rounded-full border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-2 text-sm text-[#48F5D3]">
               自研电脑软件与在线网页工具会员平台
             </div>
-            <h1 className="max-w-4xl text-5xl font-semibold tracking-normal text-white md:text-7xl">恩禾 ENHE AI工具站</h1>
+            <h1 className="max-w-5xl text-4xl font-semibold tracking-normal text-white sm:text-5xl xl:text-6xl">
+              恩禾 ENHE AI工具站
+            </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8B95A7]">
               下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。
             </p>
@@ -29,7 +31,7 @@ export default async function HomePage() {
           <div className="glass relative min-h-[430px] overflow-hidden rounded-[2rem] p-8">
             <div className="absolute right-8 top-8 text-[#48F5D3]"><Sparkles size={28} /></div>
             <div className="mt-16 space-y-4">
-              {["自动化软件分发", "在线工具权限控制", "VIP 会员开通", "人工支付审核"].map((item, index) => (
+              {["自动化软件分发", "在线工具权限控制", "VIP 会员开通", "软件下载付费"].map((item, index) => (
                 <div key={item} className="rounded-2xl border border-white/10 bg-white/8 p-5" style={{ marginLeft: `${index * 18}px` }}>
                   <p className="text-sm text-[#8B95A7]">ENHE Workflow 0{index + 1}</p>
                   <p className="mt-2 text-xl font-semibold">{item}</p>
@@ -42,7 +44,7 @@ export default async function HomePage() {
 
       <Container className="space-y-20 pb-24">
         <section>
-          <SectionTitle eyebrow="Featured Software" title="精选电脑软件工具" intro="面向高频桌面任务的软件工具，VIP 开通后即可下载使用。" />
+          <SectionTitle eyebrow="Featured Software" title="精选电脑软件工具" intro="面向高频桌面任务的软件工具，VIP 权限和付费下载可独立控制。" />
           <div className="grid gap-5 md:grid-cols-3">{software.map((tool) => <ToolCard key={tool.id} tool={tool} />)}</div>
         </section>
         <section>
@@ -51,9 +53,9 @@ export default async function HomePage() {
         </section>
         <section className="grid gap-5 md:grid-cols-3">
           {[
-            ["VIP 会员权益", "下载会员软件，使用在线网页工具，查看自己的订单和记录。", BadgeCheck],
-            ["使用流程", "注册账号，选择套餐，上传付款截图，后台审核后自动开通。", ArrowRight],
-            ["用户反馈", "评论区先审后显，后台可置顶、驳回或删除，保持内容质量。", Layers3]
+            ["VIP 会员权益", "使用会员在线工具，查看自己的订单、下载和使用记录。", BadgeCheck],
+            ["使用流程", "注册账号，选择套餐或软件，上传付款截图，后台审核后自动开通。", ArrowRight],
+            ["用户反馈", "评论区先审后显，后台可审核、驳回或删除，保持内容质量。", Layers3]
           ].map(([title, text, Icon]) => (
             <div key={title as string} className="glass rounded-2xl p-7">
               <Icon className="mb-6 text-[#7AA7FF]" />

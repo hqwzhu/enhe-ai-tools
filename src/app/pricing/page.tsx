@@ -8,7 +8,7 @@ export default async function PricingPage() {
   const plans = await prisma.vipPlan.findMany({ where: { status: "active" }, orderBy: { sortOrder: "asc" } });
   return (
     <Container className="py-14">
-      <SectionTitle title="会员价格" intro="第一版采用个人收款码 + 订单号 + 上传付款截图 + 后台人工审核的方式开通 VIP。" />
+      <SectionTitle title="会员价格" intro="会员用于访问 VIP 工具；电脑软件若标记为付费下载，VIP 用户也需要单独购买下载权限。" />
       <div className="grid gap-5 lg:grid-cols-5">
         {plans.map((plan) => (
           <form key={plan.id} action={createOrderAction} className="glass relative rounded-2xl p-6">

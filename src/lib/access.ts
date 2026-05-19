@@ -25,6 +25,14 @@ async function assertBaseToolAccess(toolId: string) {
 export async function assertDownloadAccess(toolId: string) {
   const { tool, user, ip, userAgent } = await assertBaseToolAccess(toolId);
   if (!tool.downloadFileId || !tool.downloadFile) throw new Error("工具尚未配置下载文件");
+
+  if (tool.isDownloadPaid) {
+    const purchase = await prisma.toolPurchase.findUnique({
+      where: { userId_toolId: { userId: user.id, toolId: tool.id } }
+    });
+    if (!purchase) redirect(`/tools/${tool.slug}?download=pay-required`);
+  }
+
   await prisma.downloadLog.create({
     data: { userId: user.id, toolId: tool.id, fileId: tool.downloadFileId, ip, userAgent }
   });

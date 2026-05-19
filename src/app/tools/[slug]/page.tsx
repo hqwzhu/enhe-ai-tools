@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createCommentAction } from "@/app/actions";
+import { createCommentAction, createSoftwareDownloadOrderAction } from "@/app/actions";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getCurrentUser } from "@/lib/auth";
@@ -17,6 +17,9 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
     }
   });
   if (!tool || tool.status !== "published") notFound();
+  const hasDownloadPurchase = user
+    ? Boolean(await prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }))
+    : false;
   const related = await prisma.tool.findMany({ where: { type: tool.type, status: "published", id: { not: tool.id } }, include: { category: true }, take: 3 });
 
   return (
@@ -30,9 +33,29 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         <h1 className="mt-6 text-4xl font-semibold md:text-6xl">{tool.name}</h1>
         <p className="mt-5 max-w-3xl text-lg leading-8 text-[#8B95A7]">{tool.shortDescription}</p>
         <div className="mt-8 flex flex-wrap gap-3">
-          {tool.type === "software" ? <ButtonLink href={`/api/tools/${tool.id}/download`}>下载软件</ButtonLink> : <ButtonLink href={`/api/tools/${tool.id}/use`}>在线使用</ButtonLink>}
+          {tool.type === "software" ? (
+            tool.isDownloadPaid && !hasDownloadPurchase ? (
+              <form action={createSoftwareDownloadOrderAction} className="flex flex-wrap items-center gap-3">
+                <input type="hidden" name="toolId" value={tool.id} />
+                <select name="paymentMethod" className="rounded-full border border-white/12 bg-[#111827] px-4 py-3 text-sm">
+                  <option value="alipay">支付宝</option>
+                  <option value="wechat">微信</option>
+                </select>
+                <button className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
+                  购买下载 ¥{Number(tool.downloadPrice).toFixed(2)}
+                </button>
+              </form>
+            ) : (
+              <ButtonLink href={`/api/tools/${tool.id}/download`}>下载软件</ButtonLink>
+            )
+          ) : (
+            <ButtonLink href={`/api/tools/${tool.id}/use`}>在线使用</ButtonLink>
+          )}
           <ButtonLink href="/pricing" variant="ghost">开通 VIP</ButtonLink>
         </div>
+        {tool.type === "software" && tool.isDownloadPaid ? (
+          <p className="mt-4 text-sm text-[#FFB86B]">该软件为单独付费下载，VIP 用户也需要购买后才能下载。</p>
+        ) : null}
       </div>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_320px]">

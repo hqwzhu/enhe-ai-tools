@@ -4,7 +4,7 @@ import { formatCurrency } from "@/lib/utils";
 
 export default async function AdminPaymentsPage() {
   const proofs = await prisma.paymentProof.findMany({
-    include: { order: { include: { plan: true } }, user: true, reviewer: true },
+    include: { order: { include: { plan: true, tool: true } }, user: true, reviewer: true },
     orderBy: { createdAt: "desc" }
   });
   return (
@@ -16,7 +16,7 @@ export default async function AdminPaymentsPage() {
             <div className="flex flex-wrap justify-between gap-4">
               <div>
                 <p className="text-lg font-semibold">{proof.order.orderNo}</p>
-                <p className="mt-2 text-sm text-[#8B95A7]">{proof.user.email} · {proof.order.plan.name} · {formatCurrency(proof.order.amount.toString())}</p>
+                <p className="mt-2 text-sm text-[#8B95A7]">{proof.user.email} · {proof.order.plan?.name ?? proof.order.tool?.name ?? "订单项目"} · {formatCurrency(proof.order.amount.toString())}</p>
                 <p className="mt-2 text-sm text-[#8B95A7]">方式：{proof.paymentMethod} · 凭证：{proof.proofImage}</p>
               </div>
               <span className="h-fit rounded-full border border-white/12 px-3 py-1 text-sm text-[#FFB86B]">{proof.reviewStatus}</span>

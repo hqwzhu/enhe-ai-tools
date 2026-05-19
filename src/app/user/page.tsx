@@ -11,7 +11,7 @@ export default async function UserCenterPage() {
   const user = await requireUser();
   const [membership, orders, downloads, usages, comments] = await Promise.all([
     getActiveMembership(user.id),
-    prisma.order.findMany({ where: { userId: user.id }, include: { plan: true, paymentProof: true }, orderBy: { createdAt: "desc" } }),
+    prisma.order.findMany({ where: { userId: user.id }, include: { plan: true, tool: true, paymentProof: true }, orderBy: { createdAt: "desc" } }),
     prisma.downloadLog.findMany({ where: { userId: user.id }, include: { tool: true }, orderBy: { createdAt: "desc" }, take: 10 }),
     prisma.toolUsageLog.findMany({ where: { userId: user.id }, include: { tool: true }, orderBy: { createdAt: "desc" }, take: 10 }),
     prisma.comment.findMany({ where: { userId: user.id }, include: { tool: true }, orderBy: { createdAt: "desc" }, take: 10 })
@@ -49,7 +49,7 @@ export default async function UserCenterPage() {
                     <span className="text-[#FFB86B]">{formatCurrency(order.amount.toString())}</span>
                   </div>
                   <p className="mt-2 text-sm text-[#8B95A7]">
-                    {order.plan.name} · {getStatusLabel(orderStatusLabels, order.orderStatus)} · 凭证 {getStatusLabel(proofStatusLabels, order.paymentProof?.reviewStatus)}
+                    {order.plan?.name ?? order.tool?.name ?? "订单项目"} · {getStatusLabel(orderStatusLabels, order.orderStatus)} · 凭证 {getStatusLabel(proofStatusLabels, order.paymentProof?.reviewStatus)}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link href={`/orders/${order.id}`} className="rounded-full border border-white/12 px-3 py-1 text-xs">查看详情</Link>

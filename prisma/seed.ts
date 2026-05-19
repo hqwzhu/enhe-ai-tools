@@ -84,6 +84,8 @@ async function main() {
       version: "1.0.0",
       systemRequirement: "Windows 10/11",
       isVipRequired: true,
+      isDownloadPaid: true,
+      downloadPrice: "29.00",
       status: "published",
       sortOrder: 10,
       tutorials: {

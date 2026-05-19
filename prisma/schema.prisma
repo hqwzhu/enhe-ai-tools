@@ -54,6 +54,11 @@ enum OrderStatus {
   refunded
 }
 
+enum OrderType {
+  vip
+  software_download
+}
+
 enum ProofReviewStatus {
   not_submitted
   pending
@@ -91,6 +96,7 @@ model User {
   comments        Comment[]
   downloadLogs    DownloadLog[]
   toolUsageLogs   ToolUsageLog[]
+  toolPurchases   ToolPurchase[]
 
   @@map("users")
 }
@@ -159,6 +165,8 @@ model Tool {
   version           String?
   systemRequirement String?        @map("system_requirement")
   isVipRequired     Boolean        @default(true) @map("is_vip_required")
+  isDownloadPaid    Boolean        @default(false) @map("is_download_paid")
+  downloadPrice     Decimal        @default(0) @map("download_price") @db.Decimal(10, 2)
   onlineUrl         String?        @map("online_url")
   downloadFileId    String?        @unique @map("download_file_id")
   downloadCount     Int            @default(0) @map("download_count")
@@ -174,6 +182,8 @@ model Tool {
   comments          Comment[]
   downloadLogs      DownloadLog[]
   toolUsageLogs     ToolUsageLog[]
+  orders            Order[]
+  purchases         ToolPurchase[]
 
   @@index([type, status])
   @@map("tools")
@@ -219,7 +229,9 @@ model Order {
   id            String          @id @default(cuid())
   orderNo       String          @unique @map("order_no")
   userId        String          @map("user_id")
-  planId        String          @map("plan_id")
+  planId        String?         @map("plan_id")
+  toolId        String?         @map("tool_id")
+  orderType     OrderType       @default(vip) @map("order_type")
   amount        Decimal         @db.Decimal(10, 2)
   paymentMethod PaymentMethod?  @map("payment_method")
   orderStatus   OrderStatus     @default(pending_payment) @map("order_status")
@@ -228,11 +240,30 @@ model Order {
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
   user          User            @relation(fields: [userId], references: [id])
-  plan          VipPlan         @relation(fields: [planId], references: [id])
+  plan          VipPlan?        @relation(fields: [planId], references: [id])
+  tool          Tool?           @relation(fields: [toolId], references: [id])
   paymentProof  PaymentProof?
+  toolPurchase  ToolPurchase?
 
   @@index([userId, orderStatus])
+  @@index([toolId, orderStatus])
   @@map("orders")
+}
+
+model ToolPurchase {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  toolId    String   @map("tool_id")
+  orderId   String   @unique @map("order_id")
+  amount    Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id])
+  tool      Tool     @relation(fields: [toolId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  @@unique([userId, toolId])
+  @@map("tool_purchases")
 }
 
 model PaymentProof {

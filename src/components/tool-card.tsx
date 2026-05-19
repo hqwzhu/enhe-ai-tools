@@ -11,6 +11,8 @@ type ToolCardProps = {
     isVipRequired: boolean;
     downloadCount: number;
     usageCount: number;
+    isDownloadPaid?: boolean;
+    downloadPrice?: unknown;
     category?: { name: string } | null;
   };
 };
@@ -30,6 +32,9 @@ export function ToolCard({ tool }: ToolCardProps) {
             ) : (
               <Badge>免费</Badge>
             )}
+            {tool.type === "software" && tool.isDownloadPaid ? (
+              <Badge className="border-[#FFB86B]/30 text-[#FFB86B]">下载 ¥{Number(tool.downloadPrice ?? 0).toFixed(2)}</Badge>
+            ) : null}
           </div>
           <h3 className="text-xl font-semibold text-white">{tool.name}</h3>
         </div>

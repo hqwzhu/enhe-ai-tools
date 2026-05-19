@@ -18,6 +18,8 @@ type ToolAdminListProps = {
     version: string | null;
     systemRequirement: string | null;
     isVipRequired: boolean;
+    isDownloadPaid: boolean;
+    downloadPrice: unknown;
     onlineUrl: string | null;
     downloadFileId: string | null;
     categoryId: string | null;
@@ -93,6 +95,8 @@ function ToolForm({
       </Field>
       <Field label="在线地址"><input name="onlineUrl" defaultValue={tool?.onlineUrl ?? ""} disabled={type !== "online"} className={inputClass} /></Field>
       <label className="inline-flex items-center gap-2 text-sm"><input name="isVipRequired" type="checkbox" defaultChecked={tool?.isVipRequired ?? true} /> 需要 VIP</label>
+      <label className="inline-flex items-center gap-2 text-sm"><input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} disabled={type !== "software"} /> 下载单独付费</label>
+      <Field label="下载价格"><input name="downloadPrice" type="number" step="0.01" defaultValue={tool?.downloadPrice ? String(tool.downloadPrice) : "0"} disabled={type !== "software"} className={inputClass} /></Field>
       <Field label="截图地址，逗号或换行分隔" className="md:col-span-2">
         <textarea name="screenshots" defaultValue={tool?.screenshots.join("\n") ?? ""} className={textareaClass} />
       </Field>

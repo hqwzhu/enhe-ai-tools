@@ -11,7 +11,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const order = await prisma.order.findFirst({
     where: { id, userId: user.id },
-    include: { plan: true, paymentProof: true }
+    include: { plan: true, tool: true, paymentProof: true }
   });
   if (!order) notFound();
 
@@ -21,7 +21,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <div className="glass rounded-2xl p-7">
         <div className="grid gap-4 md:grid-cols-2">
           <Info label="订单号" value={order.orderNo} />
-          <Info label="套餐" value={order.plan.name} />
+          <Info label={order.orderType === "software_download" ? "软件" : "套餐"} value={order.plan?.name ?? order.tool?.name ?? "订单项目"} />
           <Info label="金额" value={formatCurrency(order.amount.toString())} />
           <Info label="订单状态" value={getStatusLabel(orderStatusLabels, order.orderStatus)} />
           <Info label="付款方式" value={order.paymentMethod ?? "未选择"} />

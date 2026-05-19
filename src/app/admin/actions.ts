@@ -109,6 +109,8 @@ export async function upsertToolAction(formData: FormData) {
     version: parseOptionalString(formData.get("version")),
     systemRequirement: parseOptionalString(formData.get("systemRequirement")),
     isVipRequired: parseBooleanField(formData.get("isVipRequired")),
+    isDownloadPaid: parseBooleanField(formData.get("isDownloadPaid")),
+    downloadPrice: parseNumberField(formData.get("downloadPrice"), 0),
     onlineUrl: parseOptionalString(formData.get("onlineUrl")),
     downloadFileId: parseOptionalString(formData.get("downloadFileId")),
     status: z.enum(["draft", "published", "offline"]).parse(formData.get("status") ?? "draft"),
