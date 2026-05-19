@@ -35,11 +35,6 @@ npm run prisma:seed
 npm run dev
 ```
 
-默认账号：
-
-- 管理员：`admin@enhe.ai` / `EnheAdmin123!`
-- 用户：`user@enhe.ai` / `EnheUser123!`
-
 ## Docker 部署
 
 ```bash
