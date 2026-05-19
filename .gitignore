@@ -6,5 +6,6 @@ node_modules
 dist
 coverage
 uploads
+public/uploads
 *.log
 *.tsbuildinfo

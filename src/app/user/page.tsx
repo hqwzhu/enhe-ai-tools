@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { logoutAction } from "@/app/actions";
 import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getActiveMembership } from "@/lib/membership";
+import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function UserCenterPage() {
@@ -25,7 +27,9 @@ export default async function UserCenterPage() {
         <aside className="space-y-4">
           <Panel title="我的会员">
             {membership ? (
-              <p className="leading-7 text-[#8B95A7]">{membership.vipType} · {membership.isLifetime ? "永久有效" : `到期 ${membership.endTime?.toLocaleDateString("zh-CN")}`}</p>
+              <p className="leading-7 text-[#8B95A7]">
+                {membership.vipType} · {membership.isLifetime ? "永久有效" : `到期 ${membership.endTime?.toLocaleDateString("zh-CN")}`}
+              </p>
             ) : (
               <p className="text-[#8B95A7]">当前不是 VIP，可在会员价格页创建订单。</p>
             )}
@@ -44,7 +48,15 @@ export default async function UserCenterPage() {
                     <span>{order.orderNo}</span>
                     <span className="text-[#FFB86B]">{formatCurrency(order.amount.toString())}</span>
                   </div>
-                  <p className="mt-2 text-sm text-[#8B95A7]">{order.plan.name} · {order.orderStatus} · 凭证 {order.paymentProof?.reviewStatus ?? "not_submitted"}</p>
+                  <p className="mt-2 text-sm text-[#8B95A7]">
+                    {order.plan.name} · {getStatusLabel(orderStatusLabels, order.orderStatus)} · 凭证 {getStatusLabel(proofStatusLabels, order.paymentProof?.reviewStatus)}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link href={`/orders/${order.id}`} className="rounded-full border border-white/12 px-3 py-1 text-xs">查看详情</Link>
+                    {["pending_payment", "rejected"].includes(order.orderStatus) ? (
+                      <Link href={`/orders/${order.id}/pay`} className="rounded-full bg-[#7AA7FF] px-3 py-1 text-xs font-semibold text-[#07101f]">去付款</Link>
+                    ) : null}
+                  </div>
                 </div>
               ))}
             </div>
