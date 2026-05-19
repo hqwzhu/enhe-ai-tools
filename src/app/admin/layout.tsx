@@ -11,7 +11,10 @@ const adminNav = [
   ["电脑软件工具管理", "/admin/software"],
   ["在线网页工具管理", "/admin/online-tools"],
   ["工具分类管理", "/admin/categories"],
+  ["标签管理", "/admin/tags"],
   ["教程管理", "/admin/tutorials"],
+  ["FAQ 管理", "/admin/faqs"],
+  ["版本更新管理", "/admin/changelogs"],
   ["评论管理", "/admin/comments"],
   ["文件管理", "/admin/files"],
   ["网站设置", "/admin/settings"]

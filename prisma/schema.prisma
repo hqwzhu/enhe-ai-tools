@@ -184,9 +184,70 @@ model Tool {
   toolUsageLogs     ToolUsageLog[]
   orders            Order[]
   purchases         ToolPurchase[]
+  tagLinks          ToolTagLink[]
+  faqs              ToolFaq[]
+  changelogs        ToolChangelog[]
 
   @@index([type, status])
   @@map("tools")
+}
+
+model ToolTag {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  slug        String        @unique
+  color       String?
+  description String?
+  status      ContentStatus @default(active)
+  sortOrder   Int           @default(0) @map("sort_order")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  toolLinks   ToolTagLink[]
+
+  @@map("tool_tags")
+}
+
+model ToolTagLink {
+  id        String  @id @default(cuid())
+  toolId    String  @map("tool_id")
+  tagId     String  @map("tag_id")
+  tool      Tool    @relation(fields: [toolId], references: [id])
+  tag       ToolTag @relation(fields: [tagId], references: [id])
+
+  @@unique([toolId, tagId])
+  @@map("tool_tag_links")
+}
+
+model ToolFaq {
+  id        String        @id @default(cuid())
+  toolId    String        @map("tool_id")
+  question  String
+  answer    String
+  status    ContentStatus @default(active)
+  sortOrder Int           @default(0) @map("sort_order")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  tool      Tool          @relation(fields: [toolId], references: [id])
+
+  @@index([toolId, status])
+  @@map("tool_faqs")
+}
+
+model ToolChangelog {
+  id          String        @id @default(cuid())
+  toolId      String        @map("tool_id")
+  version     String
+  title       String
+  content     String
+  releaseDate DateTime?     @map("release_date")
+  status      ContentStatus @default(active)
+  sortOrder   Int           @default(0) @map("sort_order")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  tool        Tool          @relation(fields: [toolId], references: [id])
+
+  @@index([toolId, status])
+  @@map("tool_changelogs")
 }
 
 model File {

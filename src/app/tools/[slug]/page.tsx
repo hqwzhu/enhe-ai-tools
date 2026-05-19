@@ -12,15 +12,23 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
     where: { slug },
     include: {
       category: true,
+      tagLinks: { include: { tag: true }, orderBy: { tag: { sortOrder: "asc" } } },
       tutorials: { where: { status: "active" }, orderBy: { sortOrder: "asc" } },
+      faqs: { where: { status: "active" }, orderBy: { sortOrder: "asc" } },
+      changelogs: { where: { status: "active" }, orderBy: [{ releaseDate: "desc" }, { sortOrder: "asc" }] },
       comments: { where: { status: "approved" }, include: { user: true }, orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }] }
     }
   });
   if (!tool || tool.status !== "published") notFound();
+
   const hasDownloadPurchase = user
     ? Boolean(await prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }))
     : false;
-  const related = await prisma.tool.findMany({ where: { type: tool.type, status: "published", id: { not: tool.id } }, include: { category: true }, take: 3 });
+  const related = await prisma.tool.findMany({
+    where: { type: tool.type, status: "published", id: { not: tool.id } },
+    include: { category: true },
+    take: 3
+  });
 
   return (
     <Container className="py-14">
@@ -29,6 +37,9 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
           <Badge>{tool.category?.name ?? "未分类"}</Badge>
           <Badge>{tool.type === "software" ? "电脑软件" : "在线网页工具"}</Badge>
           <Badge className={tool.isVipRequired ? "text-[#FFB86B]" : "text-[#48F5D3]"}>{tool.isVipRequired ? "VIP" : "免费"}</Badge>
+          {tool.tagLinks.map(({ tag }) => (
+            <Badge key={tag.id} className="text-[#48F5D3]">{tag.name}</Badge>
+          ))}
         </div>
         <h1 className="mt-6 text-4xl font-semibold md:text-6xl">{tool.name}</h1>
         <p className="mt-5 max-w-3xl text-lg leading-8 text-[#8B95A7]">{tool.shortDescription}</p>
@@ -58,7 +69,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         ) : null}
       </div>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_320px]">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_340px]">
         <div className="space-y-10">
           <section className="glass rounded-2xl p-7">
             <SectionTitle title="工具介绍" intro={tool.content} />
@@ -69,6 +80,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <Info label="使用次数" value={String(tool.usageCount)} />
             </div>
           </section>
+
           <section className="glass rounded-2xl p-7">
             <SectionTitle title="使用教程" intro="每个工具支持独立教程、步骤排序、图片和视频链接。" />
             <div className="space-y-4">
@@ -82,6 +94,19 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               ))}
             </div>
           </section>
+
+          <section className="glass rounded-2xl p-7">
+            <SectionTitle title="常见问题" intro="后台可为每个工具维护独立 FAQ。" />
+            <div className="space-y-4">
+              {tool.faqs.length ? tool.faqs.map((faq) => (
+                <div key={faq.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
+                  <h3 className="text-lg font-semibold">{faq.question}</h3>
+                  <p className="mt-3 leading-7 text-[#8B95A7]">{faq.answer}</p>
+                </div>
+              )) : <p className="text-sm text-[#8B95A7]">暂无常见问题。</p>}
+            </div>
+          </section>
+
           <section className="glass rounded-2xl p-7">
             <SectionTitle title="用户评论" intro="评论提交后进入后台审核，通过后展示。" />
             {user ? (
@@ -104,14 +129,20 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
             </div>
           </section>
         </div>
+
         <aside className="space-y-4">
           <div className="glass rounded-2xl p-6">
             <h2 className="text-xl font-semibold">版本更新记录</h2>
-            <p className="mt-3 text-sm leading-6 text-[#8B95A7]">当前版本 {tool.version ?? "在线版"}，后续可在后台扩展独立更新日志表。</p>
-          </div>
-          <div className="glass rounded-2xl p-6">
-            <h2 className="text-xl font-semibold">常见问题</h2>
-            <p className="mt-3 text-sm leading-6 text-[#8B95A7]">无法下载或使用时，请确认已经登录并开通有效 VIP。</p>
+            <div className="mt-4 space-y-4">
+              {tool.changelogs.length ? tool.changelogs.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
+                  <p className="text-sm text-[#48F5D3]">{item.version}</p>
+                  <h3 className="mt-2 font-semibold">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[#8B95A7]">{item.content}</p>
+                  {item.releaseDate ? <p className="mt-2 text-xs text-[#8B95A7]">{item.releaseDate.toLocaleDateString("zh-CN")}</p> : null}
+                </div>
+              )) : <p className="text-sm leading-6 text-[#8B95A7]">暂无更新记录。</p>}
+            </div>
           </div>
         </aside>
       </div>

@@ -12,6 +12,7 @@ import {
   slugify
 } from "@/lib/admin-form";
 import { requireAdmin } from "@/lib/auth";
+import { parseTagNames, tagSlug } from "@/lib/tool-content";
 
 const idSchema = z.string().min(1);
 
@@ -127,6 +128,49 @@ export async function upsertToolAction(formData: FormData) {
   revalidatePath(`/tools/${data.slug}`);
 }
 
+export async function upsertToolTagAction(formData: FormData) {
+  await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const name = z.string().min(1).parse(formData.get("name"));
+  const data = {
+    name,
+    slug: parseOptionalString(formData.get("slug")) ?? tagSlug(name),
+    color: parseOptionalString(formData.get("color")),
+    description: parseOptionalString(formData.get("description")),
+    status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active"),
+    sortOrder: parseNumberField(formData.get("sortOrder"), 0)
+  };
+  if (id) {
+    await prisma.toolTag.update({ where: { id }, data });
+  } else {
+    await prisma.toolTag.create({ data });
+  }
+  revalidatePath("/admin/tags");
+}
+
+export async function updateToolTagsAction(formData: FormData) {
+  await requireAdmin();
+  const toolId = idSchema.parse(formData.get("toolId"));
+  const tagNames = parseTagNames(String(formData.get("tags") ?? ""));
+  const tags = await Promise.all(
+    tagNames.map((name) =>
+      prisma.toolTag.upsert({
+        where: { name },
+        update: {},
+        create: { name, slug: tagSlug(name) }
+      })
+    )
+  );
+
+  await prisma.$transaction([
+    prisma.toolTagLink.deleteMany({ where: { toolId } }),
+    ...tags.map((tag) => prisma.toolTagLink.create({ data: { toolId, tagId: tag.id } }))
+  ]);
+  revalidatePath("/admin/tags");
+  revalidatePath("/admin/software");
+  revalidatePath("/admin/online-tools");
+}
+
 export async function deleteToolAction(formData: FormData) {
   await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
@@ -156,6 +200,45 @@ export async function upsertTutorialAction(formData: FormData) {
   }
   revalidatePath("/admin/tutorials");
   revalidatePath("/tutorials");
+}
+
+export async function upsertToolFaqAction(formData: FormData) {
+  await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const data = {
+    toolId: idSchema.parse(formData.get("toolId")),
+    question: z.string().min(1).parse(formData.get("question")),
+    answer: z.string().min(1).parse(formData.get("answer")),
+    sortOrder: parseNumberField(formData.get("sortOrder"), 0),
+    status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active")
+  };
+  if (id) {
+    await prisma.toolFaq.update({ where: { id }, data });
+  } else {
+    await prisma.toolFaq.create({ data });
+  }
+  revalidatePath("/admin/faqs");
+}
+
+export async function upsertToolChangelogAction(formData: FormData) {
+  await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const releaseDate = parseOptionalString(formData.get("releaseDate"));
+  const data = {
+    toolId: idSchema.parse(formData.get("toolId")),
+    version: z.string().min(1).parse(formData.get("version")),
+    title: z.string().min(1).parse(formData.get("title")),
+    content: z.string().min(1).parse(formData.get("content")),
+    releaseDate: releaseDate ? new Date(releaseDate) : null,
+    sortOrder: parseNumberField(formData.get("sortOrder"), 0),
+    status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active")
+  };
+  if (id) {
+    await prisma.toolChangelog.update({ where: { id }, data });
+  } else {
+    await prisma.toolChangelog.create({ data });
+  }
+  revalidatePath("/admin/changelogs");
 }
 
 export async function updateSiteSettingAction(formData: FormData) {
