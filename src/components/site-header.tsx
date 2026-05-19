@@ -19,10 +19,10 @@ export async function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#080B12]/72 backdrop-blur-2xl">
       <Container className="flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center overflow-hidden rounded-2xl border border-white/12 bg-white/6 shadow-[0_0_24px_rgba(72,245,211,0.16)]">
-            <Image src="/images/enhe-logo.svg" alt="恩禾 ENHE" width={34} height={34} priority />
+          <span className="flex size-10 items-center justify-center overflow-hidden rounded-2xl bg-white/6 shadow-[0_0_24px_rgba(72,245,211,0.16)]">
+            <Image src="/images/enhe-logo.svg" alt="恩禾 ENHE AI" width={34} height={34} priority />
           </span>
-          <span className="font-semibold">恩禾 ENHE</span>
+          <span className="font-semibold">恩禾 ENHE AI</span>
         </Link>
         <nav className="hidden items-center gap-1 lg:flex">
           {navItems.map(([label, href]) => (

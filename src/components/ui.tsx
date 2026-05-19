@@ -21,14 +21,15 @@ export function ButtonLink({
   return (
     <Link
       className={cn(
-        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5",
+        "group relative inline-flex items-center justify-center overflow-hidden rounded-full border border-white/14 bg-white/6 px-5 py-3 text-sm font-semibold text-slate-100 transition duration-300 hover:-translate-y-0.5 hover:border-[#48F5D3]/45 hover:text-white hover:shadow-[0_0_32px_rgba(72,245,211,0.20)]",
+        "before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/18 before:to-transparent before:transition before:duration-500 hover:before:translate-x-full",
         variant === "primary"
-          ? "bg-[#7AA7FF] text-[#07101f] shadow-[0_0_28px_rgba(122,167,255,0.35)]"
-          : "border border-white/12 bg-white/6 text-slate-100"
+          ? ""
+          : ""
       )}
       href={href}
     >
-      {children}
+      <span className="relative z-10">{children}</span>
     </Link>
   );
 }
