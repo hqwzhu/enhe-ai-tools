@@ -23,6 +23,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+COPY deploy/enhe-ai-tools/scripts/app-entrypoint.sh ./app-entrypoint.sh
+RUN chmod +x ./app-entrypoint.sh
 
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+CMD ["./app-entrypoint.sh"]

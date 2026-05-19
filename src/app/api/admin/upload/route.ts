@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { NextResponse } from "next/server";
 import { buildPublicUploadUrl } from "@/lib/admin-form";
 import { requireAdmin } from "@/lib/auth";
+import { getUploadDiskPath } from "@/lib/upload-path";
 
 const maxUploadBytes = 50 * 1024 * 1024;
 
@@ -20,8 +21,8 @@ export async function POST(request: Request) {
   }
 
   const publicUrl = buildPublicUploadUrl(file.name);
-  const uploadDir = join(process.cwd(), "public", "uploads");
-  const diskPath = join(process.cwd(), "public", publicUrl);
+  const uploadDir = process.env.UPLOAD_DIR ?? join(process.cwd(), "public", "uploads");
+  const diskPath = getUploadDiskPath(publicUrl, process.cwd(), process.env.UPLOAD_DIR);
   await mkdir(uploadDir, { recursive: true });
   await writeFile(diskPath, Buffer.from(await file.arrayBuffer()));
 
