@@ -1,0 +1,24 @@
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="enheBlue" x1="34" y1="36" x2="94" y2="124" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7AA7FF"/>
+      <stop offset="0.45" stop-color="#2F6BFF"/>
+      <stop offset="1" stop-color="#48F5D3"/>
+    </linearGradient>
+    <linearGradient id="enheDark" x1="94" y1="36" x2="124" y2="124" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E8EEF8"/>
+      <stop offset="1" stop-color="#8B95A7"/>
+    </linearGradient>
+    <filter id="softGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.282 0 0 0 0 0.961 0 0 0 0 0.827 0 0 0 0.42 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <path d="M34 52L50 34H90V52H34Z" fill="url(#enheBlue)" filter="url(#softGlow)"/>
+  <path d="M34 72H82V88H34V72Z" fill="url(#enheBlue)" filter="url(#softGlow)"/>
+  <path d="M34 108L50 126H90V108H34Z" fill="url(#enheBlue)" filter="url(#softGlow)"/>
+  <path d="M90 72H112V34H128V126H112V88H90V72Z" fill="url(#enheDark)"/>
+  <path d="M34 52L50 34H90" stroke="#48F5D3" stroke-opacity="0.22"/>
+  <path d="M34 108L50 126H90" stroke="#48F5D3" stroke-opacity="0.18"/>
+</svg>

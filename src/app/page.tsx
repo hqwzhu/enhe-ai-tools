@@ -42,7 +42,7 @@ export default async function HomePage() {
             <div className="enhe-logo-aura" />
             <div className="relative z-10 flex size-56 items-center justify-center rounded-[2rem] bg-transparent sm:size-64">
               <Image
-                src="/images/enhe-logo.svg"
+                src="/images/enhe-logo-mark.svg"
                 alt={t.brand}
                 width={184}
                 height={184}
