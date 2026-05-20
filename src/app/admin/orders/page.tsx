@@ -1,7 +1,8 @@
 import { deleteOrderAdminAction, updateOrderAdminAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";
-import { canAdminDeleteOrderSafely } from "@/lib/order-rules";
+import { adminDeleteRiskConfirmationToken, canAdminDeleteOrderSafely } from "@/lib/order-rules";
+import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
 
 const orderStatusOptions = [
@@ -13,9 +14,12 @@ const orderStatusOptions = [
   ["refunded", "已退款"]
 ] as const;
 
-const statusLabels = new Map<string, string>([...orderStatusOptions, ["activated", "已开通"]]);
+type AdminOrdersPageProps = {
+  searchParams: Promise<Record<string, string | undefined>>;
+};
 
-export default async function AdminOrdersPage() {
+export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
+  const params = await searchParams;
   const orders = await prisma.order.findMany({
     include: { user: true, plan: true, tool: true, paymentProof: true, toolPurchase: true },
     orderBy: { createdAt: "desc" }
@@ -26,6 +30,17 @@ export default async function AdminOrdersPage() {
       title="订单管理"
       intro="订单状态可用于取消、退款和标记支付；权益开通必须通过支付审核或手动调整 VIP，不能直接把订单改为已开通。"
     >
+      {params.error ? (
+        <p className="mb-5 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm text-[#FFB86B]">
+          {params.error}
+        </p>
+      ) : null}
+      {params.deleted ? (
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
+          订单已删除。
+        </p>
+      ) : null}
+
       <div className="space-y-4">
         {orders.map((order) => {
           const deleteIsSafe = canAdminDeleteOrderSafely(order.orderStatus);
@@ -37,11 +52,11 @@ export default async function AdminOrdersPage() {
                   <p className="font-semibold">{order.orderNo}</p>
                   <p className="mt-2 text-sm text-[#8B95A7]">
                     {order.user.email ?? order.user.phone ?? order.user.id} · {order.plan?.name ?? order.tool?.name ?? "订单项目"} ·{" "}
-                    {formatCurrency(order.amount.toString())} · {statusLabel(order.orderStatus)}
+                    {formatCurrency(order.amount.toString())} · {getStatusLabel(orderStatusLabels, order.orderStatus)}
                   </p>
                   <p className="mt-1 text-xs text-[#8B95A7]">
                     类型：{order.orderType === "vip" ? "会员订单" : "软件下载订单"} · 凭证：
-                    {order.paymentProof?.reviewStatus ?? "未提交"} · 创建：{order.createdAt.toLocaleString("zh-CN")}
+                    {getStatusLabel(proofStatusLabels, order.paymentProof?.reviewStatus)} · 创建：{order.createdAt.toLocaleString("zh-CN")}
                   </p>
                 </div>
                 <div className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8B95A7]">
@@ -78,15 +93,18 @@ export default async function AdminOrdersPage() {
               <form action={deleteOrderAdminAction} className="mt-4 border-t border-white/10 pt-4">
                 <input type="hidden" name="id" value={order.id} />
                 {!deleteIsSafe ? (
-                  <div className="mb-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-xs leading-6 text-[#FFB86B]">
-                    该订单可能已关联已支付或已开通权益。删除订单不会静默撤销会员权益，请确认已经完成售后处理后再删除。
+                  <label className="mb-3 flex gap-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-xs leading-6 text-[#FFB86B]">
                     <input
                       name="confirmRisk"
+                      type="checkbox"
                       required
-                      placeholder="输入 DELETE_ACTIVATED_ORDER 确认"
-                      className="mt-3 w-full rounded-xl border border-white/12 bg-[#111827] px-3 py-2 text-[#E8EEF8] outline-none"
+                      value={adminDeleteRiskConfirmationToken}
+                      className="mt-1"
                     />
-                  </div>
+                    <span>
+                      该订单已支付或已开通权益。删除订单不会自动撤销会员权益或售后记录，我已确认完成售后处理并承担删除风险。
+                    </span>
+                  </label>
                 ) : null}
                 <button className="rounded-full border border-red-400/40 px-4 py-2 text-sm text-red-200">
                   删除订单
@@ -99,8 +117,4 @@ export default async function AdminOrdersPage() {
       </div>
     </AdminSection>
   );
-}
-
-function statusLabel(status: string) {
-  return statusLabels.get(status) ?? status;
 }

@@ -18,7 +18,7 @@ import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { manuallyAdjustVip } from "@/lib/membership";
 import { isLikelyUploadableImage } from "@/lib/media";
-import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely } from "@/lib/order-rules";
+import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely, isAdminDeleteRiskConfirmed } from "@/lib/order-rules";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
@@ -99,9 +99,11 @@ export async function deleteOrderAdminAction(formData: FormData) {
   const id = idSchema.parse(formData.get("id"));
   const confirmRisk = parseOptionalString(formData.get("confirmRisk"));
   const order = await prisma.order.findUnique({ where: { id } });
-  if (!order) throw new Error("Order not found.");
-  if (!canAdminDeleteOrderSafely(order.orderStatus) && confirmRisk !== "DELETE_ACTIVATED_ORDER") {
-    throw new Error("This order may already be tied to paid or activated benefits. Confirm the risk before deleting.");
+  if (!order) {
+    redirect(`/admin/orders?error=${encodeURIComponent("订单不存在，可能已经被删除。")}`);
+  }
+  if (!canAdminDeleteOrderSafely(order.orderStatus) && !isAdminDeleteRiskConfirmed(confirmRisk)) {
+    redirect(`/admin/orders?error=${encodeURIComponent("该订单已支付或已开通权益，请先勾选风险确认后再删除。")}`);
   }
 
   await prisma.$transaction([
@@ -113,6 +115,7 @@ export async function deleteOrderAdminAction(formData: FormData) {
   revalidatePath("/admin/orders");
   revalidatePath("/admin/payments");
   revalidatePath("/user");
+  redirect("/admin/orders?deleted=1");
 }
 
 export async function adjustVipAdminAction(formData: FormData) {

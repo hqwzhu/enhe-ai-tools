@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely, canUserCancelOrder } from "@/lib/order-rules";
+import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely, canUserCancelOrder, isAdminDeleteRiskConfirmed } from "@/lib/order-rules";
 
 describe("order business rules", () => {
   it("allows users to cancel only pending or rejected orders", () => {
@@ -21,5 +21,11 @@ describe("order business rules", () => {
     expect(canAdminDeleteOrderSafely("paid")).toBe(false);
     expect(canAdminDeleteOrderSafely("refunded")).toBe(false);
     expect(canAdminDeleteOrderSafely("cancelled")).toBe(true);
+  });
+
+  it("requires an explicit confirmation token before deleting risky orders", () => {
+    expect(isAdminDeleteRiskConfirmed(null)).toBe(false);
+    expect(isAdminDeleteRiskConfirmed("wrong")).toBe(false);
+    expect(isAdminDeleteRiskConfirmed("DELETE_ACTIVATED_ORDER")).toBe(true);
   });
 });
