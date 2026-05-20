@@ -69,16 +69,6 @@ body::before {
   transition: left 0.18s ease-out, top 0.18s ease-out;
 }
 
-.interactive-backdrop::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background:
-    linear-gradient(115deg, transparent 0%, rgba(72, 245, 211, 0.06) 16%, transparent 32%),
-    linear-gradient(245deg, transparent 0%, rgba(122, 167, 255, 0.06) 18%, transparent 34%);
-  animation: enhe-background-sweep 12s linear infinite;
-}
-
 .interactive-grid {
   position: absolute;
   inset: 0;
@@ -88,30 +78,6 @@ body::before {
     linear-gradient(90deg, rgba(122, 167, 255, 0.12) 1px, transparent 1px);
   background-size: 96px 96px;
   mask-image: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(0, 0, 0, 0.8), transparent 44rem);
-}
-
-.interactive-beam {
-  position: absolute;
-  width: 34rem;
-  height: 1px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(72, 245, 211, 0.55), transparent);
-  filter: blur(0.3px);
-  opacity: 0.36;
-}
-
-.interactive-beam-a {
-  left: 12%;
-  top: 22%;
-  transform: rotate(-16deg);
-  animation: enhe-beam-drift 9s ease-in-out infinite;
-}
-
-.interactive-beam-b {
-  right: 8%;
-  bottom: 26%;
-  transform: rotate(19deg);
-  animation: enhe-beam-drift 11s ease-in-out infinite reverse;
 }
 
 a {
@@ -145,37 +111,40 @@ a {
 
 .enhe-logo-aura {
   position: absolute;
-  width: min(72vw, 430px);
+  width: min(74vw, 430px);
   aspect-ratio: 1;
   border-radius: 999px;
   background:
-    radial-gradient(circle at 42% 42%, rgba(72, 245, 211, 0.18), transparent 36%),
-    radial-gradient(circle at 62% 28%, rgba(122, 167, 255, 0.2), transparent 44%),
-    conic-gradient(from 210deg, transparent, rgba(72, 245, 211, 0.16), transparent, rgba(167, 139, 250, 0.12), transparent);
+    radial-gradient(circle at 50% 50%, rgba(72, 245, 211, 0.22), transparent 40%),
+    radial-gradient(circle at 54% 34%, rgba(122, 167, 255, 0.16), transparent 52%),
+    radial-gradient(circle, rgba(72, 245, 211, 0.08), transparent 72%);
   box-shadow:
     inset 0 0 70px rgba(255, 255, 255, 0.05),
     0 0 120px rgba(72, 245, 211, 0.16);
-  animation: enhe-aura-turn 16s linear infinite;
+  filter: blur(2px);
+  animation: enhe-pulse 5.8s ease-in-out infinite;
 }
 
 .enhe-holo-ring {
   position: absolute;
   border-radius: 999px;
   background:
-    conic-gradient(from 0deg, transparent, rgba(72, 245, 211, 0.52), transparent 26%, rgba(122, 167, 255, 0.36), transparent 56%, rgba(167, 139, 250, 0.28), transparent);
-  mask-image: radial-gradient(circle, transparent 62%, #000 64%, #000 66%, transparent 68%);
+    conic-gradient(from 0deg, transparent 0deg, rgba(72, 245, 211, 0.34) 42deg, transparent 92deg, rgba(122, 167, 255, 0.2) 156deg, transparent 224deg, rgba(167, 139, 250, 0.16) 278deg, transparent 360deg);
+  filter: blur(12px);
+  mask-image: radial-gradient(circle, transparent 60%, rgba(0, 0, 0, 0.8) 67%, transparent 77%);
 }
 
 .enhe-holo-ring-a {
-  width: min(78vw, 500px);
+  width: min(78vw, 460px);
   aspect-ratio: 1;
+  opacity: 0.62;
   animation: enhe-spin 14s linear infinite;
 }
 
 .enhe-holo-ring-b {
-  width: min(58vw, 360px);
+  width: min(58vw, 340px);
   aspect-ratio: 1;
-  opacity: 0.65;
+  opacity: 0.42;
   animation: enhe-spin-reverse 9s linear infinite;
 }
 
@@ -202,7 +171,7 @@ a {
 .enhe-orbit {
   position: absolute;
   border-radius: 999px;
-  border: 1px solid rgba(72, 245, 211, 0.13);
+  border: 1px solid rgba(72, 245, 211, 0.08);
   transform-style: preserve-3d;
 }
 
@@ -219,20 +188,20 @@ a {
 }
 
 .enhe-orbit-a {
-  width: min(82vw, 480px);
+  width: min(76vw, 450px);
   aspect-ratio: 1;
   animation: enhe-spin 18s linear infinite;
 }
 
 .enhe-orbit-b {
-  width: min(68vw, 390px);
+  width: min(62vw, 360px);
   aspect-ratio: 1;
   transform: rotateX(62deg) rotateZ(28deg);
   animation: enhe-spin-reverse 14s linear infinite;
 }
 
 .enhe-orbit-c {
-  width: min(56vw, 320px);
+  width: min(52vw, 300px);
   aspect-ratio: 1;
   transform: rotateX(68deg) rotateZ(-34deg);
   animation: enhe-spin 11s linear infinite;
@@ -304,12 +273,6 @@ a {
   }
 }
 
-@keyframes enhe-aura-turn {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes enhe-panel-slide {
   0%,
   100% {
@@ -346,23 +309,3 @@ a {
   }
 }
 
-@keyframes enhe-background-sweep {
-  0% {
-    transform: translateX(-12%) translateY(-4%);
-  }
-  100% {
-    transform: translateX(12%) translateY(4%);
-  }
-}
-
-@keyframes enhe-beam-drift {
-  0%,
-  100% {
-    opacity: 0.16;
-    translate: -2rem 0;
-  }
-  50% {
-    opacity: 0.5;
-    translate: 2rem 0;
-  }
-}

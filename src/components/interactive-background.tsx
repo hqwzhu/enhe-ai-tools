@@ -16,8 +16,6 @@ export function InteractiveBackground() {
 
   return (
     <div className="interactive-backdrop" aria-hidden="true">
-      <div className="interactive-beam interactive-beam-a" />
-      <div className="interactive-beam interactive-beam-b" />
       <div className="interactive-grid" />
     </div>
   );

@@ -28,7 +28,7 @@ export default async function HomePage() {
               <ButtonLink href="/online-tools" variant="ghost">在线工具</ButtonLink>
             </div>
           </div>
-          <div className="enhe-hero-mark relative mx-auto flex min-h-[430px] w-full max-w-[560px] items-center justify-center overflow-hidden">
+          <div className="enhe-hero-mark relative mx-auto flex min-h-[460px] w-full max-w-[600px] items-center justify-center">
             <div className="enhe-holo-ring enhe-holo-ring-a" />
             <div className="enhe-holo-ring enhe-holo-ring-b" />
             <div className="enhe-holo-panel enhe-holo-panel-a" />
