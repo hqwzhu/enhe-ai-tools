@@ -12,6 +12,7 @@ import {
   slugify
 } from "@/lib/admin-form";
 import { hashPassword, requireAdmin } from "@/lib/auth";
+import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 
 const idSchema = z.string().min(1);
@@ -42,6 +43,48 @@ export async function resetUserPasswordAction(formData: FormData) {
   });
 
   revalidatePath("/admin/users");
+}
+
+export async function updateOrderAdminAction(formData: FormData) {
+  await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const orderStatus = z
+    .enum(["pending_payment", "pending_review", "paid", "activated", "rejected", "cancelled", "refunded"])
+    .parse(formData.get("orderStatus"));
+  const paymentMethodValue = parseOptionalString(formData.get("paymentMethod"));
+  const paymentMethod = paymentMethodValue ? z.enum(["alipay", "wechat"]).parse(paymentMethodValue) : null;
+  const amount = parseNumberField(formData.get("amount"), 0);
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) throw new Error("订单不存在");
+
+  await prisma.order.update({
+    where: { id },
+    data: {
+      amount,
+      paymentMethod,
+      orderStatus,
+      ...getOrderTimestampPatch(orderStatus, order.paidAt, order.activatedAt)
+    }
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/payments");
+  revalidatePath("/user");
+}
+
+export async function deleteOrderAdminAction(formData: FormData) {
+  await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+
+  await prisma.$transaction([
+    prisma.paymentProof.deleteMany({ where: { orderId: id } }),
+    prisma.toolPurchase.deleteMany({ where: { orderId: id } }),
+    prisma.order.delete({ where: { id } })
+  ]);
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/payments");
+  revalidatePath("/user");
 }
 
 export async function upsertCategoryAction(formData: FormData) {
