@@ -127,8 +127,8 @@ async function main() {
     ["site_logo", "ENHE", "Logo 文本或图片地址"],
     ["home_hero_title", "恩禾 ENHE AI工具站", "首页主标题"],
     ["home_hero_subtitle", "自研电脑软件与在线网页工具会员平台", "首页副标题"],
-    ["alipay_qr", "/images/alipay-qr.svg", "支付宝个人收款码"],
-    ["wechat_qr", "/images/wechat-qr.svg", "微信个人收款码"],
+    ["alipay_qr", "/images/payment/alipay-qr.jpg", "支付宝个人收款码"],
+    ["wechat_qr", "/images/payment/wechat-qr.jpg", "微信个人收款码"],
     ["user_agreement", "注册即表示你同意遵守平台使用规则。", "用户协议"],
     ["privacy_policy", "我们仅收集提供服务所需的必要信息。", "隐私政策"],
     ["refund_policy", "虚拟会员服务开通后原则上不支持退款，特殊情况请联系管理员。", "退款规则"]

@@ -1,5 +1,7 @@
 "use server";
 
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -9,15 +11,32 @@ import {
   parseNumberField,
   parseOptionalString,
   parseScreenshotsField,
+  buildPublicUploadUrl,
   slugify
 } from "@/lib/admin-form";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { manuallyAdjustVip } from "@/lib/membership";
+import { isLikelyUploadableImage } from "@/lib/media";
 import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely } from "@/lib/order-rules";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
+import { getUploadDiskPath } from "@/lib/upload-path";
 
 const idSchema = z.string().min(1);
+const maxCoverImageBytes = 8 * 1024 * 1024;
+
+async function saveAdminImageUpload(file: FormDataEntryValue | null, prefix: string) {
+  if (!(file instanceof File) || file.size === 0) return null;
+  if (!isLikelyUploadableImage(file)) throw new Error("请上传图片格式的封面图。");
+  if (file.size > maxCoverImageBytes) throw new Error("封面图不能超过 8MB。");
+
+  const publicUrl = buildPublicUploadUrl(`${prefix}-${file.name}`);
+  const uploadDir = process.env.UPLOAD_DIR ?? join(process.cwd(), "public", "uploads");
+  const diskPath = getUploadDiskPath(publicUrl, process.cwd(), process.env.UPLOAD_DIR);
+  await mkdir(uploadDir, { recursive: true });
+  await writeFile(diskPath, Buffer.from(await file.arrayBuffer()));
+  return publicUrl;
+}
 
 export async function updateUserAdminAction(formData: FormData) {
   await requireAdmin();
@@ -203,38 +222,48 @@ export async function upsertFileAction(formData: FormData) {
 
 export async function upsertToolAction(formData: FormData) {
   await requireAdmin();
-  const id = parseOptionalString(formData.get("id"));
   const type = z.enum(["software", "online"]).parse(formData.get("type"));
-  const name = z.string().min(1).parse(formData.get("name"));
-  const slugInput = parseOptionalString(formData.get("slug"));
-  const data = {
-    name,
-    slug: slugInput ?? slugify(name),
-    type,
-    categoryId: parseOptionalString(formData.get("categoryId")),
-    shortDescription: z.string().min(1).parse(formData.get("shortDescription")),
-    content: z.string().min(1).parse(formData.get("content")),
-    coverImage: parseOptionalString(formData.get("coverImage")),
-    screenshots: parseScreenshotsField(formData.get("screenshots")),
-    version: parseOptionalString(formData.get("version")),
-    systemRequirement: parseOptionalString(formData.get("systemRequirement")),
-    isVipRequired: parseBooleanField(formData.get("isVipRequired")),
-    isDownloadPaid: parseBooleanField(formData.get("isDownloadPaid")),
-    downloadPrice: parseNumberField(formData.get("downloadPrice"), 0),
-    onlineUrl: parseOptionalString(formData.get("onlineUrl")),
-    downloadFileId: parseOptionalString(formData.get("downloadFileId")),
-    status: z.enum(["draft", "published", "offline"]).parse(formData.get("status") ?? "draft"),
-    sortOrder: parseNumberField(formData.get("sortOrder"), 0)
-  };
+  const adminPath = type === "software" ? "/admin/software" : "/admin/online-tools";
 
-  if (id) {
-    await prisma.tool.update({ where: { id }, data });
-  } else {
-    await prisma.tool.create({ data });
+  try {
+    const id = parseOptionalString(formData.get("id"));
+    const name = z.string().min(1).parse(formData.get("name"));
+    const slugInput = parseOptionalString(formData.get("slug"));
+    const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `tool-cover-${slugInput ?? slugify(name)}`);
+    const data = {
+      name,
+      slug: slugInput ?? slugify(name),
+      type,
+      categoryId: parseOptionalString(formData.get("categoryId")),
+      shortDescription: z.string().min(1).parse(formData.get("shortDescription")),
+      content: z.string().min(1).parse(formData.get("content")),
+      coverImage: uploadedCoverImage ?? parseOptionalString(formData.get("coverImage")),
+      screenshots: parseScreenshotsField(formData.get("screenshots")),
+      version: parseOptionalString(formData.get("version")),
+      systemRequirement: parseOptionalString(formData.get("systemRequirement")),
+      isVipRequired: parseBooleanField(formData.get("isVipRequired")),
+      isDownloadPaid: parseBooleanField(formData.get("isDownloadPaid")),
+      downloadPrice: parseNumberField(formData.get("downloadPrice"), 0),
+      onlineUrl: parseOptionalString(formData.get("onlineUrl")),
+      downloadFileId: parseOptionalString(formData.get("downloadFileId")),
+      status: z.enum(["draft", "published", "offline"]).parse(formData.get("status") ?? "draft"),
+      sortOrder: parseNumberField(formData.get("sortOrder"), 0)
+    };
+
+    if (id) {
+      await prisma.tool.update({ where: { id }, data });
+    } else {
+      await prisma.tool.create({ data });
+    }
+    revalidatePath(adminPath);
+    revalidatePath(type === "software" ? "/software" : "/online-tools");
+    revalidatePath(`/tools/${data.slug}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "保存失败，请检查表单内容。";
+    redirect(`${adminPath}?error=${encodeURIComponent(message)}`);
   }
-  revalidatePath(type === "software" ? "/admin/software" : "/admin/online-tools");
-  revalidatePath(type === "software" ? "/software" : "/online-tools");
-  revalidatePath(`/tools/${data.slug}`);
+
+  redirect(`${adminPath}?saved=1`);
 }
 
 export async function upsertToolTagAction(formData: FormData) {

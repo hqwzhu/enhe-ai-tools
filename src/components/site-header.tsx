@@ -1,13 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LayoutDashboard, UserRound } from "lucide-react";
+import { Crown, LayoutDashboard, UserRound } from "lucide-react";
 import { setLocaleAction } from "@/app/language-actions";
 import { getCurrentUser } from "@/lib/auth";
 import { ButtonLink, Container } from "@/components/ui";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
+import { getActiveMembership } from "@/lib/membership";
 
 export async function SiteHeader() {
   const [user, locale] = await Promise.all([getCurrentUser(), getCurrentLocale()]);
+  const membership = user ? await getActiveMembership(user.id) : null;
   const t = getDictionary(locale);
   const navItems = [
     [t.nav.home, "/"],
@@ -44,15 +46,18 @@ export async function SiteHeader() {
           <LanguageSwitcher locale={locale} labels={t.language} />
           {user ? (
             <Link href="/user" className="inline-flex items-center gap-2 rounded-full border border-white/12 px-3 py-2 text-sm">
-              <UserRound size={16} />
+              <span className="relative inline-flex">
+                <UserRound size={16} />
+                {membership ? (
+                  <Crown className="absolute -right-2 -top-2 text-[#FFB86B]" size={12} fill="currentColor" />
+                ) : null}
+              </span>
               {user.nickname ?? user.email ?? t.nav.userFallback}
             </Link>
           ) : (
             <>
-              <Link href="/login" className="hidden rounded-full px-4 py-2 text-sm text-[#8B95A7] sm:inline-flex">
-                {t.nav.login}
-              </Link>
-              <ButtonLink href="/register">{t.nav.register}</ButtonLink>
+              <span className="hidden sm:inline-flex"><ButtonLink href="/login" variant="ghost">{t.nav.login}</ButtonLink></span>
+              <ButtonLink href="/register" variant="ghost">{t.nav.register}</ButtonLink>
             </>
           )}
         </div>

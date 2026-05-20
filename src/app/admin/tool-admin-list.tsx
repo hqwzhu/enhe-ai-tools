@@ -27,13 +27,20 @@ type ToolAdminListProps = {
   }>;
   categories: Array<{ id: string; name: string; type: string }>;
   files: Array<{ id: string; fileName: string; fileUrl: string | null }>;
+  notice?: Record<string, string | undefined>;
 };
 
-export function ToolAdminList({ title, type, tools, categories, files }: ToolAdminListProps) {
+export function ToolAdminList({ title, type, tools, categories, files, notice }: ToolAdminListProps) {
   return (
     <div>
       <h1 className="text-3xl font-semibold">{title}</h1>
-      <p className="mt-3 text-[#8B95A7]">支持新增、编辑、删除、上下架、下载文件或在线地址字段。</p>
+      <p className="mt-3 text-[#8B95A7]">支持新增、编辑、删除、上下架、封面图上传、下载文件或在线地址字段。</p>
+      {notice?.saved ? (
+        <p className="mt-4 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">保存成功。</p>
+      ) : null}
+      {notice?.error ? (
+        <p className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">保存失败：{notice.error}</p>
+      ) : null}
       <ToolForm type={type} categories={categories} files={files} />
       <div className="mt-8 space-y-4">
         {tools.map((tool) => (
@@ -84,7 +91,11 @@ function ToolForm({
         </select>
       </Field>
       <Field label="排序"><input name="sortOrder" type="number" defaultValue={tool?.sortOrder ?? 0} className={inputClass} /></Field>
-      <Field label="封面图"><input name="coverImage" defaultValue={tool?.coverImage ?? ""} className={inputClass} /></Field>
+      <Field label="封面图地址"><input name="coverImage" defaultValue={tool?.coverImage ?? ""} placeholder="/uploads/cover.jpg 或 https://..." className={inputClass} /></Field>
+      <Field label="本地上传封面图">
+        <input name="coverImageFile" type="file" accept="image/*" className={inputClass} />
+        <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">建议尺寸 1200x675 或 16:9，JPG/PNG/WebP，8MB 以内。上传后会自动覆盖封面图地址。</span>
+      </Field>
       <Field label="版本"><input name="version" defaultValue={tool?.version ?? ""} className={inputClass} /></Field>
       <Field label="系统要求"><input name="systemRequirement" defaultValue={tool?.systemRequirement ?? ""} className={inputClass} /></Field>
       <Field label="下载文件">
