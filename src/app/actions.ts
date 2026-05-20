@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { createOrderNo } from "@/lib/order";
 import { getCurrentUser, hashPassword, requireAdmin, requireUser, signInUser, signOutUser, verifyPassword } from "@/lib/auth";
 import { activateVipForOrder } from "@/lib/membership";
+import { canUserCancelOrder } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
 
 const accountSchema = z.object({
@@ -142,6 +143,23 @@ export async function submitPaymentProofAction(formData: FormData) {
   });
   await prisma.order.update({ where: { id: orderId }, data: { orderStatus: "pending_review", paymentMethod } });
   redirect("/user?tab=orders");
+}
+
+export async function cancelOrderAction(formData: FormData) {
+  const user = await requireUser();
+  const orderId = z.string().min(1).parse(formData.get("orderId"));
+  const order = await prisma.order.findFirst({ where: { id: orderId, userId: user.id } });
+  if (!order) throw new Error("订单不存在。");
+  if (!canUserCancelOrder(order.orderStatus)) {
+    throw new Error("当前订单状态不允许取消。");
+  }
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { orderStatus: "cancelled" }
+  });
+
+  revalidatePath("/user");
 }
 
 export async function createCommentAction(formData: FormData) {

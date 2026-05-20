@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { changePasswordAction, logoutAction } from "@/app/actions";
+import { cancelOrderAction, changePasswordAction, logoutAction } from "@/app/actions";
 import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
 import { getActiveMembership } from "@/lib/membership";
+import { canUserCancelOrder } from "@/lib/order-rules";
 import { formatCurrency } from "@/lib/utils";
 
 type UserCenterSearchParams = Promise<Record<string, string | undefined>>;
@@ -111,6 +112,14 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                         <Link href={`/orders/${order.id}/pay`} className="rounded-full bg-[#7AA7FF] px-3 py-1 text-xs font-semibold text-[#07101f]">
                           {t.userCenter.payNow}
                         </Link>
+                      ) : null}
+                      {canUserCancelOrder(order.orderStatus) ? (
+                        <form action={cancelOrderAction}>
+                          <input type="hidden" name="orderId" value={order.id} />
+                          <button className="rounded-full border border-white/12 px-3 py-1 text-xs">
+                            取消订单
+                          </button>
+                        </form>
                       ) : null}
                     </div>
                   </div>

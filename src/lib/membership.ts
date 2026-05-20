@@ -1,4 +1,7 @@
 import { prisma } from "@/lib/db";
+import { applyVipCancellation, applyVipGrant, type MembershipSnapshot } from "@/lib/membership-rules";
+
+type MembershipDelegate = Pick<typeof prisma, "membership">;
 
 export async function getActiveMembership(userId: string) {
   const now = new Date();
@@ -25,19 +28,135 @@ export function calculateMembershipEnd(durationDays: number, start = new Date())
   return end;
 }
 
+function toMembershipSnapshot(membership: {
+  id: string;
+  vipType: string;
+  startTime: Date;
+  endTime: Date | null;
+  isLifetime: boolean;
+  status: "active" | "expired" | "cancelled";
+} | null): MembershipSnapshot | null {
+  if (!membership) return null;
+  return {
+    id: membership.id,
+    vipType: membership.vipType,
+    startTime: membership.startTime,
+    endTime: membership.endTime,
+    isLifetime: membership.isLifetime,
+    status: membership.status
+  };
+}
+
+async function findCurrentMembership(tx: MembershipDelegate, userId: string, now = new Date()) {
+  return tx.membership.findFirst({
+    where: {
+      userId,
+      status: "active",
+      OR: [{ isLifetime: true }, { endTime: { gt: now } }]
+    },
+    orderBy: [{ isLifetime: "desc" }, { endTime: "desc" }]
+  });
+}
+
+export async function grantVipMembership(
+  tx: MembershipDelegate,
+  input: { userId: string; planId?: string | null; vipType: string; durationDays: number; now?: Date }
+) {
+  const now = input.now ?? new Date();
+  const current = await findCurrentMembership(tx, input.userId, now);
+  const next = applyVipGrant(toMembershipSnapshot(current), { name: input.vipType, durationDays: input.durationDays }, now);
+
+  if (current) {
+    return tx.membership.update({
+      where: { id: current.id },
+      data: {
+        planId: input.planId ?? current.planId,
+        vipType: next.vipType,
+        startTime: next.startTime,
+        endTime: next.endTime,
+        isLifetime: next.isLifetime,
+        status: next.status
+      }
+    });
+  }
+
+  return tx.membership.create({
+    data: {
+      userId: input.userId,
+      planId: input.planId ?? null,
+      vipType: next.vipType,
+      startTime: next.startTime,
+      endTime: next.endTime,
+      isLifetime: next.isLifetime,
+      status: next.status
+    }
+  });
+}
+
+export async function cancelVipMembership(tx: MembershipDelegate, userId: string, now = new Date()) {
+  const current = await findCurrentMembership(tx, userId, now);
+  const next = applyVipCancellation(toMembershipSnapshot(current), now);
+  if (!current || !next) return null;
+
+  return tx.membership.update({
+    where: { id: current.id },
+    data: {
+      endTime: next.endTime,
+      isLifetime: next.isLifetime,
+      status: next.status
+    }
+  });
+}
+
+export async function manuallyAdjustVip(input: {
+  userId: string;
+  adminId: string;
+  actionType: "grant" | "cancel";
+  vipType: string;
+  durationDays: number;
+  reason: string;
+}) {
+  if (!input.reason.trim()) throw new Error("Manual VIP adjustment requires a reason.");
+
+  return prisma.$transaction(async (tx) => {
+    const before = await findCurrentMembership(tx, input.userId);
+    const after =
+      input.actionType === "cancel"
+        ? await cancelVipMembership(tx, input.userId)
+        : await grantVipMembership(tx, {
+            userId: input.userId,
+            vipType: input.vipType,
+            durationDays: input.durationDays
+          });
+
+    await tx.vipAdjustmentLog.create({
+      data: {
+        userId: input.userId,
+        adminId: input.adminId,
+        actionType: input.actionType,
+        reason: input.reason.trim(),
+        beforeStatus: before ? JSON.parse(JSON.stringify(toMembershipSnapshot(before))) : null,
+        afterStatus: after ? JSON.parse(JSON.stringify(toMembershipSnapshot(after))) : null
+      }
+    });
+
+    return after;
+  });
+}
+
 export async function activateVipForOrder(orderId: string, reviewerId?: string, reviewNote?: string) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },
       include: { plan: true, paymentProof: true }
     });
-    if (!order) throw new Error("订单不存在");
+    if (!order) throw new Error("Order not found.");
     if (order.orderStatus === "activated") return order;
 
     const start = new Date();
 
     if (order.orderType === "software_download") {
-      if (!order.toolId) throw new Error("软件订单未绑定工具");
+      if (!order.toolId) throw new Error("Software order is missing tool binding.");
 
       await tx.toolPurchase.upsert({
         where: { userId_toolId: { userId: order.userId, toolId: order.toolId } },
@@ -70,19 +189,13 @@ export async function activateVipForOrder(orderId: string, reviewerId?: string, 
       });
     }
 
-    if (!order.planId || !order.plan) throw new Error("VIP 订单未绑定套餐");
-    const end = calculateMembershipEnd(order.plan.durationDays, start);
-
-    await tx.membership.create({
-      data: {
-        userId: order.userId,
-        planId: order.planId,
-        vipType: order.plan.name,
-        startTime: start,
-        endTime: end,
-        isLifetime: order.plan.durationDays <= 0,
-        status: "active"
-      }
+    if (!order.planId || !order.plan) throw new Error("VIP order is missing plan binding.");
+    await grantVipMembership(tx, {
+      userId: order.userId,
+      planId: order.planId,
+      vipType: order.plan.name,
+      durationDays: order.plan.durationDays,
+      now: start
     });
 
     await tx.paymentProof.updateMany({

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { userHasVip } from "@/lib/membership";
+import { canDownloadVipTool } from "@/lib/access-rules";
 
 async function assertBaseToolAccess(toolId: string) {
   const user = await getCurrentUser();
@@ -11,7 +12,7 @@ async function assertBaseToolAccess(toolId: string) {
   const tool = await prisma.tool.findUnique({ where: { id: toolId }, include: { downloadFile: true } });
   if (!tool || tool.status !== "published") throw new Error("工具不存在或未发布");
 
-  if (tool.isVipRequired && !(await userHasVip(user.id))) {
+  if (!canDownloadVipTool({ isVipRequired: tool.isVipRequired, hasVip: await userHasVip(user.id) })) {
     redirect("/pricing");
   }
 

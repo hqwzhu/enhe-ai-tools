@@ -13,6 +13,8 @@ import {
 } from "@/lib/admin-form";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
+import { manuallyAdjustVip } from "@/lib/membership";
+import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely } from "@/lib/order-rules";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 
 const idSchema = z.string().min(1);
@@ -55,6 +57,7 @@ export async function updateOrderAdminAction(formData: FormData) {
   const paymentMethod = paymentMethodValue ? z.enum(["alipay", "wechat"]).parse(paymentMethodValue) : null;
   const amount = parseNumberField(formData.get("amount"), 0);
   const order = await prisma.order.findUnique({ where: { id } });
+  assertAdminOrderStatusUpdateAllowed(orderStatus);
   if (!order) throw new Error("订单不存在");
 
   await prisma.order.update({
@@ -75,6 +78,12 @@ export async function updateOrderAdminAction(formData: FormData) {
 export async function deleteOrderAdminAction(formData: FormData) {
   await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
+  const confirmRisk = parseOptionalString(formData.get("confirmRisk"));
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) throw new Error("Order not found.");
+  if (!canAdminDeleteOrderSafely(order.orderStatus) && confirmRisk !== "DELETE_ACTIVATED_ORDER") {
+    throw new Error("This order may already be tied to paid or activated benefits. Confirm the risk before deleting.");
+  }
 
   await prisma.$transaction([
     prisma.paymentProof.deleteMany({ where: { orderId: id } }),
@@ -85,6 +94,35 @@ export async function deleteOrderAdminAction(formData: FormData) {
   revalidatePath("/admin/orders");
   revalidatePath("/admin/payments");
   revalidatePath("/user");
+}
+
+export async function adjustVipAdminAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const userId = idSchema.parse(formData.get("userId"));
+  const actionType = z.enum(["grant", "cancel"]).parse(formData.get("actionType"));
+  const durationDays = parseNumberField(formData.get("durationDays"), 7);
+  const reason = z.string().min(2, "必须填写操作原因").parse(formData.get("reason"));
+
+  await manuallyAdjustVip({
+    userId,
+    adminId: admin.id,
+    actionType,
+    vipType: getManualVipType(durationDays),
+    durationDays,
+    reason
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath("/user");
+}
+
+function getManualVipType(durationDays: number) {
+  if (durationDays <= 0) return "永久VIP";
+  if (durationDays === 7) return "7天VIP";
+  if (durationDays === 30) return "1个月VIP";
+  if (durationDays === 180) return "6个月VIP";
+  if (durationDays === 365) return "12个月VIP";
+  return `${durationDays}天VIP`;
 }
 
 export async function upsertCategoryAction(formData: FormData) {

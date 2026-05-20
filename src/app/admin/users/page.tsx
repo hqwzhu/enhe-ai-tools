@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { resetUserPasswordAction, updateUserAdminAction } from "@/app/admin/actions";
+import { adjustVipAdminAction, resetUserPasswordAction, updateUserAdminAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";
 
@@ -27,7 +27,11 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: A
 
   const users = await prisma.user.findMany({
     where,
-    include: { memberships: true, orders: true },
+    include: {
+      memberships: { orderBy: { createdAt: "desc" } },
+      orders: true,
+      vipAdjustments: { include: { admin: true }, orderBy: { createdAt: "desc" }, take: 3 }
+    },
     orderBy: { createdAt: "desc" }
   });
 
@@ -109,6 +113,47 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: A
                   <SubmitButton>重置密码</SubmitButton>
                 </div>
               </form>
+            </div>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
+              <form action={adjustVipAdminAction} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <input type="hidden" name="userId" value={user.id} />
+                <h3 className="mb-4 font-semibold">手动调整 VIP</h3>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Field label="操作类型">
+                    <select name="actionType" className={selectClass}>
+                      <option value="grant">开通 / 延长</option>
+                      <option value="cancel">取消 VIP</option>
+                    </select>
+                  </Field>
+                  <Field label="VIP 时长">
+                    <select name="durationDays" defaultValue={30} className={selectClass}>
+                      <option value={7}>7天VIP</option>
+                      <option value={30}>1个月VIP</option>
+                      <option value={180}>6个月VIP</option>
+                      <option value={365}>12个月VIP</option>
+                      <option value={0}>永久VIP</option>
+                    </select>
+                  </Field>
+                </div>
+                <Field label="操作原因">
+                  <input name="reason" required minLength={2} placeholder="例如：线下补单 / 售后补偿 / 违规取消" className={inputClass} />
+                </Field>
+                <div className="mt-4">
+                  <SubmitButton>保存 VIP 调整</SubmitButton>
+                </div>
+              </form>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <h3 className="mb-4 font-semibold">VIP 调整记录</h3>
+                <div className="space-y-3 text-sm text-[#8B95A7]">
+                  {user.vipAdjustments.length ? user.vipAdjustments.map((log) => (
+                    <p key={log.id}>
+                      {log.actionType} · {log.reason} · {log.admin.email ?? log.admin.id} · {log.createdAt.toLocaleString("zh-CN")}
+                    </p>
+                  )) : <p>暂无手动调整记录。</p>}
+                </div>
+              </div>
             </div>
           </div>
         ))}
