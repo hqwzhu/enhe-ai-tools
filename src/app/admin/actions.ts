@@ -16,6 +16,7 @@ import {
 } from "@/lib/admin-form";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
+import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
 import { manuallyAdjustVip } from "@/lib/membership";
 import { isLikelyUploadableImage } from "@/lib/media";
 import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely, isAdminDeleteRiskConfirmed } from "@/lib/order-rules";
@@ -226,7 +227,8 @@ export async function upsertFileAction(formData: FormData) {
 export async function upsertToolAction(formData: FormData) {
   await requireAdmin();
   const type = z.enum(["software", "online"]).parse(formData.get("type"));
-  const adminPath = type === "software" ? "/admin/software" : "/admin/online-tools";
+  const adminPath = getAdminToolBasePath(type);
+  let savedToolId = parseOptionalString(formData.get("id"));
 
   try {
     const id = parseOptionalString(formData.get("id"));
@@ -255,18 +257,21 @@ export async function upsertToolAction(formData: FormData) {
 
     if (id) {
       await prisma.tool.update({ where: { id }, data });
+      savedToolId = id;
     } else {
-      await prisma.tool.create({ data });
+      const created = await prisma.tool.create({ data });
+      savedToolId = created.id;
     }
     revalidatePath(adminPath);
     revalidatePath(type === "software" ? "/software" : "/online-tools");
     revalidatePath(`/tools/${data.slug}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存失败，请检查表单内容。";
-    redirect(`${adminPath}?error=${encodeURIComponent(message)}`);
+    const returnTo = parseOptionalString(formData.get("returnTo")) ?? adminPath;
+    redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
   }
 
-  redirect(`${adminPath}?saved=1`);
+  redirect(`${getAdminToolEditPath(type, savedToolId ?? "new")}?saved=1`);
 }
 
 export async function upsertToolTagAction(formData: FormData) {
@@ -316,8 +321,10 @@ export async function deleteToolAction(formData: FormData) {
   await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
   const type = z.enum(["software", "online"]).parse(formData.get("type"));
+  const adminPath = getAdminToolBasePath(type);
   await prisma.tool.delete({ where: { id } });
-  revalidatePath(type === "software" ? "/admin/software" : "/admin/online-tools");
+  revalidatePath(adminPath);
+  redirect(`${adminPath}?deleted=1`);
 }
 
 export async function upsertTutorialAction(formData: FormData) {
