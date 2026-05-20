@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui";
 import { getLegalPage, legalPages } from "@/lib/legal";
+import { getCurrentLocale } from "@/lib/i18n";
 
 export function generateStaticParams() {
   return legalPages.map((page) => ({ slug: page.slug }));
@@ -8,7 +9,8 @@ export function generateStaticParams() {
 
 export default async function LegalPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const page = getLegalPage(slug);
+  const locale = await getCurrentLocale();
+  const page = getLegalPage(slug, locale);
   if (!page) notFound();
 
   return (
