@@ -2,7 +2,7 @@ import { Crown } from "lucide-react";
 import { createOrderAction } from "@/app/actions";
 import { Container, SectionTitle } from "@/components/ui";
 import { prisma } from "@/lib/db";
-import { getCurrentLocale, getDictionary } from "@/lib/i18n";
+import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function PricingPage() {
@@ -20,8 +20,10 @@ export default async function PricingPage() {
           <form key={plan.id} action={createOrderAction} className="glass relative rounded-2xl p-6">
             {plan.isRecommended ? <div className="absolute -top-3 left-5 rounded-full bg-[#FFB86B] px-3 py-1 text-xs font-semibold text-[#120904]">{t.pricing.recommended}</div> : null}
             <Crown className="mb-5 text-[#FFB86B]" />
-            <h2 className="text-xl font-semibold">{plan.name}</h2>
-            <p className="mt-3 min-h-12 text-sm leading-6 text-[#8B95A7]">{plan.description}</p>
+            <h2 className="text-xl font-semibold">{formatPlanName(plan.name, plan.durationDays, locale)}</h2>
+            <p className="mt-3 min-h-12 text-sm leading-6 text-[#8B95A7]">
+              {formatPlanDescription(plan.description, plan.durationDays, locale)}
+            </p>
             <div className="mt-6">
               <span className="text-3xl font-semibold text-[#FFB86B]">{formatCurrency(plan.price.toString())}</span>
               {plan.originalPrice ? <span className="ml-2 text-sm text-[#8B95A7] line-through">{formatCurrency(plan.originalPrice.toString())}</span> : null}
@@ -37,4 +39,20 @@ export default async function PricingPage() {
       </div>
     </Container>
   );
+}
+
+function formatPlanName(name: string, durationDays: number, locale: Locale) {
+  if (locale === "zh") return name;
+  if (!durationDays || durationDays >= 36500) return "Lifetime VIP";
+  if (durationDays % 30 === 0) return `${durationDays / 30}-Month VIP`;
+  return `${durationDays}-Day VIP`;
+}
+
+function formatPlanDescription(description: string | null, durationDays: number, locale: Locale) {
+  const t = getDictionary(locale);
+  if (locale === "zh") return description ?? t.pricing.planDescription;
+  const duration = !durationDays || durationDays >= 36500
+    ? t.pricing.lifetimeNote
+    : t.pricing.durationNote.replace("{days}", String(durationDays));
+  return `${duration}. ${t.pricing.planDescription}`;
 }
