@@ -6,7 +6,8 @@ import {
   getSecureFileDownloadUrl,
   isCosStorageConfigured,
   isUploadExtensionAllowed,
-  parseCosFilePath
+  parseCosFilePath,
+  resolveDeletableLocalUploadPath
 } from "@/lib/storage";
 
 describe("storage helpers", () => {
@@ -83,5 +84,15 @@ describe("storage helpers", () => {
     expect(getCosSignedUrlExpiresSeconds({ TENCENT_COS_SIGNED_URL_EXPIRES_SECONDS: "900" })).toBe(900);
     expect(getCosSignedUrlExpiresSeconds({ TENCENT_COS_SIGNED_URL_EXPIRES_SECONDS: "-1" })).toBe(600);
     expect(getCosSignedUrlExpiresSeconds({})).toBe(600);
+  });
+
+  it("resolves only local upload paths for physical deletion", () => {
+    const cwd = process.cwd();
+    const env = { UPLOAD_DIR: "public/uploads" };
+    expect(resolveDeletableLocalUploadPath("cos://bucket/app.zip", env, cwd)).toBeNull();
+    expect(resolveDeletableLocalUploadPath("C:/Windows/system32/app.zip", env, cwd)).toBeNull();
+    expect(resolveDeletableLocalUploadPath("/uploads/app.zip", env, cwd)?.replace(/\\/g, "/")).toContain(
+      "/public/uploads/app.zip"
+    );
   });
 });

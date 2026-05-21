@@ -27,7 +27,7 @@ import {
   isAdminDeleteRiskConfirmed,
   normalizeRefundRecordAmount
 } from "@/lib/order-rules";
-import { saveUploadedFile } from "@/lib/storage";
+import { deleteStoredLocalFileIfSafe, saveUploadedFile } from "@/lib/storage";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
@@ -400,6 +400,59 @@ export async function upsertFileAction(formData: FormData) {
     metadata: { toolId, fileName: data.fileName }
   });
   revalidatePath("/admin/files");
+}
+
+export async function deleteFileAdminAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const file = await prisma.file.findUnique({ where: { id } });
+  if (!file) {
+    redirect(`/admin/files?error=${encodeURIComponent("文件不存在，可能已经被删除。")}`);
+  }
+
+  const [primaryBindings, downloadLogs] = await prisma.$transaction([
+    prisma.tool.updateMany({ where: { downloadFileId: id }, data: { downloadFileId: null } }),
+    prisma.downloadLog.deleteMany({ where: { fileId: id } }),
+    prisma.file.delete({ where: { id } })
+  ]);
+
+  let physicalDeleted = false;
+  try {
+    physicalDeleted = await deleteStoredLocalFileIfSafe(file.filePath);
+  } catch (error) {
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: "file.delete.local_failed",
+      targetType: "file",
+      targetId: id,
+      summary: "Deleted file record, but local physical file deletion failed.",
+      metadata: {
+        fileName: file.fileName,
+        filePath: file.filePath,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    });
+  }
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "file.delete",
+    targetType: "file",
+    targetId: id,
+    summary: "Deleted file record and cleaned related bindings.",
+    metadata: {
+      fileName: file.fileName,
+      filePath: file.filePath,
+      primaryBindings: primaryBindings.count,
+      downloadLogs: downloadLogs.count,
+      physicalDeleted
+    }
+  });
+
+  revalidatePath("/admin/files");
+  revalidatePath("/admin/software");
+  revalidatePath("/admin/online-tools");
+  redirect("/admin/files?deleted=1");
 }
 
 export async function upsertToolAction(formData: FormData) {

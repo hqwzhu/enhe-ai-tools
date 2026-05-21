@@ -1,5 +1,5 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, extname, join } from "node:path";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
+import { dirname, extname, join, resolve, sep } from "node:path";
 import { buildPublicUploadUrl } from "@/lib/admin-form";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
@@ -74,6 +74,30 @@ export function getAllowedUploadExtensions(env: StorageEnv = process.env) {
 export function isUploadExtensionAllowed(fileName: string, allowedExtensions = getAllowedUploadExtensions()) {
   const extension = extname(fileName).toLowerCase();
   return Boolean(extension && allowedExtensions.includes(extension));
+}
+
+export function resolveDeletableLocalUploadPath(filePath: string, env: StorageEnv = process.env, cwd = process.cwd()) {
+  if (!filePath || parseCosFilePath(filePath)) return null;
+
+  const uploadRoot = resolve(cwd, env.UPLOAD_DIR ?? join("public", "uploads"));
+  const candidate = filePath.startsWith("/uploads/")
+    ? resolve(getUploadDiskPath(filePath, cwd, env.UPLOAD_DIR))
+    : resolve(cwd, filePath);
+
+  if (candidate === uploadRoot || candidate.startsWith(`${uploadRoot}${sep}`)) return candidate;
+  return null;
+}
+
+export async function deleteStoredLocalFileIfSafe(filePath: string, env: StorageEnv = process.env, cwd = process.cwd()) {
+  const target = resolveDeletableLocalUploadPath(filePath, env, cwd);
+  if (!target) return false;
+  try {
+    await unlink(target);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+    throw error;
+  }
 }
 
 function sanitizeFileName(fileName: string) {

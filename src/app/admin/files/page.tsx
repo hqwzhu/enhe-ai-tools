@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/db";
-import { uploadFileAdminAction, upsertFileAction } from "@/app/admin/actions";
+import { deleteFileAdminAction, uploadFileAdminAction, upsertFileAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
 
 export default async function AdminFilesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
   const [files, tools] = await Promise.all([
-    prisma.file.findMany({ include: { tool: true }, orderBy: { createdAt: "desc" } }),
+    prisma.file.findMany({ include: { tool: true, primaryFor: true }, orderBy: { createdAt: "desc" } }),
     prisma.tool.findMany({ orderBy: { name: "asc" } })
   ]);
+
   return (
     <AdminSection title="文件管理" intro="上传后会自动创建文件记录；配置腾讯云 COS 环境变量后会上传到 COS，否则落到本地 uploads 目录。">
       {params.uploaded ? (
@@ -15,11 +16,17 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
           上传成功，已自动创建文件记录。
         </p>
       ) : null}
-      {params.error ? (
-        <p className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">
-          上传失败：{params.error}
+      {params.deleted ? (
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
+          文件已删除，并已清理相关下载绑定。
         </p>
       ) : null}
+      {params.error ? (
+        <p className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+          操作失败：{params.error}
+        </p>
+      ) : null}
+
       <div className="glass mb-8 rounded-2xl p-6">
         <h2 className="text-xl font-semibold">上传文件</h2>
         <form action={uploadFileAdminAction} className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
@@ -28,10 +35,17 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
         </form>
         <p className="mt-3 text-xs text-[#8B95A7]">推荐软件安装包命名包含工具名和版本号。COS 环境变量完整时自动使用 COS。</p>
       </div>
+
       <FileForm tools={tools} />
+
       <div className="mt-8 space-y-3">
         {files.map((file) => (
           <div key={file.id} className="glass rounded-2xl p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[#8B95A7]">
+              <span>{file.primaryFor ? `作为下载文件：${file.primaryFor.name}` : "未作为主下载文件"}</span>
+              <span>{file.createdAt.toLocaleString("zh-CN")}</span>
+            </div>
+
             <form action={upsertFileAction} className="grid gap-3 md:grid-cols-2">
               <input type="hidden" name="id" value={file.id} />
               <Field label="文件名"><input name="fileName" defaultValue={file.fileName} className={inputClass} /></Field>
@@ -47,6 +61,16 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
               <Field label="MIME"><input name="mimeType" defaultValue={file.mimeType ?? ""} className={inputClass} /></Field>
               <Field label="大小 bytes"><input name="fileSize" type="number" defaultValue={file.fileSize?.toString() ?? ""} className={inputClass} /></Field>
               <div className="flex items-end"><SubmitButton>保存文件</SubmitButton></div>
+            </form>
+
+            <form action={deleteFileAdminAction} className="mt-4 border-t border-white/10 pt-4">
+              <input type="hidden" name="id" value={file.id} />
+              <button className="rounded-full border border-red-400/40 px-4 py-2 text-sm text-red-200 transition hover:border-red-300 hover:bg-red-400/10">
+                删除文件
+              </button>
+              <span className="ml-3 text-xs text-[#8B95A7]">
+                删除时会解绑作为下载文件使用的工具，并清理该文件的下载记录。
+              </span>
             </form>
           </div>
         ))}
