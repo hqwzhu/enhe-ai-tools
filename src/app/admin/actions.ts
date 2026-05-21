@@ -20,6 +20,7 @@ import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-rou
 import { manuallyAdjustVip } from "@/lib/membership";
 import { isLikelyUploadableImage } from "@/lib/media";
 import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely, isAdminDeleteRiskConfirmed } from "@/lib/order-rules";
+import { saveUploadedFile } from "@/lib/storage";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
@@ -202,6 +203,35 @@ export async function upsertVipPlanAction(formData: FormData) {
   revalidatePath("/pricing");
 }
 
+export async function uploadFileAdminAction(formData: FormData) {
+  await requireAdmin();
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    redirect(`/admin/files?error=${encodeURIComponent("请选择要上传的文件。")}`);
+  }
+
+  try {
+    const stored = await saveUploadedFile(file, {
+      folder: "files",
+      maxBytes: 500 * 1024 * 1024
+    });
+    const record = await prisma.file.create({
+      data: {
+        fileName: stored.fileName,
+        filePath: stored.filePath,
+        fileUrl: stored.fileUrl,
+        fileSize: BigInt(stored.fileSize),
+        mimeType: stored.mimeType
+      }
+    });
+    revalidatePath("/admin/files");
+    redirect(`/admin/files?uploaded=1&fileId=${record.id}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "上传失败，请稍后重试。";
+    redirect(`/admin/files?error=${encodeURIComponent(message)}`);
+  }
+}
+
 export async function upsertFileAction(formData: FormData) {
   await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
@@ -337,6 +367,8 @@ export async function upsertTutorialAction(formData: FormData) {
     content: z.string().min(1).parse(formData.get("content")),
     imageUrl: parseOptionalString(formData.get("imageUrl")),
     videoUrl: parseOptionalString(formData.get("videoUrl")),
+    notes: parseOptionalString(formData.get("notes")),
+    commonErrors: parseOptionalString(formData.get("commonErrors")),
     sortOrder: parseNumberField(formData.get("sortOrder"), 0),
     status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active")
   };

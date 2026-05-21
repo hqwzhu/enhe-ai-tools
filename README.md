@@ -38,9 +38,9 @@ npm run dev
 ## Docker 部署
 
 ```bash
-docker compose up -d --build
-docker compose exec app npx prisma migrate deploy
-docker compose exec app npx prisma db seed
+docker compose -f deploy/docker-compose.local.yml up -d --build
+docker compose -f deploy/docker-compose.local.yml exec app npx prisma migrate deploy
+docker compose -f deploy/docker-compose.local.yml exec app npx prisma db seed
 ```
 
 腾讯云部署时建议：
@@ -49,6 +49,7 @@ docker compose exec app npx prisma db seed
 - PostgreSQL 可使用同机容器或腾讯云数据库。
 - 上传文件第一版可落本地或 COS URL，正式上线建议接入腾讯云 COS 直传。
 - 将 `docker/nginx.conf` 放入 Nginx 配置，反代到 `app:3000` 或服务器本机 `127.0.0.1:3000`。
+- 根目录不再放置 `docker-compose.yml`，避免服务器在项目根目录误执行默认 Compose。腾讯云独立部署请使用 `deploy/enhe-ai-tools/docker-compose.yml`。
 
 ## 权限说明
 

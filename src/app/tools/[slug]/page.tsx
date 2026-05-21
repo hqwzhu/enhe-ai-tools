@@ -89,6 +89,18 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                   <p className="text-sm text-[#48F5D3]">STEP {index + 1}</p>
                   <h3 className="mt-2 text-xl font-semibold">{tutorial.title}</h3>
                   <p className="mt-3 leading-7 text-[#8B95A7]">{tutorial.content}</p>
+                  {tutorial.notes ? (
+                    <div className="mt-4 rounded-xl border border-[#48F5D3]/20 bg-[#48F5D3]/8 p-4">
+                      <p className="text-sm font-semibold text-[#48F5D3]">注意事项</p>
+                      <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#8B95A7]">{tutorial.notes}</p>
+                    </div>
+                  ) : null}
+                  {tutorial.commonErrors ? (
+                    <div className="mt-4 rounded-xl border border-[#FFB86B]/20 bg-[#FFB86B]/8 p-4">
+                      <p className="text-sm font-semibold text-[#FFB86B]">常见错误</p>
+                      <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#8B95A7]">{tutorial.commonErrors}</p>
+                    </div>
+                  ) : null}
                   {tutorial.videoUrl ? <p className="mt-3 text-sm text-[#A78BFA]">{tutorial.videoUrl}</p> : null}
                 </div>
               ))}
@@ -122,7 +134,9 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
             <div className="space-y-3">
               {tool.comments.map((comment) => (
                 <div key={comment.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-sm text-[#8B95A7]">{comment.user.nickname ?? comment.user.email}</p>
+                  <p className="text-sm text-[#8B95A7]">
+                    {comment.user.nickname ?? comment.user.email} {comment.isPinned ? <span className="text-[#FFB86B]">· 置顶</span> : null}
+                  </p>
                   <p className="mt-2 leading-7">{comment.content}</p>
                 </div>
               ))}

@@ -5,7 +5,18 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { createOrderNo } from "@/lib/order";
-import { getCurrentUser, hashPassword, requireAdmin, requireUser, signInUser, signOutUser, verifyPassword } from "@/lib/auth";
+import {
+  assertLoginNotLimited,
+  getCurrentUser,
+  hashPassword,
+  recordLoginAttempt,
+  requireAdmin,
+  requireUser,
+  signInUser,
+  signOutUser,
+  verifyPassword
+} from "@/lib/auth";
+import { assertValidCsrfToken } from "@/lib/csrf";
 import { activateVipForOrder } from "@/lib/membership";
 import { canUserCancelOrder } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
@@ -16,6 +27,7 @@ const accountSchema = z.object({
 });
 
 export async function registerAction(formData: FormData) {
+  await assertValidCsrfToken(formData.get("csrfToken"));
   const input = accountSchema.parse({
     email: formData.get("email"),
     password: formData.get("password")
@@ -35,14 +47,18 @@ export async function registerAction(formData: FormData) {
 }
 
 export async function loginAction(formData: FormData) {
+  await assertValidCsrfToken(formData.get("csrfToken"));
   const input = accountSchema.parse({
     email: formData.get("email"),
     password: formData.get("password")
   });
+  await assertLoginNotLimited(input.email);
   const user = await prisma.user.findUnique({ where: { email: input.email } });
   if (!user || user.status !== "active" || !(await verifyPassword(input.password, user.passwordHash))) {
+    await recordLoginAttempt(input.email, false);
     redirect("/login?message=invalid");
   }
+  await recordLoginAttempt(input.email, true);
   await signInUser(user.id);
   redirect(user.role === "admin" ? "/admin" : "/user");
 }
@@ -160,6 +176,7 @@ export async function cancelOrderAction(formData: FormData) {
   });
 
   revalidatePath("/user");
+  redirect("/user?order=cancelled");
 }
 
 export async function createCommentAction(formData: FormData) {
@@ -193,6 +210,15 @@ export async function updateCommentStatusAction(formData: FormData) {
   const status = z.enum(["approved", "rejected", "deleted"]).parse(formData.get("status"));
   await prisma.comment.update({ where: { id }, data: { status } });
   revalidatePath("/admin/comments");
+}
+
+export async function updateCommentPinAction(formData: FormData) {
+  await requireAdmin();
+  const id = z.string().min(1).parse(formData.get("id"));
+  const isPinned = String(formData.get("isPinned")) === "true";
+  const comment = await prisma.comment.update({ where: { id }, data: { isPinned }, include: { tool: true } });
+  revalidatePath("/admin/comments");
+  revalidatePath(`/tools/${comment.tool.slug}`);
 }
 
 export async function getSessionSnapshot() {

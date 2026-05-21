@@ -15,6 +15,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
   const locale = await getCurrentLocale();
   const t = getDictionary(locale);
   const passwordMessage = getPasswordMessage(params.password, locale);
+  const orderMessage = params.order === "cancelled" ? (locale === "en" ? "Order cancelled." : "订单已取消。") : null;
   const user = await requireUser();
   const [membership, orders, downloads, usages, comments] = await Promise.all([
     getActiveMembership(user.id),
@@ -51,6 +52,11 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
           <button className="rounded-full border border-white/12 px-5 py-3 text-sm">{t.userCenter.logout}</button>
         </form>
       </div>
+      {orderMessage ? (
+        <p className="mb-6 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
+          {orderMessage}
+        </p>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside className="space-y-4">

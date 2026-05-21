@@ -99,6 +99,7 @@ model User {
   toolPurchases   ToolPurchase[]
   vipAdjustments   VipAdjustmentLog[] @relation("VipAdjustmentTarget")
   vipOperations    VipAdjustmentLog[] @relation("VipAdjustmentAdmin")
+  sessions         Session[]
 
   @@map("users")
 }
@@ -278,6 +279,8 @@ model Tutorial {
   content   String
   imageUrl  String?       @map("image_url")
   videoUrl  String?       @map("video_url")
+  notes     String?
+  commonErrors String?    @map("common_errors")
   sortOrder Int           @default(0) @map("sort_order")
   status    ContentStatus @default(active)
   createdAt DateTime      @default(now()) @map("created_at")
@@ -421,4 +424,33 @@ model VipAdjustmentLog {
   @@index([userId, createdAt])
   @@index([adminId, createdAt])
   @@map("vip_adjustment_logs")
+}
+
+model Session {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  tokenHash  String    @unique @map("token_hash")
+  userAgent  String?   @map("user_agent")
+  ip         String?
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model LoginAttempt {
+  id         String   @id @default(cuid())
+  identifier String
+  ip         String?
+  success    Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([identifier, createdAt])
+  @@index([ip, createdAt])
+  @@map("login_attempts")
 }

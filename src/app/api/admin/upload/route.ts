@@ -1,11 +1,9 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { NextResponse } from "next/server";
-import { buildPublicUploadUrl } from "@/lib/admin-form";
 import { requireAdmin } from "@/lib/auth";
-import { getUploadDiskPath } from "@/lib/upload-path";
+import { prisma } from "@/lib/db";
+import { saveUploadedFile } from "@/lib/storage";
 
-const maxUploadBytes = 50 * 1024 * 1024;
+const maxUploadBytes = 500 * 1024 * 1024;
 
 export async function POST(request: Request) {
   await requireAdmin();
@@ -17,22 +15,31 @@ export async function POST(request: Request) {
   }
 
   if (file.size > maxUploadBytes) {
-    return NextResponse.json({ message: "文件超过 50MB，本地开发上传被拒绝" }, { status: 413 });
+    return NextResponse.json({ message: "文件超过 500MB，请使用 COS 或分片上传方案。" }, { status: 413 });
   }
 
-  const publicUrl = buildPublicUploadUrl(file.name);
-  const uploadDir = process.env.UPLOAD_DIR ?? join(process.cwd(), "public", "uploads");
-  const diskPath = getUploadDiskPath(publicUrl, process.cwd(), process.env.UPLOAD_DIR);
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(diskPath, Buffer.from(await file.arrayBuffer()));
+  const stored = await saveUploadedFile(file, {
+    folder: "files",
+    maxBytes: maxUploadBytes
+  });
+  const record = await prisma.file.create({
+    data: {
+      fileName: stored.fileName,
+      filePath: stored.filePath,
+      fileUrl: stored.fileUrl,
+      fileSize: BigInt(stored.fileSize),
+      mimeType: stored.mimeType
+    }
+  });
 
   return NextResponse.json({
-    fileName: file.name,
-    filePath: diskPath,
-    fileUrl: publicUrl,
-    fileSize: file.size,
-    mimeType: file.type || "application/octet-stream",
-    storage: "local",
-    cosReady: Boolean(process.env.TENCENT_COS_BUCKET && process.env.TENCENT_COS_REGION)
+    id: record.id,
+    fileName: record.fileName,
+    filePath: record.filePath,
+    fileUrl: record.fileUrl,
+    fileSize: record.fileSize?.toString(),
+    mimeType: record.mimeType,
+    storage: stored.storage,
+    message: "上传成功，已自动创建文件记录。"
   });
 }

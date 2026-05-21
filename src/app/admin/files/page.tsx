@@ -1,21 +1,32 @@
 import { prisma } from "@/lib/db";
-import { upsertFileAction } from "@/app/admin/actions";
+import { uploadFileAdminAction, upsertFileAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
 
-export default async function AdminFilesPage() {
+export default async function AdminFilesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const params = await searchParams;
   const [files, tools] = await Promise.all([
     prisma.file.findMany({ include: { tool: true }, orderBy: { createdAt: "desc" } }),
     prisma.tool.findMany({ orderBy: { name: "asc" } })
   ]);
   return (
-    <AdminSection title="文件管理" intro="文件表已预留本地路径、公开 URL、版本、大小、MIME 与腾讯云 COS 接入字段。可先用 /admin/upload 上传到本地 uploads 目录。">
+    <AdminSection title="文件管理" intro="上传后会自动创建文件记录；配置腾讯云 COS 环境变量后会上传到 COS，否则落到本地 uploads 目录。">
+      {params.uploaded ? (
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
+          上传成功，已自动创建文件记录。
+        </p>
+      ) : null}
+      {params.error ? (
+        <p className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+          上传失败：{params.error}
+        </p>
+      ) : null}
       <div className="glass mb-8 rounded-2xl p-6">
         <h2 className="text-xl font-semibold">上传文件</h2>
-        <form action="/api/admin/upload" method="post" encType="multipart/form-data" className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
+        <form action={uploadFileAdminAction} encType="multipart/form-data" className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
           <input name="file" type="file" required className={inputClass} />
-          <button className="rounded-full bg-[#48F5D3] px-5 py-3 text-sm font-semibold text-[#05110e]">上传到本地</button>
+          <button className="rounded-full bg-[#48F5D3] px-5 py-3 text-sm font-semibold text-[#05110e]">上传并创建记录</button>
         </form>
-        <p className="mt-3 text-xs text-[#8B95A7]">上传成功会返回 JSON，复制其中 url 到下方文件 URL；COS 正式接入时替换同一字段即可。</p>
+        <p className="mt-3 text-xs text-[#8B95A7]">推荐软件安装包命名包含工具名和版本号。COS 环境变量完整时自动使用 COS。</p>
       </div>
       <FileForm tools={tools} />
       <div className="mt-8 space-y-3">

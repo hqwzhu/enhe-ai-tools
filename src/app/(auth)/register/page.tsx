@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { registerAction } from "@/app/actions";
 import { Container } from "@/components/ui";
+import { getOrCreateCsrfToken } from "@/lib/csrf";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 
 export default async function RegisterPage() {
   const locale = await getCurrentLocale();
   const t = getDictionary(locale);
+  const csrfToken = await getOrCreateCsrfToken();
 
   return (
     <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
       <form action={registerAction} className="glass w-full max-w-md rounded-2xl p-8">
+        <input type="hidden" name="csrfToken" value={csrfToken} />
         <h1 className="text-3xl font-semibold">{t.auth.registerTitle}</h1>
         <p className="mt-3 text-sm text-[#8B95A7]">{t.auth.registerIntro}</p>
         <label className="mt-8 block text-sm">{t.auth.email}</label>

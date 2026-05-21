@@ -5,4 +5,4 @@ APP_DIR="/opt/enhe-ai-tools"
 SERVICE="${1:-app}"
 
 cd "$APP_DIR"
-docker compose logs -f "$SERVICE"
+docker compose -f deploy/enhe-ai-tools/docker-compose.yml logs -f "$SERVICE"

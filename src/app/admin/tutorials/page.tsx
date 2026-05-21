@@ -32,6 +32,8 @@ function TutorialForm({
     content: string;
     imageUrl: string | null;
     videoUrl: string | null;
+    notes: string | null;
+    commonErrors: string | null;
     sortOrder: number;
     status: string;
   };
@@ -57,6 +59,8 @@ function TutorialForm({
         </select>
       </Field>
       <Field label="教程正文" className="md:col-span-2"><textarea name="content" required defaultValue={tutorial?.content ?? ""} className={textareaClass} /></Field>
+      <Field label="注意事项" className="md:col-span-2"><textarea name="notes" defaultValue={tutorial?.notes ?? ""} className={textareaClass} /></Field>
+      <Field label="常见错误" className="md:col-span-2"><textarea name="commonErrors" defaultValue={tutorial?.commonErrors ?? ""} className={textareaClass} /></Field>
       <div className="md:col-span-2"><SubmitButton>{tutorial ? "保存教程" : "新增教程"}</SubmitButton></div>
     </form>
   );

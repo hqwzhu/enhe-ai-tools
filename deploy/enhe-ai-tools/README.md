@@ -30,15 +30,12 @@ sudo mkdir -p /opt/enhe-ai-tools
 sudo chown -R $USER:$USER /opt/enhe-ai-tools
 ```
 
-把项目代码放到 `/opt/enhe-ai-tools` 后，复制独立部署文件到项目根目录：
+把项目代码放到 `/opt/enhe-ai-tools` 后，复制环境变量示例即可。不要把 Compose 文件复制到项目根目录，避免误用默认 `docker compose` 影响已有项目：
 
 ```bash
 cd /opt/enhe-ai-tools
-cp deploy/enhe-ai-tools/Dockerfile ./Dockerfile
-cp deploy/enhe-ai-tools/docker-compose.yml ./docker-compose.yml
 cp deploy/enhe-ai-tools/.env.example ./.env
-cp -r deploy/enhe-ai-tools/scripts ./scripts
-chmod +x ./scripts/*.sh
+chmod +x deploy/enhe-ai-tools/scripts/*.sh
 ```
 
 ## 配置环境变量
@@ -64,14 +61,14 @@ NEXT_PUBLIC_APP_URL=http://服务器IP:3001
 推荐使用脚本：
 
 ```bash
-/opt/enhe-ai-tools/scripts/enhe-start.sh
+/opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/enhe-start.sh
 ```
 
 等价命令：
 
 ```bash
 cd /opt/enhe-ai-tools
-docker compose up -d --build
+docker compose -f deploy/enhe-ai-tools/docker-compose.yml up -d --build
 ```
 
 App 容器启动时会自动执行：
@@ -85,7 +82,7 @@ npx prisma migrate deploy
 如果需要默认管理员、演示用户、套餐和示例工具：
 
 ```bash
-/opt/enhe-ai-tools/scripts/enhe-seed.sh
+/opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/enhe-seed.sh
 ```
 
 默认账号：
@@ -125,20 +122,20 @@ curl http://127.0.0.1:3001/api/health
 查看 App 日志：
 
 ```bash
-/opt/enhe-ai-tools/scripts/enhe-logs.sh app
+/opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/enhe-logs.sh app
 ```
 
 查看数据库日志：
 
 ```bash
-/opt/enhe-ai-tools/scripts/enhe-logs.sh db
+/opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/enhe-logs.sh db
 ```
 
 查看容器状态：
 
 ```bash
 cd /opt/enhe-ai-tools
-docker compose ps
+docker compose -f deploy/enhe-ai-tools/docker-compose.yml ps
 ```
 
 ## 端口验收清单
@@ -158,7 +155,7 @@ ss -lntp | grep -E ':80|:3000|:3001|:8000|:5432|:6379'
 检查 Compose 文件没有宿主机数据库映射：
 
 ```bash
-grep -n '5432:5432' /opt/enhe-ai-tools/docker-compose.yml || echo 'OK: no host postgres port mapping'
+grep -n '5432:5432' /opt/enhe-ai-tools/deploy/enhe-ai-tools/docker-compose.yml || echo 'OK: no host postgres port mapping'
 ```
 
 ## 停止新项目
@@ -166,7 +163,7 @@ grep -n '5432:5432' /opt/enhe-ai-tools/docker-compose.yml || echo 'OK: no host p
 只停止恩禾项目：
 
 ```bash
-/opt/enhe-ai-tools/scripts/enhe-stop.sh
+/opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/enhe-stop.sh
 ```
 
 不要执行会影响全局 Docker 的清理命令，例如：

@@ -4,4 +4,4 @@ set -eu
 APP_DIR="/opt/enhe-ai-tools"
 
 cd "$APP_DIR"
-docker compose exec app npx prisma db seed
+docker compose -f deploy/enhe-ai-tools/docker-compose.yml exec app npx prisma db seed
