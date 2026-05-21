@@ -170,7 +170,7 @@ export function ToolEditor({
 
       <NoticeBar notice={notice} />
 
-      <form action={upsertToolAction} encType="multipart/form-data" className="glass mt-8 grid gap-4 rounded-2xl p-6 md:grid-cols-2">
+      <form action={upsertToolAction} className="glass mt-8 grid gap-4 rounded-2xl p-6 md:grid-cols-2">
         {tool ? <input type="hidden" name="id" value={tool.id} /> : null}
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="returnTo" value={editorPath} />
