@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
 import { getActiveMembership } from "@/lib/membership";
 import { canUserCancelOrder } from "@/lib/order-rules";
+import { buildUserToolEntitlements, type UserEntitlementTool } from "@/lib/user-entitlements";
 import { formatCurrency } from "@/lib/utils";
 
 type UserCenterSearchParams = Promise<Record<string, string | undefined>>;
@@ -17,7 +18,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
   const passwordMessage = getPasswordMessage(params.password, locale);
   const orderMessage = params.order === "cancelled" ? (locale === "en" ? "Order cancelled." : "订单已取消。") : null;
   const user = await requireUser();
-  const [membership, orders, downloads, usages, comments] = await Promise.all([
+  const [membership, orders, downloads, usages, comments, purchases, publishedTools] = await Promise.all([
     getActiveMembership(user.id),
     prisma.order.findMany({
       where: { userId: user.id },
@@ -41,8 +42,24 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
       include: { tool: true },
       orderBy: { createdAt: "desc" },
       take: 10
+    }),
+    prisma.toolPurchase.findMany({
+      where: { userId: user.id },
+      select: { toolId: true }
+    }),
+    prisma.tool.findMany({
+      where: {
+        status: "published",
+        OR: [{ type: "software" }, { type: "online" }]
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
     })
   ]);
+  const entitlementSummary = buildUserToolEntitlements({
+    hasVip: Boolean(membership),
+    purchasedToolIds: purchases.map((purchase) => purchase.toolId),
+    tools: publishedTools
+  });
 
   return (
     <Container className="py-14">
@@ -136,6 +153,33 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
             </div>
           </Panel>
 
+          <Panel title={t.userCenter.availableSoftware}>
+            <ToolAccessList
+              tools={entitlementSummary.downloadableSoftware}
+              emptyText={t.userCenter.noAvailableSoftware}
+              locale={locale}
+              action="download"
+            />
+          </Panel>
+
+          <Panel title={t.userCenter.purchasedSoftware}>
+            <ToolAccessList
+              tools={entitlementSummary.purchasedSoftware}
+              emptyText={t.userCenter.noPurchasedSoftware}
+              locale={locale}
+              action="details"
+            />
+          </Panel>
+
+          <Panel title={t.userCenter.availableOnlineTools}>
+            <ToolAccessList
+              tools={entitlementSummary.availableOnlineTools}
+              emptyText={t.userCenter.noAvailableOnlineTools}
+              locale={locale}
+              action="use"
+            />
+          </Panel>
+
           <Panel title={t.userCenter.downloads}>
             {downloads.length ? (
               downloads.map((log) => (
@@ -188,6 +232,69 @@ function Panel({ title, children }: React.PropsWithChildren<{ title: string }>) 
 
 function EmptyText({ children }: React.PropsWithChildren) {
   return <p className="text-sm text-[#8B95A7]">{children}</p>;
+}
+
+function ToolAccessList({
+  tools,
+  emptyText,
+  locale,
+  action
+}: {
+  tools: UserEntitlementTool[];
+  emptyText: string;
+  locale: Locale;
+  action: "download" | "use" | "details";
+}) {
+  const t = getDictionary(locale);
+  if (!tools.length) return <EmptyText>{emptyText}</EmptyText>;
+
+  return (
+    <div className="divide-y divide-white/10">
+      {tools.map((tool) => (
+        <div key={tool.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+          <div>
+            <Link href={`/tools/${tool.slug}`} className="font-semibold text-[#E8EEF8] transition hover:text-[#48F5D3]">
+              {tool.name}
+            </Link>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#8B95A7]">
+              <span className="rounded-full border border-white/10 px-2 py-1">
+                {tool.isVipRequired ? t.userCenter.vipAccess : t.userCenter.freeAccess}
+              </span>
+              {tool.isDownloadPaid ? (
+                <span className="rounded-full border border-[#FFB86B]/30 px-2 py-1 text-[#FFB86B]">
+                  {t.userCenter.paidDownloadAccess}
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <ToolAccessAction tool={tool} action={action} locale={locale} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ToolAccessAction({
+  tool,
+  action,
+  locale
+}: {
+  tool: UserEntitlementTool;
+  action: "download" | "use" | "details";
+  locale: Locale;
+}) {
+  const t = getDictionary(locale);
+  const className = "rounded-full border border-white/12 px-4 py-2 text-xs font-semibold transition hover:border-[#48F5D3]/60 hover:text-[#48F5D3]";
+
+  if (action === "download") {
+    return <a href={`/api/tools/${tool.id}/download`} className={className}>{t.userCenter.downloadNow}</a>;
+  }
+
+  if (action === "use") {
+    return <a href={`/api/tools/${tool.id}/use`} className={className}>{t.userCenter.useNow}</a>;
+  }
+
+  return <Link href={`/tools/${tool.slug}`} className={className}>{t.userCenter.viewTool}</Link>;
 }
 
 function getPasswordMessage(value: string | undefined, locale: Locale) {

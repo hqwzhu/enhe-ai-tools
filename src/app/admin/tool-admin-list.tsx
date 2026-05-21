@@ -2,6 +2,7 @@ import Link from "next/link";
 import { deleteToolAction, upsertToolAction } from "@/app/admin/actions";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import { getAdminToolBasePath, getAdminToolEditPath, getAdminToolNewPath } from "@/lib/admin-tool-routes";
+import { getToolPublishIssues } from "@/lib/tool-publish-check";
 
 type AdminToolType = "software" | "online";
 
@@ -148,41 +149,58 @@ export function ToolAdminList({
       ) : null}
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
-        <div className="grid min-w-[900px] grid-cols-[1.6fr_0.9fr_0.7fr_0.8fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
+        <div className="grid min-w-[1080px] grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
           <span>工具</span>
           <span>分类</span>
           <span>状态</span>
           <span>权限/价格</span>
+          <span>上架检查</span>
           <span className="text-right">操作</span>
         </div>
 
         {tools.length === 0 ? (
           <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">暂无工具，先新增一个工具。</div>
         ) : (
-          <div className="min-w-[900px] divide-y divide-white/10">
-            {tools.map((tool) => (
-              <div key={tool.id} className="grid grid-cols-[1.6fr_0.9fr_0.7fr_0.8fr_0.6fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
-                <div>
-                  <p className="font-semibold text-[#E8EEF8]">{tool.name}</p>
-                  <p className="mt-1 text-xs text-[#8B95A7]">{tool.slug}</p>
+          <div className="min-w-[1080px] divide-y divide-white/10">
+            {tools.map((tool) => {
+              const publishIssues = getToolPublishIssues(tool);
+
+              return (
+                <div key={tool.id} className="grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
+                  <div>
+                    <p className="font-semibold text-[#E8EEF8]">{tool.name}</p>
+                    <p className="mt-1 text-xs text-[#8B95A7]">{tool.slug}</p>
+                  </div>
+                  <div className="text-[#C5D0E2]">{tool.category?.name ?? "未分类"}</div>
+                  <div>
+                    <Badge className={statusClass[tool.status] ?? statusClass.draft}>{statusText[tool.status] ?? tool.status}</Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {tool.isVipRequired ? <Badge className="border-[#7AA7FF]/30 bg-[#7AA7FF]/10 text-[#AFC8FF]">VIP</Badge> : <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">免费</Badge>}
+                    {type === "software" && tool.isDownloadPaid ? (
+                      <Badge className="border-[#FFB86B]/40 bg-[#FFB86B]/10 text-[#FFB86B]">{formatPrice(tool.downloadPrice)}</Badge>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {publishIssues.length ? (
+                      <>
+                        {publishIssues.slice(0, 3).map((issue) => (
+                          <Badge key={issue} className="border-[#FFB86B]/30 bg-[#FFB86B]/10 text-[#FFB86B]">{issue}</Badge>
+                        ))}
+                        {publishIssues.length > 3 ? <Badge className="border-white/15 bg-white/8 text-[#8B95A7]">+{publishIssues.length - 3}</Badge> : null}
+                      </>
+                    ) : (
+                      <Badge className="border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#48F5D3]">可上架</Badge>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <Link href={getAdminToolEditPath(type, tool.id)} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+                      查看/编辑
+                    </Link>
+                  </div>
                 </div>
-                <div className="text-[#C5D0E2]">{tool.category?.name ?? "未分类"}</div>
-                <div>
-                  <Badge className={statusClass[tool.status] ?? statusClass.draft}>{statusText[tool.status] ?? tool.status}</Badge>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {tool.isVipRequired ? <Badge className="border-[#7AA7FF]/30 bg-[#7AA7FF]/10 text-[#AFC8FF]">VIP</Badge> : <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">免费</Badge>}
-                  {type === "software" && tool.isDownloadPaid ? (
-                    <Badge className="border-[#FFB86B]/40 bg-[#FFB86B]/10 text-[#FFB86B]">{formatPrice(tool.downloadPrice)}</Badge>
-                  ) : null}
-                </div>
-                <div className="text-right">
-                  <Link href={getAdminToolEditPath(type, tool.id)} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
-                    查看/编辑
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
