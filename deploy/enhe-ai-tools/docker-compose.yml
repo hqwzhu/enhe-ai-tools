@@ -23,8 +23,8 @@ services:
 
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: deploy/enhe-ai-tools/Dockerfile
     container_name: enhe-ai-tools-app
     restart: unless-stopped
     depends_on:
