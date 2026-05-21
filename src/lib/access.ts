@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { userHasVip } from "@/lib/membership";
-import { canAccessVipTool } from "@/lib/access-rules";
+import { canAccessVipTool, DownloadRateLimitError, getDownloadRateLimitConfig, isDownloadRateLimitExceeded } from "@/lib/access-rules";
 
 async function assertBaseToolAccess(toolId: string) {
   const user = await getCurrentUser();
@@ -32,6 +32,19 @@ export async function assertDownloadAccess(toolId: string) {
       where: { userId_toolId: { userId: user.id, toolId: tool.id } }
     });
     if (!purchase) redirect(`/tools/${tool.slug}?download=pay-required`);
+  }
+
+  const rateLimit = getDownloadRateLimitConfig();
+  const windowStart = new Date(Date.now() - rateLimit.windowSeconds * 1000);
+  const recentDownloads = await prisma.downloadLog.count({
+    where: {
+      userId: user.id,
+      toolId: tool.id,
+      createdAt: { gte: windowStart }
+    }
+  });
+  if (isDownloadRateLimitExceeded(recentDownloads, rateLimit.max)) {
+    throw new DownloadRateLimitError("下载过于频繁，请稍后再试。");
   }
 
   await prisma.downloadLog.create({

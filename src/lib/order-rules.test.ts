@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely, canUserCancelOrder, isAdminDeleteRiskConfirmed } from "@/lib/order-rules";
+import {
+  assertAdminOrderStatusUpdateAllowed,
+  canAdminDeleteOrderSafely,
+  canRecordRefundForOrder,
+  canUserCancelOrder,
+  isAdminDeleteRiskConfirmed,
+  normalizeRefundRecordAmount
+} from "@/lib/order-rules";
 
 describe("order business rules", () => {
   it("allows users to cancel only pending or rejected orders", () => {
@@ -27,5 +34,21 @@ describe("order business rules", () => {
     expect(isAdminDeleteRiskConfirmed(null)).toBe(false);
     expect(isAdminDeleteRiskConfirmed("wrong")).toBe(false);
     expect(isAdminDeleteRiskConfirmed("DELETE_ACTIVATED_ORDER")).toBe(true);
+  });
+
+  it("allows refund records only for paid, activated, or already refunded orders", () => {
+    expect(canRecordRefundForOrder("paid")).toBe(true);
+    expect(canRecordRefundForOrder("activated")).toBe(true);
+    expect(canRecordRefundForOrder("refunded")).toBe(true);
+    expect(canRecordRefundForOrder("pending_payment")).toBe(false);
+    expect(canRecordRefundForOrder("pending_review")).toBe(false);
+    expect(canRecordRefundForOrder("cancelled")).toBe(false);
+    expect(canRecordRefundForOrder("rejected")).toBe(false);
+  });
+
+  it("normalizes refund record amounts without exceeding the order amount", () => {
+    expect(normalizeRefundRecordAmount("12.345", 20)).toBe(12.35);
+    expect(() => normalizeRefundRecordAmount("0", 20)).toThrow("Refund amount must be greater than 0.");
+    expect(() => normalizeRefundRecordAmount("21", 20)).toThrow("Refund amount cannot exceed order amount.");
   });
 });

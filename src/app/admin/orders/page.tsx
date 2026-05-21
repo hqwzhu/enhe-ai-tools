@@ -1,9 +1,9 @@
-import { deleteOrderAdminAction, updateOrderAdminAction } from "@/app/admin/actions";
-import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
+import { createRefundRecordAdminAction, deleteOrderAdminAction, updateOrderAdminAction } from "@/app/admin/actions";
+import { AdminSection, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { buildAdminOrderPageHref, buildAdminOrderWhere, parseAdminOrderListParams } from "@/lib/admin-order";
-import { adminDeleteRiskConfirmationToken, canAdminDeleteOrderSafely } from "@/lib/order-rules";
+import { adminDeleteRiskConfirmationToken, canAdminDeleteOrderSafely, canRecordRefundForOrder } from "@/lib/order-rules";
 import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
 
@@ -27,7 +27,14 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where,
-      include: { user: true, plan: true, tool: true, paymentProof: true, toolPurchase: true },
+      include: {
+        user: true,
+        plan: true,
+        tool: true,
+        paymentProof: true,
+        toolPurchase: true,
+        refundRecords: { include: { admin: true }, orderBy: { createdAt: "desc" } }
+      },
       orderBy: { createdAt: "desc" },
       skip: filters.skip,
       take: filters.take
@@ -49,6 +56,12 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
       {params.deleted ? (
         <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
           订单已删除。
+        </p>
+      ) : null}
+
+      {params.refund ? (
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
+          售后/退款记录已保存。
         </p>
       ) : null}
 
@@ -138,6 +151,54 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                   <p className="pb-3 text-xs leading-5 text-[#8B95A7]">如需开通权益，请到支付审核通过，或在用户管理中手动调整 VIP。</p>
                 </div>
               </form>
+
+              <div className="mt-5 border-t border-white/10 pt-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="font-semibold">售后/退款记录</h3>
+                  <span className="text-xs text-[#8B95A7]">退款记录只做售后留痕，不会自动撤销已开通的权益。</span>
+                </div>
+                {order.refundRecords.length ? (
+                  <div className="mt-3 grid gap-2 text-sm text-[#8B95A7]">
+                    {order.refundRecords.map((refund) => (
+                      <div key={refund.id} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                        <span className="font-semibold text-[#E8EEF8]">{formatCurrency(refund.amount.toString())}</span>
+                        <span> · {refund.status} · {refund.reason}</span>
+                        <span> · {refund.admin.email ?? refund.admin.id}</span>
+                        <span> · {refund.createdAt.toLocaleString("zh-CN")}</span>
+                        {refund.note ? <p className="mt-2 text-xs leading-5">{refund.note}</p> : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-[#8B95A7]">暂无售后/退款记录。</p>
+                )}
+                {canRecordRefundForOrder(order.orderStatus) ? (
+                  <form action={createRefundRecordAdminAction} className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 md:grid-cols-[160px_160px_1fr]">
+                    <input type="hidden" name="orderId" value={order.id} />
+                    <Field label="退款金额">
+                      <input name="amount" required type="number" step="0.01" min="0.01" max={order.amount.toString()} defaultValue={order.amount.toString()} className={inputClass} />
+                    </Field>
+                    <Field label="处理状态">
+                      <select name="status" defaultValue="completed" className={selectClass}>
+                        <option value="completed">已退款</option>
+                        <option value="pending">处理中</option>
+                        <option value="rejected">不退款</option>
+                      </select>
+                    </Field>
+                    <Field label="原因">
+                      <input name="reason" required minLength={2} placeholder="例如：用户申请退款 / 重复付款 / 售后补偿" className={inputClass} />
+                    </Field>
+                    <Field label="备注" className="md:col-span-3">
+                      <textarea name="note" placeholder="可填写沟通记录、退款流水号、处理说明" className={textareaClass} />
+                    </Field>
+                    <div className="md:col-span-3">
+                      <SubmitButton>保存售后/退款记录</SubmitButton>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="mt-3 text-xs text-[#8B95A7]">当前订单状态不可创建退款记录。</p>
+                )}
+              </div>
 
               <form action={deleteOrderAdminAction} className="mt-4 border-t border-white/10 pt-4">
                 <input type="hidden" name="id" value={order.id} />

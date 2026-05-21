@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { prisma } from "@/lib/db";
 import {
   parseBooleanField,
@@ -19,7 +20,13 @@ import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
 import { manuallyAdjustVip } from "@/lib/membership";
 import { isLikelyUploadableImage } from "@/lib/media";
-import { assertAdminOrderStatusUpdateAllowed, canAdminDeleteOrderSafely, isAdminDeleteRiskConfirmed } from "@/lib/order-rules";
+import {
+  assertAdminOrderStatusUpdateAllowed,
+  canAdminDeleteOrderSafely,
+  canRecordRefundForOrder,
+  isAdminDeleteRiskConfirmed,
+  normalizeRefundRecordAmount
+} from "@/lib/order-rules";
 import { saveUploadedFile } from "@/lib/storage";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 import { getUploadDiskPath } from "@/lib/upload-path";
@@ -41,7 +48,7 @@ async function saveAdminImageUpload(file: FormDataEntryValue | null, prefix: str
 }
 
 export async function updateUserAdminAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
   const role = z.enum(["user", "admin"]).parse(formData.get("role"));
   const status = z.enum(["active", "disabled"]).parse(formData.get("status"));
@@ -51,12 +58,20 @@ export async function updateUserAdminAction(formData: FormData) {
     where: { id },
     data: { role, status, nickname }
   });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "user.update",
+    targetType: "user",
+    targetId: id,
+    summary: "Updated user profile, role, or status.",
+    metadata: { role, status, nickname }
+  });
 
   revalidatePath("/admin/users");
 }
 
 export async function resetUserPasswordAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
   const password = z.string().min(8).parse(formData.get("password"));
 
@@ -64,12 +79,19 @@ export async function resetUserPasswordAction(formData: FormData) {
     where: { id },
     data: { passwordHash: await hashPassword(password) }
   });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "user.password.reset",
+    targetType: "user",
+    targetId: id,
+    summary: "Reset user password."
+  });
 
   revalidatePath("/admin/users");
 }
 
 export async function updateOrderAdminAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
   const orderStatus = z
     .enum(["pending_payment", "pending_review", "paid", "activated", "rejected", "cancelled", "refunded"])
@@ -90,6 +112,14 @@ export async function updateOrderAdminAction(formData: FormData) {
       ...getOrderTimestampPatch(orderStatus, order.paidAt, order.activatedAt)
     }
   });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "order.update",
+    targetType: "order",
+    targetId: id,
+    summary: "Updated order status, amount, or payment method.",
+    metadata: { beforeStatus: order.orderStatus, orderStatus, paymentMethod, amount }
+  });
 
   revalidatePath("/admin/orders");
   revalidatePath("/admin/payments");
@@ -97,7 +127,7 @@ export async function updateOrderAdminAction(formData: FormData) {
 }
 
 export async function deleteOrderAdminAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
   const confirmRisk = parseOptionalString(formData.get("confirmRisk"));
   const order = await prisma.order.findUnique({ where: { id } });
@@ -111,13 +141,77 @@ export async function deleteOrderAdminAction(formData: FormData) {
   await prisma.$transaction([
     prisma.paymentProof.deleteMany({ where: { orderId: id } }),
     prisma.toolPurchase.deleteMany({ where: { orderId: id } }),
+    prisma.orderRefundRecord.deleteMany({ where: { orderId: id } }),
     prisma.order.delete({ where: { id } })
   ]);
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "order.delete",
+    targetType: "order",
+    targetId: id,
+    summary: "Deleted order after admin confirmation.",
+    metadata: { orderNo: order.orderNo, orderStatus: order.orderStatus, confirmedRisk: !canAdminDeleteOrderSafely(order.orderStatus) }
+  });
 
   revalidatePath("/admin/orders");
   revalidatePath("/admin/payments");
   revalidatePath("/user");
   redirect("/admin/orders?deleted=1");
+}
+
+export async function createRefundRecordAdminAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const orderId = idSchema.parse(formData.get("orderId"));
+  const status = z.enum(["pending", "completed", "rejected"]).parse(formData.get("status") ?? "completed");
+  const reason = z.string().min(2, "必须填写售后/退款原因").parse(formData.get("reason"));
+  const note = parseOptionalString(formData.get("note"));
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) {
+    redirect(`/admin/orders?error=${encodeURIComponent("订单不存在，无法记录售后/退款。")}`);
+  }
+  if (!canRecordRefundForOrder(order.orderStatus)) {
+    redirect(`/admin/orders?error=${encodeURIComponent("当前订单状态不允许创建退款记录。")}`);
+  }
+
+  let amount: number;
+  try {
+    amount = normalizeRefundRecordAmount(formData.get("amount"), Number(order.amount));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "退款金额无效。";
+    redirect(`/admin/orders?error=${encodeURIComponent(message)}`);
+  }
+
+  const refund = await prisma.$transaction(async (tx) => {
+    const created = await tx.orderRefundRecord.create({
+      data: {
+        orderId,
+        adminId: admin.id,
+        amount,
+        status,
+        reason,
+        note
+      }
+    });
+
+    if (status === "completed") {
+      await tx.order.update({ where: { id: orderId }, data: { orderStatus: "refunded" } });
+    }
+
+    return created;
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "order.refund.create",
+    targetType: "order",
+    targetId: orderId,
+    summary: "Created order after-sales/refund record.",
+    metadata: { refundId: refund.id, amount, status, reason }
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/user");
+  redirect("/admin/orders?refund=1");
 }
 
 export async function adjustVipAdminAction(formData: FormData) {
@@ -135,6 +229,14 @@ export async function adjustVipAdminAction(formData: FormData) {
     durationDays,
     reason
   });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "vip.adjust",
+    targetType: "user",
+    targetId: userId,
+    summary: "Manually adjusted user VIP membership.",
+    metadata: { actionType, durationDays, reason }
+  });
 
   revalidatePath("/admin/users");
   revalidatePath("/user");
@@ -150,7 +252,7 @@ function getManualVipType(durationDays: number) {
 }
 
 export async function upsertCategoryAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
   const data = {
     name: z.string().min(1).parse(formData.get("name")),
@@ -160,25 +262,43 @@ export async function upsertCategoryAction(formData: FormData) {
     status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active")
   };
 
+  let categoryId = id;
   if (id) {
     await prisma.toolCategory.update({ where: { id }, data });
   } else {
-    await prisma.toolCategory.create({ data });
+    const created = await prisma.toolCategory.create({ data });
+    categoryId = created.id;
   }
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "category.update" : "category.create",
+    targetType: "tool_category",
+    targetId: categoryId,
+    summary: id ? "Updated tool category." : "Created tool category.",
+    metadata: { name: data.name, type: data.type, status: data.status }
+  });
   revalidatePath("/admin/categories");
   revalidatePath("/software");
   revalidatePath("/online-tools");
 }
 
 export async function deleteCategoryAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
-  await prisma.toolCategory.delete({ where: { id } });
+  const category = await prisma.toolCategory.delete({ where: { id } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "category.delete",
+    targetType: "tool_category",
+    targetId: id,
+    summary: "Deleted tool category.",
+    metadata: { name: category.name, type: category.type }
+  });
   revalidatePath("/admin/categories");
 }
 
 export async function upsertVipPlanAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
   const data = {
     name: z.string().min(1).parse(formData.get("name")),
@@ -194,17 +314,27 @@ export async function upsertVipPlanAction(formData: FormData) {
   if (data.isRecommended) {
     await prisma.vipPlan.updateMany({ data: { isRecommended: false } });
   }
+  let planId = id;
   if (id) {
     await prisma.vipPlan.update({ where: { id }, data });
   } else {
-    await prisma.vipPlan.create({ data });
+    const created = await prisma.vipPlan.create({ data });
+    planId = created.id;
   }
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "vip_plan.update" : "vip_plan.create",
+    targetType: "vip_plan",
+    targetId: planId,
+    summary: id ? "Updated VIP plan." : "Created VIP plan.",
+    metadata: { name: data.name, durationDays: data.durationDays, price: data.price, status: data.status }
+  });
   revalidatePath("/admin/plans");
   revalidatePath("/pricing");
 }
 
 export async function uploadFileAdminAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     redirect(`/admin/files?error=${encodeURIComponent("请选择要上传的文件。")}`);
@@ -224,6 +354,14 @@ export async function uploadFileAdminAction(formData: FormData) {
         mimeType: stored.mimeType
       }
     });
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: "file.upload",
+      targetType: "file",
+      targetId: record.id,
+      summary: "Uploaded file and created file record.",
+      metadata: { fileName: stored.fileName, storage: stored.storage, fileSize: stored.fileSize }
+    });
     revalidatePath("/admin/files");
     redirect(`/admin/files?uploaded=1&fileId=${record.id}`);
   } catch (error) {
@@ -233,7 +371,7 @@ export async function uploadFileAdminAction(formData: FormData) {
 }
 
 export async function upsertFileAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
   const toolId = parseOptionalString(formData.get("toolId"));
   const data = {
@@ -246,16 +384,26 @@ export async function upsertFileAction(formData: FormData) {
     mimeType: parseOptionalString(formData.get("mimeType"))
   };
 
+  let fileId = id;
   if (id) {
     await prisma.file.update({ where: { id }, data });
   } else {
-    await prisma.file.create({ data });
+    const created = await prisma.file.create({ data });
+    fileId = created.id;
   }
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "file.update" : "file.create",
+    targetType: "file",
+    targetId: fileId,
+    summary: id ? "Updated file record." : "Created file record.",
+    metadata: { toolId, fileName: data.fileName }
+  });
   revalidatePath("/admin/files");
 }
 
 export async function upsertToolAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const type = z.enum(["software", "online"]).parse(formData.get("type"));
   const adminPath = getAdminToolBasePath(type);
   let savedToolId = parseOptionalString(formData.get("id"));
@@ -292,6 +440,14 @@ export async function upsertToolAction(formData: FormData) {
       const created = await prisma.tool.create({ data });
       savedToolId = created.id;
     }
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: id ? "tool.update" : "tool.create",
+      targetType: "tool",
+      targetId: savedToolId,
+      summary: id ? "Updated tool." : "Created tool.",
+      metadata: { type, name, slug: data.slug, status: data.status }
+    });
     revalidatePath(adminPath);
     revalidatePath(type === "software" ? "/software" : "/online-tools");
     revalidatePath(`/tools/${data.slug}`);
@@ -305,7 +461,7 @@ export async function upsertToolAction(formData: FormData) {
 }
 
 export async function upsertToolTagAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
   const name = z.string().min(1).parse(formData.get("name"));
   const data = {
@@ -316,16 +472,26 @@ export async function upsertToolTagAction(formData: FormData) {
     status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active"),
     sortOrder: parseNumberField(formData.get("sortOrder"), 0)
   };
+  let tagId = id;
   if (id) {
     await prisma.toolTag.update({ where: { id }, data });
   } else {
-    await prisma.toolTag.create({ data });
+    const created = await prisma.toolTag.create({ data });
+    tagId = created.id;
   }
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "tool_tag.update" : "tool_tag.create",
+    targetType: "tool_tag",
+    targetId: tagId,
+    summary: id ? "Updated tool tag." : "Created tool tag.",
+    metadata: { name, slug: data.slug, status: data.status }
+  });
   revalidatePath("/admin/tags");
 }
 
 export async function updateToolTagsAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const toolId = idSchema.parse(formData.get("toolId"));
   const tagNames = parseTagNames(String(formData.get("tags") ?? ""));
   const tags = await Promise.all(
@@ -342,23 +508,39 @@ export async function updateToolTagsAction(formData: FormData) {
     prisma.toolTagLink.deleteMany({ where: { toolId } }),
     ...tags.map((tag) => prisma.toolTagLink.create({ data: { toolId, tagId: tag.id } }))
   ]);
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "tool.tags.update",
+    targetType: "tool",
+    targetId: toolId,
+    summary: "Updated tool tag bindings.",
+    metadata: { tags: tagNames }
+  });
   revalidatePath("/admin/tags");
   revalidatePath("/admin/software");
   revalidatePath("/admin/online-tools");
 }
 
 export async function deleteToolAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
   const type = z.enum(["software", "online"]).parse(formData.get("type"));
   const adminPath = getAdminToolBasePath(type);
-  await prisma.tool.delete({ where: { id } });
+  const tool = await prisma.tool.delete({ where: { id } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "tool.delete",
+    targetType: "tool",
+    targetId: id,
+    summary: "Deleted tool.",
+    metadata: { type, name: tool.name, slug: tool.slug }
+  });
   revalidatePath(adminPath);
   redirect(`${adminPath}?deleted=1`);
 }
 
 export async function upsertTutorialAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
   const toolId = idSchema.parse(formData.get("toolId"));
   const data = {
@@ -373,17 +555,27 @@ export async function upsertTutorialAction(formData: FormData) {
     status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active")
   };
 
+  let tutorialId = id;
   if (id) {
     await prisma.tutorial.update({ where: { id }, data });
   } else {
-    await prisma.tutorial.create({ data });
+    const created = await prisma.tutorial.create({ data });
+    tutorialId = created.id;
   }
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "tutorial.update" : "tutorial.create",
+    targetType: "tutorial",
+    targetId: tutorialId,
+    summary: id ? "Updated tutorial." : "Created tutorial.",
+    metadata: { toolId, title: data.title, status: data.status }
+  });
   revalidatePath("/admin/tutorials");
   revalidatePath("/tutorials");
 }
 
 export async function upsertToolFaqAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
   const data = {
     toolId: idSchema.parse(formData.get("toolId")),
@@ -392,16 +584,26 @@ export async function upsertToolFaqAction(formData: FormData) {
     sortOrder: parseNumberField(formData.get("sortOrder"), 0),
     status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active")
   };
+  let faqId = id;
   if (id) {
     await prisma.toolFaq.update({ where: { id }, data });
   } else {
-    await prisma.toolFaq.create({ data });
+    const created = await prisma.toolFaq.create({ data });
+    faqId = created.id;
   }
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "tool_faq.update" : "tool_faq.create",
+    targetType: "tool_faq",
+    targetId: faqId,
+    summary: id ? "Updated tool FAQ." : "Created tool FAQ.",
+    metadata: { toolId: data.toolId, question: data.question, status: data.status }
+  });
   revalidatePath("/admin/faqs");
 }
 
 export async function upsertToolChangelogAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
   const releaseDate = parseOptionalString(formData.get("releaseDate"));
   const data = {
@@ -413,16 +615,26 @@ export async function upsertToolChangelogAction(formData: FormData) {
     sortOrder: parseNumberField(formData.get("sortOrder"), 0),
     status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active")
   };
+  let changelogId = id;
   if (id) {
     await prisma.toolChangelog.update({ where: { id }, data });
   } else {
-    await prisma.toolChangelog.create({ data });
+    const created = await prisma.toolChangelog.create({ data });
+    changelogId = created.id;
   }
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "tool_changelog.update" : "tool_changelog.create",
+    targetType: "tool_changelog",
+    targetId: changelogId,
+    summary: id ? "Updated tool changelog." : "Created tool changelog.",
+    metadata: { toolId: data.toolId, version: data.version, title: data.title, status: data.status }
+  });
   revalidatePath("/admin/changelogs");
 }
 
 export async function updateSiteSettingAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const key = z.string().min(1).parse(formData.get("key"));
   const value = z.string().parse(formData.get("value") ?? "");
   const description = parseOptionalString(formData.get("description"));
@@ -430,6 +642,14 @@ export async function updateSiteSettingAction(formData: FormData) {
     where: { key },
     update: { value, description },
     create: { key, value, description }
+  });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "site.setting.update",
+    targetType: "site_setting",
+    targetId: key,
+    summary: "Updated site setting.",
+    metadata: { key }
   });
   revalidatePath("/admin/settings");
   revalidatePath("/");

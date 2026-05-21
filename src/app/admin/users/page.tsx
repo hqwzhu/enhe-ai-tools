@@ -1,61 +1,72 @@
-import type { Prisma } from "@prisma/client";
+import Link from "next/link";
 import { adjustVipAdminAction, resetUserPasswordAction, updateUserAdminAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
+import { buildAdminUserPageHref, buildAdminUserWhere, parseAdminUserListParams } from "@/lib/admin-list";
 import { prisma } from "@/lib/db";
 
 type AdminUsersSearchParams = Promise<Record<string, string | undefined>>;
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: AdminUsersSearchParams }) {
   const params = await searchParams;
-  const keyword = params.q?.trim();
-  const role = params.role;
-  const status = params.status;
-
-  const where: Prisma.UserWhereInput = {
-    ...(role === "admin" || role === "user" ? { role } : {}),
-    ...(status === "active" || status === "disabled" ? { status } : {}),
-    ...(keyword
-      ? {
-          OR: [
-            { email: { contains: keyword, mode: "insensitive" } },
-            { phone: { contains: keyword, mode: "insensitive" } },
-            { nickname: { contains: keyword, mode: "insensitive" } }
-          ]
-        }
-      : {})
-  };
-
-  const users = await prisma.user.findMany({
-    where,
-    include: {
-      memberships: { orderBy: { createdAt: "desc" } },
-      orders: true,
-      vipAdjustments: { include: { admin: true }, orderBy: { createdAt: "desc" }, take: 3 }
-    },
-    orderBy: { createdAt: "desc" }
-  });
+  const filters = parseAdminUserListParams(params);
+  const where = buildAdminUserWhere(filters);
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      include: {
+        memberships: { orderBy: { createdAt: "desc" } },
+        orders: true,
+        vipAdjustments: { include: { admin: true }, orderBy: { createdAt: "desc" }, take: 3 }
+      },
+      orderBy: { createdAt: "desc" },
+      skip: filters.skip,
+      take: filters.take
+    }),
+    prisma.user.count({ where })
+  ]);
+  const pageCount = Math.max(1, Math.ceil(total / filters.pageSize));
 
   return (
     <AdminSection title="用户管理" intro="管理注册用户、管理员角色、账号状态，并支持后台重置临时密码。">
       <form className="glass grid gap-4 rounded-2xl p-6 md:grid-cols-[1fr_160px_160px_120px]">
         <input
           name="q"
-          defaultValue={keyword ?? ""}
+          defaultValue={filters.q}
           placeholder="搜索邮箱、手机号或昵称"
           className={inputClass}
         />
-        <select name="role" defaultValue={role ?? ""} className={selectClass}>
+        <select name="role" defaultValue={filters.role ?? ""} className={selectClass}>
           <option value="">全部角色</option>
           <option value="user">普通用户</option>
           <option value="admin">管理员</option>
         </select>
-        <select name="status" defaultValue={status ?? ""} className={selectClass}>
+        <select name="status" defaultValue={filters.status ?? ""} className={selectClass}>
           <option value="">全部状态</option>
           <option value="active">启用</option>
           <option value="disabled">禁用</option>
         </select>
         <button className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">筛选</button>
       </form>
+
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B95A7]">
+        <span>共 {total} 个用户，当前第 {filters.page} / {pageCount} 页</span>
+        <div className="flex gap-2">
+          <Link
+            href={buildAdminUserPageHref(filters, filters.page - 1)}
+            aria-disabled={filters.page <= 1}
+            className={`rounded-full border border-white/12 px-4 py-2 ${filters.page <= 1 ? "pointer-events-none opacity-40" : ""}`}
+          >
+            上一页
+          </Link>
+          <Link
+            href={buildAdminUserPageHref(filters, filters.page + 1)}
+            aria-disabled={filters.page >= pageCount}
+            className={`rounded-full border border-white/12 px-4 py-2 ${filters.page >= pageCount ? "pointer-events-none opacity-40" : ""}`}
+          >
+            下一页
+          </Link>
+        </div>
+      </div>
 
       <div className="mt-8 grid gap-4">
         {users.map((user) => (

@@ -59,6 +59,12 @@ enum OrderType {
   software_download
 }
 
+enum RefundStatus {
+  pending
+  completed
+  rejected
+}
+
 enum ProofReviewStatus {
   not_submitted
   pending
@@ -99,6 +105,8 @@ model User {
   toolPurchases   ToolPurchase[]
   vipAdjustments   VipAdjustmentLog[] @relation("VipAdjustmentTarget")
   vipOperations    VipAdjustmentLog[] @relation("VipAdjustmentAdmin")
+  refundRecords     OrderRefundRecord[] @relation("RefundAdmin")
+  adminAuditLogs    AdminAuditLog[] @relation("AdminAuditLogs")
   sessions         Session[]
 
   @@map("users")
@@ -310,10 +318,29 @@ model Order {
   tool          Tool?           @relation(fields: [toolId], references: [id])
   paymentProof  PaymentProof?
   toolPurchase  ToolPurchase?
+  refundRecords OrderRefundRecord[]
 
   @@index([userId, orderStatus])
   @@index([toolId, orderStatus])
   @@map("orders")
+}
+
+model OrderRefundRecord {
+  id        String       @id @default(cuid())
+  orderId   String       @map("order_id")
+  adminId   String       @map("admin_id")
+  amount    Decimal      @db.Decimal(10, 2)
+  status    RefundStatus @default(completed)
+  reason    String
+  note      String?
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  admin     User         @relation("RefundAdmin", fields: [adminId], references: [id])
+
+  @@index([orderId, createdAt])
+  @@index([adminId, createdAt])
+  @@map("order_refund_records")
 }
 
 model ToolPurchase {
@@ -424,6 +451,25 @@ model VipAdjustmentLog {
   @@index([userId, createdAt])
   @@index([adminId, createdAt])
   @@map("vip_adjustment_logs")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String?  @map("admin_id")
+  action     String
+  targetType String   @map("target_type")
+  targetId   String?  @map("target_id")
+  summary    String
+  metadata   Json?
+  ip         String?
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+  admin      User?    @relation("AdminAuditLogs", fields: [adminId], references: [id])
+
+  @@index([adminId, createdAt])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
 }
 
 model Session {

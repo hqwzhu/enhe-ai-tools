@@ -30,6 +30,7 @@ type ToolItem = {
 type ToolCategoryItem = { id: string; name: string; type: string };
 type FileItem = { id: string; fileName: string; fileUrl: string | null };
 type Notice = Record<string, string | undefined>;
+type ToolListFilters = { q: string; status?: string; categoryId?: string; page: number };
 
 const statusText: Record<string, string> = {
   draft: "草稿",
@@ -69,13 +70,26 @@ export function ToolAdminList({
   title,
   type,
   tools,
-  notice
+  notice,
+  categories = [],
+  filters,
+  total,
+  pageCount,
+  buildPageHref
 }: {
   title: string;
   type: AdminToolType;
   tools: ToolItem[];
   notice?: Notice;
+  categories?: ToolCategoryItem[];
+  filters?: ToolListFilters;
+  total?: number;
+  pageCount?: number;
+  buildPageHref?: (page: number) => string;
 }) {
+  const listPath = getAdminToolBasePath(type);
+  const matchingCategories = categories.filter((category) => category.type === type);
+
   return (
     <div>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -91,6 +105,47 @@ export function ToolAdminList({
       </div>
 
       <NoticeBar notice={notice} />
+
+      {filters && buildPageHref ? (
+        <>
+          <form className="glass mt-6 grid gap-3 rounded-2xl p-5 md:grid-cols-[1fr_180px_220px_auto]" action={listPath}>
+            <input name="q" defaultValue={filters.q} placeholder="搜索工具名称、Slug、简介" className={inputClass} />
+            <select name="status" defaultValue={filters.status ?? ""} className={selectClass}>
+              <option value="">全部状态</option>
+              <option value="draft">草稿</option>
+              <option value="published">发布</option>
+              <option value="offline">下架</option>
+            </select>
+            <select name="categoryId" defaultValue={filters.categoryId ?? ""} className={selectClass}>
+              <option value="">全部分类</option>
+              {matchingCategories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
+            </select>
+            <button className="rounded-full border border-white/12 px-5 py-3 text-sm font-semibold text-[#E8EEF8]">筛选</button>
+          </form>
+
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B95A7]">
+            <span>共 {total ?? tools.length} 个工具，当前第 {filters.page} / {pageCount ?? 1} 页</span>
+            <div className="flex gap-2">
+              <Link
+                href={buildPageHref(filters.page - 1)}
+                aria-disabled={filters.page <= 1}
+                className={`rounded-full border border-white/12 px-4 py-2 ${filters.page <= 1 ? "pointer-events-none opacity-40" : ""}`}
+              >
+                上一页
+              </Link>
+              <Link
+                href={buildPageHref(filters.page + 1)}
+                aria-disabled={filters.page >= (pageCount ?? 1)}
+                className={`rounded-full border border-white/12 px-4 py-2 ${filters.page >= (pageCount ?? 1) ? "pointer-events-none opacity-40" : ""}`}
+              >
+                下一页
+              </Link>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
         <div className="grid min-w-[900px] grid-cols-[1.6fr_0.9fr_0.7fr_0.8fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">

@@ -17,6 +17,7 @@ const adminNav = [
   ["版本更新管理", "/admin/changelogs"],
   ["评论管理", "/admin/comments"],
   ["文件管理", "/admin/files"],
+  ["操作审计", "/admin/audit"],
   ["网站设置", "/admin/settings"]
 ] as const;
 

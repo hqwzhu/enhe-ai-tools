@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { prisma } from "@/lib/db";
 import { createOrderNo } from "@/lib/order";
 import {
@@ -201,22 +202,46 @@ export async function reviewPaymentProofAction(formData: FormData) {
       prisma.order.update({ where: { id: orderId }, data: { orderStatus: "rejected" } })
     ]);
   }
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "payment.review",
+    targetType: "order",
+    targetId: orderId,
+    summary: "Reviewed payment proof.",
+    metadata: { decision, reviewNote }
+  });
   revalidatePath("/admin/payments");
 }
 
 export async function updateCommentStatusAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = z.string().min(1).parse(formData.get("id"));
   const status = z.enum(["approved", "rejected", "deleted"]).parse(formData.get("status"));
   await prisma.comment.update({ where: { id }, data: { status } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "comment.status.update",
+    targetType: "comment",
+    targetId: id,
+    summary: "Updated comment review status.",
+    metadata: { status }
+  });
   revalidatePath("/admin/comments");
 }
 
 export async function updateCommentPinAction(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = z.string().min(1).parse(formData.get("id"));
   const isPinned = String(formData.get("isPinned")) === "true";
   const comment = await prisma.comment.update({ where: { id }, data: { isPinned }, include: { tool: true } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "comment.pin.update",
+    targetType: "comment",
+    targetId: id,
+    summary: "Updated comment pin state.",
+    metadata: { isPinned, toolId: comment.toolId }
+  });
   revalidatePath("/admin/comments");
   revalidatePath(`/tools/${comment.tool.slug}`);
 }

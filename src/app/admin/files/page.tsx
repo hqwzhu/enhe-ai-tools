@@ -22,7 +22,7 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
       ) : null}
       <div className="glass mb-8 rounded-2xl p-6">
         <h2 className="text-xl font-semibold">上传文件</h2>
-        <form action={uploadFileAdminAction} encType="multipart/form-data" className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
+        <form action={uploadFileAdminAction} className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
           <input name="file" type="file" required className={inputClass} />
           <button className="rounded-full bg-[#48F5D3] px-5 py-3 text-sm font-semibold text-[#05110e]">上传并创建记录</button>
         </form>

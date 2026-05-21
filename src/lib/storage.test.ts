@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   createStorageObjectKey,
+  getAllowedUploadExtensions,
   getCosSignedUrlExpiresSeconds,
   getSecureFileDownloadUrl,
   isCosStorageConfigured,
+  isUploadExtensionAllowed,
   parseCosFilePath
 } from "@/lib/storage";
 
@@ -41,6 +43,12 @@ describe("storage helpers", () => {
       key: "software/app.zip"
     });
     expect(parseCosFilePath("/uploads/app.zip")).toBeNull();
+  });
+
+  it("parses upload extension whitelists and blocks unsafe extensions", () => {
+    expect(getAllowedUploadExtensions({ UPLOAD_ALLOWED_EXTENSIONS: ".zip, jpg, .PNG" })).toEqual([".zip", ".jpg", ".png"]);
+    expect(isUploadExtensionAllowed("installer.EXE", [".exe"])).toBe(true);
+    expect(isUploadExtensionAllowed("shell.php", [".zip", ".png"])).toBe(false);
   });
 
   it("uses local or public URLs unless a COS private file is configured", async () => {

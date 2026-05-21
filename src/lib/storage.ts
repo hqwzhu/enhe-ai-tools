@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, extname, join } from "node:path";
 import { buildPublicUploadUrl } from "@/lib/admin-form";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
@@ -32,6 +32,27 @@ type CosFilePath = {
   key: string;
 };
 
+export const defaultAllowedUploadExtensions = [
+  ".zip",
+  ".rar",
+  ".7z",
+  ".exe",
+  ".msi",
+  ".dmg",
+  ".pkg",
+  ".pdf",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".gif",
+  ".txt",
+  ".csv",
+  ".xlsx",
+  ".docx",
+  ".pptx"
+] as const;
+
 export function isCosStorageConfigured(env: StorageEnv = process.env) {
   return Boolean(
     env.TENCENT_COS_SECRET_ID?.trim() &&
@@ -39,6 +60,20 @@ export function isCosStorageConfigured(env: StorageEnv = process.env) {
       env.TENCENT_COS_BUCKET?.trim() &&
       env.TENCENT_COS_REGION?.trim()
   );
+}
+
+export function getAllowedUploadExtensions(env: StorageEnv = process.env) {
+  const raw = env.UPLOAD_ALLOWED_EXTENSIONS?.trim();
+  const values = raw ? raw.split(",") : [...defaultAllowedUploadExtensions];
+  return values
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean)
+    .map((value) => (value.startsWith(".") ? value : `.${value}`));
+}
+
+export function isUploadExtensionAllowed(fileName: string, allowedExtensions = getAllowedUploadExtensions()) {
+  const extension = extname(fileName).toLowerCase();
+  return Boolean(extension && allowedExtensions.includes(extension));
 }
 
 function sanitizeFileName(fileName: string) {
@@ -88,6 +123,8 @@ export async function saveUploadedFile(file: File, options: SaveUploadOptions): 
   if (file.size > options.maxBytes) throw new Error(`文件超过 ${Math.floor(options.maxBytes / 1024 / 1024)}MB，请压缩后重新上传。`);
   if (options.accept && !options.accept(file)) throw new Error(options.invalidTypeMessage ?? "文件格式不支持。");
 
+  if (!isUploadExtensionAllowed(file.name)) throw new Error("文件格式不在允许上传白名单内。");
+
   const objectKey = createStorageObjectKey(options.folder, file.name);
   const mimeType = file.type || "application/octet-stream";
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -100,6 +137,7 @@ export async function saveUploadedFile(file: File, options: SaveUploadOptions): 
   const uploadDir = process.env.UPLOAD_DIR ?? join(process.cwd(), "public", "uploads");
   const diskPath = getUploadDiskPath(publicUrl, process.cwd(), process.env.UPLOAD_DIR);
   await mkdir(uploadDir, { recursive: true });
+  await mkdir(dirname(diskPath), { recursive: true });
   await writeFile(diskPath, buffer);
 
   return {
