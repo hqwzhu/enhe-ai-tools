@@ -17,6 +17,7 @@ import {
 } from "@/lib/admin-form";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
+import { getAdminUserDeleteBlockReason } from "@/lib/admin-user-rules";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
 import { manuallyAdjustVip } from "@/lib/membership";
 import { isLikelyUploadableImage } from "@/lib/media";
@@ -33,6 +34,7 @@ import { getUploadDiskPath } from "@/lib/upload-path";
 
 const idSchema = z.string().min(1);
 const maxCoverImageBytes = 8 * 1024 * 1024;
+const deleteUserConfirmationToken = "DELETE_USER";
 
 async function saveAdminImageUpload(file: FormDataEntryValue | null, prefix: string) {
   if (!(file instanceof File) || file.size === 0) return null;
@@ -68,6 +70,7 @@ export async function updateUserAdminAction(formData: FormData) {
   });
 
   revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${id}`);
 }
 
 export async function resetUserPasswordAction(formData: FormData) {
@@ -88,6 +91,99 @@ export async function resetUserPasswordAction(formData: FormData) {
   });
 
   revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${id}`);
+}
+
+export async function deleteUserAdminAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const confirmDelete = parseOptionalString(formData.get("confirmDelete"));
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, email: true, phone: true, nickname: true, role: true }
+  });
+  if (!user) {
+    redirect(`/admin/users?error=${encodeURIComponent("用户不存在，可能已经被删除。")}`);
+  }
+  if (confirmDelete !== deleteUserConfirmationToken) {
+    redirect(`/admin/users/${id}?error=${encodeURIComponent("请先勾选删除确认。")}`);
+  }
+
+  const remainingAdminCount = await prisma.user.count({
+    where: {
+      role: "admin",
+      id: { not: id }
+    }
+  });
+  const blockReason = getAdminUserDeleteBlockReason({
+    currentAdminId: admin.id,
+    targetUserId: id,
+    targetRole: user.role,
+    remainingAdminCount
+  });
+  if (blockReason) {
+    redirect(`/admin/users/${id}?error=${encodeURIComponent(blockReason)}`);
+  }
+
+  const cleanup = await prisma.$transaction(async (tx) => {
+    const orders = await tx.order.findMany({ where: { userId: id }, select: { id: true } });
+    const orderIds = orders.map((order) => order.id);
+
+    const adminAuditLogs = await tx.adminAuditLog.updateMany({ where: { adminId: id }, data: { adminId: null } });
+    const reviewedProofs = await tx.paymentProof.updateMany({ where: { reviewerId: id }, data: { reviewerId: null } });
+    const vipAdjustmentLogs = await tx.vipAdjustmentLog.deleteMany({
+      where: { OR: [{ userId: id }, { adminId: id }] }
+    });
+    const refundRecords = await tx.orderRefundRecord.deleteMany({
+      where: { OR: [{ adminId: id }, { orderId: { in: orderIds } }] }
+    });
+    const paymentProofs = await tx.paymentProof.deleteMany({
+      where: { OR: [{ userId: id }, { orderId: { in: orderIds } }] }
+    });
+    const toolPurchases = await tx.toolPurchase.deleteMany({
+      where: { OR: [{ userId: id }, { orderId: { in: orderIds } }] }
+    });
+    const downloadLogs = await tx.downloadLog.deleteMany({ where: { userId: id } });
+    const usageLogs = await tx.toolUsageLog.deleteMany({ where: { userId: id } });
+    const comments = await tx.comment.deleteMany({ where: { userId: id } });
+    const memberships = await tx.membership.deleteMany({ where: { userId: id } });
+    const sessions = await tx.session.deleteMany({ where: { userId: id } });
+    const deletedOrders = await tx.order.deleteMany({ where: { userId: id } });
+    await tx.user.delete({ where: { id } });
+
+    return {
+      orders: deletedOrders.count,
+      paymentProofs: paymentProofs.count,
+      toolPurchases: toolPurchases.count,
+      comments: comments.count,
+      memberships: memberships.count,
+      downloadLogs: downloadLogs.count,
+      usageLogs: usageLogs.count,
+      sessions: sessions.count,
+      vipAdjustmentLogs: vipAdjustmentLogs.count,
+      refundRecords: refundRecords.count,
+      reviewedProofsUnlinked: reviewedProofs.count,
+      adminAuditLogsUnlinked: adminAuditLogs.count
+    };
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "user.delete",
+    targetType: "user",
+    targetId: id,
+    summary: "Deleted user and cleaned related user-owned records.",
+    metadata: {
+      email: user.email,
+      phone: user.phone,
+      nickname: user.nickname,
+      role: user.role,
+      cleanup
+    }
+  });
+
+  revalidatePath("/admin/users");
+  redirect("/admin/users?deleted=1");
 }
 
 export async function updateOrderAdminAction(formData: FormData) {
@@ -239,6 +335,7 @@ export async function adjustVipAdminAction(formData: FormData) {
   });
 
   revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
   revalidatePath("/user");
 }
 

@@ -1,10 +1,17 @@
 import Link from "next/link";
-import { adjustVipAdminAction, resetUserPasswordAction, updateUserAdminAction } from "@/app/admin/actions";
-import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
+import { AdminSection, inputClass, selectClass } from "@/app/admin/admin-ui";
 import { buildAdminUserPageHref, buildAdminUserWhere, parseAdminUserListParams } from "@/lib/admin-list";
 import { prisma } from "@/lib/db";
 
 type AdminUsersSearchParams = Promise<Record<string, string | undefined>>;
+
+function roleLabel(role: string) {
+  return role === "admin" ? "管理员" : "普通用户";
+}
+
+function statusLabel(status: string) {
+  return status === "active" ? "启用" : "禁用";
+}
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: AdminUsersSearchParams }) {
   const params = await searchParams;
@@ -14,9 +21,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: A
     prisma.user.findMany({
       where,
       include: {
-        memberships: { orderBy: { createdAt: "desc" } },
-        orders: true,
-        vipAdjustments: { include: { admin: true }, orderBy: { createdAt: "desc" }, take: 3 }
+        memberships: { orderBy: [{ isLifetime: "desc" }, { endTime: "desc" }, { createdAt: "desc" }], take: 1 },
+        _count: { select: { memberships: true, orders: true, comments: true } }
       },
       orderBy: { createdAt: "desc" },
       skip: filters.skip,
@@ -27,7 +33,18 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: A
   const pageCount = Math.max(1, Math.ceil(total / filters.pageSize));
 
   return (
-    <AdminSection title="用户管理" intro="管理注册用户、管理员角色、账号状态，并支持后台重置临时密码。">
+    <AdminSection title="用户管理" intro="以清单模式管理注册用户。点击查看/编辑进入单独详情页，保留角色、状态、重置密码和 VIP 调整功能。">
+      {params.deleted ? (
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
+          用户已删除。
+        </p>
+      ) : null}
+      {params.error ? (
+        <p className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+          操作失败：{params.error}
+        </p>
+      ) : null}
+
       <form className="glass grid gap-4 rounded-2xl p-6 md:grid-cols-[1fr_160px_160px_120px]">
         <input
           name="q"
@@ -68,106 +85,43 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: A
         </div>
       </div>
 
-      <div className="mt-8 grid gap-4">
-        {users.map((user) => (
-          <div key={user.id} className="glass rounded-2xl p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-lg font-semibold">{user.nickname || user.email || user.phone || user.id}</p>
-                <p className="mt-2 text-sm text-[#8B95A7]">
-                  {user.email ?? "未绑定邮箱"} · {user.phone ?? "未绑定手机号"}
-                </p>
-              </div>
-              <div className="grid gap-1 text-right text-sm text-[#8B95A7]">
-                <span>{user.role === "admin" ? "管理员" : "普通用户"} · {user.status === "active" ? "启用" : "禁用"}</span>
-                <span>{user.memberships.length} 条会员记录 · {user.orders.length} 个订单</span>
-                <span>注册于 {user.createdAt.toLocaleDateString("zh-CN")}</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_320px]">
-              <form action={updateUserAdminAction} className="grid gap-4 md:grid-cols-3">
-                <input type="hidden" name="id" value={user.id} />
-                <Field label="昵称">
-                  <input name="nickname" defaultValue={user.nickname ?? ""} className={inputClass} />
-                </Field>
-                <Field label="角色">
-                  <select name="role" defaultValue={user.role} className={selectClass}>
-                    <option value="user">普通用户</option>
-                    <option value="admin">管理员</option>
-                  </select>
-                </Field>
-                <Field label="状态">
-                  <select name="status" defaultValue={user.status} className={selectClass}>
-                    <option value="active">启用</option>
-                    <option value="disabled">禁用</option>
-                  </select>
-                </Field>
-                <div className="md:col-span-3">
-                  <SubmitButton>保存用户</SubmitButton>
+      <div className="mt-8 overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
+        <div className="grid min-w-[920px] grid-cols-[1.6fr_0.8fr_0.8fr_1fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
+          <span>用户</span>
+          <span>角色</span>
+          <span>状态</span>
+          <span>会员 / 数据</span>
+          <span className="text-right">操作</span>
+        </div>
+        {users.length ? (
+          <div className="min-w-[920px] divide-y divide-white/10">
+            {users.map((user) => {
+              const latestMembership = user.memberships[0];
+              return (
+                <div key={user.id} className="grid grid-cols-[1.6fr_0.8fr_0.8fr_1fr_0.6fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
+                  <div>
+                    <p className="font-semibold text-[#E8EEF8]">{user.nickname || user.email || user.phone || user.id}</p>
+                    <p className="mt-1 text-xs text-[#8B95A7]">{user.email ?? "未绑定邮箱"} · {user.phone ?? "未绑定手机号"}</p>
+                    <p className="mt-1 text-xs text-[#8B95A7]">注册于 {user.createdAt.toLocaleDateString("zh-CN")}</p>
+                  </div>
+                  <div className="text-[#C5D0E2]">{roleLabel(user.role)}</div>
+                  <div className="text-[#C5D0E2]">{statusLabel(user.status)}</div>
+                  <div className="text-xs leading-6 text-[#8B95A7]">
+                    <p>{latestMembership ? `${latestMembership.vipType} · ${latestMembership.status}` : "暂无会员"}</p>
+                    <p>{user._count.memberships} 条会员记录 · {user._count.orders} 个订单 · {user._count.comments} 条评论</p>
+                  </div>
+                  <div className="text-right">
+                    <Link href={`/admin/users/${user.id}`} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+                      查看/编辑
+                    </Link>
+                  </div>
                 </div>
-              </form>
-
-              <form action={resetUserPasswordAction} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <input type="hidden" name="id" value={user.id} />
-                <Field label="重置密码">
-                  <input
-                    name="password"
-                    type="password"
-                    minLength={8}
-                    required
-                    placeholder="至少 8 位临时密码"
-                    className={inputClass}
-                  />
-                </Field>
-                <div className="mt-4">
-                  <SubmitButton>重置密码</SubmitButton>
-                </div>
-              </form>
-            </div>
-
-            <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
-              <form action={adjustVipAdminAction} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <input type="hidden" name="userId" value={user.id} />
-                <h3 className="mb-4 font-semibold">手动调整 VIP</h3>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Field label="操作类型">
-                    <select name="actionType" className={selectClass}>
-                      <option value="grant">开通 / 延长</option>
-                      <option value="cancel">取消 VIP</option>
-                    </select>
-                  </Field>
-                  <Field label="VIP 时长">
-                    <select name="durationDays" defaultValue={30} className={selectClass}>
-                      <option value={7}>7天VIP</option>
-                      <option value={30}>1个月VIP</option>
-                      <option value={180}>6个月VIP</option>
-                      <option value={365}>12个月VIP</option>
-                      <option value={0}>永久VIP</option>
-                    </select>
-                  </Field>
-                </div>
-                <Field label="操作原因">
-                  <input name="reason" required minLength={2} placeholder="例如：线下补单 / 售后补偿 / 违规取消" className={inputClass} />
-                </Field>
-                <div className="mt-4">
-                  <SubmitButton>保存 VIP 调整</SubmitButton>
-                </div>
-              </form>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <h3 className="mb-4 font-semibold">VIP 调整记录</h3>
-                <div className="space-y-3 text-sm text-[#8B95A7]">
-                  {user.vipAdjustments.length ? user.vipAdjustments.map((log) => (
-                    <p key={log.id}>
-                      {log.actionType} · {log.reason} · {log.admin.email ?? log.admin.id} · {log.createdAt.toLocaleString("zh-CN")}
-                    </p>
-                  )) : <p>暂无手动调整记录。</p>}
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        ))}
+        ) : (
+          <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">暂无匹配用户。</div>
+        )}
       </div>
     </AdminSection>
   );
