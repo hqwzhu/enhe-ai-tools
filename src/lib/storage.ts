@@ -22,6 +22,16 @@ type SaveUploadOptions = {
   invalidTypeMessage?: string;
 };
 
+type DownloadFileRef = {
+  filePath: string;
+  fileUrl: string | null;
+};
+
+type CosFilePath = {
+  bucket: string;
+  key: string;
+};
+
 export function isCosStorageConfigured(env: StorageEnv = process.env) {
   return Boolean(
     env.TENCENT_COS_SECRET_ID?.trim() &&
@@ -50,6 +60,28 @@ export function createStorageObjectKey(folder: string, fileName: string, now: ()
     .replace(/^\/+|\/+$/g, "");
   const safeName = sanitizeFileName(fileName);
   return [safeFolder, `${now()}-${safeName}`].filter(Boolean).join("/");
+}
+
+export function parseCosFilePath(filePath: string): CosFilePath | null {
+  const match = filePath.match(/^cos:\/\/([^/]+)\/(.+)$/);
+  if (!match?.[1] || !match[2]) return null;
+  return { bucket: match[1], key: match[2] };
+}
+
+export function getCosSignedUrlExpiresSeconds(env: StorageEnv = process.env) {
+  const expires = Number(env.TENCENT_COS_SIGNED_URL_EXPIRES_SECONDS);
+  if (!Number.isFinite(expires) || expires <= 0) return 600;
+  return Math.floor(expires);
+}
+
+export async function getSecureFileDownloadUrl(file: DownloadFileRef, requestUrl: string, env: StorageEnv = process.env) {
+  const cosPath = parseCosFilePath(file.filePath);
+  if (cosPath && isCosStorageConfigured(env)) {
+    return new URL(await createCosSignedDownloadUrl(cosPath, env));
+  }
+
+  if (!file.fileUrl) throw new Error("Download file URL is missing.");
+  return new URL(file.fileUrl, requestUrl);
 }
 
 export async function saveUploadedFile(file: File, options: SaveUploadOptions): Promise<StoredUpload> {
@@ -124,4 +156,38 @@ async function saveToCos(file: File, buffer: Buffer, objectKey: string, mimeType
     storage: "cos",
     objectKey
   };
+}
+
+async function createCosSignedDownloadUrl(cosPath: CosFilePath, env: StorageEnv = process.env) {
+  const secretId = env.TENCENT_COS_SECRET_ID;
+  const secretKey = env.TENCENT_COS_SECRET_KEY;
+  const region = env.TENCENT_COS_REGION;
+  if (!secretId || !secretKey || !region) throw new Error("Tencent COS configuration is incomplete.");
+
+  const COSModule = await import("cos-nodejs-sdk-v5");
+  const COS = COSModule.default ?? COSModule;
+  const cos = new COS({
+    SecretId: secretId,
+    SecretKey: secretKey
+  });
+
+  const result = await new Promise<{ Url?: string }>((resolve, reject) => {
+    cos.getObjectUrl(
+      {
+        Bucket: cosPath.bucket,
+        Region: region,
+        Key: cosPath.key,
+        Method: "GET",
+        Sign: true,
+        Expires: getCosSignedUrlExpiresSeconds(env)
+      },
+      (error: unknown, data: { Url?: string }) => {
+        if (error) reject(error);
+        else resolve(data);
+      }
+    );
+  });
+
+  if (!result.Url) throw new Error("Tencent COS did not return a signed download URL.");
+  return result.Url.startsWith("http") ? result.Url : `https://${result.Url}`;
 }

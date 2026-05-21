@@ -52,7 +52,10 @@ nano /opt/enhe-ai-tools/.env
 POSTGRES_PASSWORD=换成强密码
 AUTH_SECRET=换成长随机字符串
 NEXT_PUBLIC_APP_URL=http://服务器IP:3001
+TENCENT_COS_SIGNED_URL_EXPIRES_SECONDS=600
 ```
+
+如果使用腾讯云 COS 保存软件安装包，建议将 COS Bucket 设为私有读，并在后台文件记录中使用 `cos://bucket/key` 作为文件路径。用户下载时系统会先做 VIP / 付费权限校验，再生成短期签名下载链接。
 
 数据库连接在 `docker-compose.yml` 中自动生成，连接到内部容器 `enhe-ai-tools-db:5432`，不会连接宿主机 `5432`。
 

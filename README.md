@@ -47,7 +47,7 @@ docker compose -f deploy/docker-compose.local.yml exec app npx prisma db seed
 
 - 使用云服务器安全组开放 80/443。
 - PostgreSQL 可使用同机容器或腾讯云数据库。
-- 上传文件第一版可落本地或 COS URL，正式上线建议接入腾讯云 COS 直传。
+- 上传文件支持本地落盘或腾讯云 COS。COS 文件可使用 `cos://bucket/key` 作为文件路径，下载时由服务端生成短期签名 URL，签名有效期通过 `TENCENT_COS_SIGNED_URL_EXPIRES_SECONDS` 配置。
 - 将 `docker/nginx.conf` 放入 Nginx 配置，反代到 `app:3000` 或服务器本机 `127.0.0.1:3000`。
 - 根目录不再放置 `docker-compose.yml`，避免服务器在项目根目录误执行默认 Compose。腾讯云独立部署请使用 `deploy/enhe-ai-tools/docker-compose.yml`。
 

@@ -1,6 +1,8 @@
 import { deleteOrderAdminAction, updateOrderAdminAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { buildAdminOrderPageHref, buildAdminOrderWhere, parseAdminOrderListParams } from "@/lib/admin-order";
 import { adminDeleteRiskConfirmationToken, canAdminDeleteOrderSafely } from "@/lib/order-rules";
 import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
@@ -20,10 +22,19 @@ type AdminOrdersPageProps = {
 
 export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
   const params = await searchParams;
-  const orders = await prisma.order.findMany({
-    include: { user: true, plan: true, tool: true, paymentProof: true, toolPurchase: true },
-    orderBy: { createdAt: "desc" }
-  });
+  const filters = parseAdminOrderListParams(params);
+  const where = buildAdminOrderWhere(filters);
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      include: { user: true, plan: true, tool: true, paymentProof: true, toolPurchase: true },
+      orderBy: { createdAt: "desc" },
+      skip: filters.skip,
+      take: filters.take
+    }),
+    prisma.order.count({ where })
+  ]);
+  const pageCount = Math.max(1, Math.ceil(total / filters.pageSize));
 
   return (
     <AdminSection
@@ -40,6 +51,44 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
           订单已删除。
         </p>
       ) : null}
+
+      <form className="glass mb-5 grid gap-3 rounded-2xl p-5 md:grid-cols-[1fr_220px_auto]" action="/admin/orders">
+        <input
+          name="q"
+          defaultValue={filters.q}
+          placeholder="搜索订单号、用户、套餐或工具"
+          className={inputClass}
+        />
+        <select name="status" defaultValue={filters.status ?? ""} className={selectClass}>
+          <option value="">全部状态</option>
+          {orderStatusOptions.map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+        <button className="rounded-full border border-white/12 px-5 py-3 text-sm font-semibold text-[#E8EEF8]">
+          筛选订单
+        </button>
+      </form>
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B95A7]">
+        <span>共 {total} 个订单，当前第 {filters.page} / {pageCount} 页</span>
+        <div className="flex gap-2">
+          <Link
+            href={buildAdminOrderPageHref(filters, filters.page - 1)}
+            aria-disabled={filters.page <= 1}
+            className={`rounded-full border border-white/12 px-4 py-2 ${filters.page <= 1 ? "pointer-events-none opacity-40" : ""}`}
+          >
+            上一页
+          </Link>
+          <Link
+            href={buildAdminOrderPageHref(filters, filters.page + 1)}
+            aria-disabled={filters.page >= pageCount}
+            className={`rounded-full border border-white/12 px-4 py-2 ${filters.page >= pageCount ? "pointer-events-none opacity-40" : ""}`}
+          >
+            下一页
+          </Link>
+        </div>
+      </div>
 
       <div className="space-y-4">
         {orders.map((order) => {
