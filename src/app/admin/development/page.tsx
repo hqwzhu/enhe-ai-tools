@@ -18,6 +18,31 @@ import {
 } from "@/lib/development-progress";
 
 type VersionWithItems = DevelopmentVersion & { items: DevelopmentItem[] };
+type ReadonlyDevelopmentItem = Pick<DevelopmentItem, "id" | "module" | "name" | "status" | "priority" | "relatedFiles" | "notes" | "sortOrder" | "updatedAt">;
+
+const defaultDevelopmentItems = [
+  ["基础页面", "首页与工具入口", "completed", "medium", "src/app/page.tsx, src/app/software/page.tsx, src/app/online-tools/page.tsx", "首页、电脑软件工具、在线网页工具入口已具备。", 10],
+  ["用户与权限", "注册登录与用户中心", "completed", "high", "src/app/(auth), src/app/user/page.tsx, src/lib/auth.ts", "已支持注册、登录、退出、用户中心和会话安全。", 20],
+  ["用户与权限", "管理员后台权限", "completed", "high", "src/app/admin/layout.tsx, src/lib/auth.ts", "普通用户不能进入后台，管理员可访问后台菜单。", 30],
+  ["工具系统", "工具分类后台自定义", "completed", "high", "src/app/admin/categories/page.tsx", "电脑软件与在线网页工具分类由后台维护。", 40],
+  ["工具系统", "电脑软件工具管理", "completed", "high", "src/app/admin/software/page.tsx, src/app/admin/software/[id]/page.tsx", "已支持清单、详情编辑、封面上传、下载文件绑定和上架检查。", 50],
+  ["工具系统", "在线网页工具管理", "completed", "high", "src/app/admin/online-tools/page.tsx, src/app/admin/online-tools/[id]/page.tsx", "已支持在线地址、权限和上架管理。", 60],
+  ["工具系统", "工具详情页与教程", "completed", "high", "src/app/tools/[slug]/page.tsx, src/app/admin/tutorials/page.tsx", "详情页已展示教程、截图、评论和相关推荐；教程支持注意事项与常见错误。", 70],
+  ["VIP 与订单", "会员套餐管理", "completed", "high", "src/app/admin/plans/page.tsx, src/app/pricing/page.tsx", "后台可维护套餐，前台可创建会员订单。", 80],
+  ["VIP 与订单", "订单创建与取消", "completed", "high", "src/app/actions.ts, src/app/user/page.tsx", "用户可创建订单，并可取消允许取消状态的订单。", 90],
+  ["VIP 与订单", "个人收款码支付页", "completed", "high", "src/app/orders/[id]/pay/page.tsx, public/images/payment", "支付页已展示支付宝和微信收款码，并提示备注订单号。", 100],
+  ["VIP 与订单", "付款截图上传与预览", "completed", "high", "src/app/api/uploads/payment-proof/route.ts, src/app/orders/[id]/page.tsx", "上传后进入订单详情并展示付款凭证预览。", 110],
+  ["VIP 与订单", "后台支付审核自动开通权益", "completed", "high", "src/app/actions.ts, src/lib/membership.ts", "审核通过统一调用 membership 服务，VIP 与软件购买权益分流处理。", 120],
+  ["权限控制", "VIP 软件下载权限", "completed", "high", "src/app/api/tools/[id]/download/route.ts, src/lib/access.ts", "下载权限在服务端校验。", 130],
+  ["权限控制", "在线工具使用权限", "completed", "high", "src/app/api/tools/[id]/use/route.ts, src/lib/access.ts", "在线工具入口在服务端校验权限并记录使用日志。", 140],
+  ["内容互动", "用户评论与后台审核", "completed", "medium", "src/app/tools/[slug]/page.tsx, src/app/admin/comments/page.tsx", "评论需后台审核，支持置顶和删除。", 150],
+  ["文件与存储", "文件上传与 COS 预留", "partial", "high", "src/lib/storage.ts, src/app/admin/files/page.tsx", "已支持本地上传、COS 环境变量自动切换和配置体检；后续可补 COS 对象删除。", 160],
+  ["售后与通知", "退款/售后记录", "completed", "medium", "src/app/orders/[id]/page.tsx, src/app/admin/orders/page.tsx", "用户可申请售后/退款，后台可处理并记录。", 170],
+  ["售后与通知", "站内通知", "completed", "medium", "src/app/user/page.tsx, src/lib/notifications.ts", "支付审核、退款处理、VIP 调整已通知用户。", 180],
+  ["部署运维", "Docker 与腾讯云部署配置", "completed", "high", "Dockerfile, deploy.sh, deploy/enhe-ai-tools", "已拆分独立部署文件，避免影响旧项目端口。", 190],
+  ["安全与质量", "关键流程测试", "partial", "medium", "src/lib/*.test.ts, tests/e2e/commercial-flow.spec.ts", "核心单元测试和商业闭环 E2E 已存在；后续可补更多管理端浏览器回归。", 200],
+  ["下一阶段", "后台消息中心与更细审计筛选", "recommended", "low", "src/app/admin/audit/page.tsx", "建议后续补管理员侧消息中心和更细粒度审计查询。", 210]
+] as const;
 
 export default async function AdminDevelopmentPage({
   searchParams
@@ -34,8 +59,27 @@ export default async function AdminDevelopmentPage({
     orderBy: [{ sortOrder: "desc" }, { createdAt: "desc" }]
   });
   const selectedVersion = versions.find((version) => version.id === params.version) ?? versions.find((version) => version.status === "active") ?? versions[0] ?? null;
-  const summary = calculateDevelopmentSummary((selectedVersion?.items ?? []) as { status: DevelopmentItemStatus }[]);
-  const groupedItems = selectedVersion ? groupDevelopmentItemsByModule(selectedVersion.items) : [];
+  const fallbackUpdatedAt = new Date("2026-05-22T00:00:00");
+  const fallbackItems: ReadonlyDevelopmentItem[] = defaultDevelopmentItems.map(([module, name, status, priority, relatedFiles, notes, sortOrder]) => ({
+    id: `default-${sortOrder}`,
+    module,
+    name,
+    status,
+    priority,
+    relatedFiles,
+    notes,
+    sortOrder,
+    updatedAt: fallbackUpdatedAt
+  }));
+  const displayVersion = selectedVersion ?? {
+    version: "V1.0",
+    name: "商业闭环版",
+    description: "默认进度快照。创建版本或运行 seed 后可在数据库中维护这些进度项。",
+    status: "active" as const
+  };
+  const displayItems = selectedVersion?.items ?? fallbackItems;
+  const summary = calculateDevelopmentSummary(displayItems as { status: DevelopmentItemStatus }[]);
+  const groupedItems = groupDevelopmentItemsByModule(displayItems);
 
   return (
     <AdminSection
@@ -53,14 +97,12 @@ export default async function AdminDevelopmentPage({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm text-[#48F5D3]">Current Version</p>
-              <h2 className="mt-2 text-3xl font-semibold">{selectedVersion ? `${selectedVersion.version} · ${selectedVersion.name}` : "尚未创建版本"}</h2>
-              {selectedVersion?.description ? <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">{selectedVersion.description}</p> : null}
+              <h2 className="mt-2 text-3xl font-semibold">{`${displayVersion.version} · ${displayVersion.name}`}</h2>
+              {displayVersion.description ? <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">{displayVersion.description}</p> : null}
             </div>
-            {selectedVersion ? (
-              <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8B95A7]">
-                {versionStatusMeta[selectedVersion.status]}
-              </span>
-            ) : null}
+            <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8B95A7]">
+              {versionStatusMeta[displayVersion.status]}
+            </span>
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-5">
@@ -94,29 +136,30 @@ export default async function AdminDevelopmentPage({
         <VersionForm version={selectedVersion} />
       </div>
 
-      {selectedVersion ? (
-        <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]">
-          <div className="space-y-6">
-            {groupedItems.length ? (
-              groupedItems.map((group) => (
-                <section key={group.module} className="glass rounded-2xl p-6">
-                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                    <h2 className="text-xl font-semibold">{group.module}</h2>
-                    <span className="text-xs text-[#8B95A7]">{group.items.length} 项</span>
-                  </div>
-                  <div className="space-y-4">
-                    {group.items.map((item) => (
-                      <DevelopmentItemCard key={item.id} item={item} versionId={selectedVersion.id} />
-                    ))}
-                  </div>
-                </section>
-              ))
-            ) : (
-              <div className="glass rounded-2xl p-6 text-sm text-[#8B95A7]">当前版本还没有功能项，请在右侧新增。</div>
-            )}
-          </div>
+      <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]">
+        <div className="space-y-6">
+          {groupedItems.map((group) => (
+            <section key={group.module} className="glass rounded-2xl p-6">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-xl font-semibold">{group.module}</h2>
+                <span className="text-xs text-[#8B95A7]">{group.items.length} 项</span>
+              </div>
+              <div className="space-y-4">
+                {group.items.map((item) =>
+                  selectedVersion ? (
+                    <DevelopmentItemCard key={item.id} item={item as DevelopmentItem} versionId={selectedVersion.id} />
+                  ) : (
+                    <ReadonlyDevelopmentItemCard key={item.id} item={item as ReadonlyDevelopmentItem} />
+                  )
+                )}
+              </div>
+            </section>
+          ))}
+        </div>
 
-          <div className="space-y-6">
+        <div className="space-y-6">
+          {selectedVersion ? (
+            <>
             <DevelopmentItemForm versionId={selectedVersion.id} />
             <form action={deleteDevelopmentVersionAction} className="glass rounded-2xl border border-red-400/20 p-6">
               <input type="hidden" name="id" value={selectedVersion.id} />
@@ -126,11 +169,14 @@ export default async function AdminDevelopmentPage({
                 <DangerButton>删除版本</DangerButton>
               </div>
             </form>
-          </div>
+            </>
+          ) : (
+            <div className="glass rounded-2xl p-6 text-sm leading-6 text-[#8B95A7]">
+              当前展示的是默认只读进度快照。右上方新增版本后，即可在数据库中维护版本和功能项。
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="mt-8 glass rounded-2xl p-6 text-sm text-[#8B95A7]">请先创建一个版本，再维护开发进度项。</div>
-      )}
+      </div>
     </AdminSection>
   );
 }
@@ -198,6 +244,31 @@ function DevelopmentItemCard({ item, versionId }: { item: DevelopmentItem; versi
         </form>
       </div>
     </details>
+  );
+}
+
+function ReadonlyDevelopmentItemCard({ item }: { item: ReadonlyDevelopmentItem }) {
+  const meta = statusMeta[item.status];
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/6 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="font-semibold text-[#E8EEF8]">{item.name}</h3>
+          <p className="mt-2 text-xs text-[#8B95A7]">
+            {priorityMeta[item.priority].label} · 更新于 {item.updatedAt.toLocaleDateString("zh-CN")}
+          </p>
+        </div>
+        <span className={`rounded-full border px-3 py-1 text-xs ${meta.className}`}>{meta.label}</span>
+      </div>
+      {item.notes ? <p className="mt-3 text-sm leading-6 text-[#8B95A7]">{item.notes}</p> : null}
+      {item.relatedFiles ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {splitRelatedFiles(item.relatedFiles).map((file) => (
+            <code key={file} className="rounded-full border border-white/10 px-2 py-1 text-xs text-[#8B95A7]">{file}</code>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

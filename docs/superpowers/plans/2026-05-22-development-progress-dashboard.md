@@ -57,4 +57,4 @@
 - [x] Run `npm run typecheck`.
 - [x] Run `npm run build`.
 - [x] Run `npm run test:e2e`.
-- [ ] Commit and push to `main`.
+- [x] Commit and push to `main`.
