@@ -84,6 +84,26 @@ enum ContentStatus {
   disabled
 }
 
+enum DevelopmentVersionStatus {
+  planned
+  active
+  released
+  archived
+}
+
+enum DevelopmentItemStatus {
+  completed
+  partial
+  not_started
+  recommended
+}
+
+enum DevelopmentPriority {
+  high
+  medium
+  low
+}
+
 model User {
   id              String          @id @default(cuid())
   email           String?         @unique
@@ -439,6 +459,42 @@ model SiteSetting {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
+}
+
+model DevelopmentVersion {
+  id          String                   @id @default(cuid())
+  version     String                   @unique
+  name        String
+  description String?
+  status      DevelopmentVersionStatus @default(active)
+  startedAt   DateTime?                @map("started_at")
+  releasedAt  DateTime?                @map("released_at")
+  sortOrder   Int                      @default(0) @map("sort_order")
+  createdAt   DateTime                 @default(now()) @map("created_at")
+  updatedAt   DateTime                 @updatedAt @map("updated_at")
+  items       DevelopmentItem[]
+
+  @@index([status, sortOrder])
+  @@map("development_versions")
+}
+
+model DevelopmentItem {
+  id           String                @id @default(cuid())
+  versionId    String                @map("version_id")
+  module       String
+  name         String
+  status       DevelopmentItemStatus @default(not_started)
+  priority     DevelopmentPriority   @default(medium)
+  relatedFiles String?               @map("related_files")
+  notes        String?
+  sortOrder    Int                   @default(0) @map("sort_order")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  version      DevelopmentVersion    @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@unique([versionId, name])
+  @@index([versionId, module, status])
+  @@map("development_items")
 }
 
 model VipAdjustmentLog {

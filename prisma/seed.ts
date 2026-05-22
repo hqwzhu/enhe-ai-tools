@@ -53,41 +53,54 @@ async function main() {
     });
   }
 
-  const softwareCategory = await prisma.toolCategory.create({
-    data: {
-      name: "自动化软件",
-      type: "software",
-      description: "批量处理、桌面自动化、效率增强工具。",
-      sortOrder: 10
-    }
+  const softwareCategoryData = {
+    name: "自动化软件",
+    type: "software" as const,
+    description: "批量处理、桌面自动化、效率增强工具。",
+    sortOrder: 10
+  };
+  const existingSoftwareCategory = await prisma.toolCategory.findFirst({
+    where: { name: softwareCategoryData.name, type: softwareCategoryData.type }
   });
+  const softwareCategory = existingSoftwareCategory
+    ? await prisma.toolCategory.update({ where: { id: existingSoftwareCategory.id }, data: softwareCategoryData })
+    : await prisma.toolCategory.create({ data: softwareCategoryData });
 
-  const onlineCategory = await prisma.toolCategory.create({
-    data: {
-      name: "在线处理",
-      type: "online",
-      description: "浏览器内即可使用的轻量网页工具。",
-      sortOrder: 10
-    }
+  const onlineCategoryData = {
+    name: "在线处理",
+    type: "online" as const,
+    description: "浏览器内即可使用的轻量网页工具。",
+    sortOrder: 10
+  };
+  const existingOnlineCategory = await prisma.toolCategory.findFirst({
+    where: { name: onlineCategoryData.name, type: onlineCategoryData.type }
   });
+  const onlineCategory = existingOnlineCategory
+    ? await prisma.toolCategory.update({ where: { id: existingOnlineCategory.id }, data: onlineCategoryData })
+    : await prisma.toolCategory.create({ data: onlineCategoryData });
 
-  await prisma.tool.create({
-    data: {
-      name: "ENHE 批量文件重命名助手",
-      slug: "enhe-batch-renamer",
-      type: "software",
-      categoryId: softwareCategory.id,
-      shortDescription: "一键批量重命名文件，支持规则模板与预览。",
-      content: "面向资料整理、素材归档、项目交付场景的 Windows 桌面工具。",
-      coverImage: "/images/tool-software.svg",
-      screenshots: ["/images/tool-software.svg"],
-      version: "1.0.0",
-      systemRequirement: "Windows 10/11",
-      isVipRequired: true,
-      isDownloadPaid: true,
-      downloadPrice: "29.00",
-      status: "published",
-      sortOrder: 10,
+  const softwareToolData = {
+    name: "ENHE 批量文件重命名助手",
+    slug: "enhe-batch-renamer",
+    type: "software" as const,
+    categoryId: softwareCategory.id,
+    shortDescription: "一键批量重命名文件，支持规则模板与预览。",
+    content: "面向资料整理、素材归档、项目交付场景的 Windows 桌面工具。",
+    coverImage: "/images/tool-software.svg",
+    screenshots: ["/images/tool-software.svg"],
+    version: "1.0.0",
+    systemRequirement: "Windows 10/11",
+    isVipRequired: true,
+    isDownloadPaid: true,
+    downloadPrice: "29.00",
+    status: "published" as const,
+    sortOrder: 10
+  };
+  await prisma.tool.upsert({
+    where: { slug: softwareToolData.slug },
+    update: softwareToolData,
+    create: {
+      ...softwareToolData,
       tutorials: {
         create: {
           title: "三步完成批量重命名",
@@ -98,20 +111,25 @@ async function main() {
     }
   });
 
-  await prisma.tool.create({
-    data: {
-      name: "ENHE 文案清洗在线工具",
-      slug: "enhe-copy-cleaner",
-      type: "online",
-      categoryId: onlineCategory.id,
-      shortDescription: "清理多余空格、换行和特殊符号，适合内容整理。",
-      content: "把杂乱文本整理为适合发布、归档或二次处理的标准格式。",
-      coverImage: "/images/tool-online.svg",
-      screenshots: ["/images/tool-online.svg"],
-      onlineUrl: "https://example.com/tools/copy-cleaner",
-      isVipRequired: true,
-      status: "published",
-      sortOrder: 20,
+  const onlineToolData = {
+    name: "ENHE 文案清洗在线工具",
+    slug: "enhe-copy-cleaner",
+    type: "online" as const,
+    categoryId: onlineCategory.id,
+    shortDescription: "清理多余空格、换行和特殊符号，适合内容整理。",
+    content: "把杂乱文本整理为适合发布、归档或二次处理的标准格式。",
+    coverImage: "/images/tool-online.svg",
+    screenshots: ["/images/tool-online.svg"],
+    onlineUrl: "https://example.com/tools/copy-cleaner",
+    isVipRequired: true,
+    status: "published" as const,
+    sortOrder: 20
+  };
+  await prisma.tool.upsert({
+    where: { slug: onlineToolData.slug },
+    update: onlineToolData,
+    create: {
+      ...onlineToolData,
       tutorials: {
         create: {
           title: "快速清洗文本",
@@ -141,6 +159,65 @@ async function main() {
       where: { key },
       update: { value, description },
       create: { key, value, description }
+    });
+  }
+
+  const v1 = await prisma.developmentVersion.upsert({
+    where: { version: "V1.0" },
+    update: {
+      name: "商业闭环版",
+      description: "围绕注册登录、VIP、订单支付、工具权限、文件上传、后台审核和部署配置的第一版可运营能力。",
+      status: "active",
+      sortOrder: 100
+    },
+    create: {
+      version: "V1.0",
+      name: "商业闭环版",
+      description: "围绕注册登录、VIP、订单支付、工具权限、文件上传、后台审核和部署配置的第一版可运营能力。",
+      status: "active",
+      sortOrder: 100,
+      startedAt: new Date("2026-05-18T00:00:00")
+    }
+  });
+
+  const progressItems = [
+    ["基础页面", "首页与工具入口", "completed", "medium", "src/app/page.tsx, src/app/software/page.tsx, src/app/online-tools/page.tsx", "首页、电脑软件工具、在线网页工具入口已具备。", 10],
+    ["用户与权限", "注册登录与用户中心", "completed", "high", "src/app/(auth), src/app/user/page.tsx, src/lib/auth.ts", "已支持注册、登录、退出、用户中心和会话安全。", 20],
+    ["用户与权限", "管理员后台权限", "completed", "high", "src/app/admin/layout.tsx, src/lib/auth.ts", "普通用户不能进入后台，管理员可访问后台菜单。", 30],
+    ["工具系统", "工具分类后台自定义", "completed", "high", "src/app/admin/categories/page.tsx", "电脑软件与在线网页工具分类由后台维护。", 40],
+    ["工具系统", "电脑软件工具管理", "completed", "high", "src/app/admin/software/page.tsx, src/app/admin/software/[id]/page.tsx", "已支持清单、详情编辑、封面上传、下载文件绑定和上架检查。", 50],
+    ["工具系统", "在线网页工具管理", "completed", "high", "src/app/admin/online-tools/page.tsx, src/app/admin/online-tools/[id]/page.tsx", "已支持在线地址、权限和上架管理。", 60],
+    ["工具系统", "工具详情页与教程", "completed", "high", "src/app/tools/[slug]/page.tsx, src/app/admin/tutorials/page.tsx", "详情页已展示教程、截图、评论和相关推荐；教程支持注意事项与常见错误。", 70],
+    ["VIP 与订单", "会员套餐管理", "completed", "high", "src/app/admin/plans/page.tsx, src/app/pricing/page.tsx", "后台可维护套餐，前台可创建会员订单。", 80],
+    ["VIP 与订单", "订单创建与取消", "completed", "high", "src/app/actions.ts, src/app/user/page.tsx", "用户可创建订单，并可取消允许取消状态的订单。", 90],
+    ["VIP 与订单", "个人收款码支付页", "completed", "high", "src/app/orders/[id]/pay/page.tsx, public/images/payment", "支付页已展示支付宝和微信收款码，并提示备注订单号。", 100],
+    ["VIP 与订单", "付款截图上传与预览", "completed", "high", "src/app/api/uploads/payment-proof/route.ts, src/app/orders/[id]/page.tsx", "上传后进入订单详情并展示付款凭证预览。", 110],
+    ["VIP 与订单", "后台支付审核自动开通权益", "completed", "high", "src/app/actions.ts, src/lib/membership.ts", "审核通过统一调用 membership 服务，VIP 与软件购买权益分流处理。", 120],
+    ["权限控制", "VIP 软件下载权限", "completed", "high", "src/app/api/tools/[id]/download/route.ts, src/lib/access.ts", "下载权限在服务端校验。", 130],
+    ["权限控制", "在线工具使用权限", "completed", "high", "src/app/api/tools/[id]/use/route.ts, src/lib/access.ts", "在线工具入口在服务端校验权限并记录使用日志。", 140],
+    ["内容互动", "用户评论与后台审核", "completed", "medium", "src/app/tools/[slug]/page.tsx, src/app/admin/comments/page.tsx", "评论需后台审核，支持置顶和删除。", 150],
+    ["文件与存储", "文件上传与 COS 预留", "partial", "high", "src/lib/storage.ts, src/app/admin/files/page.tsx", "已支持本地上传、COS 环境变量自动切换和配置体检；后续可补 COS 对象删除。", 160],
+    ["售后与通知", "退款/售后记录", "completed", "medium", "src/app/orders/[id]/page.tsx, src/app/admin/orders/page.tsx", "用户可申请售后/退款，后台可处理并记录。", 170],
+    ["售后与通知", "站内通知", "completed", "medium", "src/app/user/page.tsx, src/lib/notifications.ts", "支付审核、退款处理、VIP 调整已通知用户。", 180],
+    ["部署运维", "Docker 与腾讯云部署配置", "completed", "high", "Dockerfile, deploy.sh, deploy/enhe-ai-tools", "已拆分独立部署文件，避免影响旧项目端口。", 190],
+    ["安全与质量", "关键流程测试", "partial", "medium", "src/lib/*.test.ts, tests/e2e/commercial-flow.spec.ts", "核心单元测试和商业闭环 E2E 已存在；后续可补更多管理端浏览器回归。", 200],
+    ["下一阶段", "后台消息中心与更细审计筛选", "recommended", "low", "src/app/admin/audit/page.tsx", "建议后续补管理员侧消息中心和更细粒度审计查询。", 210]
+  ] as const;
+
+  for (const [module, name, status, priority, relatedFiles, notes, sortOrder] of progressItems) {
+    await prisma.developmentItem.upsert({
+      where: { versionId_name: { versionId: v1.id, name } },
+      update: { module, status, priority, relatedFiles, notes, sortOrder },
+      create: {
+        versionId: v1.id,
+        module,
+        name,
+        status,
+        priority,
+        relatedFiles,
+        notes,
+        sortOrder
+      }
     });
   }
 

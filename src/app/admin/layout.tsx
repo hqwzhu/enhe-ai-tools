@@ -4,6 +4,7 @@ import { Container } from "@/components/ui";
 
 const adminNav = [
   ["数据看板", "/admin"],
+  ["开发进度驾驶舱", "/admin/development"],
   ["用户管理", "/admin/users"],
   ["会员套餐管理", "/admin/plans"],
   ["订单管理", "/admin/orders"],

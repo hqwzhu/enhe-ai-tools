@@ -413,6 +413,104 @@ function getManualVipType(durationDays: number) {
   return `${durationDays}天VIP`;
 }
 
+export async function upsertDevelopmentVersionAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const data = {
+    version: z.string().min(1).parse(formData.get("version")),
+    name: z.string().min(1).parse(formData.get("name")),
+    description: parseOptionalString(formData.get("description")),
+    status: z.enum(["planned", "active", "released", "archived"]).parse(formData.get("status") ?? "active"),
+    startedAt: parseDateField(formData.get("startedAt")),
+    releasedAt: parseDateField(formData.get("releasedAt")),
+    sortOrder: parseNumberField(formData.get("sortOrder"), 0)
+  };
+
+  const version = id
+    ? await prisma.developmentVersion.update({ where: { id }, data })
+    : await prisma.developmentVersion.create({ data });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "development.version.update" : "development.version.create",
+    targetType: "development_version",
+    targetId: version.id,
+    summary: id ? "Updated development version." : "Created development version.",
+    metadata: { version: version.version, status: version.status }
+  });
+
+  revalidatePath("/admin/development");
+}
+
+export async function deleteDevelopmentVersionAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const version = await prisma.developmentVersion.delete({ where: { id } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "development.version.delete",
+    targetType: "development_version",
+    targetId: id,
+    summary: "Deleted development version and its progress items.",
+    metadata: { version: version.version, name: version.name }
+  });
+
+  revalidatePath("/admin/development");
+  redirect("/admin/development?deleted=version");
+}
+
+export async function upsertDevelopmentItemAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const data = {
+    versionId: idSchema.parse(formData.get("versionId")),
+    module: z.string().min(1).parse(formData.get("module")),
+    name: z.string().min(1).parse(formData.get("name")),
+    status: z.enum(["completed", "partial", "not_started", "recommended"]).parse(formData.get("status") ?? "not_started"),
+    priority: z.enum(["high", "medium", "low"]).parse(formData.get("priority") ?? "medium"),
+    relatedFiles: parseOptionalString(formData.get("relatedFiles")),
+    notes: parseOptionalString(formData.get("notes")),
+    sortOrder: parseNumberField(formData.get("sortOrder"), 0)
+  };
+
+  const item = id
+    ? await prisma.developmentItem.update({ where: { id }, data })
+    : await prisma.developmentItem.create({ data });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "development.item.update" : "development.item.create",
+    targetType: "development_item",
+    targetId: item.id,
+    summary: id ? "Updated development progress item." : "Created development progress item.",
+    metadata: { module: item.module, name: item.name, status: item.status, priority: item.priority }
+  });
+
+  revalidatePath("/admin/development");
+}
+
+export async function deleteDevelopmentItemAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const item = await prisma.developmentItem.delete({ where: { id } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "development.item.delete",
+    targetType: "development_item",
+    targetId: id,
+    summary: "Deleted development progress item.",
+    metadata: { module: item.module, name: item.name, status: item.status }
+  });
+
+  revalidatePath("/admin/development");
+  redirect("/admin/development?deleted=item");
+}
+
+function parseDateField(value: FormDataEntryValue | null) {
+  const text = parseOptionalString(value);
+  return text ? new Date(`${text}T00:00:00`) : null;
+}
+
 export async function upsertCategoryAction(formData: FormData) {
   const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
