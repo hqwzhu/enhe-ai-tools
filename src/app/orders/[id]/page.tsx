@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { createRefundRequestAction } from "@/app/actions";
 import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { isImagePath, normalizeImageSrc } from "@/lib/media";
 import { getOrderBenefitExpiry } from "@/lib/order-view";
+import { canUserRequestRefundForOrder } from "@/lib/order-rules";
+import { getPaymentProofImageSrc, isRenderablePaymentProofImage } from "@/lib/payment-proof-image";
 import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
 
@@ -19,16 +21,23 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const order = await prisma.order.findFirst({
     where: { id, userId: user.id },
-    include: { plan: true, tool: true, paymentProof: true }
+    include: {
+      plan: true,
+      tool: true,
+      paymentProof: true,
+      refundRecords: { orderBy: { createdAt: "desc" } }
+    }
   });
   if (!order) notFound();
 
-  const proofImage = normalizeImageSrc(order.paymentProof?.proofImage);
+  const proofImage = getPaymentProofImageSrc(order.paymentProof);
   const expiry = getOrderBenefitExpiry({
     orderType: order.orderType,
     activatedAt: order.activatedAt,
     plan: order.plan
   });
+  const hasPendingRefundRequest = order.refundRecords.some((refund) => refund.status === "pending");
+  const canRequestRefund = canUserRequestRefundForOrder(order.orderStatus, hasPendingRefundRequest);
 
   return (
     <Container className="py-14">
@@ -36,6 +45,11 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
       {query.uploaded ? (
         <div className="mb-6 rounded-2xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-5 py-4 text-sm font-semibold text-[#48F5D3]">
           上传成功，订单已进入待审核状态。
+        </div>
+      ) : null}
+      {query.refund === "requested" ? (
+        <div className="mb-6 rounded-2xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-5 py-4 text-sm font-semibold text-[#48F5D3]">
+          售后/退款申请已提交，等待后台处理。
         </div>
       ) : null}
       <div className="glass rounded-2xl p-7">
@@ -54,7 +68,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
         {proofImage ? (
           <div className="mt-6 rounded-2xl border border-white/10 bg-white/8 p-5">
             <p className="mb-3 text-sm text-[#8B95A7]">付款截图预览</p>
-            {isImagePath(proofImage) ? (
+            {isRenderablePaymentProofImage(proofImage) ? (
               <Image
                 src={proofImage}
                 alt="付款截图"
@@ -75,6 +89,42 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
             <p className="mt-2 leading-7">{order.paymentProof.reviewNote}</p>
           </div>
         ) : null}
+
+        <div className="mt-6 rounded-2xl border border-white/10 bg-white/8 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">售后/退款</h2>
+              <p className="mt-2 text-sm text-[#8B95A7]">已支付或已开通订单可以提交售后/退款申请，后台会人工处理。</p>
+            </div>
+            {hasPendingRefundRequest ? (
+              <span className="rounded-full border border-[#FFB86B]/30 px-3 py-1 text-xs text-[#FFB86B]">待处理</span>
+            ) : null}
+          </div>
+          {order.refundRecords.length ? (
+            <div className="mt-4 space-y-3">
+              {order.refundRecords.map((refund) => (
+                <div key={refund.id} className="rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#8B95A7]">
+                  <span className="font-semibold text-[#E8EEF8]">{formatCurrency(refund.amount.toString())}</span>
+                  <span> · {refund.status} · {refund.reason}</span>
+                  <span> · {refund.createdAt.toLocaleString("zh-CN")}</span>
+                  {refund.note ? <p className="mt-2 leading-6">{refund.note}</p> : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {canRequestRefund ? (
+            <form action={createRefundRequestAction} className="mt-5 grid gap-3">
+              <input type="hidden" name="orderId" value={order.id} />
+              <input name="reason" required minLength={2} maxLength={500} placeholder="申请原因，例如：重复付款 / 无法使用 / 售后协商" className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
+              <textarea name="note" maxLength={1000} placeholder="补充说明，可填写付款账号、沟通记录或退款方式" className="min-h-24 rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
+              <button className="w-fit rounded-full border border-[#FFB86B]/40 px-5 py-3 text-sm font-semibold text-[#FFB86B] transition hover:bg-[#FFB86B]/10">
+                提交售后/退款申请
+              </button>
+            </form>
+          ) : !hasPendingRefundRequest && !order.refundRecords.length ? (
+            <p className="mt-4 text-sm text-[#8B95A7]">当前订单状态暂不支持提交售后/退款申请。</p>
+          ) : null}
+        </div>
 
         <div className="mt-8 flex flex-wrap gap-3">
           {["pending_payment", "rejected"].includes(order.orderStatus) ? (

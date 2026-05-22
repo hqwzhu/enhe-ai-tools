@@ -3,14 +3,24 @@ import { ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
+import {
+  getEffectiveHomeHeroIntro,
+  getEffectiveHomeHeroSubtitle,
+  getEffectiveHomeHeroTitle,
+  getSettingsMap
+} from "@/lib/settings";
 
 export default async function HomePage() {
-  const [software, onlineTools, locale] = await Promise.all([
+  const [software, onlineTools, locale, settings] = await Promise.all([
     prisma.tool.findMany({ where: { type: "software", status: "published" }, include: { category: true }, orderBy: { sortOrder: "asc" }, take: 3 }),
     prisma.tool.findMany({ where: { type: "online", status: "published" }, include: { category: true }, orderBy: { sortOrder: "asc" }, take: 3 }),
-    getCurrentLocale()
+    getCurrentLocale(),
+    getSettingsMap()
   ]);
   const t = getDictionary(locale);
+  const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
+  const heroSubtitle = getEffectiveHomeHeroSubtitle(settings, t.home.eyebrow);
+  const heroIntro = getEffectiveHomeHeroIntro(settings, t.home.intro);
 
   return (
     <>
@@ -18,13 +28,13 @@ export default async function HomePage() {
         <Container className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
             <div className="mb-6 inline-flex rounded-full border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-2 text-sm text-[#48F5D3]">
-              {t.home.eyebrow}
+              {heroSubtitle}
             </div>
             <h1 className="max-w-5xl text-4xl font-semibold tracking-normal text-white sm:text-5xl xl:text-6xl">
-              {t.home.title}
+              {heroTitle}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8B95A7]">
-              {t.home.intro}
+              {heroIntro}
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <ButtonLink href="/software">{t.home.softwareButton}</ButtonLink>

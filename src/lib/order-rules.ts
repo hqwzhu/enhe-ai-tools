@@ -3,6 +3,7 @@ import type { OrderStatus } from "@prisma/client";
 export const userCancellableOrderStatuses = ["pending_payment", "pending_review", "rejected"] as const;
 export const adminDeleteRiskConfirmationToken = "DELETE_ACTIVATED_ORDER";
 export const refundableOrderStatuses = ["paid", "activated", "refunded"] as const;
+export const userRefundRequestableOrderStatuses = ["paid", "activated"] as const;
 
 export function canUserCancelOrder(status: OrderStatus) {
   return userCancellableOrderStatuses.includes(status as (typeof userCancellableOrderStatuses)[number]);
@@ -14,6 +15,17 @@ export function canAdminDeleteOrderSafely(status: OrderStatus) {
 
 export function canRecordRefundForOrder(status: OrderStatus) {
   return refundableOrderStatuses.includes(status as (typeof refundableOrderStatuses)[number]);
+}
+
+export function canUserRequestRefundForOrder(status: OrderStatus, hasPendingRefundRequest: boolean) {
+  if (hasPendingRefundRequest) return false;
+  return userRefundRequestableOrderStatuses.includes(status as (typeof userRefundRequestableOrderStatuses)[number]);
+}
+
+export function getRefundRecordActorLabel(input: { adminEmail?: string | null; requesterEmail?: string | null }) {
+  if (input.adminEmail) return input.adminEmail;
+  if (input.requesterEmail) return `用户申请：${input.requesterEmail}`;
+  return "系统记录";
 }
 
 export function normalizeRefundRecordAmount(value: unknown, maxAmount: number) {

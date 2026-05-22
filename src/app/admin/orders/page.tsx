@@ -1,9 +1,9 @@
-import { createRefundRecordAdminAction, deleteOrderAdminAction, updateOrderAdminAction } from "@/app/admin/actions";
+import { createRefundRecordAdminAction, deleteOrderAdminAction, processRefundRecordAdminAction, updateOrderAdminAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { buildAdminOrderPageHref, buildAdminOrderWhere, parseAdminOrderListParams } from "@/lib/admin-order";
-import { adminDeleteRiskConfirmationToken, canAdminDeleteOrderSafely, canRecordRefundForOrder } from "@/lib/order-rules";
+import { adminDeleteRiskConfirmationToken, canAdminDeleteOrderSafely, canRecordRefundForOrder, getRefundRecordActorLabel } from "@/lib/order-rules";
 import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
         tool: true,
         paymentProof: true,
         toolPurchase: true,
-        refundRecords: { include: { admin: true }, orderBy: { createdAt: "desc" } }
+        refundRecords: { include: { admin: true, requester: true }, orderBy: { createdAt: "desc" } }
       },
       orderBy: { createdAt: "desc" },
       skip: filters.skip,
@@ -163,9 +163,21 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                       <div key={refund.id} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                         <span className="font-semibold text-[#E8EEF8]">{formatCurrency(refund.amount.toString())}</span>
                         <span> · {refund.status} · {refund.reason}</span>
-                        <span> · {refund.admin.email ?? refund.admin.id}</span>
+                        <span> · {getRefundRecordActorLabel({ adminEmail: refund.admin?.email, requesterEmail: refund.requester?.email })}</span>
                         <span> · {refund.createdAt.toLocaleString("zh-CN")}</span>
                         {refund.note ? <p className="mt-2 text-xs leading-5">{refund.note}</p> : null}
+                        {refund.status === "pending" ? (
+                          <form action={processRefundRecordAdminAction} className="mt-3 grid gap-2 md:grid-cols-[1fr_120px_120px]">
+                            <input type="hidden" name="refundId" value={refund.id} />
+                            <input name="note" placeholder="处理备注" className={inputClass} />
+                            <button name="status" value="completed" className="rounded-full bg-[#48F5D3] px-4 py-2 text-xs font-semibold text-[#05110e]">
+                              确认退款
+                            </button>
+                            <button name="status" value="rejected" className="rounded-full border border-white/12 px-4 py-2 text-xs text-[#E8EEF8]">
+                              拒绝申请
+                            </button>
+                          </form>
+                        ) : null}
                       </div>
                     ))}
                   </div>

@@ -4,6 +4,8 @@ import {
   canAdminDeleteOrderSafely,
   canRecordRefundForOrder,
   canUserCancelOrder,
+  canUserRequestRefundForOrder,
+  getRefundRecordActorLabel,
   isAdminDeleteRiskConfirmed,
   normalizeRefundRecordAmount
 } from "@/lib/order-rules";
@@ -44,6 +46,20 @@ describe("order business rules", () => {
     expect(canRecordRefundForOrder("pending_review")).toBe(false);
     expect(canRecordRefundForOrder("cancelled")).toBe(false);
     expect(canRecordRefundForOrder("rejected")).toBe(false);
+  });
+
+  it("allows users to request refunds only before a final refund decision", () => {
+    expect(canUserRequestRefundForOrder("paid", false)).toBe(true);
+    expect(canUserRequestRefundForOrder("activated", false)).toBe(true);
+    expect(canUserRequestRefundForOrder("paid", true)).toBe(false);
+    expect(canUserRequestRefundForOrder("refunded", false)).toBe(false);
+    expect(canUserRequestRefundForOrder("pending_payment", false)).toBe(false);
+  });
+
+  it("labels refund actors for admin-created and user-requested records", () => {
+    expect(getRefundRecordActorLabel({ adminEmail: "admin@example.com", requesterEmail: null })).toBe("admin@example.com");
+    expect(getRefundRecordActorLabel({ adminEmail: null, requesterEmail: "user@example.com" })).toBe("用户申请：user@example.com");
+    expect(getRefundRecordActorLabel({ adminEmail: null, requesterEmail: null })).toBe("系统记录");
   });
 
   it("normalizes refund record amounts without exceeding the order amount", () => {

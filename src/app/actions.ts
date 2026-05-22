@@ -19,7 +19,7 @@ import {
 } from "@/lib/auth";
 import { assertValidCsrfToken } from "@/lib/csrf";
 import { activateVipForOrder } from "@/lib/membership";
-import { canUserCancelOrder } from "@/lib/order-rules";
+import { canUserCancelOrder, canUserRequestRefundForOrder, normalizeRefundRecordAmount } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
 
 const accountSchema = z.object({
@@ -178,6 +178,37 @@ export async function cancelOrderAction(formData: FormData) {
 
   revalidatePath("/user");
   redirect("/user?order=cancelled");
+}
+
+export async function createRefundRequestAction(formData: FormData) {
+  const user = await requireUser();
+  const orderId = z.string().min(1).parse(formData.get("orderId"));
+  const reason = z.string().min(2, "请填写售后/退款原因").max(500).parse(formData.get("reason"));
+  const note = z.string().max(1000).optional().parse(String(formData.get("note") ?? "") || undefined);
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId: user.id },
+    include: { refundRecords: { where: { status: "pending" }, select: { id: true }, take: 1 } }
+  });
+  if (!order) throw new Error("订单不存在。");
+  if (!canUserRequestRefundForOrder(order.orderStatus, order.refundRecords.length > 0)) {
+    throw new Error("当前订单状态不允许申请售后/退款，或已有待处理申请。");
+  }
+
+  const amount = normalizeRefundRecordAmount(order.amount.toString(), Number(order.amount));
+  await prisma.orderRefundRecord.create({
+    data: {
+      orderId: order.id,
+      requesterId: user.id,
+      amount,
+      status: "pending",
+      reason,
+      note
+    }
+  });
+
+  revalidatePath(`/orders/${order.id}`);
+  revalidatePath("/user");
+  redirect(`/orders/${order.id}?refund=requested`);
 }
 
 export async function createCommentAction(formData: FormData) {

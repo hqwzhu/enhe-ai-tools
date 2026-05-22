@@ -135,7 +135,7 @@ export async function deleteUserAdminAction(formData: FormData) {
       where: { OR: [{ userId: id }, { adminId: id }] }
     });
     const refundRecords = await tx.orderRefundRecord.deleteMany({
-      where: { OR: [{ adminId: id }, { orderId: { in: orderIds } }] }
+      where: { OR: [{ adminId: id }, { requesterId: id }, { orderId: { in: orderIds } }] }
     });
     const paymentProofs = await tx.paymentProof.deleteMany({
       where: { OR: [{ userId: id }, { orderId: { in: orderIds } }] }
@@ -306,6 +306,49 @@ export async function createRefundRecordAdminAction(formData: FormData) {
   });
 
   revalidatePath("/admin/orders");
+  revalidatePath("/user");
+  redirect("/admin/orders?refund=1");
+}
+
+export async function processRefundRecordAdminAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("refundId"));
+  const status = z.enum(["completed", "rejected"]).parse(formData.get("status"));
+  const note = parseOptionalString(formData.get("note"));
+  const refund = await prisma.orderRefundRecord.findUnique({ where: { id }, include: { order: true } });
+  if (!refund) {
+    redirect(`/admin/orders?error=${encodeURIComponent("售后/退款记录不存在。")}`);
+  }
+  if (refund.status !== "pending") {
+    redirect(`/admin/orders?error=${encodeURIComponent("该售后/退款记录已经处理。")}`);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.orderRefundRecord.update({
+      where: { id },
+      data: {
+        status,
+        adminId: admin.id,
+        note: note ?? refund.note
+      }
+    });
+
+    if (status === "completed") {
+      await tx.order.update({ where: { id: refund.orderId }, data: { orderStatus: "refunded" } });
+    }
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "order.refund.process",
+    targetType: "order",
+    targetId: refund.orderId,
+    summary: "Processed user after-sales/refund request.",
+    metadata: { refundId: id, status, note }
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/orders/${refund.orderId}`);
   revalidatePath("/user");
   redirect("/admin/orders?refund=1");
 }
@@ -802,7 +845,11 @@ export async function updateSiteSettingAction(formData: FormData) {
     metadata: { key }
   });
   revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
   revalidatePath("/");
+  revalidatePath("/pricing");
+  revalidatePath("/software");
+  revalidatePath("/online-tools");
 }
 
 export async function goToPayAction(formData: FormData) {

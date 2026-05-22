@@ -5,12 +5,16 @@ import { setLocaleAction } from "@/app/language-actions";
 import { getCurrentUser } from "@/lib/auth";
 import { ButtonLink, Container } from "@/components/ui";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
+import { normalizeImageSrc } from "@/lib/media";
 import { getActiveMembership } from "@/lib/membership";
+import { getEffectiveSiteLogo, getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
 export async function SiteHeader() {
-  const [user, locale] = await Promise.all([getCurrentUser(), getCurrentLocale()]);
+  const [user, locale, settings] = await Promise.all([getCurrentUser(), getCurrentLocale(), getSettingsMap()]);
   const membership = user ? await getActiveMembership(user.id) : null;
   const t = getDictionary(locale);
+  const brand = getEffectiveSiteName(settings, t.brand);
+  const logoSrc = normalizeImageSrc(getEffectiveSiteLogo(settings, "/images/enhe-logo.svg")) ?? "/images/enhe-logo.svg";
   const navItems = [
     [t.nav.home, "/"],
     [t.nav.software, "/software"],
@@ -25,9 +29,9 @@ export async function SiteHeader() {
       <Container className="flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3">
           <span className="flex size-10 items-center justify-center overflow-hidden rounded-2xl bg-white/6 shadow-[0_0_24px_rgba(72,245,211,0.16)]">
-            <Image src="/images/enhe-logo.svg" alt={t.brand} width={34} height={34} priority />
+            <Image src={logoSrc} alt={brand} width={34} height={34} priority unoptimized />
           </span>
-          <span className="font-semibold">{t.brand}</span>
+          <span className="font-semibold">{brand}</span>
         </Link>
         <nav className="hidden items-center gap-1 lg:flex">
           {navItems.map(([label, href]) => (

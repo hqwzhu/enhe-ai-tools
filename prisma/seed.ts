@@ -123,10 +123,12 @@ async function main() {
   });
 
   const defaults = [
-    ["site_name", "恩禾 ENHE AI工具站", "网站名称"],
-    ["site_logo", "ENHE", "Logo 文本或图片地址"],
-    ["home_hero_title", "恩禾 ENHE AI工具站", "首页主标题"],
-    ["home_hero_subtitle", "自研电脑软件与在线网页工具会员平台", "首页副标题"],
+    ["site_name", "恩禾 ENHE AI", "网站名称"],
+    ["site_logo", "/images/enhe-logo.svg", "Logo 图片地址"],
+    ["home_hero_title", "ENHE AI Tools", "首页主标题"],
+    ["home_hero_subtitle", "自研电脑软件与在线网页工具分享共研平台", "首页副标题"],
+    ["home_hero_intro", "下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。", "首页介绍文案"],
+    ["footer_copyright", "© 2026 ENHE AI Tools HQW.", "页脚版权"],
     ["alipay_qr", "/images/payment/alipay-qr.jpg", "支付宝个人收款码"],
     ["wechat_qr", "/images/payment/wechat-qr.jpg", "微信个人收款码"],
     ["user_agreement", "注册即表示你同意遵守平台使用规则。", "用户协议"],
