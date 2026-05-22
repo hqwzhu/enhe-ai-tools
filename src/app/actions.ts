@@ -19,6 +19,11 @@ import {
 } from "@/lib/auth";
 import { assertValidCsrfToken } from "@/lib/csrf";
 import { activateVipForOrder } from "@/lib/membership";
+import {
+  buildPaymentReviewNotification,
+  buildRefundRequestNotification
+} from "@/lib/notification-messages";
+import { createUserNotification } from "@/lib/notifications";
 import { canUserCancelOrder, canUserRequestRefundForOrder, normalizeRefundRecordAmount } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
 
@@ -205,10 +210,33 @@ export async function createRefundRequestAction(formData: FormData) {
       note
     }
   });
+  await createUserNotification(
+    user.id,
+    buildRefundRequestNotification({ orderId: order.id, orderNo: order.orderNo })
+  );
 
   revalidatePath(`/orders/${order.id}`);
   revalidatePath("/user");
   redirect(`/orders/${order.id}?refund=requested`);
+}
+
+export async function markNotificationReadAction(formData: FormData) {
+  const user = await requireUser();
+  const id = z.string().min(1).parse(formData.get("id"));
+  await prisma.notification.updateMany({
+    where: { id, userId: user.id, readAt: null },
+    data: { readAt: new Date() }
+  });
+  revalidatePath("/user");
+}
+
+export async function markAllNotificationsReadAction(_formData?: FormData) {
+  const user = await requireUser();
+  await prisma.notification.updateMany({
+    where: { userId: user.id, readAt: null },
+    data: { readAt: new Date() }
+  });
+  revalidatePath("/user");
 }
 
 export async function createCommentAction(formData: FormData) {
@@ -224,6 +252,8 @@ export async function reviewPaymentProofAction(formData: FormData) {
   const orderId = z.string().min(1).parse(formData.get("orderId"));
   const decision = z.enum(["approved", "rejected"]).parse(formData.get("decision"));
   const reviewNote = z.string().optional().parse(formData.get("reviewNote") ?? undefined);
+  const order = await prisma.order.findUnique({ where: { id: orderId }, select: { id: true, userId: true, orderNo: true } });
+  if (!order) throw new Error("订单不存在。");
 
   if (decision === "approved") {
     await activateVipForOrder(orderId, admin.id, reviewNote);
@@ -233,6 +263,10 @@ export async function reviewPaymentProofAction(formData: FormData) {
       prisma.order.update({ where: { id: orderId }, data: { orderStatus: "rejected" } })
     ]);
   }
+  await createUserNotification(
+    order.userId,
+    buildPaymentReviewNotification({ orderId: order.id, orderNo: order.orderNo, decision, reviewNote })
+  );
   await writeAdminAuditLog({
     adminId: admin.id,
     action: "payment.review",

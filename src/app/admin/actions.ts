@@ -22,6 +22,11 @@ import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-rou
 import { manuallyAdjustVip } from "@/lib/membership";
 import { isLikelyUploadableImage } from "@/lib/media";
 import {
+  buildManualVipNotification,
+  buildRefundProcessedNotification
+} from "@/lib/notification-messages";
+import { createUserNotification } from "@/lib/notifications";
+import {
   assertAdminOrderStatusUpdateAllowed,
   canAdminDeleteOrderSafely,
   canRecordRefundForOrder,
@@ -337,6 +342,15 @@ export async function processRefundRecordAdminAction(formData: FormData) {
       await tx.order.update({ where: { id: refund.orderId }, data: { orderStatus: "refunded" } });
     }
   });
+  await createUserNotification(
+    refund.requesterId ?? refund.order.userId,
+    buildRefundProcessedNotification({
+      orderId: refund.orderId,
+      orderNo: refund.order.orderNo,
+      status,
+      note
+    })
+  );
 
   await writeAdminAuditLog({
     adminId: admin.id,
@@ -368,6 +382,14 @@ export async function adjustVipAdminAction(formData: FormData) {
     durationDays,
     reason
   });
+  await createUserNotification(
+    userId,
+    buildManualVipNotification({
+      actionType,
+      vipType: getManualVipType(durationDays),
+      reason
+    })
+  );
   await writeAdminAuditLog({
     adminId: admin.id,
     action: "vip.adjust",

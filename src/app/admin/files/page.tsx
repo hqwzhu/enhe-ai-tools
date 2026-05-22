@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { deleteFileAdminAction, uploadFileAdminAction, upsertFileAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
+import { getStorageDiagnostics } from "@/lib/storage-diagnostics";
 
 export default async function AdminFilesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
@@ -8,6 +9,7 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
     prisma.file.findMany({ include: { tool: true, primaryFor: true }, orderBy: { createdAt: "desc" } }),
     prisma.tool.findMany({ orderBy: { name: "asc" } })
   ]);
+  const storageDiagnostics = getStorageDiagnostics();
 
   return (
     <AdminSection title="文件管理" intro="上传后会自动创建文件记录；配置腾讯云 COS 环境变量后会上传到 COS，否则落到本地 uploads 目录。">
@@ -26,6 +28,43 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
           操作失败：{params.error}
         </p>
       ) : null}
+
+      <div className="glass mb-8 grid gap-4 rounded-2xl p-6 md:grid-cols-4">
+        <div>
+          <p className="text-xs text-[#8B95A7]">当前存储模式</p>
+          <p className="mt-2 text-lg font-semibold text-[#E8EEF8]">{storageDiagnostics.mode === "cos" ? "腾讯云 COS" : "本地 uploads"}</p>
+        </div>
+        <div>
+          <p className="text-xs text-[#8B95A7]">COS 配置状态</p>
+          <p className={storageDiagnostics.cosConfigured ? "mt-2 text-lg font-semibold text-[#48F5D3]" : "mt-2 text-lg font-semibold text-[#FFB86B]"}>
+            {storageDiagnostics.cosConfigured ? "已启用" : "未完整配置"}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-[#8B95A7]">Bucket / Region</p>
+          <p className="mt-2 text-sm text-[#E8EEF8]">{storageDiagnostics.bucket ?? "-"} / {storageDiagnostics.region ?? "-"}</p>
+          <p className="mt-1 text-xs text-[#8B95A7]">SecretId: {storageDiagnostics.secretIdPreview ?? "-"}</p>
+        </div>
+        <div>
+          <p className="text-xs text-[#8B95A7]">签名下载有效期</p>
+          <p className="mt-2 text-lg font-semibold text-[#E8EEF8]">{storageDiagnostics.signedUrlExpiresSeconds} 秒</p>
+        </div>
+        {!storageDiagnostics.cosConfigured ? (
+          <div className="md:col-span-4 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm text-[#FFD6A5]">
+            COS 未启用，缺少：{storageDiagnostics.missingCosEnvKeys.join("、") || "无"}。未配置完整时会自动保存到本地 uploads。
+          </div>
+        ) : null}
+        <div className="md:col-span-4">
+          <p className="text-xs text-[#8B95A7]">上传白名单</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {storageDiagnostics.allowedExtensions.map((extension) => (
+              <span key={extension} className="rounded-full border border-white/10 px-2 py-1 text-xs text-[#8B95A7]">
+                {extension}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <div className="glass mb-8 rounded-2xl p-6">
         <h2 className="text-xl font-semibold">上传文件</h2>
