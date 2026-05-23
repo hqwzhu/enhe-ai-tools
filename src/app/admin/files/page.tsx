@@ -1,15 +1,28 @@
 import { prisma } from "@/lib/db";
 import { deleteFileAdminAction, uploadFileAdminAction, upsertFileAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
+import { buildAdminFilePageHref, buildAdminFileWhere, parseAdminFileListParams } from "@/lib/admin-list";
 import { getStorageDiagnostics } from "@/lib/storage-diagnostics";
+import { parseCosFilePath } from "@/lib/storage";
+import Link from "next/link";
 
 export default async function AdminFilesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
-  const [files, tools] = await Promise.all([
-    prisma.file.findMany({ include: { tool: true, primaryFor: true }, orderBy: { createdAt: "desc" } }),
+  const filters = parseAdminFileListParams(params);
+  const where = buildAdminFileWhere(filters);
+  const [files, total, tools] = await Promise.all([
+    prisma.file.findMany({
+      where,
+      include: { tool: true, primaryFor: true },
+      orderBy: { createdAt: "desc" },
+      skip: filters.skip,
+      take: filters.take
+    }),
+    prisma.file.count({ where }),
     prisma.tool.findMany({ orderBy: { name: "asc" } })
   ]);
   const storageDiagnostics = getStorageDiagnostics();
+  const pageCount = Math.max(1, Math.ceil(total / filters.pageSize));
 
   return (
     <AdminSection title="文件管理" intro="上传后会自动创建文件记录；配置腾讯云 COS 环境变量后会上传到 COS，否则落到本地 uploads 目录。">
@@ -26,6 +39,11 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
       {params.error ? (
         <p className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">
           操作失败：{params.error}
+        </p>
+      ) : null}
+      {params.warning ? (
+        <p className="mb-5 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm text-[#FFB86B]">
+          {params.warning}
         </p>
       ) : null}
 
@@ -77,11 +95,52 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
 
       <FileForm tools={tools} />
 
-      <div className="mt-8 space-y-3">
+      <form className="glass mt-8 grid gap-3 rounded-2xl p-5 md:grid-cols-[1fr_180px_220px_auto]" action="/admin/files">
+        <input name="q" defaultValue={filters.q} placeholder="搜索文件名、路径、URL 或工具名" className={inputClass} />
+        <select name="storage" defaultValue={filters.storage ?? ""} className={selectClass}>
+          <option value="">全部存储</option>
+          <option value="local">本地 uploads</option>
+          <option value="cos">腾讯云 COS</option>
+        </select>
+        <select name="toolId" defaultValue={filters.toolId ?? ""} className={selectClass}>
+          <option value="">全部工具</option>
+          {tools.map((tool) => <option key={tool.id} value={tool.id}>{tool.name}</option>)}
+        </select>
+        <button className="rounded-full border border-white/12 px-5 py-3 text-sm font-semibold text-[#E8EEF8]">筛选文件</button>
+      </form>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B95A7]">
+        <span>共 {total} 个文件，当前第 {filters.page} / {pageCount} 页</span>
+        <div className="flex gap-2">
+          <Link
+            href={buildAdminFilePageHref(filters, filters.page - 1)}
+            aria-disabled={filters.page <= 1}
+            className={`rounded-full border border-white/12 px-4 py-2 ${filters.page <= 1 ? "pointer-events-none opacity-40" : ""}`}
+          >
+            上一页
+          </Link>
+          <Link
+            href={buildAdminFilePageHref(filters, filters.page + 1)}
+            aria-disabled={filters.page >= pageCount}
+            className={`rounded-full border border-white/12 px-4 py-2 ${filters.page >= pageCount ? "pointer-events-none opacity-40" : ""}`}
+          >
+            下一页
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-3">
         {files.map((file) => (
           <div key={file.id} className="glass rounded-2xl p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[#8B95A7]">
               <span>{file.primaryFor ? `作为下载文件：${file.primaryFor.name}` : "未作为主下载文件"}</span>
+              <span className={`rounded-full border px-2 py-1 ${
+                parseCosFilePath(file.filePath)
+                  ? "border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#48F5D3]"
+                  : "border-white/10 bg-white/5 text-[#8B95A7]"
+              }`}>
+                {parseCosFilePath(file.filePath) ? "COS" : "本地"}
+              </span>
               <span>{file.createdAt.toLocaleString("zh-CN")}</span>
             </div>
 

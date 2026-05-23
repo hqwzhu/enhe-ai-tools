@@ -104,6 +104,13 @@ enum DevelopmentPriority {
   low
 }
 
+enum ProductReleaseStatus {
+  planned
+  active
+  released
+  archived
+}
+
 model User {
   id              String          @id @default(cuid())
   email           String?         @unique
@@ -473,9 +480,27 @@ model DevelopmentVersion {
   createdAt   DateTime                 @default(now()) @map("created_at")
   updatedAt   DateTime                 @updatedAt @map("updated_at")
   items       DevelopmentItem[]
+  productReleases ProductRelease[]
 
   @@index([status, sortOrder])
   @@map("development_versions")
+}
+
+model ProductRelease {
+  id                   String               @id @default(cuid())
+  version              String               @unique
+  name                 String
+  description          String?
+  status               ProductReleaseStatus @default(planned)
+  developmentVersionId String?              @map("development_version_id")
+  releaseDate          DateTime?            @map("release_date")
+  sortOrder            Int                  @default(0) @map("sort_order")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  developmentVersion   DevelopmentVersion?  @relation(fields: [developmentVersionId], references: [id], onDelete: SetNull)
+
+  @@index([status, sortOrder])
+  @@map("product_releases")
 }
 
 model DevelopmentItem {

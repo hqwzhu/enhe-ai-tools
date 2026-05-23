@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAdminCommentPageHref,
+  buildAdminFilePageHref,
   buildAdminToolPageHref,
   buildAdminUserPageHref,
   parseAdminCommentListParams,
+  parseAdminFileListParams,
   parseAdminToolListParams,
   parseAdminUserListParams
 } from "@/lib/admin-list";
@@ -34,6 +36,13 @@ describe("admin list helpers", () => {
       pinned: true,
       page: 2
     });
+    expect(parseAdminFileListParams({ q: " installer ", storage: "cos", page: "4" })).toMatchObject({
+      q: "installer",
+      storage: "cos",
+      page: 4,
+      skip: 60,
+      take: 20
+    });
   });
 
   it("builds page links while preserving active filters", () => {
@@ -44,5 +53,8 @@ describe("admin list helpers", () => {
       "/admin/software?q=zip&status=draft&categoryId=cat-1&page=1"
     );
     expect(buildAdminCommentPageHref({ q: "", status: undefined, pinned: false }, 1)).toBe("/admin/comments?pinned=false&page=1");
+    expect(buildAdminFilePageHref({ q: "setup", storage: "local", toolId: "tool-1" }, 3)).toBe(
+      "/admin/files?q=setup&storage=local&toolId=tool-1&page=3"
+    );
   });
 });

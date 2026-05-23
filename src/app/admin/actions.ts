@@ -33,7 +33,7 @@ import {
   isAdminDeleteRiskConfirmed,
   normalizeRefundRecordAmount
 } from "@/lib/order-rules";
-import { deleteStoredLocalFileIfSafe, saveUploadedFile } from "@/lib/storage";
+import { deleteStoredCosObjectIfConfigured, deleteStoredLocalFileIfSafe, parseCosFilePath, saveUploadedFile } from "@/lib/storage";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
@@ -506,6 +506,56 @@ export async function deleteDevelopmentItemAction(formData: FormData) {
   redirect("/admin/development?deleted=item");
 }
 
+export async function upsertProductReleaseAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const data = {
+    version: z.string().min(1).parse(formData.get("version")),
+    name: z.string().min(1).parse(formData.get("name")),
+    description: parseOptionalString(formData.get("description")),
+    status: z.enum(["planned", "active", "released", "archived"]).parse(formData.get("status") ?? "planned"),
+    developmentVersionId: parseOptionalString(formData.get("developmentVersionId")),
+    releaseDate: parseDateField(formData.get("releaseDate")),
+    sortOrder: parseNumberField(formData.get("sortOrder"), 0)
+  };
+
+  const release = id
+    ? await prisma.productRelease.update({ where: { id }, data })
+    : await prisma.productRelease.create({ data });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "product_release.update" : "product_release.create",
+    targetType: "product_release",
+    targetId: release.id,
+    summary: id ? "Updated product release." : "Created product release.",
+    metadata: { version: release.version, status: release.status, developmentVersionId: release.developmentVersionId }
+  });
+
+  revalidatePath("/admin/releases");
+  revalidatePath("/admin/development");
+  redirect("/admin/releases?saved=1");
+}
+
+export async function deleteProductReleaseAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const release = await prisma.productRelease.delete({ where: { id } });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "product_release.delete",
+    targetType: "product_release",
+    targetId: id,
+    summary: "Deleted product release.",
+    metadata: { version: release.version, name: release.name }
+  });
+
+  revalidatePath("/admin/releases");
+  revalidatePath("/admin/development");
+  redirect("/admin/releases?deleted=1");
+}
+
 function parseDateField(value: FormDataEntryValue | null) {
   const text = parseOptionalString(value);
   return text ? new Date(`${text}T00:00:00`) : null;
@@ -626,6 +676,14 @@ export async function uploadFileAdminAction(formData: FormData) {
     redirect(`/admin/files?uploaded=1&fileId=${record.id}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "上传失败，请稍后重试。";
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: "file.upload.failed",
+      targetType: "file",
+      targetId: null,
+      summary: "File upload failed before creating file record.",
+      metadata: { fileName: file.name, fileSize: file.size, error: message }
+    });
     redirect(`/admin/files?error=${encodeURIComponent(message)}`);
   }
 }
@@ -677,19 +735,30 @@ export async function deleteFileAdminAction(formData: FormData) {
   ]);
 
   let physicalDeleted = false;
+  let cosDeleted = false;
+  let warning: string | null = null;
   try {
-    physicalDeleted = await deleteStoredLocalFileIfSafe(file.filePath);
+    if (parseCosFilePath(file.filePath)) {
+      const result = await deleteStoredCosObjectIfConfigured(file.filePath);
+      cosDeleted = result.deleted;
+    } else {
+      physicalDeleted = await deleteStoredLocalFileIfSafe(file.filePath);
+    }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    warning = errorMessage;
     await writeAdminAuditLog({
       adminId: admin.id,
-      action: "file.delete.local_failed",
+      action: parseCosFilePath(file.filePath) ? "file.delete.cos_failed" : "file.delete.local_failed",
       targetType: "file",
       targetId: id,
-      summary: "Deleted file record, but local physical file deletion failed.",
+      summary: parseCosFilePath(file.filePath)
+        ? "Deleted file record, but COS remote object deletion failed."
+        : "Deleted file record, but local physical file deletion failed.",
       metadata: {
         fileName: file.fileName,
         filePath: file.filePath,
-        error: error instanceof Error ? error.message : String(error)
+        error: errorMessage
       }
     });
   }
@@ -705,14 +774,17 @@ export async function deleteFileAdminAction(formData: FormData) {
       filePath: file.filePath,
       primaryBindings: primaryBindings.count,
       downloadLogs: downloadLogs.count,
-      physicalDeleted
+      physicalDeleted,
+      cosDeleted,
+      warning
     }
   });
 
   revalidatePath("/admin/files");
   revalidatePath("/admin/software");
   revalidatePath("/admin/online-tools");
-  redirect("/admin/files?deleted=1");
+  const warningQuery = warning ? `&warning=${encodeURIComponent(`文件记录已删除，但远程/物理文件清理失败：${warning}`)}` : "";
+  redirect(`/admin/files?deleted=1${warningQuery}`);
 }
 
 export async function upsertToolAction(formData: FormData) {

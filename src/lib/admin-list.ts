@@ -5,6 +5,7 @@ const userRoles = ["user", "admin"] as const;
 const userStatuses = ["active", "disabled"] as const;
 const toolStatuses = ["draft", "published", "offline"] as const;
 const commentStatuses = ["pending", "approved", "rejected", "deleted"] as const;
+const fileStorageTypes = ["local", "cos"] as const;
 
 type Pagination = {
   page: number;
@@ -29,6 +30,12 @@ export type AdminCommentListParams = Pagination & {
   q: string;
   status?: (typeof commentStatuses)[number];
   pinned?: boolean;
+};
+
+export type AdminFileListParams = Pagination & {
+  q: string;
+  storage?: (typeof fileStorageTypes)[number];
+  toolId?: string;
 };
 
 function parsePagination(params: Record<string, string | undefined>): Pagination {
@@ -144,4 +151,33 @@ export function buildAdminCommentWhere(filters: Pick<AdminCommentListParams, "q"
 
 export function buildAdminCommentPageHref(filters: Pick<AdminCommentListParams, "q" | "status" | "pinned">, page: number) {
   return buildPageHref("/admin/comments", filters, page);
+}
+
+export function parseAdminFileListParams(params: Record<string, string | undefined>): AdminFileListParams {
+  return {
+    q: (params.q ?? "").trim(),
+    storage: parseEnumValue(params.storage, fileStorageTypes),
+    toolId: params.toolId?.trim() || undefined,
+    ...parsePagination(params)
+  };
+}
+
+export function buildAdminFileWhere(filters: Pick<AdminFileListParams, "q" | "storage" | "toolId">): Prisma.FileWhereInput {
+  const where: Prisma.FileWhereInput = {};
+  if (filters.toolId) where.toolId = filters.toolId;
+  if (filters.storage === "cos") where.filePath = { startsWith: "cos://" };
+  if (filters.storage === "local") where.filePath = { not: { startsWith: "cos://" } };
+  if (filters.q) {
+    where.OR = [
+      { fileName: { contains: filters.q, mode: "insensitive" } },
+      { filePath: { contains: filters.q, mode: "insensitive" } },
+      { fileUrl: { contains: filters.q, mode: "insensitive" } },
+      { tool: { is: { name: { contains: filters.q, mode: "insensitive" } } } }
+    ];
+  }
+  return where;
+}
+
+export function buildAdminFilePageHref(filters: Pick<AdminFileListParams, "q" | "storage" | "toolId">, page: number) {
+  return buildPageHref("/admin/files", filters, page);
 }

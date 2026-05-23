@@ -32,6 +32,22 @@ type CosFilePath = {
   key: string;
 };
 
+type CosDeletePlan =
+  | {
+      storage: "local";
+      canDelete: false;
+      missingEnvKeys: string[];
+    }
+  | {
+      storage: "cos";
+      canDelete: boolean;
+      bucket: string;
+      key: string;
+      missingEnvKeys: string[];
+    };
+
+const cosRuntimeEnvKeys = ["TENCENT_COS_SECRET_ID", "TENCENT_COS_SECRET_KEY", "TENCENT_COS_REGION"] as const;
+
 export const defaultAllowedUploadExtensions = [
   ".zip",
   ".rar",
@@ -60,6 +76,10 @@ export function isCosStorageConfigured(env: StorageEnv = process.env) {
       env.TENCENT_COS_BUCKET?.trim() &&
       env.TENCENT_COS_REGION?.trim()
   );
+}
+
+function getMissingCosRuntimeEnvKeys(env: StorageEnv = process.env) {
+  return cosRuntimeEnvKeys.filter((key) => !env[key]?.trim());
 }
 
 export function getAllowedUploadExtensions(env: StorageEnv = process.env) {
@@ -127,6 +147,28 @@ export function parseCosFilePath(filePath: string): CosFilePath | null {
   return { bucket: match[1], key: match[2] };
 }
 
+export function getCosDeletePlan(filePath: string, env: StorageEnv = process.env): CosDeletePlan {
+  const cosPath = parseCosFilePath(filePath);
+  if (!cosPath) return { storage: "local", canDelete: false, missingEnvKeys: [] };
+
+  const missingEnvKeys = getMissingCosRuntimeEnvKeys(env);
+  return {
+    storage: "cos",
+    canDelete: missingEnvKeys.length === 0,
+    bucket: cosPath.bucket,
+    key: cosPath.key,
+    missingEnvKeys
+  };
+}
+
+export function isRetryableStorageError(error: unknown) {
+  const statusCode = typeof error === "object" && error && "statusCode" in error ? Number((error as { statusCode?: number }).statusCode) : 0;
+  if ([408, 429, 500, 502, 503, 504].includes(statusCode)) return true;
+
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  return ["timeout", "socket", "econnreset", "etimedout", "network"].some((keyword) => message.includes(keyword));
+}
+
 export function getCosSignedUrlExpiresSeconds(env: StorageEnv = process.env) {
   const expires = Number(env.TENCENT_COS_SIGNED_URL_EXPIRES_SECONDS);
   if (!Number.isFinite(expires) || expires <= 0) return 600;
@@ -175,6 +217,57 @@ export async function saveUploadedFile(file: File, options: SaveUploadOptions): 
   };
 }
 
+export async function deleteStoredCosObjectIfConfigured(filePath: string, env: StorageEnv = process.env) {
+  const plan = getCosDeletePlan(filePath, env);
+  if (plan.storage !== "cos") return { attempted: false, deleted: false, reason: "not_cos" as const };
+  if (!plan.canDelete) throw new Error(`腾讯云 COS 删除配置不完整，缺少：${plan.missingEnvKeys.join("、")}`);
+
+  const secretId = env.TENCENT_COS_SECRET_ID;
+  const secretKey = env.TENCENT_COS_SECRET_KEY;
+  const region = env.TENCENT_COS_REGION;
+  if (!secretId || !secretKey || !region) throw new Error("腾讯云 COS 配置不完整。");
+
+  const COSModule = await import("cos-nodejs-sdk-v5");
+  const COS = COSModule.default ?? COSModule;
+  const cos = new COS({
+    SecretId: secretId,
+    SecretKey: secretKey
+  });
+
+  await withStorageRetry(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        cos.deleteObject(
+          {
+            Bucket: plan.bucket,
+            Region: region,
+            Key: plan.key
+          },
+          (error: unknown) => {
+            if (error) reject(error);
+            else resolve();
+          }
+        );
+      }),
+    3
+  );
+
+  return { attempted: true, deleted: true, reason: null };
+}
+
+async function withStorageRetry<T>(operation: () => Promise<T>, maxAttempts: number): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (attempt >= maxAttempts || !isRetryableStorageError(error)) break;
+    }
+  }
+  throw lastError;
+}
+
 async function saveToCos(file: File, buffer: Buffer, objectKey: string, mimeType: string): Promise<StoredUpload> {
   const secretId = process.env.TENCENT_COS_SECRET_ID;
   const secretKey = process.env.TENCENT_COS_SECRET_KEY;
@@ -189,22 +282,26 @@ async function saveToCos(file: File, buffer: Buffer, objectKey: string, mimeType
     SecretKey: secretKey
   });
 
-  const result = await new Promise<{ Location?: string }>((resolve, reject) => {
-    cos.putObject(
-      {
-        Bucket: bucket,
-        Region: region,
-        Key: objectKey,
-        Body: buffer,
-        ContentLength: buffer.length,
-        ContentType: mimeType
-      },
-      (error: unknown, data: { Location?: string }) => {
-        if (error) reject(error);
-        else resolve(data);
-      }
-    );
-  });
+  const result = await withStorageRetry(
+    () =>
+      new Promise<{ Location?: string }>((resolve, reject) => {
+        cos.putObject(
+          {
+            Bucket: bucket,
+            Region: region,
+            Key: objectKey,
+            Body: buffer,
+            ContentLength: buffer.length,
+            ContentType: mimeType
+          },
+          (error: unknown, data: { Location?: string }) => {
+            if (error) reject(error);
+            else resolve(data);
+          }
+        );
+      }),
+    3
+  );
 
   const location = result.Location ?? `${bucket}.cos.${region}.myqcloud.com/${objectKey}`;
   const fileUrl = location.startsWith("http") ? location : `https://${location}`;
@@ -233,22 +330,26 @@ async function createCosSignedDownloadUrl(cosPath: CosFilePath, env: StorageEnv 
     SecretKey: secretKey
   });
 
-  const result = await new Promise<{ Url?: string }>((resolve, reject) => {
-    cos.getObjectUrl(
-      {
-        Bucket: cosPath.bucket,
-        Region: region,
-        Key: cosPath.key,
-        Method: "GET",
-        Sign: true,
-        Expires: getCosSignedUrlExpiresSeconds(env)
-      },
-      (error: unknown, data: { Url?: string }) => {
-        if (error) reject(error);
-        else resolve(data);
-      }
-    );
-  });
+  const result = await withStorageRetry(
+    () =>
+      new Promise<{ Url?: string }>((resolve, reject) => {
+        cos.getObjectUrl(
+          {
+            Bucket: cosPath.bucket,
+            Region: region,
+            Key: cosPath.key,
+            Method: "GET",
+            Sign: true,
+            Expires: getCosSignedUrlExpiresSeconds(env)
+          },
+          (error: unknown, data: { Url?: string }) => {
+            if (error) reject(error);
+            else resolve(data);
+          }
+        );
+      }),
+    3
+  );
 
   if (!result.Url) throw new Error("Tencent COS did not return a signed download URL.");
   return result.Url.startsWith("http") ? result.Url : `https://${result.Url}`;

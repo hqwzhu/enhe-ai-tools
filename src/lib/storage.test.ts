@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   createStorageObjectKey,
   getAllowedUploadExtensions,
+  getCosDeletePlan,
   getCosSignedUrlExpiresSeconds,
   getSecureFileDownloadUrl,
   isCosStorageConfigured,
+  isRetryableStorageError,
   isUploadExtensionAllowed,
   parseCosFilePath,
   resolveDeletableLocalUploadPath
@@ -94,5 +96,34 @@ describe("storage helpers", () => {
     expect(resolveDeletableLocalUploadPath("/uploads/app.zip", env, cwd)?.replace(/\\/g, "/")).toContain(
       "/public/uploads/app.zip"
     );
+  });
+
+  it("plans COS remote deletion and reports missing configuration", () => {
+    expect(
+      getCosDeletePlan("cos://enhe-bucket-123/software/app.zip", {
+        TENCENT_COS_SECRET_ID: "sid",
+        TENCENT_COS_SECRET_KEY: "skey",
+        TENCENT_COS_REGION: "ap-guangzhou"
+      })
+    ).toEqual({
+      storage: "cos",
+      canDelete: true,
+      bucket: "enhe-bucket-123",
+      key: "software/app.zip",
+      missingEnvKeys: []
+    });
+
+    expect(getCosDeletePlan("cos://enhe-bucket-123/software/app.zip", {})).toMatchObject({
+      storage: "cos",
+      canDelete: false,
+      missingEnvKeys: ["TENCENT_COS_SECRET_ID", "TENCENT_COS_SECRET_KEY", "TENCENT_COS_REGION"]
+    });
+    expect(getCosDeletePlan("/uploads/app.zip", {})).toEqual({ storage: "local", canDelete: false, missingEnvKeys: [] });
+  });
+
+  it("classifies retryable COS errors", () => {
+    expect(isRetryableStorageError({ statusCode: 503 })).toBe(true);
+    expect(isRetryableStorageError(new Error("socket hang up"))).toBe(true);
+    expect(isRetryableStorageError({ statusCode: 403 })).toBe(false);
   });
 });

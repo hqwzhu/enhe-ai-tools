@@ -9,7 +9,7 @@ export default async function AdminChangelogsPage() {
   ]);
 
   return (
-    <AdminSection title="版本更新管理" intro="为工具详情页维护版本发布记录。">
+    <AdminSection title="工具版本管理" intro="为单个工具详情页维护版本更新记录；网站产品发布版本请到产品发布版本管理维护。">
       <ChangelogForm tools={tools} />
       <div className="mt-8 space-y-4">
         {changelogs.map((changelog) => <ChangelogForm key={changelog.id} changelog={changelog} tools={tools} />)}

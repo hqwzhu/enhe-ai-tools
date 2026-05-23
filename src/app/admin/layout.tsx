@@ -4,7 +4,9 @@ import { Container } from "@/components/ui";
 
 const adminNav = [
   ["数据看板", "/admin"],
+  ["管理员消息中心", "/admin/messages"],
   ["开发进度驾驶舱", "/admin/development"],
+  ["产品发布版本管理", "/admin/releases"],
   ["用户管理", "/admin/users"],
   ["会员套餐管理", "/admin/plans"],
   ["订单管理", "/admin/orders"],
@@ -15,7 +17,7 @@ const adminNav = [
   ["标签管理", "/admin/tags"],
   ["教程管理", "/admin/tutorials"],
   ["FAQ 管理", "/admin/faqs"],
-  ["版本更新管理", "/admin/changelogs"],
+  ["工具版本管理", "/admin/changelogs"],
   ["评论管理", "/admin/comments"],
   ["文件管理", "/admin/files"],
   ["操作审计", "/admin/audit"],

@@ -196,13 +196,21 @@ async function main() {
     ["权限控制", "VIP 软件下载权限", "completed", "high", "src/app/api/tools/[id]/download/route.ts, src/lib/access.ts", "下载权限在服务端校验。", 130],
     ["权限控制", "在线工具使用权限", "completed", "high", "src/app/api/tools/[id]/use/route.ts, src/lib/access.ts", "在线工具入口在服务端校验权限并记录使用日志。", 140],
     ["内容互动", "用户评论与后台审核", "completed", "medium", "src/app/tools/[slug]/page.tsx, src/app/admin/comments/page.tsx", "评论需后台审核，支持置顶和删除。", 150],
-    ["文件与存储", "文件上传与 COS 预留", "partial", "high", "src/lib/storage.ts, src/app/admin/files/page.tsx", "已支持本地上传、COS 环境变量自动切换和配置体检；后续可补 COS 对象删除。", 160],
+    ["文件与存储", "文件上传与 COS 闭环", "completed", "high", "src/lib/storage.ts, src/app/admin/files/page.tsx", "已支持本地上传、COS 环境变量自动切换、配置体检、远程对象删除和失败提示。", 160],
     ["售后与通知", "退款/售后记录", "completed", "medium", "src/app/orders/[id]/page.tsx, src/app/admin/orders/page.tsx", "用户可申请售后/退款，后台可处理并记录。", 170],
     ["售后与通知", "站内通知", "completed", "medium", "src/app/user/page.tsx, src/lib/notifications.ts", "支付审核、退款处理、VIP 调整已通知用户。", 180],
     ["部署运维", "Docker 与腾讯云部署配置", "completed", "high", "Dockerfile, deploy.sh, deploy/enhe-ai-tools", "已拆分独立部署文件，避免影响旧项目端口。", 190],
     ["安全与质量", "关键流程测试", "partial", "medium", "src/lib/*.test.ts, tests/e2e/commercial-flow.spec.ts", "核心单元测试和商业闭环 E2E 已存在；后续可补更多管理端浏览器回归。", 200],
-    ["下一阶段", "后台消息中心与更细审计筛选", "recommended", "low", "src/app/admin/audit/page.tsx", "建议后续补管理员侧消息中心和更细粒度审计查询。", 210]
+    ["运营后台", "管理员消息中心", "completed", "medium", "src/app/admin/messages/page.tsx", "已集中展示待审核付款、退款申请、上传异常和 VIP 到期提醒。", 210],
+    ["运营后台", "产品发布版本管理", "completed", "medium", "src/app/admin/releases/page.tsx", "已打通开发版本、产品版本、工具版本三层记录。", 220]
   ] as const;
+
+  await prisma.developmentItem.deleteMany({
+    where: {
+      versionId: v1.id,
+      name: { in: ["文件上传与 COS 预留", "后台消息中心与更细审计筛选"] }
+    }
+  });
 
   for (const [module, name, status, priority, relatedFiles, notes, sortOrder] of progressItems) {
     await prisma.developmentItem.upsert({
@@ -220,6 +228,25 @@ async function main() {
       }
     });
   }
+
+  await prisma.productRelease.upsert({
+    where: { version: "V1.0" },
+    update: {
+      name: "商业闭环版",
+      description: "面向注册登录、VIP 会员、订单支付、人工审核、权限控制、文件上传和后台运营的第一版产品记录。",
+      status: "active",
+      developmentVersionId: v1.id,
+      sortOrder: 100
+    },
+    create: {
+      version: "V1.0",
+      name: "商业闭环版",
+      description: "面向注册登录、VIP 会员、订单支付、人工审核、权限控制、文件上传和后台运营的第一版产品记录。",
+      status: "active",
+      developmentVersionId: v1.id,
+      sortOrder: 100
+    }
+  });
 
   console.log(`Seed completed. Admin: ${admin.email} / EnheAdmin123!`);
 }
