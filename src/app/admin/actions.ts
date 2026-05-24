@@ -33,7 +33,13 @@ import {
   isAdminDeleteRiskConfirmed,
   normalizeRefundRecordAmount
 } from "@/lib/order-rules";
-import { deleteStoredCosObjectIfConfigured, deleteStoredLocalFileIfSafe, parseCosFilePath, saveUploadedFile } from "@/lib/storage";
+import {
+  deleteStoredCosObjectIfConfigured,
+  deleteStoredLocalFileIfSafe,
+  derivePublicUploadUrlFromFilePath,
+  parseCosFilePath,
+  saveUploadedFile
+} from "@/lib/storage";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
@@ -692,11 +698,13 @@ export async function upsertFileAction(formData: FormData) {
   const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
   const toolId = parseOptionalString(formData.get("toolId"));
+  const filePath = z.string().min(1).parse(formData.get("filePath"));
+  const fileUrl = parseOptionalString(formData.get("fileUrl")) ?? derivePublicUploadUrlFromFilePath(filePath);
   const data = {
     toolId,
     fileName: z.string().min(1).parse(formData.get("fileName")),
-    filePath: z.string().min(1).parse(formData.get("filePath")),
-    fileUrl: parseOptionalString(formData.get("fileUrl")),
+    filePath,
+    fileUrl,
     fileSize: parseOptionalString(formData.get("fileSize")) ? BigInt(parseNumberField(formData.get("fileSize"), 0)) : null,
     version: parseOptionalString(formData.get("version")),
     mimeType: parseOptionalString(formData.get("mimeType"))

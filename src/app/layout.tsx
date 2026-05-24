@@ -3,17 +3,24 @@ import "./globals.css";
 import { InteractiveBackground } from "@/components/interactive-background";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-
-export const metadata: Metadata = {
-  title: "恩禾 ENHE AI工具站",
-  description: "自研电脑软件与在线网页工具分享共研平台"
-};
+import { getCurrentLocale, getDictionary } from "@/lib/i18n";
+import { getEffectiveLocalizedHomeHeroSubtitle, getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export async function generateMetadata(): Promise<Metadata> {
+  const [locale, settings] = await Promise.all([getCurrentLocale(), getSettingsMap()]);
+  const t = getDictionary(locale);
+  return {
+    title: locale === "en" ? t.footer.siteName : getEffectiveSiteName(settings, t.footer.siteName),
+    description: getEffectiveLocalizedHomeHeroSubtitle(settings, locale, t.home.eyebrow)
+  };
+}
+
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getCurrentLocale();
   return (
-    <html lang="zh-CN">
+    <html lang={locale === "en" ? "en" : "zh-CN"}>
       <body>
         <InteractiveBackground />
         <SiteHeader />

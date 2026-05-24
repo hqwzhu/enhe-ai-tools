@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { Locale } from "@/lib/i18n";
 
 export type SettingsMap = Record<string, string | undefined>;
 
@@ -43,6 +44,20 @@ export function getEffectiveHomeHeroSubtitle(settings: SettingsMap, fallback: st
 
 export function getEffectiveHomeHeroIntro(settings: SettingsMap, fallback: string) {
   return cleanSettingValue(settings.home_hero_intro) ?? fallback;
+}
+
+export function getEffectiveLocalizedHomeHeroSubtitle(settings: SettingsMap, locale: Locale, fallback: string) {
+  const localized = cleanSettingValue(settings[`home_hero_subtitle_${locale}`]);
+  if (localized) return localized;
+  if (locale === "en") return fallback;
+  return getEffectiveHomeHeroSubtitle(settings, fallback);
+}
+
+export function getEffectiveLocalizedHomeHeroIntro(settings: SettingsMap, locale: Locale, fallback: string) {
+  const localized = cleanSettingValue(settings[`home_hero_intro_${locale}`]);
+  if (localized) return localized;
+  if (locale === "en") return fallback;
+  return getEffectiveHomeHeroIntro(settings, fallback);
 }
 
 export function getEffectiveFooterCopyright(settings: SettingsMap, fallback: string) {

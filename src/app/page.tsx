@@ -4,8 +4,8 @@ import { ToolCard } from "@/components/tool-card";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import {
-  getEffectiveHomeHeroIntro,
-  getEffectiveHomeHeroSubtitle,
+  getEffectiveLocalizedHomeHeroIntro,
+  getEffectiveLocalizedHomeHeroSubtitle,
   getEffectiveHomeHeroTitle,
   getSettingsMap
 } from "@/lib/settings";
@@ -19,8 +19,8 @@ export default async function HomePage() {
   ]);
   const t = getDictionary(locale);
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
-  const heroSubtitle = getEffectiveHomeHeroSubtitle(settings, t.home.eyebrow);
-  const heroIntro = getEffectiveHomeHeroIntro(settings, t.home.intro);
+  const heroSubtitle = getEffectiveLocalizedHomeHeroSubtitle(settings, locale, t.home.eyebrow);
+  const heroIntro = getEffectiveLocalizedHomeHeroIntro(settings, locale, t.home.intro);
 
   return (
     <>

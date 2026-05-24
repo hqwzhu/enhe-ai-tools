@@ -5,6 +5,7 @@ import {
   getCosDeletePlan,
   getCosSignedUrlExpiresSeconds,
   getSecureFileDownloadUrl,
+  derivePublicUploadUrlFromFilePath,
   isCosStorageConfigured,
   isRetryableStorageError,
   isUploadExtensionAllowed,
@@ -80,6 +81,21 @@ describe("storage helpers", () => {
         {}
       )
     ).rejects.toThrow("Download file URL is missing.");
+  });
+
+  it("derives public upload URLs from local upload file paths when fileUrl is missing", async () => {
+    const cwd = process.cwd();
+    const derived = derivePublicUploadUrlFromFilePath("public\\uploads\\demo-installer.zip", {}, cwd);
+    expect(derived).toBe("/uploads/demo-installer.zip");
+
+    await expect(
+      getSecureFileDownloadUrl(
+        { filePath: "public\\uploads\\demo-installer.zip", fileUrl: null },
+        "http://localhost:3000/api/tools/tool-id/download",
+        {},
+        cwd
+      )
+    ).resolves.toEqual(new URL("http://localhost:3000/uploads/demo-installer.zip"));
   });
 
   it("parses signed URL expiry with a safe default", () => {

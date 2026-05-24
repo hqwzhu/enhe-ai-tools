@@ -1,5 +1,5 @@
 import { mkdir, unlink, writeFile } from "node:fs/promises";
-import { dirname, extname, join, resolve, sep } from "node:path";
+import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { buildPublicUploadUrl } from "@/lib/admin-form";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
@@ -108,6 +108,20 @@ export function resolveDeletableLocalUploadPath(filePath: string, env: StorageEn
   return null;
 }
 
+export function derivePublicUploadUrlFromFilePath(filePath: string, env: StorageEnv = process.env, cwd = process.cwd()) {
+  if (!filePath || parseCosFilePath(filePath)) return null;
+
+  const normalizedInput = filePath.replace(/\\/g, "/");
+  if (normalizedInput.startsWith("/uploads/")) return normalizedInput;
+  if (normalizedInput.startsWith("uploads/")) return `/${normalizedInput}`;
+
+  const uploadRoot = resolve(cwd, env.UPLOAD_DIR ?? join("public", "uploads"));
+  const candidate = resolve(cwd, filePath);
+  const relativePath = relative(uploadRoot, candidate).replace(/\\/g, "/");
+  if (!relativePath || relativePath.startsWith("../") || relativePath === ".." || relativePath.startsWith("..\\")) return null;
+  return `/uploads/${relativePath}`;
+}
+
 export async function deleteStoredLocalFileIfSafe(filePath: string, env: StorageEnv = process.env, cwd = process.cwd()) {
   const target = resolveDeletableLocalUploadPath(filePath, env, cwd);
   if (!target) return false;
@@ -175,14 +189,15 @@ export function getCosSignedUrlExpiresSeconds(env: StorageEnv = process.env) {
   return Math.floor(expires);
 }
 
-export async function getSecureFileDownloadUrl(file: DownloadFileRef, requestUrl: string, env: StorageEnv = process.env) {
+export async function getSecureFileDownloadUrl(file: DownloadFileRef, requestUrl: string, env: StorageEnv = process.env, cwd = process.cwd()) {
   const cosPath = parseCosFilePath(file.filePath);
   if (cosPath && isCosStorageConfigured(env)) {
     return new URL(await createCosSignedDownloadUrl(cosPath, env));
   }
 
-  if (!file.fileUrl) throw new Error("Download file URL is missing.");
-  return new URL(file.fileUrl, requestUrl);
+  const publicUrl = file.fileUrl ?? derivePublicUploadUrlFromFilePath(file.filePath, env, cwd);
+  if (!publicUrl) throw new Error("Download file URL is missing.");
+  return new URL(publicUrl, requestUrl);
 }
 
 export async function saveUploadedFile(file: File, options: SaveUploadOptions): Promise<StoredUpload> {
