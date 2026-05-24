@@ -212,7 +212,7 @@ a {
 .enhe-hero-logo-button {
   position: relative;
   z-index: 10;
-  width: min(76vw, 420px);
+  width: min(61vw, 336px);
   aspect-ratio: 1.52;
   padding: 0;
   cursor: pointer;
@@ -226,7 +226,9 @@ a {
     drop-shadow(0 0 32px rgba(72, 245, 211, 0.32))
     drop-shadow(0 28px 50px rgba(0, 0, 0, 0.28));
   transform-style: preserve-3d;
-  animation: enhe-logo-breathe 4.8s ease-in-out infinite;
+  transition: filter 180ms ease;
+  will-change: filter, transform;
+  animation: enhe-logo-breathe 4.4s ease-in-out infinite;
 }
 
 .enhe-hero-logo-button::after {
@@ -249,6 +251,7 @@ a {
     contrast(1.12)
     drop-shadow(0 0 38px rgba(72, 245, 211, 0.42))
     drop-shadow(0 34px 60px rgba(0, 0, 0, 0.34));
+  animation-duration: 3.2s;
 }
 
 .enhe-hero-logo-button:focus-visible {
@@ -363,10 +366,10 @@ a {
 @keyframes enhe-logo-breathe {
   0%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0) rotate(0deg) scale(1);
   }
   50% {
-    transform: translateY(-8px) scale(1.035);
+    transform: translateY(-6px) rotate(-0.55deg) scale(1.03);
   }
 }
 
