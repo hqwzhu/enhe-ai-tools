@@ -19,7 +19,7 @@ import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { getAdminUserDeleteBlockReason } from "@/lib/admin-user-rules";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
-import { manuallyAdjustVip } from "@/lib/membership";
+import { manuallyAdjustVip, revokeEntitlementsForRefundedOrder } from "@/lib/membership";
 import { isLikelyUploadableImage } from "@/lib/media";
 import {
   buildManualVipNotification,
@@ -229,6 +229,7 @@ export async function updateOrderAdminAction(formData: FormData) {
   });
 
   revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/payments");
   revalidatePath("/user");
 }
@@ -272,6 +273,7 @@ export async function createRefundRecordAdminAction(formData: FormData) {
   const status = z.enum(["pending", "completed", "rejected"]).parse(formData.get("status") ?? "completed");
   const reason = z.string().min(2, "必须填写售后/退款原因").parse(formData.get("reason"));
   const note = parseOptionalString(formData.get("note"));
+  const refundReceiverQr = parseOptionalString(formData.get("refundReceiverQr"));
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) {
     redirect(`/admin/orders?error=${encodeURIComponent("订单不存在，无法记录售后/退款。")}`);
@@ -296,11 +298,13 @@ export async function createRefundRecordAdminAction(formData: FormData) {
         amount,
         status,
         reason,
-        note
+        note,
+        refundReceiverQr
       }
     });
 
     if (status === "completed") {
+      await revokeEntitlementsForRefundedOrder(tx, order);
       await tx.order.update({ where: { id: orderId }, data: { orderStatus: "refunded" } });
     }
 
@@ -313,12 +317,13 @@ export async function createRefundRecordAdminAction(formData: FormData) {
     targetType: "order",
     targetId: orderId,
     summary: "Created order after-sales/refund record.",
-    metadata: { refundId: refund.id, amount, status, reason }
+    metadata: { refundId: refund.id, amount, status, reason, refundReceiverQr }
   });
 
   revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath("/user");
-  redirect("/admin/orders?refund=1");
+  redirect(`/admin/orders/${orderId}?refund=1`);
 }
 
 export async function processRefundRecordAdminAction(formData: FormData) {
@@ -345,6 +350,7 @@ export async function processRefundRecordAdminAction(formData: FormData) {
     });
 
     if (status === "completed") {
+      await revokeEntitlementsForRefundedOrder(tx, refund.order);
       await tx.order.update({ where: { id: refund.orderId }, data: { orderStatus: "refunded" } });
     }
   });
@@ -368,9 +374,10 @@ export async function processRefundRecordAdminAction(formData: FormData) {
   });
 
   revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${refund.orderId}`);
   revalidatePath(`/orders/${refund.orderId}`);
   revalidatePath("/user");
-  redirect("/admin/orders?refund=1");
+  redirect(`/admin/orders/${refund.orderId}?refund=1`);
 }
 
 export async function adjustVipAdminAction(formData: FormData) {
@@ -656,6 +663,7 @@ export async function uploadFileAdminAction(formData: FormData) {
     redirect(`/admin/files?error=${encodeURIComponent("请选择要上传的文件。")}`);
   }
 
+  let uploadedFileId: string | null = null;
   try {
     const stored = await saveUploadedFile(file, {
       folder: "files",
@@ -678,8 +686,7 @@ export async function uploadFileAdminAction(formData: FormData) {
       summary: "Uploaded file and created file record.",
       metadata: { fileName: stored.fileName, storage: stored.storage, fileSize: stored.fileSize }
     });
-    revalidatePath("/admin/files");
-    redirect(`/admin/files?uploaded=1&fileId=${record.id}`);
+    uploadedFileId = record.id;
   } catch (error) {
     const message = error instanceof Error ? error.message : "上传失败，请稍后重试。";
     await writeAdminAuditLog({
@@ -692,6 +699,8 @@ export async function uploadFileAdminAction(formData: FormData) {
     });
     redirect(`/admin/files?error=${encodeURIComponent(message)}`);
   }
+  revalidatePath("/admin/files");
+  redirect(`/admin/files?uploaded=1&fileId=${uploadedFileId}`);
 }
 
 export async function upsertFileAction(formData: FormData) {
@@ -919,14 +928,47 @@ export async function deleteToolAction(formData: FormData) {
   const id = idSchema.parse(formData.get("id"));
   const type = z.enum(["software", "online"]).parse(formData.get("type"));
   const adminPath = getAdminToolBasePath(type);
-  const tool = await prisma.tool.delete({ where: { id } });
+  const existingTool = await prisma.tool.findUnique({ where: { id } });
+  if (!existingTool) {
+    redirect(`${adminPath}?error=${encodeURIComponent("工具不存在，可能已经被删除。")}`);
+  }
+  const cleanup = await prisma.$transaction(async (tx) => {
+    const [orders, purchases, downloadLogs, usageLogs, comments, tutorials, faqs, changelogs, tagLinks, files] = await Promise.all([
+      tx.order.updateMany({ where: { toolId: id }, data: { toolId: null } }),
+      tx.toolPurchase.deleteMany({ where: { toolId: id } }),
+      tx.downloadLog.deleteMany({ where: { toolId: id } }),
+      tx.toolUsageLog.deleteMany({ where: { toolId: id } }),
+      tx.comment.deleteMany({ where: { toolId: id } }),
+      tx.tutorial.deleteMany({ where: { toolId: id } }),
+      tx.toolFaq.deleteMany({ where: { toolId: id } }),
+      tx.toolChangelog.deleteMany({ where: { toolId: id } }),
+      tx.toolTagLink.deleteMany({ where: { toolId: id } }),
+      tx.file.updateMany({ where: { toolId: id }, data: { toolId: null } })
+    ]);
+    const tool = await tx.tool.delete({ where: { id } });
+    return { tool, orders, purchases, downloadLogs, usageLogs, comments, tutorials, faqs, changelogs, tagLinks, files };
+  });
   await writeAdminAuditLog({
     adminId: admin.id,
     action: "tool.delete",
     targetType: "tool",
     targetId: id,
-    summary: "Deleted tool.",
-    metadata: { type, name: tool.name, slug: tool.slug }
+    summary: "Deleted tool and cleaned dependent records.",
+    metadata: {
+      type,
+      name: cleanup.tool.name,
+      slug: cleanup.tool.slug,
+      ordersDetached: cleanup.orders.count,
+      purchasesDeleted: cleanup.purchases.count,
+      downloadLogsDeleted: cleanup.downloadLogs.count,
+      usageLogsDeleted: cleanup.usageLogs.count,
+      commentsDeleted: cleanup.comments.count,
+      tutorialsDeleted: cleanup.tutorials.count,
+      faqsDeleted: cleanup.faqs.count,
+      changelogsDeleted: cleanup.changelogs.count,
+      tagLinksDeleted: cleanup.tagLinks.count,
+      filesDetached: cleanup.files.count
+    }
   });
   revalidatePath(adminPath);
   redirect(`${adminPath}?deleted=1`);
@@ -955,6 +997,7 @@ export async function upsertTutorialAction(formData: FormData) {
     const created = await prisma.tutorial.create({ data });
     tutorialId = created.id;
   }
+  if (!tutorialId) throw new Error("Tutorial save failed.");
   await writeAdminAuditLog({
     adminId: admin.id,
     action: id ? "tutorial.update" : "tutorial.create",
@@ -965,6 +1008,24 @@ export async function upsertTutorialAction(formData: FormData) {
   });
   revalidatePath("/admin/tutorials");
   revalidatePath("/tutorials");
+  redirect(`/admin/tutorials/${tutorialId}?saved=1`);
+}
+
+export async function deleteTutorialAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const tutorial = await prisma.tutorial.delete({ where: { id } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "tutorial.delete",
+    targetType: "tutorial",
+    targetId: id,
+    summary: "Deleted tutorial.",
+    metadata: { toolId: tutorial.toolId, title: tutorial.title }
+  });
+  revalidatePath("/admin/tutorials");
+  revalidatePath("/tutorials");
+  redirect("/admin/tutorials?deleted=1");
 }
 
 export async function upsertToolFaqAction(formData: FormData) {
@@ -984,6 +1045,7 @@ export async function upsertToolFaqAction(formData: FormData) {
     const created = await prisma.toolFaq.create({ data });
     faqId = created.id;
   }
+  if (!faqId) throw new Error("FAQ save failed.");
   await writeAdminAuditLog({
     adminId: admin.id,
     action: id ? "tool_faq.update" : "tool_faq.create",
@@ -993,6 +1055,23 @@ export async function upsertToolFaqAction(formData: FormData) {
     metadata: { toolId: data.toolId, question: data.question, status: data.status }
   });
   revalidatePath("/admin/faqs");
+  redirect(`/admin/faqs/${faqId}?saved=1`);
+}
+
+export async function deleteToolFaqAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const faq = await prisma.toolFaq.delete({ where: { id } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "tool_faq.delete",
+    targetType: "tool_faq",
+    targetId: id,
+    summary: "Deleted tool FAQ.",
+    metadata: { toolId: faq.toolId, question: faq.question }
+  });
+  revalidatePath("/admin/faqs");
+  redirect("/admin/faqs?deleted=1");
 }
 
 export async function upsertToolChangelogAction(formData: FormData) {
@@ -1015,6 +1094,7 @@ export async function upsertToolChangelogAction(formData: FormData) {
     const created = await prisma.toolChangelog.create({ data });
     changelogId = created.id;
   }
+  if (!changelogId) throw new Error("Changelog save failed.");
   await writeAdminAuditLog({
     adminId: admin.id,
     action: id ? "tool_changelog.update" : "tool_changelog.create",
@@ -1024,6 +1104,23 @@ export async function upsertToolChangelogAction(formData: FormData) {
     metadata: { toolId: data.toolId, version: data.version, title: data.title, status: data.status }
   });
   revalidatePath("/admin/changelogs");
+  redirect(`/admin/changelogs/${changelogId}?saved=1`);
+}
+
+export async function deleteToolChangelogAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const changelog = await prisma.toolChangelog.delete({ where: { id } });
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "tool_changelog.delete",
+    targetType: "tool_changelog",
+    targetId: id,
+    summary: "Deleted tool changelog.",
+    metadata: { toolId: changelog.toolId, version: changelog.version, title: changelog.title }
+  });
+  revalidatePath("/admin/changelogs");
+  redirect("/admin/changelogs?deleted=1");
 }
 
 export async function updateSiteSettingAction(formData: FormData) {

@@ -45,6 +45,10 @@ export default async function PayPage({ params, searchParams }: PayPageProps) {
             上传成功后将进入独立订单详情页，显示待审核状态、付款截图预览和订单信息。
           </p>
 
+          <p className="mt-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm leading-6 text-[#FFD6A5]">
+            退款提示：订单开通后，如果账号已经下载过工具或使用过 1 次在线工具，将不再支持退款申请。付款前请确认套餐、工具和金额无误。
+          </p>
+
           {query.error ? (
             <p className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">
               {query.error}

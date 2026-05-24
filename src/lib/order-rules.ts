@@ -17,8 +17,9 @@ export function canRecordRefundForOrder(status: OrderStatus) {
   return refundableOrderStatuses.includes(status as (typeof refundableOrderStatuses)[number]);
 }
 
-export function canUserRequestRefundForOrder(status: OrderStatus, hasPendingRefundRequest: boolean) {
+export function canUserRequestRefundForOrder(status: OrderStatus, hasPendingRefundRequest: boolean, hasUsedBenefits = false) {
   if (hasPendingRefundRequest) return false;
+  if (hasUsedBenefits) return false;
   return userRefundRequestableOrderStatuses.includes(status as (typeof userRefundRequestableOrderStatuses)[number]);
 }
 

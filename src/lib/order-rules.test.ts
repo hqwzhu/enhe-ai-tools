@@ -52,6 +52,7 @@ describe("order business rules", () => {
     expect(canUserRequestRefundForOrder("paid", false)).toBe(true);
     expect(canUserRequestRefundForOrder("activated", false)).toBe(true);
     expect(canUserRequestRefundForOrder("paid", true)).toBe(false);
+    expect(canUserRequestRefundForOrder("activated", false, true)).toBe(false);
     expect(canUserRequestRefundForOrder("refunded", false)).toBe(false);
     expect(canUserRequestRefundForOrder("pending_payment", false)).toBe(false);
   });

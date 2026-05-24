@@ -15,7 +15,8 @@ const db = vi.hoisted(() => ({
       updateMany: vi.fn()
     },
     toolPurchase: {
-      upsert: vi.fn()
+      upsert: vi.fn(),
+      deleteMany: vi.fn()
     },
     vipAdjustmentLog: {
       create: vi.fn()
@@ -121,5 +122,47 @@ describe("membership service", () => {
         })
       })
     );
+  });
+
+  it("revokes VIP membership when a VIP order is refunded", async () => {
+    const { revokeEntitlementsForRefundedOrder } = await import("@/lib/membership");
+    db.tx.membership.findFirst.mockResolvedValue({
+      id: "membership-1",
+      userId: "user-1",
+      vipType: "7澶￢IP",
+      startTime: new Date("2026-01-01T00:00:00.000Z"),
+      endTime: new Date("2026-01-08T00:00:00.000Z"),
+      isLifetime: false,
+      status: "active"
+    });
+
+    await revokeEntitlementsForRefundedOrder(db.tx, {
+      id: "order-1",
+      userId: "user-1",
+      orderType: "vip",
+      toolId: null
+    });
+
+    expect(db.tx.membership.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "membership-1" },
+        data: expect.objectContaining({ status: "cancelled", isLifetime: false })
+      })
+    );
+  });
+
+  it("revokes paid software authorization when a software order is refunded", async () => {
+    const { revokeEntitlementsForRefundedOrder } = await import("@/lib/membership");
+
+    await revokeEntitlementsForRefundedOrder(db.tx, {
+      id: "order-2",
+      userId: "user-1",
+      orderType: "software_download",
+      toolId: "tool-1"
+    });
+
+    expect(db.tx.toolPurchase.deleteMany).toHaveBeenCalledWith({
+      where: { OR: [{ orderId: "order-2" }, { userId: "user-1", toolId: "tool-1" }] }
+    });
   });
 });

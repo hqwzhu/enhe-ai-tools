@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { deleteToolAction, upsertToolAction } from "@/app/admin/actions";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import { getAdminToolBasePath, getAdminToolEditPath, getAdminToolNewPath } from "@/lib/admin-tool-routes";
+import { normalizeImageSrc } from "@/lib/media";
 import { getToolPublishIssues } from "@/lib/tool-publish-check";
 
 type AdminToolType = "software" | "online";
@@ -164,12 +166,22 @@ export function ToolAdminList({
           <div className="min-w-[1080px] divide-y divide-white/10">
             {tools.map((tool) => {
               const publishIssues = getToolPublishIssues(tool);
+              const coverImage = normalizeImageSrc(tool.coverImage);
 
               return (
                 <div key={tool.id} className="grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
-                  <div>
-                    <p className="font-semibold text-[#E8EEF8]">{tool.name}</p>
-                    <p className="mt-1 text-xs text-[#8B95A7]">{tool.slug}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-[#0B1220]">
+                      {coverImage ? (
+                        <Image src={coverImage} alt={tool.name} fill className="object-cover" sizes="96px" unoptimized />
+                      ) : (
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_30%,rgba(72,245,211,0.22),transparent_38%),linear-gradient(135deg,rgba(122,167,255,0.16),transparent)]" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#E8EEF8]">{tool.name}</p>
+                      <p className="mt-1 text-xs text-[#8B95A7]">{tool.slug}</p>
+                    </div>
                   </div>
                   <div className="text-[#C5D0E2]">{tool.category?.name ?? "未分类"}</div>
                   <div>

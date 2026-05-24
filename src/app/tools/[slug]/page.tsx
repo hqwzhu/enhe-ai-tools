@@ -1,9 +1,11 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createCommentAction, createSoftwareDownloadOrderAction } from "@/app/actions";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { normalizeImageSrc } from "@/lib/media";
 
 export default async function ToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const user = await getCurrentUser();
@@ -20,6 +22,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
     }
   });
   if (!tool || tool.status !== "published") notFound();
+  const coverImage = normalizeImageSrc(tool.coverImage);
 
   const hasDownloadPurchase = user
     ? Boolean(await prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }))
@@ -68,6 +71,15 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
           <p className="mt-4 text-sm text-[#FFB86B]">该软件为单独付费下载，VIP 用户也需要购买后才能下载。</p>
         ) : null}
       </div>
+
+      {coverImage ? (
+        <div className="glass mt-6 overflow-hidden rounded-[2rem]">
+          <div className="relative aspect-[16/9] min-h-64">
+            <Image src={coverImage} alt={tool.name} fill className="object-cover" sizes="100vw" unoptimized />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#080B12]/65 via-transparent to-transparent" />
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_340px]">
         <div className="space-y-10">

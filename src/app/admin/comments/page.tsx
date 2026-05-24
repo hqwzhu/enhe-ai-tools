@@ -8,6 +8,13 @@ type AdminCommentsPageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
 };
 
+const commentStatusLabels: Record<string, string> = {
+  pending: "待审核",
+  approved: "审核通过",
+  rejected: "已驳回",
+  deleted: "已删除"
+};
+
 export default async function AdminCommentsPage({ searchParams }: AdminCommentsPageProps) {
   const params = await searchParams;
   const filters = parseAdminCommentListParams(params);
@@ -69,24 +76,30 @@ export default async function AdminCommentsPage({ searchParams }: AdminCommentsP
         {comments.map((comment) => (
           <div key={comment.id} className="glass rounded-2xl p-6">
             <p className="text-sm text-[#8B95A7]">
-              {comment.tool.name} · {comment.user.email ?? comment.user.phone ?? comment.user.id} · {comment.status}
+              {comment.tool.name} · {comment.user.email ?? comment.user.phone ?? comment.user.id} · {commentStatusLabels[comment.status] ?? comment.status}
               {comment.isPinned ? " · 已置顶" : ""}
             </p>
             <p className="mt-3 leading-7">{comment.content}</p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <form action={updateCommentStatusAction} className="flex flex-wrap gap-3">
+              <form action={updateCommentStatusAction}>
                 <input type="hidden" name="id" value={comment.id} />
-                <button name="status" value="approved" className="rounded-full bg-[#48F5D3] px-5 py-2 text-sm font-semibold text-[#05110e]">审核通过</button>
-                <button name="status" value="rejected" className="rounded-full border border-white/12 px-5 py-2 text-sm">驳回</button>
-                <button name="status" value="deleted" className="rounded-full border border-white/12 px-5 py-2 text-sm">删除</button>
+                <input type="hidden" name="status" value="approved" />
+                <button className="rounded-full bg-[#48F5D3] px-5 py-2 text-sm font-semibold text-[#05110e]">审核通过</button>
+              </form>
+              <form action={updateCommentStatusAction}>
+                <input type="hidden" name="id" value={comment.id} />
+                <input type="hidden" name="status" value="rejected" />
+                <button className="rounded-full border border-white/12 px-5 py-2 text-sm">驳回</button>
+              </form>
+              <form action={updateCommentStatusAction}>
+                <input type="hidden" name="id" value={comment.id} />
+                <input type="hidden" name="status" value="deleted" />
+                <button className="rounded-full border border-white/12 px-5 py-2 text-sm">删除</button>
               </form>
               <form action={updateCommentPinAction}>
                 <input type="hidden" name="id" value={comment.id} />
-                <button
-                  name="isPinned"
-                  value={comment.isPinned ? "false" : "true"}
-                  className="rounded-full border border-[#FFB86B]/40 px-5 py-2 text-sm text-[#FFB86B]"
-                >
+                <input type="hidden" name="isPinned" value={comment.isPinned ? "false" : "true"} />
+                <button className="rounded-full border border-[#FFB86B]/40 px-5 py-2 text-sm text-[#FFB86B]">
                   {comment.isPinned ? "取消置顶" : "置顶"}
                 </button>
               </form>

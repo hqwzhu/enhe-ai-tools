@@ -190,12 +190,30 @@ export async function createRefundRequestAction(formData: FormData) {
   const orderId = z.string().min(1).parse(formData.get("orderId"));
   const reason = z.string().min(2, "请填写售后/退款原因").max(500).parse(formData.get("reason"));
   const note = z.string().max(1000).optional().parse(String(formData.get("note") ?? "") || undefined);
+  const refundReceiverQr = z.string().min(1, "请填写或粘贴退款收款码图片地址。").max(1000).parse(formData.get("refundReceiverQr"));
   const order = await prisma.order.findFirst({
     where: { id: orderId, userId: user.id },
     include: { refundRecords: { where: { status: "pending" }, select: { id: true }, take: 1 } }
   });
   if (!order) throw new Error("订单不存在。");
-  if (!canUserRequestRefundForOrder(order.orderStatus, order.refundRecords.length > 0)) {
+  const benefitStart = order.activatedAt ?? order.paidAt ?? order.createdAt;
+  const [downloadCount, usageCount] = await Promise.all([
+    prisma.downloadLog.count({
+      where: {
+        userId: user.id,
+        ...(order.orderType === "software_download" && order.toolId ? { toolId: order.toolId } : {}),
+        createdAt: { gte: benefitStart }
+      }
+    }),
+    prisma.toolUsageLog.count({
+      where: {
+        userId: user.id,
+        createdAt: { gte: benefitStart }
+      }
+    })
+  ]);
+  const hasUsedBenefits = downloadCount > 0 || usageCount > 0;
+  if (!canUserRequestRefundForOrder(order.orderStatus, order.refundRecords.length > 0, hasUsedBenefits)) {
     throw new Error("当前订单状态不允许申请售后/退款，或已有待处理申请。");
   }
 
@@ -207,7 +225,8 @@ export async function createRefundRequestAction(formData: FormData) {
       amount,
       status: "pending",
       reason,
-      note
+      note,
+      refundReceiverQr
     }
   });
   await createUserNotification(
@@ -276,6 +295,8 @@ export async function reviewPaymentProofAction(formData: FormData) {
     metadata: { decision, reviewNote }
   });
   revalidatePath("/admin/payments");
+  revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath(`/orders/${orderId}`);
 }
 
 export async function updateCommentStatusAction(formData: FormData) {

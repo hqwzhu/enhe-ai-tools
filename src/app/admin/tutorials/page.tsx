@@ -1,67 +1,54 @@
+import Link from "next/link";
+import { AdminSection } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";
-import { upsertTutorialAction } from "@/app/admin/actions";
-import { AdminSection, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 
-export default async function AdminTutorialsPage() {
-  const [tutorials, tools] = await Promise.all([
-    prisma.tutorial.findMany({ include: { tool: true }, orderBy: { sortOrder: "asc" } }),
-    prisma.tool.findMany({ orderBy: { name: "asc" } })
-  ]);
+export default async function AdminTutorialsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const params = await searchParams;
+  const tutorials = await prisma.tutorial.findMany({
+    include: { tool: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
+  });
+
   return (
-    <AdminSection title="教程管理" intro="为每个工具维护独立教程、图片、视频链接、排序和启用状态。">
-      <TutorialForm tools={tools} />
-      <div className="mt-8 space-y-3">
-        {tutorials.map((tutorial) => (
-          <div key={tutorial.id} className="glass rounded-2xl p-5">
-            <TutorialForm tutorial={tutorial} tools={tools} />
-          </div>
-        ))}
+    <AdminSection title="教程管理" intro="教程记录以清单方式展示，点击查看详情进入单独编辑页维护正文、图片、视频、注意事项和常见错误。">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="text-sm text-[#8B95A7]">共 {tutorials.length} 条教程</div>
+        <Link href="/admin/tutorials/new" className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
+          新增教程
+        </Link>
+      </div>
+
+      {params.deleted ? (
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">教程已删除。</p>
+      ) : null}
+
+      <div className="overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
+        <div className="grid min-w-[920px] grid-cols-[1.2fr_1fr_0.55fr_0.55fr_0.65fr_0.55fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
+          <span>教程标题</span>
+          <span>绑定工具</span>
+          <span>排序</span>
+          <span>状态</span>
+          <span>创建时间</span>
+          <span className="text-right">操作</span>
+        </div>
+        <div className="min-w-[920px] divide-y divide-white/10">
+          {tutorials.map((tutorial) => (
+            <div key={tutorial.id} className="grid grid-cols-[1.2fr_1fr_0.55fr_0.55fr_0.65fr_0.55fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
+              <span className="font-semibold text-[#E8EEF8]">{tutorial.title}</span>
+              <span className="truncate text-[#C5D0E2]">{tutorial.tool.name}</span>
+              <span>{tutorial.sortOrder}</span>
+              <span>{tutorial.status === "active" ? "启用" : "禁用"}</span>
+              <span className="text-[#8B95A7]">{tutorial.createdAt.toLocaleDateString("zh-CN")}</span>
+              <span className="text-right">
+                <Link href={`/admin/tutorials/${tutorial.id}`} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+                  查看详情
+                </Link>
+              </span>
+            </div>
+          ))}
+          {tutorials.length === 0 ? <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">暂无教程。</div> : null}
+        </div>
       </div>
     </AdminSection>
-  );
-}
-
-function TutorialForm({
-  tutorial,
-  tools
-}: {
-  tutorial?: {
-    id: string;
-    toolId: string;
-    title: string;
-    content: string;
-    imageUrl: string | null;
-    videoUrl: string | null;
-    notes: string | null;
-    commonErrors: string | null;
-    sortOrder: number;
-    status: string;
-  };
-  tools: { id: string; name: string }[];
-}) {
-  return (
-    <form action={upsertTutorialAction} className="grid gap-4 md:grid-cols-2">
-      {tutorial ? <input type="hidden" name="id" value={tutorial.id} /> : null}
-      <Field label="工具">
-        <select name="toolId" defaultValue={tutorial?.toolId ?? ""} required className={selectClass}>
-          <option value="">选择工具</option>
-          {tools.map((tool) => <option key={tool.id} value={tool.id}>{tool.name}</option>)}
-        </select>
-      </Field>
-      <Field label="教程标题"><input name="title" required defaultValue={tutorial?.title ?? ""} className={inputClass} /></Field>
-      <Field label="图片地址"><input name="imageUrl" defaultValue={tutorial?.imageUrl ?? ""} className={inputClass} /></Field>
-      <Field label="视频链接"><input name="videoUrl" defaultValue={tutorial?.videoUrl ?? ""} className={inputClass} /></Field>
-      <Field label="排序"><input name="sortOrder" type="number" defaultValue={tutorial?.sortOrder ?? 0} className={inputClass} /></Field>
-      <Field label="状态">
-        <select name="status" defaultValue={tutorial?.status ?? "active"} className={selectClass}>
-          <option value="active">启用</option>
-          <option value="disabled">禁用</option>
-        </select>
-      </Field>
-      <Field label="教程正文" className="md:col-span-2"><textarea name="content" required defaultValue={tutorial?.content ?? ""} className={textareaClass} /></Field>
-      <Field label="注意事项" className="md:col-span-2"><textarea name="notes" defaultValue={tutorial?.notes ?? ""} className={textareaClass} /></Field>
-      <Field label="常见错误" className="md:col-span-2"><textarea name="commonErrors" defaultValue={tutorial?.commonErrors ?? ""} className={textareaClass} /></Field>
-      <div className="md:col-span-2"><SubmitButton>{tutorial ? "保存教程" : "新增教程"}</SubmitButton></div>
-    </form>
   );
 }

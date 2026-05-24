@@ -1,9 +1,7 @@
-import { createRefundRecordAdminAction, deleteOrderAdminAction, processRefundRecordAdminAction, updateOrderAdminAction } from "@/app/admin/actions";
-import { AdminSection, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import Link from "next/link";
+import { AdminSection, inputClass, selectClass } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";
 import { buildAdminOrderPageHref, buildAdminOrderWhere, parseAdminOrderListParams } from "@/lib/admin-order";
-import { adminDeleteRiskConfirmationToken, canAdminDeleteOrderSafely, canRecordRefundForOrder, getRefundRecordActorLabel } from "@/lib/order-rules";
 import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
 
@@ -11,6 +9,7 @@ const orderStatusOptions = [
   ["pending_payment", "待支付"],
   ["pending_review", "待审核"],
   ["paid", "已支付"],
+  ["activated", "已开通"],
   ["rejected", "审核失败"],
   ["cancelled", "已取消"],
   ["refunded", "已退款"]
@@ -32,8 +31,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
         plan: true,
         tool: true,
         paymentProof: true,
-        toolPurchase: true,
-        refundRecords: { include: { admin: true, requester: true }, orderBy: { createdAt: "desc" } }
+        refundRecords: { orderBy: { createdAt: "desc" }, take: 1 }
       },
       orderBy: { createdAt: "desc" },
       skip: filters.skip,
@@ -46,41 +44,27 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
   return (
     <AdminSection
       title="订单管理"
-      intro="订单状态可用于取消、退款和标记支付；权益开通必须通过支付审核或手动调整 VIP，不能直接把订单改为已开通。"
+      intro="订单记录以清单方式展示，点击查看详情后再编辑状态、处理退款、查看付款记录或删除订单。权益开通必须通过支付审核或手动 VIP 调整完成。"
     >
       {params.error ? (
-        <p className="mb-5 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm text-[#FFB86B]">
-          {params.error}
-        </p>
+        <p className="mb-5 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm text-[#FFB86B]">{params.error}</p>
       ) : null}
       {params.deleted ? (
-        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
-          订单已删除。
-        </p>
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">订单已删除。</p>
       ) : null}
-
       {params.refund ? (
-        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
-          售后/退款记录已保存。
-        </p>
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">售后/退款记录已保存。</p>
       ) : null}
 
       <form className="glass mb-5 grid gap-3 rounded-2xl p-5 md:grid-cols-[1fr_220px_auto]" action="/admin/orders">
-        <input
-          name="q"
-          defaultValue={filters.q}
-          placeholder="搜索订单号、用户、套餐或工具"
-          className={inputClass}
-        />
+        <input name="q" defaultValue={filters.q} placeholder="搜索订单号、用户、套餐或工具" className={inputClass} />
         <select name="status" defaultValue={filters.status ?? ""} className={selectClass}>
           <option value="">全部状态</option>
           {orderStatusOptions.map(([value, label]) => (
             <option key={value} value={value}>{label}</option>
           ))}
         </select>
-        <button className="rounded-full border border-white/12 px-5 py-3 text-sm font-semibold text-[#E8EEF8]">
-          筛选订单
-        </button>
+        <button className="rounded-full border border-white/12 px-5 py-3 text-sm font-semibold text-[#E8EEF8]">筛选订单</button>
       </form>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B95A7]">
@@ -103,139 +87,39 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
         </div>
       </div>
 
-      <div className="space-y-4">
-        {orders.map((order) => {
-          const deleteIsSafe = canAdminDeleteOrderSafely(order.orderStatus);
-
-          return (
-            <div key={order.id} className="glass rounded-2xl p-5">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="font-semibold">{order.orderNo}</p>
-                  <p className="mt-2 text-sm text-[#8B95A7]">
-                    {order.user.email ?? order.user.phone ?? order.user.id} · {order.plan?.name ?? order.tool?.name ?? "订单项目"} ·{" "}
-                    {formatCurrency(order.amount.toString())} · {getStatusLabel(orderStatusLabels, order.orderStatus)}
-                  </p>
-                  <p className="mt-1 text-xs text-[#8B95A7]">
-                    类型：{order.orderType === "vip" ? "会员订单" : "软件下载订单"} · 凭证：
-                    {getStatusLabel(proofStatusLabels, order.paymentProof?.reviewStatus)} · 创建：{order.createdAt.toLocaleString("zh-CN")}
-                  </p>
-                </div>
-                <div className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8B95A7]">
-                  {order.toolPurchase ? "已生成购买记录" : order.activatedAt ? `开通于 ${order.activatedAt.toLocaleString("zh-CN")}` : "未开通"}
-                </div>
+      <div className="overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
+        <div className="grid min-w-[1120px] grid-cols-[1.25fr_1.05fr_0.8fr_0.75fr_0.75fr_0.85fr_0.55fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
+          <span>订单号</span>
+          <span>用户</span>
+          <span>项目</span>
+          <span>金额</span>
+          <span>订单状态</span>
+          <span>退款日期</span>
+          <span className="text-right">操作</span>
+        </div>
+        <div className="min-w-[1120px] divide-y divide-white/10">
+          {orders.map((order) => (
+            <div key={order.id} className="grid grid-cols-[1.25fr_1.05fr_0.8fr_0.75fr_0.75fr_0.85fr_0.55fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
+              <div>
+                <Link href={`/admin/orders/${order.id}`} className="font-semibold text-[#E8EEF8] transition hover:text-[#48F5D3]">
+                  {order.orderNo}
+                </Link>
+                <p className="mt-1 text-xs text-[#8B95A7]">凭证：{getStatusLabel(proofStatusLabels, order.paymentProof?.reviewStatus)}</p>
               </div>
-
-              <form action={updateOrderAdminAction} className="mt-5 grid gap-4 md:grid-cols-[180px_160px_160px_1fr]">
-                <input type="hidden" name="id" value={order.id} />
-                <Field label="订单状态">
-                  <select name="orderStatus" defaultValue={order.orderStatus} className={selectClass}>
-                    {order.orderStatus === "activated" ? <option value="activated">已开通（不可手动设置）</option> : null}
-                    {orderStatusOptions.map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="订单金额">
-                  <input name="amount" type="number" step="0.01" min="0" defaultValue={order.amount.toString()} className={inputClass} />
-                </Field>
-                <Field label="支付方式">
-                  <select name="paymentMethod" defaultValue={order.paymentMethod ?? ""} className={selectClass}>
-                    <option value="">未选择</option>
-                    <option value="alipay">支付宝</option>
-                    <option value="wechat">微信</option>
-                  </select>
-                </Field>
-                <div className="flex items-end gap-3">
-                  <SubmitButton>保存订单</SubmitButton>
-                  <p className="pb-3 text-xs leading-5 text-[#8B95A7]">如需开通权益，请到支付审核通过，或在用户管理中手动调整 VIP。</p>
-                </div>
-              </form>
-
-              <div className="mt-5 border-t border-white/10 pt-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="font-semibold">售后/退款记录</h3>
-                  <span className="text-xs text-[#8B95A7]">退款记录只做售后留痕，不会自动撤销已开通的权益。</span>
-                </div>
-                {order.refundRecords.length ? (
-                  <div className="mt-3 grid gap-2 text-sm text-[#8B95A7]">
-                    {order.refundRecords.map((refund) => (
-                      <div key={refund.id} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                        <span className="font-semibold text-[#E8EEF8]">{formatCurrency(refund.amount.toString())}</span>
-                        <span> · {refund.status} · {refund.reason}</span>
-                        <span> · {getRefundRecordActorLabel({ adminEmail: refund.admin?.email, requesterEmail: refund.requester?.email })}</span>
-                        <span> · {refund.createdAt.toLocaleString("zh-CN")}</span>
-                        {refund.note ? <p className="mt-2 text-xs leading-5">{refund.note}</p> : null}
-                        {refund.status === "pending" ? (
-                          <form action={processRefundRecordAdminAction} className="mt-3 grid gap-2 md:grid-cols-[1fr_120px_120px]">
-                            <input type="hidden" name="refundId" value={refund.id} />
-                            <input name="note" placeholder="处理备注" className={inputClass} />
-                            <button name="status" value="completed" className="rounded-full bg-[#48F5D3] px-4 py-2 text-xs font-semibold text-[#05110e]">
-                              确认退款
-                            </button>
-                            <button name="status" value="rejected" className="rounded-full border border-white/12 px-4 py-2 text-xs text-[#E8EEF8]">
-                              拒绝申请
-                            </button>
-                          </form>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-[#8B95A7]">暂无售后/退款记录。</p>
-                )}
-                {canRecordRefundForOrder(order.orderStatus) ? (
-                  <form action={createRefundRecordAdminAction} className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 md:grid-cols-[160px_160px_1fr]">
-                    <input type="hidden" name="orderId" value={order.id} />
-                    <Field label="退款金额">
-                      <input name="amount" required type="number" step="0.01" min="0.01" max={order.amount.toString()} defaultValue={order.amount.toString()} className={inputClass} />
-                    </Field>
-                    <Field label="处理状态">
-                      <select name="status" defaultValue="completed" className={selectClass}>
-                        <option value="completed">已退款</option>
-                        <option value="pending">处理中</option>
-                        <option value="rejected">不退款</option>
-                      </select>
-                    </Field>
-                    <Field label="原因">
-                      <input name="reason" required minLength={2} placeholder="例如：用户申请退款 / 重复付款 / 售后补偿" className={inputClass} />
-                    </Field>
-                    <Field label="备注" className="md:col-span-3">
-                      <textarea name="note" placeholder="可填写沟通记录、退款流水号、处理说明" className={textareaClass} />
-                    </Field>
-                    <div className="md:col-span-3">
-                      <SubmitButton>保存售后/退款记录</SubmitButton>
-                    </div>
-                  </form>
-                ) : (
-                  <p className="mt-3 text-xs text-[#8B95A7]">当前订单状态不可创建退款记录。</p>
-                )}
-              </div>
-
-              <form action={deleteOrderAdminAction} className="mt-4 border-t border-white/10 pt-4">
-                <input type="hidden" name="id" value={order.id} />
-                {!deleteIsSafe ? (
-                  <label className="mb-3 flex gap-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-xs leading-6 text-[#FFB86B]">
-                    <input
-                      name="confirmRisk"
-                      type="checkbox"
-                      required
-                      value={adminDeleteRiskConfirmationToken}
-                      className="mt-1"
-                    />
-                    <span>
-                      该订单已支付或已开通权益。删除订单不会自动撤销会员权益或售后记录，我已确认完成售后处理并承担删除风险。
-                    </span>
-                  </label>
-                ) : null}
-                <button className="rounded-full border border-red-400/40 px-4 py-2 text-sm text-red-200">
-                  删除订单
-                </button>
-                <span className="ml-3 text-xs text-[#8B95A7]">会同时删除该订单的支付凭证和软件购买记录。</span>
-              </form>
+              <span className="truncate text-[#C5D0E2]">{order.user.email ?? order.user.phone ?? order.user.id}</span>
+              <span className="truncate text-[#C5D0E2]">{order.plan?.name ?? order.tool?.name ?? "订单项目"}</span>
+              <span className="text-[#FFB86B]">{formatCurrency(order.amount.toString())}</span>
+              <span>{getStatusLabel(orderStatusLabels, order.orderStatus)}</span>
+              <span className="text-[#8B95A7]">{order.refundRecords[0]?.updatedAt.toLocaleString("zh-CN") ?? "-"}</span>
+              <span className="text-right">
+                <Link href={`/admin/orders/${order.id}`} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+                  查看详情
+                </Link>
+              </span>
             </div>
-          );
-        })}
+          ))}
+          {orders.length === 0 ? <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">暂无匹配订单。</div> : null}
+        </div>
       </div>
     </AdminSection>
   );

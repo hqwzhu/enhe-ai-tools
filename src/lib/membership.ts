@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/db";
 import { applyVipCancellation, applyVipGrant, type MembershipSnapshot } from "@/lib/membership-rules";
 
-type MembershipDelegate = Pick<typeof prisma, "membership">;
+type MembershipDelegate = {
+  membership: Pick<typeof prisma.membership, "create" | "findFirst" | "update">;
+};
+type RefundEntitlementDelegate = MembershipDelegate & {
+  toolPurchase: Pick<typeof prisma.toolPurchase, "deleteMany">;
+};
 
 export async function getActiveMembership(userId: string) {
   const now = new Date();
@@ -106,6 +111,26 @@ export async function cancelVipMembership(tx: MembershipDelegate, userId: string
       status: next.status
     }
   });
+}
+
+export async function revokeEntitlementsForRefundedOrder(
+  tx: RefundEntitlementDelegate,
+  order: { id: string; userId: string; orderType: "vip" | "software_download"; toolId?: string | null },
+  now = new Date()
+) {
+  if (order.orderType === "software_download") {
+    await tx.toolPurchase.deleteMany({
+      where: {
+        OR: [
+          { orderId: order.id },
+          ...(order.toolId ? [{ userId: order.userId, toolId: order.toolId }] : [])
+        ]
+      }
+    });
+    return;
+  }
+
+  await cancelVipMembership(tx, order.userId, now);
 }
 
 export async function manuallyAdjustVip(input: {

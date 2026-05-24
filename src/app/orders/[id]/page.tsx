@@ -37,7 +37,24 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
     plan: order.plan
   });
   const hasPendingRefundRequest = order.refundRecords.some((refund) => refund.status === "pending");
-  const canRequestRefund = canUserRequestRefundForOrder(order.orderStatus, hasPendingRefundRequest);
+  const benefitStart = order.activatedAt ?? order.paidAt ?? order.createdAt;
+  const [downloadCount, usageCount] = await Promise.all([
+    prisma.downloadLog.count({
+      where: {
+        userId: user.id,
+        ...(order.orderType === "software_download" && order.toolId ? { toolId: order.toolId } : {}),
+        createdAt: { gte: benefitStart }
+      }
+    }),
+    prisma.toolUsageLog.count({
+      where: {
+        userId: user.id,
+        createdAt: { gte: benefitStart }
+      }
+    })
+  ]);
+  const hasUsedBenefits = downloadCount > 0 || usageCount > 0;
+  const canRequestRefund = canUserRequestRefundForOrder(order.orderStatus, hasPendingRefundRequest, hasUsedBenefits);
 
   return (
     <Container className="py-14">
@@ -116,6 +133,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
             <form action={createRefundRequestAction} className="mt-5 grid gap-3">
               <input type="hidden" name="orderId" value={order.id} />
               <input name="reason" required minLength={2} maxLength={500} placeholder="申请原因，例如：重复付款 / 无法使用 / 售后协商" className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
+              <input name="refundReceiverQr" required maxLength={1000} placeholder="退款收款码图片地址或收款信息（必填）" className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
               <textarea name="note" maxLength={1000} placeholder="补充说明，可填写付款账号、沟通记录或退款方式" className="min-h-24 rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
               <button className="w-fit rounded-full border border-[#FFB86B]/40 px-5 py-3 text-sm font-semibold text-[#FFB86B] transition hover:bg-[#FFB86B]/10">
                 提交售后/退款申请
