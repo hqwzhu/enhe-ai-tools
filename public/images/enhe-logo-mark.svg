@@ -1,24 +1,46 @@
-<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="enheBlue" x1="34" y1="36" x2="94" y2="124" gradientUnits="userSpaceOnUse">
+    <linearGradient id="blueFill" x1="116" y1="70" x2="420" y2="338" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#082FE6"/>
+      <stop offset="0.56" stop-color="#075CFF"/>
+      <stop offset="1" stop-color="#18BDE8"/>
+    </linearGradient>
+    <linearGradient id="blueEdge" x1="112" y1="46" x2="434" y2="352" gradientUnits="userSpaceOnUse">
       <stop stop-color="#7AA7FF"/>
-      <stop offset="0.45" stop-color="#2F6BFF"/>
+      <stop offset="0.5" stop-color="#0BE7FF"/>
       <stop offset="1" stop-color="#48F5D3"/>
     </linearGradient>
-    <linearGradient id="enheDark" x1="94" y1="36" x2="124" y2="124" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#E8EEF8"/>
-      <stop offset="1" stop-color="#8B95A7"/>
+    <linearGradient id="metalFill" x1="398" y1="68" x2="548" y2="350" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#566170"/>
+      <stop offset="0.18" stop-color="#1C2630"/>
+      <stop offset="0.62" stop-color="#08111B"/>
+      <stop offset="1" stop-color="#111923"/>
     </linearGradient>
-    <filter id="softGlow" x="-25%" y="-25%" width="150%" height="150%">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.282 0 0 0 0 0.961 0 0 0 0 0.827 0 0 0 0.42 0"/>
-      <feBlend in="SourceGraphic"/>
+    <linearGradient id="metalEdge" x1="402" y1="64" x2="548" y2="356" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9EEBFF"/>
+      <stop offset="0.46" stop-color="#156DFF"/>
+      <stop offset="1" stop-color="#48F5D3"/>
+    </linearGradient>
+    <filter id="glow" x="-18%" y="-26%" width="136%" height="152%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.102 0 0 0 0 0.698 0 0 0 0 1 0 0 0 0.7 0"/>
+      <feBlend in="SourceGraphic" mode="screen"/>
+    </filter>
+    <filter id="shadow" x="-12%" y="-14%" width="124%" height="128%">
+      <feDropShadow dx="0" dy="14" stdDeviation="13" flood-color="#020713" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#48F5D3" flood-opacity="0.22"/>
     </filter>
   </defs>
-  <path d="M34 52L50 34H90V52H34Z" fill="url(#enheBlue)" filter="url(#softGlow)"/>
-  <path d="M34 72H82V88H34V72Z" fill="url(#enheBlue)" filter="url(#softGlow)"/>
-  <path d="M34 108L50 126H90V108H34Z" fill="url(#enheBlue)" filter="url(#softGlow)"/>
-  <path d="M90 72H112V34H128V126H112V88H90V72Z" fill="url(#enheDark)"/>
-  <path d="M34 52L50 34H90" stroke="#48F5D3" stroke-opacity="0.22"/>
-  <path d="M34 108L50 126H90" stroke="#48F5D3" stroke-opacity="0.18"/>
+  <g filter="url(#glow)">
+    <path d="M108 126L166 68H424V126H108Z" fill="url(#blueFill)" stroke="url(#blueEdge)" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M106 179H366V231H106V179Z" fill="url(#blueFill)" stroke="url(#blueEdge)" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M108 285H424V343H166L108 285Z" fill="url(#blueFill)" stroke="url(#blueEdge)" stroke-width="8" stroke-linejoin="round"/>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M394 180H480V74L494 60H554V350H480V240H394V180Z" fill="url(#metalFill)" stroke="url(#metalEdge)" stroke-width="8" stroke-linejoin="round"/>
+  </g>
+  <path d="M125 116L172 79H411" stroke="#B9F7FF" stroke-width="3" stroke-linecap="round" opacity="0.58"/>
+  <path d="M120 190H354" stroke="#B9F7FF" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+  <path d="M125 294H411" stroke="#B9F7FF" stroke-width="3" stroke-linecap="round" opacity="0.46"/>
+  <path d="M412 191H490V85L500 74H539" stroke="#B9F7FF" stroke-width="3" stroke-linecap="round" opacity="0.34"/>
 </svg>

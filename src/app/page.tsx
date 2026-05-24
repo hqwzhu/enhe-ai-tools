@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { ButtonLink, Container, SectionTitle } from "@/components/ui";
+import { HeroLogoMark } from "@/components/hero-logo-mark";
 import { ToolCard } from "@/components/tool-card";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
@@ -50,16 +50,7 @@ export default async function HomePage() {
             <div className="enhe-orbit enhe-orbit-b" />
             <div className="enhe-orbit enhe-orbit-c" />
             <div className="enhe-logo-aura" />
-            <div className="relative z-10 flex size-56 items-center justify-center rounded-[2rem] bg-transparent sm:size-64">
-              <Image
-                src="/images/enhe-logo-mark.svg"
-                alt={t.brand}
-                width={184}
-                height={184}
-                priority
-                className="enhe-logo-float h-40 w-40 drop-shadow-[0_0_42px_rgba(72,245,211,0.36)] sm:h-48 sm:w-48"
-              />
-            </div>
+            <HeroLogoMark label={t.brand} />
             <span className="enhe-signal enhe-signal-1" />
             <span className="enhe-signal enhe-signal-2" />
             <span className="enhe-signal enhe-signal-3" />
