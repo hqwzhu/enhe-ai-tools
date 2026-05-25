@@ -220,12 +220,11 @@ a {
   border: 0;
   outline: none;
   filter:
-    brightness(1.06)
-    saturate(0.92)
-    contrast(1.04)
-    drop-shadow(0 0 16px rgba(168, 199, 255, 0.22))
-    drop-shadow(0 0 24px rgba(106, 225, 214, 0.14))
-    drop-shadow(0 24px 44px rgba(8, 28, 64, 0.26));
+    brightness(1.08)
+    saturate(0.94)
+    contrast(1.02)
+    drop-shadow(0 0 14px rgba(196, 216, 255, 0.2))
+    drop-shadow(0 0 28px rgba(76, 230, 214, 0.18));
   transform-style: preserve-3d;
   transition: filter 180ms ease;
   will-change: filter, transform;
@@ -239,22 +238,21 @@ a {
   content: "";
   border-radius: 999px;
   background:
-    radial-gradient(circle at 44% 50%, rgba(72, 245, 211, 0.28), transparent 52%),
-    radial-gradient(circle at 58% 46%, rgba(122, 167, 255, 0.22), transparent 64%);
-  filter: blur(24px);
-  opacity: 0.66;
+    radial-gradient(circle at 46% 50%, rgba(72, 245, 211, 0.24), transparent 52%),
+    radial-gradient(circle at 58% 46%, rgba(154, 190, 255, 0.2), transparent 66%);
+  filter: blur(30px);
+  opacity: 0.76;
   animation: enhe-logo-core-pulse 3.8s ease-in-out infinite;
   animation-delay: -0.9s;
 }
 
 .enhe-hero-logo-button:hover {
   filter:
-    brightness(1.12)
-    saturate(1)
-    contrast(1.08)
-    drop-shadow(0 0 22px rgba(180, 207, 255, 0.32))
-    drop-shadow(0 0 32px rgba(106, 225, 214, 0.2))
-    drop-shadow(0 30px 56px rgba(8, 28, 64, 0.3));
+    brightness(1.14)
+    saturate(1.02)
+    contrast(1.04)
+    drop-shadow(0 0 18px rgba(210, 226, 255, 0.3))
+    drop-shadow(0 0 38px rgba(78, 238, 222, 0.26));
   animation-duration: 3.2s;
 }
 
@@ -370,10 +368,10 @@ a {
 @keyframes enhe-logo-breathe {
   0%,
   100% {
-    transform: translateY(0) rotate(0deg) scale(1);
+    transform: translateY(0) scale(1);
   }
   50% {
-    transform: translateY(-6px) rotate(-0.55deg) scale(1.03);
+    transform: translateY(-5px) scale(1.025);
   }
 }
 
