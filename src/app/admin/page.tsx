@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getAdminDictionary } from "@/lib/admin-i18n";
 import {
   buildDailyTrendBuckets,
   calculateGrowthPercent,
@@ -7,8 +8,11 @@ import {
   formatDashboardAmount,
   rankPopularTools
 } from "@/lib/admin-dashboard";
+import { getCurrentLocale } from "@/lib/i18n";
 
 export default async function AdminDashboardPage() {
+  const locale = await getCurrentLocale();
+  const t = getAdminDictionary(locale).dashboard;
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
@@ -86,31 +90,31 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold">Admin dashboard</h1>
+      <h1 className="text-3xl font-semibold">{t.title}</h1>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
-        Track revenue, pending reviews, tool inventory, user growth, popular tools, refund rate, and order conversion in one place.
+        {t.intro}
       </p>
 
       <div className="mt-8 grid gap-4 md:grid-cols-4">
-        <Stat label="Paid revenue" value={formatDashboardAmount(paidAmount._sum.amount?.toString())} accent />
-        <Stat label="Today revenue" value={formatDashboardAmount(todayPaidAmount._sum.amount?.toString())} />
-        <Stat label="Payment reviews" value={pendingProofs} href="/admin/payments" warn={pendingProofs > 0} />
-        <Stat label="Refund reviews" value={pendingRefunds} href="/admin/refunds?status=pending" warn={pendingRefunds > 0} />
-        <Stat label="Users" value={users} />
-        <Stat label="7-day new users" value={`${recentUsers} (${growthPercent >= 0 ? "+" : ""}${growthPercent}%)`} />
-        <Stat label="Order conversion" value={`${conversionRate}%`} />
-        <Stat label="Refund rate" value={`${refundRate}%`} warn={refundRate > 10} />
-        <Stat label="Tools" value={tools} />
-        <Stat label="Published tools" value={`${publishedTools} / ${tools}`} />
-        <Stat label="Active VIPs" value={activeMemberships} href="/admin/users" />
-        <Stat label="VIP expiring in 7 days" value={expiringMemberships} href="/admin/messages" warn={expiringMemberships > 0} />
+        <Stat label={t.stats.paidRevenue} value={formatDashboardAmount(paidAmount._sum.amount?.toString())} accent />
+        <Stat label={t.stats.todayRevenue} value={formatDashboardAmount(todayPaidAmount._sum.amount?.toString())} />
+        <Stat label={t.stats.paymentReviews} value={pendingProofs} href="/admin/payments" warn={pendingProofs > 0} />
+        <Stat label={t.stats.refundReviews} value={pendingRefunds} href="/admin/refunds?status=pending" warn={pendingRefunds > 0} />
+        <Stat label={t.stats.users} value={users} />
+        <Stat label={t.stats.newUsers7d} value={`${recentUsers} (${growthPercent >= 0 ? "+" : ""}${growthPercent}%)`} />
+        <Stat label={t.stats.orderConversion} value={`${conversionRate}%`} />
+        <Stat label={t.stats.refundRate} value={`${refundRate}%`} warn={refundRate > 10} />
+        <Stat label={t.stats.tools} value={tools} />
+        <Stat label={t.stats.publishedTools} value={`${publishedTools} / ${tools}`} />
+        <Stat label={t.stats.activeVips} value={activeMemberships} href="/admin/users" />
+        <Stat label={t.stats.vipExpiring7d} value={expiringMemberships} href="/admin/messages" warn={expiringMemberships > 0} />
       </div>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]">
         <section className="glass rounded-2xl p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold">7-day revenue trend</h2>
-            <span className="text-xs text-[#8B95A7]">Paid and activated orders only</span>
+            <h2 className="text-xl font-semibold">{t.trendTitle}</h2>
+            <span className="text-xs text-[#8B95A7]">{t.trendNote}</span>
           </div>
           <div className="mt-5 grid h-56 grid-cols-7 items-end gap-3">
             {revenueTrend.map((bucket) => (
@@ -127,24 +131,23 @@ export default async function AdminDashboardPage() {
         </section>
 
         <section className="glass rounded-2xl p-6">
-          <h2 className="text-xl font-semibold">Operations reminders</h2>
+          <h2 className="text-xl font-semibold">{t.remindersTitle}</h2>
           <div className="mt-5 grid gap-3 text-sm">
-            <QuickItem label="Payment reviews" value={pendingProofs} href="/admin/payments" />
-            <QuickItem label="Refund reviews" value={pendingRefunds} href="/admin/refunds?status=pending" />
-            <QuickItem label="VIP expiring in 7 days" value={expiringMemberships} href="/admin/messages" />
-            <QuickItem label="Active VIPs" value={activeMemberships} href="/admin/users" />
+            <QuickItem label={t.stats.paymentReviews} value={pendingProofs} href="/admin/payments" />
+            <QuickItem label={t.stats.refundReviews} value={pendingRefunds} href="/admin/refunds?status=pending" />
+            <QuickItem label={t.stats.vipExpiring7d} value={expiringMemberships} href="/admin/messages" />
+            <QuickItem label={t.stats.activeVips} value={activeMemberships} href="/admin/users" />
           </div>
           <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-[#8B95A7]">
-            Tool mix: {softwareTools} software tools and {onlineTools} online tools. File uploads, COS issues, and after-sales tasks are handled from Files,
-            Messages, and Refund review.
+            {t.toolMix.replace("{software}", String(softwareTools)).replace("{online}", String(onlineTools))}
           </div>
         </section>
       </div>
 
       <section className="glass mt-8 rounded-2xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold">Popular tools</h2>
-          <span className="text-xs text-[#8B95A7]">Ranked by downloads plus online usage</span>
+          <h2 className="text-xl font-semibold">{t.popularTools}</h2>
+          <span className="text-xs text-[#8B95A7]">{t.popularToolsNote}</span>
         </div>
         <div className="mt-5 space-y-3">
           {rankedTools.length ? (
@@ -158,12 +161,15 @@ export default async function AdminDashboardPage() {
                   {index + 1}. {tool.name}
                 </span>
                 <span className="text-xs text-[#8B95A7]">
-                  Downloads {tool.downloadCount} / Usage {tool.usageCount} / Score {tool.score}
+                  {t.popularToolStats
+                    .replace("{downloads}", String(tool.downloadCount))
+                    .replace("{usage}", String(tool.usageCount))
+                    .replace("{score}", String(tool.score))}
                 </span>
               </Link>
             ))
           ) : (
-            <p className="text-sm text-[#8B95A7]">No published tool data yet.</p>
+            <p className="text-sm text-[#8B95A7]">{t.noPublishedTools}</p>
           )}
         </div>
       </section>
