@@ -110,7 +110,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
               <span className="truncate text-[#C5D0E2]">{order.plan?.name ?? order.tool?.name ?? "订单项目"}</span>
               <span className="text-[#FFB86B]">{formatCurrency(order.amount.toString())}</span>
               <span>{getStatusLabel(orderStatusLabels, order.orderStatus)}</span>
-              <span className="text-[#8B95A7]">{order.refundRecords[0]?.updatedAt.toLocaleString("zh-CN") ?? "-"}</span>
+              <span className="text-[#8B95A7]">{order.refundRecords[0]?.completedAt?.toLocaleString("zh-CN") ?? "-"}</span>
               <span className="text-right">
                 <Link href={`/admin/orders/${order.id}`} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
                   查看详情

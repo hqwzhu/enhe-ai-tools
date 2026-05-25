@@ -29,10 +29,10 @@ export const inputClass = "w-full rounded-xl border border-white/12 bg-white/8 p
 export const selectClass = "w-full rounded-xl border border-white/12 bg-[#111827] px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]";
 export const textareaClass = "min-h-28 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]";
 
-export function SubmitButton({ children = "保存" }: { children?: React.ReactNode }) {
+export function SubmitButton({ children = "Save" }: { children?: React.ReactNode }) {
   return <button className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">{children}</button>;
 }
 
-export function DangerButton({ children = "删除" }: { children?: React.ReactNode }) {
+export function DangerButton({ children = "Delete" }: { children?: React.ReactNode }) {
   return <button className="rounded-full border border-red-400/40 px-4 py-2 text-sm text-red-200">{children}</button>;
 }

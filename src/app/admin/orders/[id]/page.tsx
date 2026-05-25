@@ -4,7 +4,7 @@ import { createRefundRecordAdminAction, deleteOrderAdminAction, processRefundRec
 import { AdminSection, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";
 import { adminDeleteRiskConfirmationToken, canAdminDeleteOrderSafely, canRecordRefundForOrder, getRefundRecordActorLabel } from "@/lib/order-rules";
-import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
+import { getStatusLabel, orderStatusLabels, proofStatusLabels, refundStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
 
 const orderStatusOptions = [
@@ -66,7 +66,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
           <Info label="创建时间" value={order.createdAt.toLocaleString("zh-CN")} />
           <Info label="支付时间" value={order.paidAt?.toLocaleString("zh-CN") ?? "-"} />
           <Info label="开通时间" value={order.activatedAt?.toLocaleString("zh-CN") ?? "-"} />
-          <Info label="退款日期" value={order.refundRecords[0]?.updatedAt.toLocaleString("zh-CN") ?? "-"} />
+          <Info label="退款日期" value={order.refundRecords[0]?.completedAt?.toLocaleString("zh-CN") ?? "-"} />
           <Info label="订单类型" value={order.orderType === "vip" ? "会员订单" : "软件下载订单"} />
           <Info label="权益记录" value={order.toolPurchase ? "已生成软件购买授权" : order.activatedAt ? "已开通权益" : "未开通"} />
         </div>
@@ -109,14 +109,20 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
             <div key={refund.id} className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-[#8B95A7]">
               <p>
                 <span className="font-semibold text-[#E8EEF8]">{formatCurrency(refund.amount.toString())}</span>
-                <span> · {refund.status} · {refund.reason}</span>
+                <span> · {getStatusLabel(refundStatusLabels, refund.status)} · {refund.reason}</span>
                 <span> · {getRefundRecordActorLabel({ adminEmail: refund.admin?.email, requesterEmail: refund.requester?.email })}</span>
-                <span> · 退款日期：{refund.updatedAt.toLocaleString("zh-CN")}</span>
+                <span> · 退款日期：{refund.completedAt?.toLocaleString("zh-CN") ?? "-"}</span>
               </p>
               {refund.refundReceiverQr ? (
                 <p className="mt-2 break-all text-xs text-[#48F5D3]">用户收款码/收款信息：{refund.refundReceiverQr}</p>
               ) : null}
+              {refund.refundProofImage ? (
+                <p className="mt-2 break-all text-xs text-[#7AA7FF]">退款凭证：{refund.refundProofImage}</p>
+              ) : null}
               {refund.note ? <p className="mt-2 text-xs leading-5">{refund.note}</p> : null}
+              <Link href={`/admin/refunds/${refund.id}`} className="mt-3 inline-flex rounded-full border border-white/15 px-4 py-2 text-xs font-semibold transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+                查看退款详情
+              </Link>
               {refund.status === "pending" ? (
                 <form action={processRefundRecordAdminAction} className="mt-3 grid gap-2 md:grid-cols-[1fr_120px_120px]">
                   <input type="hidden" name="refundId" value={refund.id} />
@@ -148,6 +154,9 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
             </Field>
             <Field label="用户收款码/收款信息" className="md:col-span-3">
               <input name="refundReceiverQr" placeholder="可填写收款码图片 URL、线下已核验说明或转账收款信息" className={inputClass} />
+            </Field>
+            <Field label="退款凭证 URL" className="md:col-span-3">
+              <input name="refundProofImage" placeholder="可填写退款截图、转账回执或退款流水截图 URL" className={inputClass} />
             </Field>
             <Field label="备注" className="md:col-span-3">
               <textarea name="note" placeholder="可填写沟通记录、退款流水号、处理说明" className={textareaClass} />

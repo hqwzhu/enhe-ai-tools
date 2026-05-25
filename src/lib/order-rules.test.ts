@@ -6,6 +6,7 @@ import {
   canUserCancelOrder,
   canUserRequestRefundForOrder,
   getRefundRecordActorLabel,
+  getRefundStatusPatch,
   isAdminDeleteRiskConfirmed,
   normalizeRefundRecordAmount
 } from "@/lib/order-rules";
@@ -67,5 +68,15 @@ describe("order business rules", () => {
     expect(normalizeRefundRecordAmount("12.345", 20)).toBe(12.35);
     expect(() => normalizeRefundRecordAmount("0", 20)).toThrow("Refund amount must be greater than 0.");
     expect(() => normalizeRefundRecordAmount("21", 20)).toThrow("Refund amount cannot exceed order amount.");
+  });
+
+  it("stamps completed refunds and clears completion date for non-completed decisions", () => {
+    const now = new Date("2026-05-25T08:00:00.000Z");
+    expect(getRefundStatusPatch("completed", null, now)).toEqual({ completedAt: now });
+    expect(getRefundStatusPatch("completed", new Date("2026-05-20T00:00:00.000Z"), now)).toEqual({
+      completedAt: new Date("2026-05-20T00:00:00.000Z")
+    });
+    expect(getRefundStatusPatch("pending", now, now)).toEqual({ completedAt: null });
+    expect(getRefundStatusPatch("rejected", now, now)).toEqual({ completedAt: null });
   });
 });

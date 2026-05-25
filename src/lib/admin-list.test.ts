@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   buildAdminCommentPageHref,
   buildAdminFilePageHref,
+  buildAdminRefundPageHref,
   buildAdminToolPageHref,
   buildAdminUserPageHref,
   parseAdminCommentListParams,
   parseAdminFileListParams,
+  parseAdminRefundListParams,
   parseAdminToolListParams,
   parseAdminUserListParams
 } from "@/lib/admin-list";
@@ -55,6 +57,24 @@ describe("admin list helpers", () => {
     expect(buildAdminCommentPageHref({ q: "", status: undefined, pinned: false }, 1)).toBe("/admin/comments?pinned=false&page=1");
     expect(buildAdminFilePageHref({ q: "setup", storage: "local", toolId: "tool-1" }, 3)).toBe(
       "/admin/files?q=setup&storage=local&toolId=tool-1&page=3"
+    );
+  });
+
+  it("parses refund filters and keeps refund pagination links stable", () => {
+    expect(parseAdminRefundListParams({ q: " ENHE2026 ", status: "pending", page: "2" })).toMatchObject({
+      q: "ENHE2026",
+      status: "pending",
+      page: 2,
+      skip: 20,
+      take: 20
+    });
+    expect(parseAdminRefundListParams({ status: "unknown", page: "0" })).toMatchObject({
+      status: undefined,
+      page: 1,
+      skip: 0
+    });
+    expect(buildAdminRefundPageHref({ q: "order", status: "completed" }, 4)).toBe(
+      "/admin/refunds?q=order&status=completed&page=4"
     );
   });
 });

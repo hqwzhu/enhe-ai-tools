@@ -1,17 +1,27 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { calculateGrowthPercent, formatDashboardAmount, rankPopularTools } from "@/lib/admin-dashboard";
+import {
+  buildDailyTrendBuckets,
+  calculateGrowthPercent,
+  calculateRatePercent,
+  formatDashboardAmount,
+  rankPopularTools
+} from "@/lib/admin-dashboard";
 
 export default async function AdminDashboardPage() {
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
+
   const last7Days = new Date(now);
   last7Days.setDate(last7Days.getDate() - 7);
   const previous7Days = new Date(now);
   previous7Days.setDate(previous7Days.getDate() - 14);
   const vipExpiringSoon = new Date(now);
   vipExpiringSoon.setDate(vipExpiringSoon.getDate() + 7);
+  const trendStart = new Date(now);
+  trendStart.setDate(trendStart.getDate() - 6);
+  trendStart.setHours(0, 0, 0, 0);
 
   const [
     users,
@@ -22,13 +32,17 @@ export default async function AdminDashboardPage() {
     softwareTools,
     onlineTools,
     orders,
+    activatedOrders,
+    successfulOrders,
+    completedRefunds,
     paidAmount,
     todayPaidAmount,
     pendingProofs,
     pendingRefunds,
     activeMemberships,
     expiringMemberships,
-    popularTools
+    popularTools,
+    recentRevenueOrders
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { createdAt: { gte: last7Days } } }),
@@ -38,6 +52,9 @@ export default async function AdminDashboardPage() {
     prisma.tool.count({ where: { type: "software" } }),
     prisma.tool.count({ where: { type: "online" } }),
     prisma.order.count(),
+    prisma.order.count({ where: { orderStatus: "activated" } }),
+    prisma.order.count({ where: { orderStatus: { in: ["paid", "activated", "refunded"] } } }),
+    prisma.orderRefundRecord.count({ where: { status: "completed" } }),
     prisma.order.aggregate({ where: { orderStatus: { in: ["paid", "activated"] } }, _sum: { amount: true } }),
     prisma.order.aggregate({ where: { orderStatus: { in: ["paid", "activated"] }, createdAt: { gte: todayStart } }, _sum: { amount: true } }),
     prisma.paymentProof.count({ where: { reviewStatus: "pending" } }),
@@ -49,64 +66,107 @@ export default async function AdminDashboardPage() {
       select: { id: true, name: true, type: true, downloadCount: true, usageCount: true },
       orderBy: [{ downloadCount: "desc" }, { usageCount: "desc" }],
       take: 8
+    }),
+    prisma.order.findMany({
+      where: { orderStatus: { in: ["paid", "activated"] }, createdAt: { gte: trendStart } },
+      select: { createdAt: true, amount: true }
     })
   ]);
+
   const growthPercent = calculateGrowthPercent(recentUsers, previousUsers);
+  const conversionRate = calculateRatePercent(activatedOrders, orders);
+  const refundRate = calculateRatePercent(completedRefunds, successfulOrders);
   const rankedTools = rankPopularTools(popularTools).slice(0, 5);
+  const revenueTrend = buildDailyTrendBuckets(
+    trendStart,
+    7,
+    recentRevenueOrders.map((order) => ({ date: order.createdAt, amount: Number(order.amount), count: 1 }))
+  );
+  const maxTrendAmount = Math.max(1, ...revenueTrend.map((bucket) => bucket.amount));
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold">数据看板</h1>
+      <h1 className="text-3xl font-semibold">Admin dashboard</h1>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
-        汇总订单金额、待审核事项、工具数量、用户增长和热门工具，方便运营时先看风险和收入。
+        Track revenue, pending reviews, tool inventory, user growth, popular tools, refund rate, and order conversion in one place.
       </p>
 
       <div className="mt-8 grid gap-4 md:grid-cols-4">
-        <Stat label="累计实收订单金额" value={formatDashboardAmount(paidAmount._sum.amount?.toString())} accent />
-        <Stat label="今日实收金额" value={formatDashboardAmount(todayPaidAmount._sum.amount?.toString())} />
-        <Stat label="待审核付款" value={pendingProofs} href="/admin/payments" warn={pendingProofs > 0} />
-        <Stat label="待处理退款" value={pendingRefunds} href="/admin/orders?status=refunded" warn={pendingRefunds > 0} />
-        <Stat label="用户总数" value={users} />
-        <Stat label="7 日新增用户" value={`${recentUsers} (${growthPercent >= 0 ? "+" : ""}${growthPercent}%)`} />
-        <Stat label="工具总数" value={tools} />
-        <Stat label="已发布工具" value={`${publishedTools} / ${tools}`} />
+        <Stat label="Paid revenue" value={formatDashboardAmount(paidAmount._sum.amount?.toString())} accent />
+        <Stat label="Today revenue" value={formatDashboardAmount(todayPaidAmount._sum.amount?.toString())} />
+        <Stat label="Payment reviews" value={pendingProofs} href="/admin/payments" warn={pendingProofs > 0} />
+        <Stat label="Refund reviews" value={pendingRefunds} href="/admin/refunds?status=pending" warn={pendingRefunds > 0} />
+        <Stat label="Users" value={users} />
+        <Stat label="7-day new users" value={`${recentUsers} (${growthPercent >= 0 ? "+" : ""}${growthPercent}%)`} />
+        <Stat label="Order conversion" value={`${conversionRate}%`} />
+        <Stat label="Refund rate" value={`${refundRate}%`} warn={refundRate > 10} />
+        <Stat label="Tools" value={tools} />
+        <Stat label="Published tools" value={`${publishedTools} / ${tools}`} />
+        <Stat label="Active VIPs" value={activeMemberships} href="/admin/users" />
+        <Stat label="VIP expiring in 7 days" value={expiringMemberships} href="/admin/messages" warn={expiringMemberships > 0} />
       </div>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]">
         <section className="glass rounded-2xl p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold">热门工具</h2>
-            <span className="text-xs text-[#8B95A7]">按下载次数 + 使用次数排序</span>
+            <h2 className="text-xl font-semibold">7-day revenue trend</h2>
+            <span className="text-xs text-[#8B95A7]">Paid and activated orders only</span>
           </div>
-          <div className="mt-5 space-y-3">
-            {rankedTools.length ? rankedTools.map((tool, index) => (
+          <div className="mt-5 grid h-56 grid-cols-7 items-end gap-3">
+            {revenueTrend.map((bucket) => (
+              <div key={bucket.date} className="flex h-full flex-col justify-end gap-2">
+                <div className="text-center text-[11px] text-[#8B95A7]">{formatDashboardAmount(bucket.amount)}</div>
+                <div
+                  className="rounded-t-xl bg-gradient-to-t from-[#48F5D3] to-[#7AA7FF]"
+                  style={{ height: `${Math.max(8, (bucket.amount / maxTrendAmount) * 150)}px` }}
+                />
+                <div className="text-center text-[11px] text-[#8B95A7]">{bucket.date.slice(5)}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="glass rounded-2xl p-6">
+          <h2 className="text-xl font-semibold">Operations reminders</h2>
+          <div className="mt-5 grid gap-3 text-sm">
+            <QuickItem label="Payment reviews" value={pendingProofs} href="/admin/payments" />
+            <QuickItem label="Refund reviews" value={pendingRefunds} href="/admin/refunds?status=pending" />
+            <QuickItem label="VIP expiring in 7 days" value={expiringMemberships} href="/admin/messages" />
+            <QuickItem label="Active VIPs" value={activeMemberships} href="/admin/users" />
+          </div>
+          <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-[#8B95A7]">
+            Tool mix: {softwareTools} software tools and {onlineTools} online tools. File uploads, COS issues, and after-sales tasks are handled from Files,
+            Messages, and Refund review.
+          </div>
+        </section>
+      </div>
+
+      <section className="glass mt-8 rounded-2xl p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">Popular tools</h2>
+          <span className="text-xs text-[#8B95A7]">Ranked by downloads plus online usage</span>
+        </div>
+        <div className="mt-5 space-y-3">
+          {rankedTools.length ? (
+            rankedTools.map((tool, index) => (
               <Link
                 key={tool.id}
                 href={tool.type === "software" ? `/admin/software/${tool.id}` : `/admin/online-tools/${tool.id}`}
                 className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition hover:border-[#48F5D3]/40 hover:bg-[#48F5D3]/8"
               >
-                <span className="text-sm font-semibold text-[#E8EEF8]">{index + 1}. {tool.name}</span>
-                <span className="text-xs text-[#8B95A7]">下载 {tool.downloadCount} · 使用 {tool.usageCount} · 热度 {tool.score}</span>
+                <span className="text-sm font-semibold text-[#E8EEF8]">
+                  {index + 1}. {tool.name}
+                </span>
+                <span className="text-xs text-[#8B95A7]">
+                  Downloads {tool.downloadCount} / Usage {tool.usageCount} / Score {tool.score}
+                </span>
               </Link>
-            )) : (
-              <p className="text-sm text-[#8B95A7]">暂无已发布工具数据。</p>
-            )}
-          </div>
-        </section>
-
-        <section className="glass rounded-2xl p-6">
-          <h2 className="text-xl font-semibold">运营提醒</h2>
-          <div className="mt-5 grid gap-3 text-sm">
-            <QuickItem label="待审核付款" value={pendingProofs} href="/admin/messages" />
-            <QuickItem label="待处理退款" value={pendingRefunds} href="/admin/messages" />
-            <QuickItem label="7 日内 VIP 到期" value={expiringMemberships} href="/admin/messages" />
-            <QuickItem label="活跃会员" value={activeMemberships} href="/admin/users" />
-          </div>
-          <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-[#8B95A7]">
-            工具结构：电脑软件 {softwareTools} 个，在线网页工具 {onlineTools} 个。文件上传、COS 异常和售后事项可在消息中心集中查看。
-          </div>
-        </section>
-      </div>
+            ))
+          ) : (
+            <p className="text-sm text-[#8B95A7]">No published tool data yet.</p>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
@@ -139,11 +199,7 @@ function Stat({
     );
   }
 
-  return (
-    <div className="glass rounded-2xl p-6">
-      {content}
-    </div>
-  );
+  return <div className="glass rounded-2xl p-6">{content}</div>;
 }
 
 function QuickItem({ label, value, href }: { label: string; value: number; href: string }) {

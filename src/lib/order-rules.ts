@@ -1,4 +1,4 @@
-import type { OrderStatus } from "@prisma/client";
+import type { OrderStatus, RefundStatus } from "@prisma/client";
 
 export const userCancellableOrderStatuses = ["pending_payment", "pending_review", "rejected"] as const;
 export const adminDeleteRiskConfirmationToken = "DELETE_ACTIVATED_ORDER";
@@ -34,6 +34,12 @@ export function normalizeRefundRecordAmount(value: unknown, maxAmount: number) {
   if (!Number.isFinite(amount) || amount <= 0) throw new Error("Refund amount must be greater than 0.");
   if (amount > maxAmount) throw new Error("Refund amount cannot exceed order amount.");
   return Math.round(amount * 100) / 100;
+}
+
+export function getRefundStatusPatch(status: RefundStatus, currentCompletedAt?: Date | null, now = new Date()) {
+  return {
+    completedAt: status === "completed" ? currentCompletedAt ?? now : null
+  };
 }
 
 export function isAdminDeleteRiskConfirmed(value: string | null | undefined) {

@@ -6,6 +6,7 @@ const userStatuses = ["active", "disabled"] as const;
 const toolStatuses = ["draft", "published", "offline"] as const;
 const commentStatuses = ["pending", "approved", "rejected", "deleted"] as const;
 const fileStorageTypes = ["local", "cos"] as const;
+const refundStatuses = ["pending", "completed", "rejected"] as const;
 
 type Pagination = {
   page: number;
@@ -36,6 +37,11 @@ export type AdminFileListParams = Pagination & {
   q: string;
   storage?: (typeof fileStorageTypes)[number];
   toolId?: string;
+};
+
+export type AdminRefundListParams = Pagination & {
+  q: string;
+  status?: (typeof refundStatuses)[number];
 };
 
 function parsePagination(params: Record<string, string | undefined>): Pagination {
@@ -180,4 +186,34 @@ export function buildAdminFileWhere(filters: Pick<AdminFileListParams, "q" | "st
 
 export function buildAdminFilePageHref(filters: Pick<AdminFileListParams, "q" | "storage" | "toolId">, page: number) {
   return buildPageHref("/admin/files", filters, page);
+}
+
+export function parseAdminRefundListParams(params: Record<string, string | undefined>): AdminRefundListParams {
+  return {
+    q: (params.q ?? "").trim(),
+    status: parseEnumValue(params.status, refundStatuses),
+    ...parsePagination(params)
+  };
+}
+
+export function buildAdminRefundWhere(filters: Pick<AdminRefundListParams, "q" | "status">): Prisma.OrderRefundRecordWhereInput {
+  const where: Prisma.OrderRefundRecordWhereInput = {};
+  if (filters.status) where.status = filters.status;
+  if (filters.q) {
+    where.OR = [
+      { reason: { contains: filters.q, mode: "insensitive" } },
+      { note: { contains: filters.q, mode: "insensitive" } },
+      { refundReceiverQr: { contains: filters.q, mode: "insensitive" } },
+      { order: { is: { orderNo: { contains: filters.q, mode: "insensitive" } } } },
+      { order: { is: { user: { is: { email: { contains: filters.q, mode: "insensitive" } } } } } },
+      { order: { is: { user: { is: { phone: { contains: filters.q, mode: "insensitive" } } } } } },
+      { requester: { is: { email: { contains: filters.q, mode: "insensitive" } } } },
+      { requester: { is: { phone: { contains: filters.q, mode: "insensitive" } } } }
+    ];
+  }
+  return where;
+}
+
+export function buildAdminRefundPageHref(filters: Pick<AdminRefundListParams, "q" | "status">, page: number) {
+  return buildPageHref("/admin/refunds", filters, page);
 }

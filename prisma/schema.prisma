@@ -364,6 +364,8 @@ model OrderRefundRecord {
   reason    String
   note      String?
   refundReceiverQr String? @map("refund_receiver_qr")
+  refundProofImage String? @map("refund_proof_image")
+  completedAt DateTime?    @map("completed_at")
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
   order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)

@@ -30,6 +30,7 @@ import {
   assertAdminOrderStatusUpdateAllowed,
   canAdminDeleteOrderSafely,
   canRecordRefundForOrder,
+  getRefundStatusPatch,
   isAdminDeleteRiskConfirmed,
   normalizeRefundRecordAmount
 } from "@/lib/order-rules";
@@ -274,6 +275,7 @@ export async function createRefundRecordAdminAction(formData: FormData) {
   const reason = z.string().min(2, "必须填写售后/退款原因").parse(formData.get("reason"));
   const note = parseOptionalString(formData.get("note"));
   const refundReceiverQr = parseOptionalString(formData.get("refundReceiverQr"));
+  const refundProofImage = parseOptionalString(formData.get("refundProofImage"));
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) {
     redirect(`/admin/orders?error=${encodeURIComponent("订单不存在，无法记录售后/退款。")}`);
@@ -299,7 +301,9 @@ export async function createRefundRecordAdminAction(formData: FormData) {
         status,
         reason,
         note,
-        refundReceiverQr
+        refundReceiverQr,
+        refundProofImage,
+        ...getRefundStatusPatch(status, null)
       }
     });
 
@@ -317,11 +321,13 @@ export async function createRefundRecordAdminAction(formData: FormData) {
     targetType: "order",
     targetId: orderId,
     summary: "Created order after-sales/refund record.",
-    metadata: { refundId: refund.id, amount, status, reason, refundReceiverQr }
+    metadata: { refundId: refund.id, amount, status, reason, refundReceiverQr, refundProofImage }
   });
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath("/admin/refunds");
+  revalidatePath(`/admin/refunds/${refund.id}`);
   revalidatePath("/user");
   redirect(`/admin/orders/${orderId}?refund=1`);
 }
@@ -331,6 +337,7 @@ export async function processRefundRecordAdminAction(formData: FormData) {
   const id = idSchema.parse(formData.get("refundId"));
   const status = z.enum(["completed", "rejected"]).parse(formData.get("status"));
   const note = parseOptionalString(formData.get("note"));
+  const refundProofImage = parseOptionalString(formData.get("refundProofImage"));
   const refund = await prisma.orderRefundRecord.findUnique({ where: { id }, include: { order: true } });
   if (!refund) {
     redirect(`/admin/orders?error=${encodeURIComponent("售后/退款记录不存在。")}`);
@@ -345,7 +352,9 @@ export async function processRefundRecordAdminAction(formData: FormData) {
       data: {
         status,
         adminId: admin.id,
-        note: note ?? refund.note
+        note: note ?? refund.note,
+        refundProofImage: refundProofImage ?? refund.refundProofImage,
+        ...getRefundStatusPatch(status, refund.completedAt)
       }
     });
 
@@ -370,14 +379,16 @@ export async function processRefundRecordAdminAction(formData: FormData) {
     targetType: "order",
     targetId: refund.orderId,
     summary: "Processed user after-sales/refund request.",
-    metadata: { refundId: id, status, note }
+    metadata: { refundId: id, status, note, refundProofImage }
   });
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${refund.orderId}`);
+  revalidatePath("/admin/refunds");
+  revalidatePath(`/admin/refunds/${id}`);
   revalidatePath(`/orders/${refund.orderId}`);
   revalidatePath("/user");
-  redirect(`/admin/orders/${refund.orderId}?refund=1`);
+  redirect(`/admin/refunds/${id}?processed=1`);
 }
 
 export async function adjustVipAdminAction(formData: FormData) {
