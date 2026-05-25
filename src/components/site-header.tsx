@@ -25,22 +25,22 @@ export async function SiteHeader() {
   ] as const;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#080B12]/72 backdrop-blur-2xl">
+    <header className="sticky top-0 z-50 border-b border-[rgba(239,228,197,0.14)] bg-[#04100E]/78 backdrop-blur-2xl">
       <Container className="flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center overflow-hidden rounded-2xl bg-white/6 shadow-[0_0_24px_rgba(72,245,211,0.16)]">
+          <span className="flex size-10 items-center justify-center overflow-hidden rounded-2xl border border-[rgba(239,228,197,0.16)] bg-[rgba(244,238,218,0.08)] shadow-[0_0_24px_rgba(245,198,107,0.12)]">
             <Image src={logoSrc} alt={brand} width={34} height={34} priority unoptimized />
           </span>
-          <span className="font-semibold">{brand}</span>
+          <span className="font-semibold text-[#F4EEDA]">{brand}</span>
         </Link>
         <nav className="hidden items-center gap-1 lg:flex">
           {navItems.map(([label, href]) => (
-            <Link key={href} href={href} className="rounded-full px-3 py-2 text-sm text-[#8B95A7] hover:bg-white/8 hover:text-white">
+            <Link key={href} href={href} className="rounded-full px-3 py-2 text-sm text-[#8E9B91] hover:bg-[rgba(244,238,218,0.08)] hover:text-[#F4EEDA]">
               {label}
             </Link>
           ))}
           {user?.role === "admin" ? (
-            <Link href="/admin" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#48F5D3] hover:bg-white/8">
+            <Link href="/admin" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#F5C66B] hover:bg-[rgba(245,198,107,0.12)]">
               <LayoutDashboard size={16} />
               {t.nav.admin}
             </Link>
@@ -49,11 +49,11 @@ export async function SiteHeader() {
         <div className="flex items-center gap-2">
           <LanguageSwitcher locale={locale} labels={t.language} />
           {user ? (
-            <Link href="/user" className="inline-flex items-center gap-2 rounded-full border border-white/12 px-3 py-2 text-sm">
+            <Link href="/user" className="inline-flex items-center gap-2 rounded-full border border-[rgba(239,228,197,0.16)] bg-[rgba(244,238,218,0.05)] px-3 py-2 text-sm text-[#F4EEDA]">
               <span className="relative inline-flex">
                 <UserRound size={16} />
                 {membership ? (
-                  <Crown className="absolute -right-2 -top-2 text-[#FFB86B]" size={12} fill="currentColor" />
+                  <Crown className="absolute -right-2 -top-2 text-[#F5C66B]" size={12} fill="currentColor" />
                 ) : null}
               </span>
               {user.nickname ?? user.email ?? t.nav.userFallback}
@@ -78,13 +78,13 @@ function LanguageSwitcher({
   labels: { label: string; zh: string; en: string };
 }) {
   return (
-    <form action={setLocaleAction} className="hidden items-center rounded-full border border-white/12 bg-white/5 p-1 text-xs sm:flex" aria-label={labels.label}>
+    <form action={setLocaleAction} className="hidden items-center rounded-full border border-[rgba(239,228,197,0.16)] bg-[rgba(244,238,218,0.06)] p-1 text-xs sm:flex" aria-label={labels.label}>
       {(["zh", "en"] as const).map((item) => (
         <button
           key={item}
           name="locale"
           value={item}
-          className={`rounded-full px-3 py-1.5 transition ${locale === item ? "bg-[#48F5D3] text-[#07101f]" : "text-[#8B95A7] hover:text-white"}`}
+          className={`rounded-full px-3 py-1.5 transition ${locale === item ? "bg-[#F5C66B] text-[#04100E]" : "text-[#8E9B91] hover:text-[#F4EEDA]"}`}
         >
           {labels[item]}
         </button>

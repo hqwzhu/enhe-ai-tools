@@ -11,16 +11,16 @@ export async function SiteFooter() {
   const copyright = getEffectiveFooterCopyright(settings, t.footer.copyright);
 
   return (
-    <footer className="border-t border-white/10 py-10 text-sm text-[#8B95A7]">
+    <footer className="border-t border-[rgba(239,228,197,0.14)] py-10 text-sm text-[#8E9B91]">
       <Container>
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="font-semibold text-[#E8EEF8]">{siteName}</p>
+            <p className="font-semibold text-[#F4EEDA]">{siteName}</p>
             <p className="mt-2">{copyright}</p>
           </div>
           <nav className="flex flex-wrap gap-x-5 gap-y-3">
             {legalPages.map((page) => (
-              <Link key={page.slug} href={`/legal/${page.slug}`} className="transition hover:text-[#48F5D3]">
+              <Link key={page.slug} href={`/legal/${page.slug}`} className="transition hover:text-[#F5C66B]">
                 {t.footer.legal[page.slug as keyof typeof t.footer.legal]}
               </Link>
             ))}

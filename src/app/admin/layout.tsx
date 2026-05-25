@@ -33,11 +33,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <Container className="grid gap-6 py-10 lg:grid-cols-[260px_1fr]">
-      <aside className="glass h-fit rounded-2xl p-4">
-        <h1 className="px-3 py-2 text-lg font-semibold">{t.layout.title}</h1>
+      <aside className="dossier-card h-fit p-4">
+        <h1 className="px-3 py-2 text-lg font-semibold text-[#F4EEDA]">{t.layout.title}</h1>
         <nav className="mt-3 grid gap-1">
           {adminNav.map(([key, href]) => (
-            <Link key={href} href={href} className="rounded-xl px-3 py-2 text-sm text-[#8B95A7] hover:bg-white/8 hover:text-white">
+            <Link key={href} href={href} className="rounded-xl px-3 py-2 text-sm text-[#8E9B91] hover:bg-[rgba(245,198,107,0.12)] hover:text-[#F4EEDA]">
               {t.nav[key]}
             </Link>
           ))}

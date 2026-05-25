@@ -176,8 +176,10 @@ test("user uploads a VIP order proof and admin approval activates membership", a
   await expect(page).toHaveURL(/\/admin/);
 
   await page.goto("/admin/payments");
-  const proofCard = page.locator(".glass").filter({ hasText: order.orderNo });
-  await proofCard.getByRole("button", { name: "通过" }).click();
+  const proofRow = page.getByRole("link", { name: order.orderNo }).locator("xpath=..");
+  await proofRow.locator('a[href^="/admin/payments/"]').click();
+  await expect(page).toHaveURL(/\/admin\/payments\/.+/);
+  await page.locator('button[name="decision"][value="approved"]').click();
 
   await expect.poll(async () => {
     const refreshed = await prisma.order.findUnique({ where: { id: order.id } });

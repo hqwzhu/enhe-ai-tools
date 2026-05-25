@@ -27,13 +27,13 @@ export default async function HomePage() {
       <section className="relative overflow-hidden py-18 md:py-24">
         <Container className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <div className="mb-6 inline-flex rounded-full border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-2 text-sm text-[#48F5D3]">
+            <div className="hud-pill mb-6 inline-flex px-4 py-2 text-sm font-semibold">
               {heroSubtitle}
             </div>
-            <h1 className="max-w-5xl text-4xl font-semibold tracking-normal text-white sm:text-5xl xl:text-6xl">
+            <h1 className="max-w-5xl text-4xl font-semibold tracking-normal text-[#F4EEDA] sm:text-5xl xl:text-6xl">
               {heroTitle}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8B95A7]">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8E9B91]">
               {heroIntro}
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
