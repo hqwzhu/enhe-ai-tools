@@ -70,24 +70,24 @@ export function HeroLogoMark({ label }: { label: string }) {
         </defs>
         <g className="enhe-logo-part enhe-logo-slat-top">
           <path d="M108 126L166 68H424V126H108Z" fill="url(#heroBlueFill)" />
-          <path d="M108 126L166 68H424V126H108Z" stroke="url(#heroBlueEdge)" strokeWidth="6" strokeLinejoin="round" filter="url(#heroLogoGlow)" />
-          <path d="M128 113L174 82H406" stroke="url(#heroLogoPremiumSheen)" strokeWidth="2.5" strokeLinecap="round" opacity="0.68" />
+          <path d="M108 126L166 68H424V126H108Z" fill="none" stroke="url(#heroBlueEdge)" strokeWidth="6" strokeLinejoin="round" filter="url(#heroLogoGlow)" />
+          <path d="M128 113L174 82H406" fill="none" stroke="url(#heroLogoPremiumSheen)" strokeWidth="2.5" strokeLinecap="round" opacity="0.68" />
         </g>
         <g className="enhe-logo-part enhe-logo-slat-mid">
           <path d="M106 179H366V231H106V179Z" fill="url(#heroBlueFill)" />
-          <path d="M106 179H366V231H106V179Z" stroke="url(#heroBlueEdge)" strokeWidth="6" strokeLinejoin="round" filter="url(#heroLogoGlow)" />
-          <path d="M122 191H352" stroke="url(#heroLogoPremiumSheen)" strokeWidth="2.5" strokeLinecap="round" opacity="0.56" />
+          <path d="M106 179H366V231H106V179Z" fill="none" stroke="url(#heroBlueEdge)" strokeWidth="6" strokeLinejoin="round" filter="url(#heroLogoGlow)" />
+          <path d="M122 191H352" fill="none" stroke="url(#heroLogoPremiumSheen)" strokeWidth="2.5" strokeLinecap="round" opacity="0.56" />
         </g>
         <g className="enhe-logo-part enhe-logo-slat-bottom">
           <path d="M108 285H424V343H166L108 285Z" fill="url(#heroBlueFill)" />
-          <path d="M108 285H424V343H166L108 285Z" stroke="url(#heroBlueEdge)" strokeWidth="6" strokeLinejoin="round" filter="url(#heroLogoGlow)" />
-          <path d="M126 296H408" stroke="url(#heroLogoPremiumSheen)" strokeWidth="2.5" strokeLinecap="round" opacity="0.5" />
+          <path d="M108 285H424V343H166L108 285Z" fill="none" stroke="url(#heroBlueEdge)" strokeWidth="6" strokeLinejoin="round" filter="url(#heroLogoGlow)" />
+          <path d="M126 296H408" fill="none" stroke="url(#heroLogoPremiumSheen)" strokeWidth="2.5" strokeLinecap="round" opacity="0.5" />
         </g>
         <g className="enhe-logo-part enhe-logo-metal">
           <path d="M394 180H480V74L494 60H554V350H480V240H394V180Z" fill="url(#heroRightFill)" />
-          <path d="M394 180H480V74L494 60H554V350H480V240H394V180Z" stroke="url(#heroRightEdge)" strokeWidth="6" strokeLinejoin="round" filter="url(#heroLogoGlow)" />
-          <path d="M411 191H492V88L502 78H538" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" opacity="0.58" />
-          <path d="M496 332H536V82" stroke="#7892C4" strokeWidth="3.4" strokeLinecap="round" opacity="0.42" />
+          <path d="M394 180H480V74L494 60H554V350H480V240H394V180Z" fill="none" stroke="url(#heroRightEdge)" strokeWidth="6" strokeLinejoin="round" filter="url(#heroLogoGlow)" />
+          <path d="M411 191H492V88L502 78H538" fill="none" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" opacity="0.58" />
+          <path d="M496 332H536V82" fill="none" stroke="#7892C4" strokeWidth="3.4" strokeLinecap="round" opacity="0.42" />
         </g>
         <path className="enhe-logo-scanline" d="M70 210C164 174 318 170 404 205C492 241 552 237 592 210" />
       </svg>
