@@ -223,8 +223,8 @@ a {
     brightness(1.04)
     saturate(0.96)
     contrast(1)
-    drop-shadow(0 0 18px rgba(72, 245, 211, 0.22))
-    drop-shadow(0 0 34px rgba(122, 167, 255, 0.16));
+    drop-shadow(0 0 10px rgba(72, 245, 211, 0.14))
+    drop-shadow(0 0 20px rgba(122, 167, 255, 0.1));
   transform-style: preserve-3d;
   transition: filter 180ms ease;
   will-change: filter, transform;
@@ -238,10 +238,10 @@ a {
   content: "";
   border-radius: 999px;
   background:
-    radial-gradient(circle at 46% 50%, rgba(72, 245, 211, 0.28), transparent 52%),
-    radial-gradient(circle at 58% 46%, rgba(122, 167, 255, 0.18), transparent 68%);
-  filter: blur(34px);
-  opacity: 0.68;
+    radial-gradient(circle at 46% 50%, rgba(72, 245, 211, 0.16), transparent 52%),
+    radial-gradient(circle at 58% 46%, rgba(122, 167, 255, 0.1), transparent 68%);
+  filter: blur(26px);
+  opacity: 0.44;
   animation: enhe-logo-core-pulse 3.8s ease-in-out infinite;
   animation-delay: -0.9s;
 }
@@ -251,8 +251,8 @@ a {
     brightness(1.1)
     saturate(1.02)
     contrast(1.02)
-    drop-shadow(0 0 22px rgba(72, 245, 211, 0.3))
-    drop-shadow(0 0 42px rgba(122, 167, 255, 0.2));
+    drop-shadow(0 0 14px rgba(72, 245, 211, 0.22))
+    drop-shadow(0 0 28px rgba(122, 167, 255, 0.14));
   animation-duration: 3.2s;
 }
 
@@ -263,9 +263,64 @@ a {
 }
 
 .enhe-hero-logo-svg {
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+
+.enhe-logo-comet-orbit {
+  position: absolute;
+  inset: -22% -14%;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 999px;
+  border: 1px solid rgba(122, 167, 255, 0.08);
+  opacity: 0.72;
+  transform-origin: center;
+}
+
+.enhe-logo-comet-orbit span {
+  position: absolute;
+  top: 50%;
+  right: -2px;
+  width: 36px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(72, 245, 211, 0), rgba(72, 245, 211, 0.9));
+  box-shadow: 0 0 12px rgba(72, 245, 211, 0.42);
+  transform: translateY(-50%);
+}
+
+.enhe-logo-comet-orbit-a {
+  animation: enhe-comet-orbit 6.8s linear infinite;
+}
+
+.enhe-logo-comet-orbit-b {
+  inset: -10% -5%;
+  opacity: 0.5;
+  transform: rotateX(62deg) rotateZ(20deg);
+  animation: enhe-comet-orbit-tilt 8.6s linear infinite reverse;
+}
+
+.enhe-logo-comet-orbit-b span {
+  width: 26px;
+  background: linear-gradient(90deg, rgba(122, 167, 255, 0), rgba(122, 167, 255, 0.78));
+  box-shadow: 0 0 10px rgba(122, 167, 255, 0.35);
+}
+
+.enhe-logo-comet-orbit-c {
+  inset: -34% -22%;
+  opacity: 0.42;
+  transform: rotateX(68deg) rotateZ(-18deg);
+  animation: enhe-comet-orbit-wide 11s linear infinite;
+}
+
+.enhe-logo-comet-orbit-c span {
+  width: 22px;
+  background: linear-gradient(90deg, rgba(167, 139, 250, 0), rgba(167, 139, 250, 0.72));
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.32);
 }
 
 .enhe-logo-part {
@@ -307,11 +362,11 @@ a {
 
 .enhe-logo-scanline {
   fill: none;
-  stroke: rgba(72, 245, 211, 0.42);
+  stroke: rgba(72, 245, 211, 0.28);
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-dasharray: 76 320;
-  filter: drop-shadow(0 0 8px rgba(72, 245, 211, 0.75));
+  filter: drop-shadow(0 0 5px rgba(72, 245, 211, 0.42));
   animation: enhe-scanline 3.4s ease-in-out infinite;
 }
 
@@ -378,12 +433,36 @@ a {
 @keyframes enhe-logo-core-pulse {
   0%,
   100% {
-    opacity: 0.98;
-    transform: scale(1.08);
+    opacity: 0.58;
+    transform: scale(1.04);
   }
   50% {
-    opacity: 0.54;
-    transform: scale(0.9);
+    opacity: 0.3;
+    transform: scale(0.92);
+  }
+}
+
+@keyframes enhe-comet-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes enhe-comet-orbit-tilt {
+  from {
+    transform: rotateX(62deg) rotateZ(20deg);
+  }
+  to {
+    transform: rotateX(62deg) rotateZ(380deg);
+  }
+}
+
+@keyframes enhe-comet-orbit-wide {
+  from {
+    transform: rotateX(68deg) rotateZ(-18deg);
+  }
+  to {
+    transform: rotateX(68deg) rotateZ(342deg);
   }
 }
 

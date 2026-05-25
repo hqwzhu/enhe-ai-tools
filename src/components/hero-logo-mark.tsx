@@ -28,6 +28,15 @@ export function HeroLogoMark({ label }: { label: string }) {
       onClick={triggerMorph}
       className={`enhe-hero-logo-button ${isMorphing ? "is-morphing" : ""}`}
     >
+      <span className="enhe-logo-comet-orbit enhe-logo-comet-orbit-a" aria-hidden="true">
+        <span />
+      </span>
+      <span className="enhe-logo-comet-orbit enhe-logo-comet-orbit-b" aria-hidden="true">
+        <span />
+      </span>
+      <span className="enhe-logo-comet-orbit enhe-logo-comet-orbit-c" aria-hidden="true">
+        <span />
+      </span>
       <svg className="enhe-hero-logo-svg" viewBox="0 0 640 420" role="img" aria-hidden="true">
         <defs>
           <linearGradient id="heroBlueFill" x1="112" y1="64" x2="428" y2="342" gradientUnits="userSpaceOnUse">
@@ -41,11 +50,11 @@ export function HeroLogoMark({ label }: { label: string }) {
             <stop offset="1" stopColor="#5F7AB8" />
           </linearGradient>
           <filter id="heroLogoSoftGlow" x="-30%" y="-45%" width="160%" height="190%">
-            <feGaussianBlur stdDeviation="9" result="blur" />
+            <feGaussianBlur stdDeviation="5.5" result="blur" />
             <feColorMatrix
               in="blur"
               type="matrix"
-              values="0 0 0 0 0.26 0 0 0 0 0.85 0 0 0 0 0.78 0 0 0 0.5 0"
+              values="0 0 0 0 0.26 0 0 0 0 0.85 0 0 0 0 0.78 0 0 0 0.24 0"
             />
             <feMerge>
               <feMergeNode in="blur" />
