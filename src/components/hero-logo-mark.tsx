@@ -40,17 +40,17 @@ export function HeroLogoMark({ label }: { label: string }) {
       <svg className="enhe-hero-logo-svg" viewBox="0 0 640 420" role="img" aria-hidden="true">
         <defs>
           <linearGradient id="heroBlueFill" x1="112" y1="64" x2="428" y2="342" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#6FA8FF" />
-            <stop offset="0.55" stopColor="#4B7FE8" />
-            <stop offset="1" stopColor="#42D7C9" />
+            <stop stopColor="#B9C7FF" />
+            <stop offset="0.45" stopColor="#8EA7FF" />
+            <stop offset="1" stopColor="#7DD3FC" />
           </linearGradient>
           <linearGradient id="heroRightFill" x1="394" y1="64" x2="554" y2="350" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#AFC9F6" />
-            <stop offset="0.5" stopColor="#7F9AD8" />
-            <stop offset="1" stopColor="#5F7AB8" />
+            <stop stopColor="#F6FAFF" />
+            <stop offset="0.52" stopColor="#C8D6EA" />
+            <stop offset="1" stopColor="#8EA7FF" />
           </linearGradient>
           <filter id="heroLogoSoftGlow" x="-30%" y="-45%" width="160%" height="190%">
-            <feGaussianBlur stdDeviation="5.5" result="blur" />
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feColorMatrix
               in="blur"
               type="matrix"

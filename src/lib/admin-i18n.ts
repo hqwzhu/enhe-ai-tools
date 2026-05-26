@@ -28,6 +28,7 @@ export const adminDictionaries = {
       changelogs: "工具版本",
       comments: "评论管理",
       files: "文件管理",
+      licenseGenerator: "授权码生成器",
       audit: "操作审计",
       settings: "网站设置"
     },
@@ -56,6 +57,26 @@ export const adminDictionaries = {
       popularToolsNote: "按下载次数和在线使用次数综合排序",
       popularToolStats: "下载 {downloads} / 使用 {usage} / 热度 {score}",
       noPublishedTools: "暂无已发布工具数据。"
+    },
+    licenseGenerator: {
+      title: "授权码生成器",
+      intro: "迁移自本地 FaceSwap Studio 授权码生成器，保持单机授权、无限授权密钥解锁、机器码校验和签名规则一致。",
+      type: "授权类型",
+      single: "单机授权码",
+      unlimited: "无限授权码",
+      machineId: "机器码",
+      note: "备注",
+      adminKey: "高级授权密钥",
+      adminKeyHint: "生成无限授权码时必须填写本地生成器原密钥。",
+      serverMachineId: "填入服务器机器码",
+      generate: "生成授权码",
+      copy: "复制授权码",
+      output: "授权码",
+      outputPlaceholder: "生成后授权码会显示在这里。",
+      success: "生成成功后可复制给用户。",
+      desktopHint: "提示：单机授权码必须使用对方电脑显示的机器码生成。",
+      issuedAt: "签发时间",
+      noCodeToCopy: "请先生成授权码。"
     }
   },
   en: {
@@ -81,6 +102,7 @@ export const adminDictionaries = {
       changelogs: "Tool versions",
       comments: "Comments",
       files: "Files",
+      licenseGenerator: "License generator",
       audit: "Audit logs",
       settings: "Site settings"
     },
@@ -109,6 +131,26 @@ export const adminDictionaries = {
       popularToolsNote: "Ranked by downloads plus online usage",
       popularToolStats: "Downloads {downloads} / Usage {usage} / Score {score}",
       noPublishedTools: "No published tool data yet."
+    },
+    licenseGenerator: {
+      title: "License generator",
+      intro: "Migrated from the local FaceSwap Studio generator while preserving single-machine codes, unlimited unlock key, machine-code validation, and signing rules.",
+      type: "License type",
+      single: "Single machine",
+      unlimited: "Unlimited",
+      machineId: "Machine ID",
+      note: "Note",
+      adminKey: "Advanced unlock key",
+      adminKeyHint: "The original local generator key is required when generating unlimited licenses.",
+      serverMachineId: "Use server machine ID",
+      generate: "Generate license",
+      copy: "Copy license",
+      output: "License code",
+      outputPlaceholder: "The generated license code will appear here.",
+      success: "After generation, copy the code to the user.",
+      desktopHint: "Tip: single-machine licenses must be generated with the user's machine ID.",
+      issuedAt: "Issued at",
+      noCodeToCopy: "Generate a license code first."
     }
   }
 } as const;

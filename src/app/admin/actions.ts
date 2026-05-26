@@ -20,6 +20,8 @@ import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { getAdminUserDeleteBlockReason } from "@/lib/admin-user-rules";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
 import { manuallyAdjustVip, revokeEntitlementsForRefundedOrder } from "@/lib/membership";
+import { createLicenseCode, isUnlimitedLicenseKeyValid, parseLicenseCode } from "@/lib/license-generator";
+import type { LicenseGeneratorActionState } from "@/lib/license-generator-action-state";
 import { isLikelyUploadableImage } from "@/lib/media";
 import {
   buildManualVipNotification,
@@ -59,6 +61,62 @@ async function saveAdminImageUpload(file: FormDataEntryValue | null, prefix: str
   await mkdir(uploadDir, { recursive: true });
   await writeFile(diskPath, Buffer.from(await file.arrayBuffer()));
   return publicUrl;
+}
+
+export async function generateLicenseCodeAdminAction(
+  _prevState: LicenseGeneratorActionState,
+  formData: FormData
+): Promise<LicenseGeneratorActionState> {
+  const admin = await requireAdmin();
+  const licenseType = z.enum(["single", "unlimited"]).parse(formData.get("licenseType"));
+  const machineId = parseOptionalString(formData.get("machineId"));
+  const note = parseOptionalString(formData.get("note")) ?? "";
+  const adminKey = parseOptionalString(formData.get("adminKey"));
+
+  if (licenseType === "unlimited" && !isUnlimitedLicenseKeyValid(adminKey)) {
+    return {
+      ok: false,
+      message: "请先输入正确密钥解锁无限授权码。",
+      code: ""
+    };
+  }
+
+  try {
+    const code = createLicenseCode({ licenseType, machineId, note });
+    const parsed = parseLicenseCode(code);
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: "license.generate",
+      targetType: "license",
+      targetId: parsed.payload?.machine_id ?? licenseType,
+      summary: licenseType === "single" ? "Generated single-machine license code." : "Generated unlimited license code.",
+      metadata: {
+        licenseType,
+        machineId: parsed.payload?.machine_id ?? null,
+        note
+      }
+    });
+
+    return {
+      ok: true,
+      message: "授权码生成成功。",
+      code,
+      payload: parsed.payload
+        ? {
+            license_type: parsed.payload.license_type,
+            machine_id: parsed.payload.machine_id,
+            issued_at: parsed.payload.issued_at,
+            note: parsed.payload.note
+          }
+        : undefined
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "授权码生成失败。",
+      code: ""
+    };
+  }
 }
 
 export async function updateUserAdminAction(formData: FormData) {

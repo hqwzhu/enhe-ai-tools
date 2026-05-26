@@ -1,3 +1,5 @@
+import { reviewCompletionNotice } from "@/lib/review-copy";
+
 export type NotificationMessage = {
   type: "payment_review" | "refund_request" | "refund_processed" | "vip_adjustment";
   title: string;
@@ -32,7 +34,7 @@ export function buildRefundRequestNotification(input: { orderId: string; orderNo
   return {
     type: "refund_request",
     title: "售后/退款申请已提交",
-    content: `订单 ${input.orderNo} 的售后/退款申请已提交，管理员处理后会在这里通知你。`,
+    content: `订单 ${input.orderNo} 的售后/退款申请已提交，管理员处理后会在这里通知你。${reviewCompletionNotice}`,
     linkUrl: `/orders/${input.orderId}`
   };
 }

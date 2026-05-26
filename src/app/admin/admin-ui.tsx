@@ -5,8 +5,8 @@ export function AdminSection({
 }: React.PropsWithChildren<{ title: string; intro?: string }>) {
   return (
     <section>
-      <h1 className="text-3xl font-semibold">{title}</h1>
-      {intro ? <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8E9B91]">{intro}</p> : null}
+      <h1 className="text-3xl font-semibold text-[#F6FAFF]">{title}</h1>
+      {intro ? <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8F9DB2]">{intro}</p> : null}
       <div className="mt-8">{children}</div>
     </section>
   );
@@ -19,18 +19,18 @@ export function Field({
 }: React.PropsWithChildren<{ label: string; className?: string }>) {
   return (
     <label className={className}>
-      <span className="mb-2 block text-sm text-[#F4EEDA]">{label}</span>
+      <span className="mb-2 block text-sm text-[#F6FAFF]">{label}</span>
       {children}
     </label>
   );
 }
 
-export const inputClass = "w-full rounded-xl border border-[rgba(239,228,197,0.16)] bg-[rgba(244,238,218,0.06)] px-4 py-3 text-sm text-[#F4EEDA] outline-none placeholder:text-[#8E9B91]/75 focus:border-[#35BEE7]";
-export const selectClass = "w-full rounded-xl border border-[rgba(239,228,197,0.16)] bg-[#0A1715] px-4 py-3 text-sm text-[#F4EEDA] outline-none focus:border-[#35BEE7]";
-export const textareaClass = "min-h-28 w-full rounded-xl border border-[rgba(239,228,197,0.16)] bg-[rgba(244,238,218,0.06)] px-4 py-3 text-sm text-[#F4EEDA] outline-none placeholder:text-[#8E9B91]/75 focus:border-[#35BEE7]";
+export const inputClass = "w-full rounded-xl border border-[rgba(210,230,255,0.16)] bg-[rgba(238,246,255,0.06)] px-4 py-3 text-sm text-[#F6FAFF] outline-none placeholder:text-[#8F9DB2]/75 focus:border-[#7DD3FC]";
+export const selectClass = "w-full rounded-xl border border-[rgba(210,230,255,0.16)] bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF] outline-none focus:border-[#7DD3FC]";
+export const textareaClass = "min-h-28 w-full rounded-xl border border-[rgba(210,230,255,0.16)] bg-[rgba(238,246,255,0.06)] px-4 py-3 text-sm text-[#F6FAFF] outline-none placeholder:text-[#8F9DB2]/75 focus:border-[#7DD3FC]";
 
 export function SubmitButton({ children = "Save" }: { children?: React.ReactNode }) {
-  return <button className="rounded-full bg-[#F5C66B] px-5 py-3 text-sm font-semibold text-[#04100E] transition hover:shadow-[0_0_26px_rgba(245,198,107,0.18)]">{children}</button>;
+  return <button className="rounded-full bg-[#7DD3FC] px-5 py-3 text-sm font-semibold text-[#030611] transition hover:shadow-[0_0_26px_rgba(125,211,252,0.18)]">{children}</button>;
 }
 
 export function DangerButton({ children = "Delete" }: { children?: React.ReactNode }) {

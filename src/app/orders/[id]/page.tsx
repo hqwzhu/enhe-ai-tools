@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { getOrderBenefitExpiry } from "@/lib/order-view";
 import { canUserRequestRefundForOrder } from "@/lib/order-rules";
 import { getPaymentProofImageSrc, isRenderablePaymentProofImage } from "@/lib/payment-proof-image";
+import { reviewCompletionNotice } from "@/lib/review-copy";
 import { getStatusLabel, orderStatusLabels, proofStatusLabels } from "@/lib/status-labels";
 import { formatCurrency } from "@/lib/utils";
 
@@ -61,12 +62,12 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
       <SectionTitle title="订单详情" intro="查看订单状态、付款凭证、审核结果和权益有效期。" />
       {query.uploaded ? (
         <div className="mb-6 rounded-2xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-5 py-4 text-sm font-semibold text-[#48F5D3]">
-          上传成功，订单已进入待审核状态。
+          上传成功，订单已进入待审核状态。{reviewCompletionNotice}
         </div>
       ) : null}
       {query.refund === "requested" ? (
         <div className="mb-6 rounded-2xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-5 py-4 text-sm font-semibold text-[#48F5D3]">
-          售后/退款申请已提交，等待后台处理。
+          售后/退款申请已提交，等待后台处理。{reviewCompletionNotice}
         </div>
       ) : null}
       <div className="glass rounded-2xl p-7">
@@ -111,7 +112,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-semibold">售后/退款</h2>
-              <p className="mt-2 text-sm text-[#8B95A7]">已支付或已开通订单可以提交售后/退款申请，后台会人工处理。</p>
+              <p className="mt-2 text-sm text-[#8B95A7]">已支付或已开通订单可以提交售后/退款申请，后台会人工处理。{reviewCompletionNotice}</p>
             </div>
             {hasPendingRefundRequest ? (
               <span className="rounded-full border border-[#FFB86B]/30 px-3 py-1 text-xs text-[#FFB86B]">待处理</span>
@@ -135,6 +136,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
               <input name="reason" required minLength={2} maxLength={500} placeholder="申请原因，例如：重复付款 / 无法使用 / 售后协商" className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
               <input name="refundReceiverQr" required maxLength={1000} placeholder="退款收款码图片地址或收款信息（必填）" className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
               <textarea name="note" maxLength={1000} placeholder="补充说明，可填写付款账号、沟通记录或退款方式" className="min-h-24 rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
+              <p className="text-xs leading-5 text-[#8B95A7]">{reviewCompletionNotice}</p>
               <button className="w-fit rounded-full border border-[#FFB86B]/40 px-5 py-3 text-sm font-semibold text-[#FFB86B] transition hover:bg-[#FFB86B]/10">
                 提交售后/退款申请
               </button>

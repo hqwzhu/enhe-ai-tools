@@ -4,6 +4,7 @@ import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isImagePath, normalizeImageSrc } from "@/lib/media";
+import { reviewCompletionNotice } from "@/lib/review-copy";
 import { getSettingsMap } from "@/lib/settings";
 import { formatCurrency } from "@/lib/utils";
 
@@ -26,7 +27,7 @@ export default async function PayPage({ params, searchParams }: PayPageProps) {
 
   return (
     <Container className="py-14">
-      <SectionTitle title="订单支付" intro="付款时请备注订单号，上传付款截图后订单会自动进入待审核状态。" />
+      <SectionTitle title="订单支付" intro={`付款时请备注订单号，上传付款截图后订单会自动进入待审核状态。${reviewCompletionNotice}`} />
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
         <div className="glass rounded-2xl p-7">
           <p className="text-sm text-[#8B95A7]">订单号</p>
@@ -42,7 +43,7 @@ export default async function PayPage({ params, searchParams }: PayPageProps) {
         <div className="glass rounded-2xl p-7">
           <h2 className="text-lg font-semibold">上传付款截图</h2>
           <p className="mt-2 text-sm leading-6 text-[#8B95A7]">
-            上传成功后将进入独立订单详情页，显示待审核状态、付款截图预览和订单信息。
+            上传成功后将进入独立订单详情页，显示待审核状态、付款截图预览和订单信息。{reviewCompletionNotice}
           </p>
 
           <p className="mt-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm leading-6 text-[#FFD6A5]">

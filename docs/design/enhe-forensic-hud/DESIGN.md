@@ -1,387 +1,338 @@
 ---
-version: alpha
-name: ENHE-forensic-hud-design
-description: A cinematic dark interface direction for ENHE AI Tools, synthesized from forensic evidence-board references and the structured DESIGN.md token format. The system uses deep green-black atmosphere, translucent dossier panels, floating evidence cards, warm cream typography, cyan/amber HUD accents, and biometric scan overlays to make software tools feel like high-value intelligence assets rather than commodity store items.
-
-colors:
-  canvas: "#04100E"
-  canvas-deep: "#020706"
-  canvas-soft: "#0A1715"
-  glass: "rgba(18, 33, 31, 0.72)"
-  glass-strong: "rgba(24, 42, 39, 0.86)"
-  glass-soft: "rgba(229, 238, 221, 0.08)"
-  border: "rgba(239, 228, 197, 0.16)"
-  border-strong: "rgba(239, 228, 197, 0.28)"
-  text: "#F4EEDA"
-  text-soft: "#C8BEA6"
-  text-muted: "#8E9B91"
-  text-dim: "#59685F"
-  cyan: "#35BEE7"
-  cyan-soft: "#8DDFF5"
-  match-green: "#37D66F"
-  amber: "#F5C66B"
-  amber-soft: "#FFE7A6"
-  orange-alert: "#FF6B2C"
-  blue-folder: "#5EA7D7"
-  blue-folder-deep: "#1D689B"
-  danger: "#FF4F43"
-  shadow: "rgba(0, 0, 0, 0.45)"
-
-typography:
-  display-xl:
-    fontFamily: "Inter, Arial, Helvetica, sans-serif"
-    fontSize: 56px
-    fontWeight: 650
-    lineHeight: 0.98
-    letterSpacing: "-0.02em"
-  display-lg:
-    fontFamily: "Inter, Arial, Helvetica, sans-serif"
-    fontSize: 40px
-    fontWeight: 620
-    lineHeight: 1.05
-    letterSpacing: "-0.015em"
-  title-lg:
-    fontFamily: "Inter, Arial, Helvetica, sans-serif"
-    fontSize: 28px
-    fontWeight: 650
-    lineHeight: 1.15
-    letterSpacing: "-0.01em"
-  title-md:
-    fontFamily: "Inter, Arial, Helvetica, sans-serif"
-    fontSize: 20px
-    fontWeight: 620
-    lineHeight: 1.2
-    letterSpacing: 0
-  body-md:
-    fontFamily: "Inter, Arial, Helvetica, sans-serif"
-    fontSize: 16px
-    fontWeight: 440
-    lineHeight: 1.55
-    letterSpacing: 0
-  body-sm:
-    fontFamily: "Inter, Arial, Helvetica, sans-serif"
-    fontSize: 14px
-    fontWeight: 440
-    lineHeight: 1.45
-    letterSpacing: 0
-  caption:
-    fontFamily: "Inter, Arial, Helvetica, sans-serif"
-    fontSize: 12px
-    fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: "0.08em"
-    textTransform: uppercase
-  numeric-hud:
-    fontFamily: "Inter, Arial, Helvetica, sans-serif"
-    fontSize: 48px
-    fontWeight: 500
-    lineHeight: 1
-    letterSpacing: "0.04em"
-
-rounded:
-  sm: 10px
-  md: 18px
-  lg: 28px
-  xl: 42px
-  full: 9999px
-
-spacing:
-  xs: 4px
-  sm: 8px
-  md: 12px
-  base: 16px
-  lg: 24px
-  xl: 32px
-  xxl: 48px
-  section: 72px
-
-components:
-  glass-shell:
-    backgroundColor: "{colors.glass}"
-    borderColor: "{colors.border}"
-    rounded: "{rounded.xl}"
-    backdropFilter: "blur(28px) saturate(128%)"
-    shadow: "0 30px 90px rgba(0,0,0,0.42)"
-  evidence-card:
-    backgroundColor: "{colors.glass-strong}"
-    borderColor: "{colors.border}"
-    rounded: "{rounded.lg}"
-    padding: 20px
-    shadow: "0 24px 60px rgba(0,0,0,0.34)"
-  dossier-card:
-    backgroundColor: "rgba(11, 26, 23, 0.82)"
-    borderColor: "{colors.border-strong}"
-    rounded: "{rounded.lg}"
-    padding: 28px
-  hud-pill:
-    backgroundColor: "rgba(245, 198, 107, 0.14)"
-    borderColor: "rgba(245, 198, 107, 0.38)"
-    textColor: "{colors.amber-soft}"
-    rounded: "{rounded.full}"
-    padding: "12px 20px"
-  status-match:
-    backgroundColor: "rgba(55, 214, 111, 0.12)"
-    borderColor: "rgba(55, 214, 111, 0.34)"
-    textColor: "{colors.match-green}"
-    rounded: "{rounded.full}"
-  status-alert:
-    backgroundColor: "rgba(255, 107, 44, 0.12)"
-    borderColor: "rgba(255, 107, 44, 0.42)"
-    textColor: "{colors.orange-alert}"
-    rounded: "{rounded.full}"
-  file-folder:
-    backgroundColor: "{colors.blue-folder}"
-    textColor: "{colors.text}"
-    rounded: "{rounded.sm}"
-  toolbar-icon:
-    backgroundColor: "rgba(255,255,255,0.06)"
-    borderColor: "{colors.border}"
-    rounded: "{rounded.full}"
+version: beta
+name: ENHE-liquid-glass-os-design
+description: A cool, premium Liquid Glass inspired visual system for ENHE AI Tools. This direction replaces the earlier warm forensic HUD palette with a colder Apple-like spatial glass language: graphite blue canvas, frosted translucent surfaces, soft cyan and periwinkle highlights, restrained aurora light, readable typography, and image-led tool cards.
+status: preview-for-user-confirmation
 ---
 
-# ENHE Forensic HUD Design System
+# ENHE AI Tools - Cool Liquid Glass Design Direction
 
-## Overview
+## Research Basis
 
-This direction turns the ENHE AI Tools website into a **cinematic intelligence console**. The supplied references are not traditional SaaS pages; they behave like a crime-lab operating system: evidence cards float above blurred scenes, folders sit inside frosted panels, IDs and authentication strings imply restricted access, and warm HUD overlays tell the user that the interface is analyzing something valuable.
+This document is based on public design signals and rumor analysis available in May 2026.
 
-For ENHE, the metaphor should shift from crime evidence to **tool evidence**: software packages, online utilities, payment proofs, VIP entitlement records, tutorials, and usage logs are treated as verified objects in an operations console. The result should feel premium, private, technical, and useful rather than like a commodity marketplace.
+- Apple has publicly introduced **Liquid Glass** as a translucent material that reflects, refracts, and adapts to surrounding content across Apple platforms.
+- Current public discussion around future iOS versions points less to a completely new color language and more to refinement of Liquid Glass: better readability, more restrained transparency, and stronger user control over visual intensity.
+- There is no official public **iOS 27 color specification**. Treat iOS 27 images online as rumor, concept, or extrapolation unless Apple publishes formal guidance.
 
-The structure follows the reference DESIGN format, but the visual language is new: dark green-black depth, glass panels, cream typography, cyan scan marks, amber warning states, and floating object cards. The design works especially well for admin dashboards, tool detail pages, file management, payment review, membership state, and product release management.
+The ENHE design should therefore not copy a single leaked screenshot. It should adopt the more durable direction: **cool, legible, spatial glass with subtle motion**.
 
-## Visual Characteristics Extracted From References
+Reference URLs:
 
-- **Cinematic blur as depth:** Most screenshots sit over a defocused video or scene layer. UI cards are sharp while background context is soft and moody.
-- **Glass dossier panels:** Large rounded containers use dark translucent fills, thin warm borders, and high blur. They feel like secure system windows.
-- **Evidence cards:** Cards have a title, ID, menu dots, large media preview, and a details footer. This maps cleanly to tools, files, tutorials, orders, and proof uploads.
-- **Folder grids:** File-management screens use large icon grids with sparse labels and a left metadata rail. This is ideal for tool categories and uploaded packages.
-- **HUD pills:** Timer/probability/status widgets use long rounded pills with glowing amber or orange outlines. These fit order status, refund state, review countdown, and VIP expiry.
-- **Biometric overlays:** Face/fingerprint matching adds thin lines, rings, nodes, and status labels. For ENHE this becomes permission scanning, download verification, and tool readiness checks.
-- **Warm technical typography:** Cream and muted gold text over dark green surfaces feels more cinematic than pure white/cyan tech UI.
+- Apple Newsroom, Liquid Glass design announcement: https://www.apple.com/sg/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/
+- TechRadar iOS 27 Liquid Glass readability report: https://www.techradar.com/phones/ios/liquid-glass-isnt-going-anywhere-in-ios-27-but-theres-good-news-for-its-readability
 
-## Design Principles
+## Design Goal
 
-### 1. Treat Each Tool As An Asset
+Move away from the warm amber forensic HUD mood. The new ENHE interface should feel:
 
-Computer software and online tools should be presented like verified intelligence assets: cover image, slug, ID, version, access requirement, status, usage, download count, and latest update. This makes the platform feel curated and proprietary.
+- Apple-like but not cloned.
+- Cold, clean, premium, and young.
+- Futuristic without heavy sci-fi decoration.
+- Glassy and spatial, but still readable.
+- Product-ready for software tools, payments, admin workflows, and file management.
 
-### 2. Use Depth, Not Decoration
+## Visual Keywords
 
-Depth comes from blur, scale, overlapping panels, and dim background silhouettes. Avoid unrelated ornamental blobs. Every visual layer should feel like part of a system: card stack, scan ring, file grid, timeline, or authentication layer.
+- Liquid glass
+- Frosted depth
+- Cool graphite
+- Ice blue glow
+- Spatial layers
+- Quiet aurora
+- Adaptive translucency
+- Premium utility
+- Soft refraction
+- Image-led cards
 
-### 3. Warm Contrast Over Neon Flood
+## Core Palette
 
-The current ENHE site already uses cyan/blue. This direction reduces the amount of neon and adds cream, amber, olive, and deep green. Cyan remains a precise scan/accent color, not the entire palette.
+The dominant palette must be cool. Warm colors are only for warning or risk states.
 
-### 4. Lists Become Operational Queues
+```yaml
+colors:
+  canvas: "#070A12"
+  canvas_deep: "#030611"
+  canvas_soft: "#0D1424"
+  canvas_aura_blue: "#102A4F"
+  canvas_aura_cyan: "#0B4F5E"
 
-Admin lists should read as queues: pending payment proofs, refund reviews, VIP expirations, tool release drafts, failed uploads. Use clear statuses and dense rows, but keep detail pages rich and dossier-like.
+  glass_surface: "rgba(238, 246, 255, 0.10)"
+  glass_surface_strong: "rgba(238, 246, 255, 0.16)"
+  glass_surface_soft: "rgba(238, 246, 255, 0.06)"
+  glass_refraction: "rgba(144, 190, 255, 0.18)"
+  glass_highlight: "rgba(255, 255, 255, 0.42)"
 
-### 5. Motion Should Feel Instrumental
+  border: "rgba(210, 230, 255, 0.18)"
+  border_strong: "rgba(210, 230, 255, 0.32)"
+  border_focus: "rgba(125, 211, 252, 0.52)"
 
-Animations should imply scanning, verifying, syncing, or unlocking: slow parallax, pulse rings, line sweeps, status glow, folder focus, and subtle card float. Avoid bouncy consumer animation.
+  text: "#F6FAFF"
+  text_soft: "#C8D6EA"
+  text_muted: "#8F9DB2"
+  text_dim: "#667489"
 
-## Colors
+  primary: "#8EA7FF"
+  primary_bright: "#B9C7FF"
+  cyan: "#7DD3FC"
+  cyan_bright: "#A7F3FF"
+  mint: "#5EF1C7"
+  violet: "#C4B5FD"
 
-### Core Surfaces
+  success: "#5EF1C7"
+  warning: "#FFB86B"
+  danger: "#FF6B7A"
 
-- **Canvas** (`{colors.canvas}` / `#04100E`): Primary page background. It should feel like the unlit area behind a secure console.
-- **Canvas Deep** (`{colors.canvas-deep}` / `#020706`): Vignette edges, modal scrims, and deep background gradients.
-- **Canvas Soft** (`{colors.canvas-soft}` / `#0A1715`): Large background panels and quiet section bands.
-- **Glass** (`{colors.glass}`): Main translucent panel fill. Use with blur and a warm border.
-- **Glass Strong** (`{colors.glass-strong}`): Foreground cards and active objects.
+  shadow: "rgba(0, 0, 0, 0.48)"
+```
 
-### Text
+### Palette Rules
 
-- **Text** (`{colors.text}` / `#F4EEDA`): Primary text. Cream is preferred over pure white.
-- **Text Soft** (`{colors.text-soft}` / `#C8BEA6`): Secondary headings and metadata.
-- **Text Muted** (`{colors.text-muted}` / `#8E9B91`): Captions, IDs, inactive controls.
-- **Text Dim** (`{colors.text-dim}` / `#59685F`): Low-priority labels and grid annotations.
-
-### Accents
-
-- **Cyan** (`{colors.cyan}` / `#35BEE7`): Scan lines, active handles, selected states, and technical links.
-- **Match Green** (`{colors.match-green}` / `#37D66F`): Verified, approved, activated, matched.
-- **Amber** (`{colors.amber}` / `#F5C66B`): Pending review, countdown, VIP expiry, warning-but-not-failure.
-- **Orange Alert** (`{colors.orange-alert}` / `#FF6B2C`): Rejected, refund risk, destructive state, urgent attention.
-- **Blue Folder** (`{colors.blue-folder}` / `#5EA7D7`): Folder/file icon fill.
+- The page must not read as orange, amber, brown, beige, or sepia.
+- Amber is allowed only for warning badges, refund risk, or payment review attention.
+- Primary CTAs use cool glass states, not solid neon fills.
+- Cyan glow should be soft, not overpowering.
+- Purple is a secondary shimmer, never the whole theme.
 
 ## Typography
 
-Use **Inter** or the current site font stack. The system should feel precise and cinematic:
+Use crisp system typography with generous spacing and high contrast.
 
-- Large display text uses 56px / 650, tight line-height, and slightly negative tracking.
-- Card titles use 20-28px, weight 620-650.
-- Metadata uses 12-14px uppercase labels with wider tracking.
-- Numeric HUD values use 48px with light-medium weight and spaced digits.
-- Avoid overly heavy 800+ headings except for rare hero moments.
+```yaml
+typography:
+  display_xl:
+    fontFamily: "Inter, SF Pro Display, Arial, Helvetica, sans-serif"
+    fontSize: "56px"
+    fontWeight: 650
+    lineHeight: 1
+    letterSpacing: "0"
+  display_lg:
+    fontFamily: "Inter, SF Pro Display, Arial, Helvetica, sans-serif"
+    fontSize: "40px"
+    fontWeight: 640
+    lineHeight: 1.08
+    letterSpacing: "0"
+  title_lg:
+    fontFamily: "Inter, SF Pro Display, Arial, Helvetica, sans-serif"
+    fontSize: "28px"
+    fontWeight: 640
+    lineHeight: 1.16
+    letterSpacing: "0"
+  title_md:
+    fontFamily: "Inter, SF Pro Text, Arial, Helvetica, sans-serif"
+    fontSize: "20px"
+    fontWeight: 620
+    lineHeight: 1.25
+    letterSpacing: "0"
+  body_md:
+    fontFamily: "Inter, SF Pro Text, Arial, Helvetica, sans-serif"
+    fontSize: "16px"
+    fontWeight: 450
+    lineHeight: 1.58
+    letterSpacing: "0"
+  body_sm:
+    fontFamily: "Inter, SF Pro Text, Arial, Helvetica, sans-serif"
+    fontSize: "14px"
+    fontWeight: 450
+    lineHeight: 1.46
+    letterSpacing: "0"
+  caption:
+    fontFamily: "Inter, SF Pro Text, Arial, Helvetica, sans-serif"
+    fontSize: "12px"
+    fontWeight: 620
+    lineHeight: 1.25
+    letterSpacing: "0.04em"
+```
 
-Chinese text should use the same hierarchy, with enough line-height to avoid dense blocks. English labels can appear as metadata, but critical user actions should remain localized.
+### Typography Rules
 
-## Layout
+- Do not use negative letter spacing.
+- Avoid giant text inside admin surfaces.
+- Chinese text should be treated as product UI text, not poster text, except for homepage hero.
+- Use cool white for important text and muted blue-gray for secondary text.
 
-### Desktop Composition
+## Materials
 
-The preferred desktop composition is a **three-layer scene**:
+```yaml
+materials:
+  liquid_nav:
+    background: "linear-gradient(135deg, rgba(246,250,255,.14), rgba(125,211,252,.08))"
+    border: "1px solid rgba(210,230,255,.18)"
+    backdropFilter: "blur(28px) saturate(150%)"
+    shadow: "0 22px 70px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.22)"
 
-1. **Background layer:** Blurred scene, abstract gradient, or soft tool screenshots. Add a dark vignette.
-2. **Operational shell:** A large glass panel or dashboard frame, usually offset rather than centered.
-3. **Floating object layer:** Evidence/tool cards, folder clusters, scan overlays, and HUD pills.
+  glass_panel:
+    background: "linear-gradient(145deg, rgba(238,246,255,.13), rgba(125,211,252,.06))"
+    border: "1px solid rgba(210,230,255,.18)"
+    backdropFilter: "blur(30px) saturate(145%)"
+    shadow: "0 30px 90px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.16)"
 
-### Suggested Page Templates
+  glass_card:
+    background: "linear-gradient(145deg, rgba(238,246,255,.12), rgba(142,167,255,.055))"
+    border: "1px solid rgba(210,230,255,.16)"
+    backdropFilter: "blur(22px) saturate(140%)"
+    shadow: "0 18px 50px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.14)"
 
-#### Home
+  floating_media:
+    background: "rgba(246,250,255,.08)"
+    border: "1px solid rgba(210,230,255,.18)"
+    objectFit: "cover"
+    shadow: "0 24px 70px rgba(0,0,0,.36)"
+```
 
-- Left: brand statement and primary actions.
-- Right: floating tool intelligence board with software card, online tool card, VIP status card, and permission scan.
-- Background: slow mouse-reactive spotlight, not constant flowing animation.
+## Shape And Radius
 
-#### Tool List
+```yaml
+rounded:
+  sm: "10px"
+  md: "16px"
+  lg: "24px"
+  xl: "34px"
+  full: "9999px"
+```
 
-- Left rail: category/filter folders.
-- Main area: evidence-card grid with cover images, tags, access badges, and metrics.
-- Top bar: search, sort, view mode, status filters.
+Use rounded corners, but avoid making every element a pill. Cards and panels should feel like softened glass panes; command buttons can be pill-shaped.
 
-#### Tool Detail
+## Layout Rules
 
-- Header dossier: cover, tool ID, version, access status, category, VIP/download paid state.
-- Main: content, screenshots, tutorial steps, FAQ, version log.
-- Right rail: download/use action card with permission scan and entitlement state.
+### Homepage
 
-#### Admin Dashboard
+- Hero uses a left text block and a right kinetic logo stage.
+- The logo stage should be unframed. Avoid rectangular card borders around the logo.
+- Background uses cool aurora and dotted grid, with mouse-reactive highlights only if motion remains subtle.
+- Tool sections should show cover images. No text-only tool cards.
+- Featured software and online tools should use a two-column desktop layout and single-column mobile layout.
 
-- Left rail: admin navigation and auth state.
-- Main: metric HUD, revenue trend, payment/refund queues, popular tools, recent uploads.
-- Detail pages: one focused dossier per user/order/tool/file.
+### Tool Cards
+
+Tool cards must include:
+
+- Cover image.
+- Type badge.
+- VIP or paid-download badge when relevant.
+- Tool name.
+- Short description.
+- Download/use counts.
+- Cool glass hover state.
+
+Cards should look like premium app/file assets, not commodity shop products.
+
+### Admin
+
+Admin screens should prioritize readability over atmosphere.
+
+- Use dense but breathable list layouts.
+- Keep filters in a single glass toolbar.
+- Use detail pages for editing.
+- Use cool status colors:
+  - pending: cyan or blue
+  - approved/active: mint
+  - rejected/failed: soft red
+  - refunded/cancelled: muted gray
+- Avoid using English-only labels when language is Chinese.
 
 ## Components
 
-### Evidence Card
+```yaml
+components:
+  liquid_button:
+    background: "rgba(246,250,255,.08)"
+    border: "1px solid rgba(210,230,255,.18)"
+    color: "{colors.text}"
+    hoverBackground: "rgba(125,211,252,.14)"
+    hoverBorder: "rgba(125,211,252,.48)"
+    hoverShadow: "0 0 28px rgba(125,211,252,.20)"
+    rounded: "{rounded.full}"
 
-Use for tools, files, orders, tutorials, comments, payment proofs, and versions.
+  primary_button:
+    background: "linear-gradient(135deg, rgba(142,167,255,.42), rgba(125,211,252,.28))"
+    border: "1px solid rgba(210,230,255,.30)"
+    color: "#F8FBFF"
+    shadow: "0 18px 45px rgba(71,122,255,.20)"
+    rounded: "{rounded.full}"
 
-Required structure:
+  status_chip:
+    background: "rgba(246,250,255,.08)"
+    border: "1px solid rgba(210,230,255,.16)"
+    color: "{colors.text_soft}"
+    rounded: "{rounded.full}"
 
-- Title
-- Object ID or slug
-- Optional menu dots
-- Preview image or generated visual plate
-- Details section
-- Status chip
-- Primary metric row
-
-Visual rules:
-
-- 28px radius.
-- 20px internal padding.
-- Preview area clips to 20px radius.
-- Border is warm and subtle.
-- Hover lifts 4-6px and increases border opacity.
-
-### Dossier Card
-
-Used for detail pages and large admin panels.
-
-Rules:
-
-- 28-42px radius depending on page scale.
-- Can include a left metadata column and right content area.
-- Use thin divider lines, not heavy table borders.
-- Attach status and action pills at top-right.
-
-### Folder Grid
-
-Used for file management, categories, product versions, and tool bundles.
-
-Rules:
-
-- Folder icons should be large enough to scan.
-- Use blue folder fill for normal items, amber folder for active/draft items.
-- Use labels below the folder; do not overload cards with descriptions.
-- Selected folders sit on a glass focus plate.
-
-### Biometric / Permission Scan
-
-Used for download checks, online tool launch checks, payment proof review, and VIP state.
-
-Elements:
-
-- concentric rings
-- faint grid or node field
-- crosshair lines
-- small status nodes
-- short green/cyan result label
-
-Avoid fake security theater in copy. The scan is a visual metaphor; the server still performs actual permission checks.
-
-### HUD Pill
-
-Used for countdowns, review state, warning notices, refund conditions, and conversion stats.
-
-Rules:
-
-- Long pill with translucent amber/orange/cyan fill.
-- Use one icon or short label, then value.
-- Best for one-line operational signals.
-
-### Toolbar
-
-Use minimal icon-only controls inside a dark top rail:
-
-- view mode
-- filter
-- sort
-- search
-- more
-
-Each icon button is circular or pill-shaped with a low-contrast glass fill.
+  tool_cover:
+    aspectRatio: "16 / 10"
+    background: "linear-gradient(145deg, rgba(142,167,255,.18), rgba(125,211,252,.08))"
+    rounded: "{rounded.lg}"
+    border: "1px solid rgba(210,230,255,.16)"
+```
 
 ## Motion
 
-Recommended motion:
+Motion should be calm and premium.
 
-- **Card float:** 10-16s slow translate cycle with very small distance.
-- **Scan sweep:** linear horizontal or radial sweep every 4-6s.
-- **Status pulse:** glow pulses only around active status chips.
-- **Mouse spotlight:** subtle radial highlight following pointer.
-- **Folder focus:** selected folder scales 1.02 and brightens.
+- Logo can breathe, refract, and respond to click deformation.
+- Orbiting particles around the hero logo should be small and slow.
+- Background motion should not continuously flow like a video. Use mouse-reactive glow instead.
+- Hover states use lift of 2-4px, border brightening, and soft shadow.
+- Respect reduced-motion preferences.
 
-Avoid:
+```yaml
+motion:
+  breathe:
+    duration: "5s"
+    easing: "ease-in-out"
+    scaleRange: "0.985 - 1.015"
+  hoverLift:
+    duration: "180ms"
+    easing: "cubic-bezier(.2,.8,.2,1)"
+  clickMorph:
+    duration: "420ms"
+    easing: "cubic-bezier(.2,.9,.25,1.25)"
+```
 
-- constant background waves
-- large bouncing elements
-- high-frequency neon flicker
-- heavy 3D transforms that reduce text clarity
+## Imagery
+
+- Prefer real software screenshots, UI captures, or generated product visuals.
+- Covers should be cold, crisp, and high contrast.
+- Avoid stock-like abstract gradients as the only tool image.
+- For placeholder covers, use cool glass folder/card compositions with subtle cyan and periwinkle highlights.
 
 ## Accessibility
 
-- Cream text must maintain strong contrast over glass.
-- Do not place small text directly over busy imagery; put a scrim or glass surface behind it.
-- Status cannot rely only on color; pair with labels like Approved, Pending, Rejected.
-- Interactive targets should be at least 44px high.
-- Motion should respect `prefers-reduced-motion`.
+- Text contrast must remain high despite glass transparency.
+- Never place important text over busy imagery without a solid enough glass layer.
+- Avoid relying on color alone for order/payment status.
+- Buttons must have visible focus states.
+- Transparent panels should have enough opacity for readability on both dark and image backgrounds.
 
-## Do / Don't
+## Do Not Use
 
-### Do
+- Warm amber as primary brand color.
+- Heavy orange HUD overlays.
+- Beige forensic dossier mood.
+- Thick neon outlines.
+- Constant animated background flow.
+- Purple-blue gradient domination.
+- Black metal logo fills.
+- Decorative orbs or bokeh blobs.
+- Text-only tool cards.
 
-- Use real tool covers or clean generated plates inside cards.
-- Make orders, payment proofs, and refunds feel like traceable records.
-- Use warm cream and amber to soften the dark technical palette.
-- Keep admin pages operational and dense.
+## Preview Deliverable
 
-### Don't
+The confirmation preview for this direction is:
 
-- Copy violent evidence imagery into the ENHE product UI.
-- Make everything cyan.
-- Use traditional ecommerce product cards.
-- Hide permission logic behind front-end-only buttons.
-- Put long instructional copy inside decorative cards.
+- `docs/design/enhe-forensic-hud/ios27-liquid-glass-preview.html`
+- `docs/design/enhe-forensic-hud/ios27-liquid-glass-preview.png`
 
-## Implementation Notes For ENHE
+The live product UI should only be recolored after user approval of the preview.
 
-- Keep current dark ENHE base, but introduce the warmer `#F4EEDA` text and amber operational states.
-- Use this direction first on admin dashboard, file management, tool detail, and payment review. These pages benefit most from the dossier/evidence metaphor.
-- Front-office home and tool pages can use a lighter version: fewer panels, more cover images, and clearer action buttons.
-- Tool cover upload should become essential: every evidence card needs a visual preview.
-- The design system should coexist with existing Tailwind tokens by adding semantic utility classes such as `.glass-dossier`, `.evidence-card`, `.hud-pill`, `.scan-ring`, and `.folder-grid`.
+## Implementation Notes For Later
+
+When this design is approved, update:
+
+- `src/app/globals.css`
+- `src/app/page.tsx`
+- shared cards and buttons in `src/components`
+- admin list surfaces and filters
+- homepage hero logo stage
+- tool cards to make cover imagery mandatory in frontend and admin views
+
+Do not change business logic while applying the visual theme.

@@ -30,10 +30,10 @@ export default async function HomePage() {
             <div className="hud-pill mb-6 inline-flex px-4 py-2 text-sm font-semibold">
               {heroSubtitle}
             </div>
-            <h1 className="max-w-5xl text-4xl font-semibold tracking-normal text-[#F4EEDA] sm:text-5xl xl:text-6xl">
+            <h1 className="max-w-5xl text-4xl font-semibold tracking-normal text-[#F6FAFF] sm:text-5xl xl:text-6xl">
               {heroTitle}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8E9B91]">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8F9DB2]">
               {heroIntro}
             </p>
             <div className="mt-9 flex flex-wrap gap-3">

@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
 
 export const localeCookieName = "enhe_locale";
 export const supportedLocales = ["zh", "en"] as const;
@@ -108,7 +109,7 @@ export const dictionaries = {
       membership: "我的会员",
       lifetime: "永久有效",
       expiresAt: "到期 {date}",
-      noMembership: "当前还不是 VIP，可在会员价格页创建订单，付款后等待后台审核开通。",
+      noMembership: `当前还不是 VIP，可在会员价格页创建订单，付款后等待后台审核开通。${reviewCompletionNotice}`,
       viewPlans: "查看会员套餐",
       accountSettings: "账号设置",
       role: "角色：{role}",
@@ -128,7 +129,7 @@ export const dictionaries = {
       downloads: "我的下载",
       noDownloads: "还没有软件下载记录。",
       availableSoftware: "可下载软件",
-      noAvailableSoftware: "当前没有可下载的软件。开通 VIP 或完成付费下载审核后会显示在这里。",
+      noAvailableSoftware: `当前没有可下载的软件。开通 VIP 或完成付费下载审核后会显示在这里。${reviewCompletionNotice}`,
       purchasedSoftware: "已购软件",
       noPurchasedSoftware: "还没有已购软件。",
       availableOnlineTools: "可使用在线工具",
@@ -260,7 +261,7 @@ export const dictionaries = {
       membership: "My Membership",
       lifetime: "Lifetime access",
       expiresAt: "Expires on {date}",
-      noMembership: "You are not a VIP member yet. Create an order on the pricing page and wait for manual approval after payment.",
+      noMembership: `You are not a VIP member yet. Create an order on the pricing page and wait for manual approval after payment. ${reviewCompletionNoticeEn}`,
       viewPlans: "View plans",
       accountSettings: "Account Settings",
       role: "Role: {role}",
@@ -280,7 +281,7 @@ export const dictionaries = {
       downloads: "My Downloads",
       noDownloads: "No software download records yet.",
       availableSoftware: "Downloadable Software",
-      noAvailableSoftware: "No downloadable software yet. VIP access or approved paid-download orders will appear here.",
+      noAvailableSoftware: `No downloadable software yet. VIP access or approved paid-download orders will appear here. ${reviewCompletionNoticeEn}`,
       purchasedSoftware: "Purchased Software",
       noPurchasedSoftware: "No purchased software yet.",
       availableOnlineTools: "Available Online Tools",

@@ -118,7 +118,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
           paragraphs: [
             "本网站可能提供 VIP 会员服务。会员权益、有效期、价格、开通方式、适用范围、退款规则等，以网站页面公示的会员服务规则为准。",
             "本网站当前可能采用个人收款码、订单号备注、付款截图上传、后台人工审核等方式完成会员开通。用户付款时应仔细核对订单号、金额、套餐内容及收款信息。",
-            "用户付款后，应按照页面提示上传付款凭证。经后台审核确认后，本网站将为对应账号开通相应会员权益。因用户未备注订单号、付款账号不一致、截图不清晰、重复付款、错误付款或其他原因导致无法核验的，用户应及时联系本站处理。",
+            "用户付款后，应按照页面提示上传付款凭证。经后台审核确认后，本网站将为对应账号开通相应会员权益。将在2个小时完成审核。因用户未备注订单号、付款账号不一致、截图不清晰、重复付款、错误付款或其他原因导致无法核验的，用户应及时联系本站处理。",
             "会员服务属于数字化服务或虚拟权益服务，具体退款条件、退款时限、不可退款情形及售后处理方式，应以本网站单独公示的《会员服务与退款规则》为准。"
           ]
         },
@@ -179,7 +179,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
       summary: "说明 VIP 会员、软件下载付费、人工审核开通、退款条件和售后处理方式。",
       sections: [
         { title: "一、会员服务说明", paragraphs: ["本网站可能提供 VIP 会员服务。会员权益、有效期、价格、开通方式、适用范围、退款规则等，以网站页面公示的会员服务规则为准。", "本网站当前可能采用个人收款码、订单号备注、付款截图上传、后台人工审核等方式完成会员开通。用户付款时应仔细核对订单号、金额、套餐内容及收款信息。"] },
-        { title: "二、付款凭证与审核", paragraphs: ["用户付款后，应按照页面提示上传付款凭证。经后台审核确认后，本网站将为对应账号开通相应会员权益。", "因用户未备注订单号、付款账号不一致、截图不清晰、重复付款、错误付款或其他原因导致无法核验的，用户应及时联系本站处理。"] },
+        { title: "二、付款凭证与审核", paragraphs: ["用户付款后，应按照页面提示上传付款凭证。经后台审核确认后，本网站将为对应账号开通相应会员权益。将在2个小时完成审核。", "因用户未备注订单号、付款账号不一致、截图不清晰、重复付款、错误付款或其他原因导致无法核验的，用户应及时联系本站处理。"] },
         { title: "三、退款处理", paragraphs: ["会员服务属于数字化服务或虚拟权益服务。已经完成开通、下载或实际使用的服务，除法律法规另有规定或本站明确承诺外，原则上不支持无理由退款。", "如因重复付款、错误付款、未开通且可核验、未成年人未经监护人同意付费等情况需要处理，可通过联系邮箱 292055066@qq.com 提交订单号、支付凭证、账号信息和必要说明，本站将在核实后依法依规处理。"] }
       ]
     },
@@ -295,7 +295,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
           paragraphs: [
             "The website may provide VIP membership services. Benefits, validity periods, prices, activation methods, scope, and refund rules are subject to the membership rules displayed on the website.",
             "The current version may use personal payment QR codes, order number remarks, payment screenshot uploads, and manual backend review to activate membership. Users should carefully verify the order number, amount, plan details, and payment recipient information before paying.",
-            "After payment, users should upload payment proof as instructed. After backend approval, the corresponding membership benefits will be activated for the account. If the order cannot be verified due to missing order remarks, inconsistent payer accounts, unclear screenshots, duplicate payments, incorrect payments, or other reasons, users should contact us promptly.",
+            "After payment, users should upload payment proof as instructed. After backend approval, the corresponding membership benefits will be activated for the account. Review will be completed within 2 hours. If the order cannot be verified due to missing order remarks, inconsistent payer accounts, unclear screenshots, duplicate payments, incorrect payments, or other reasons, users should contact us promptly.",
             "Membership services are digital or virtual benefit services. Refund conditions, refund periods, non-refundable circumstances, and after-sales handling are governed by the separately published Membership and Refund Rules."
           ]
         },
@@ -356,7 +356,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
       summary: "Rules for VIP membership, paid software downloads, manual review, refund conditions, and after-sales handling.",
       sections: [
         { title: "1. Membership Services", paragraphs: ["The website may provide VIP membership services. Benefits, validity periods, prices, activation methods, scope, and refund rules are subject to the membership rules displayed on the website.", "The current version may use personal payment QR codes, order number remarks, payment screenshot uploads, and manual backend review to activate membership. Users should carefully verify the order number, amount, plan details, and recipient information before paying."] },
-        { title: "2. Payment Proof and Review", paragraphs: ["After payment, users should upload payment proof as instructed. After backend approval, the corresponding membership benefits will be activated for the account.", "If verification fails due to missing order remarks, inconsistent payer accounts, unclear screenshots, duplicate payments, incorrect payments, or other reasons, users should contact us promptly."] },
+        { title: "2. Payment Proof and Review", paragraphs: ["After payment, users should upload payment proof as instructed. After backend approval, the corresponding membership benefits will be activated for the account. Review will be completed within 2 hours.", "If verification fails due to missing order remarks, inconsistent payer accounts, unclear screenshots, duplicate payments, incorrect payments, or other reasons, users should contact us promptly."] },
         { title: "3. Refund Handling", paragraphs: ["Membership services are digital services or virtual benefits. Once activated, downloaded, or actually used, they generally do not support no-reason refunds unless otherwise required by law or expressly promised by the website.", "For duplicate payments, incorrect payments, unactivated and verifiable orders, or payments made by minors without guardian consent, please email 292055066@qq.com with the order number, payment proof, account information, and necessary explanation. We will handle the matter after verification according to applicable laws and rules."] }
       ]
     },

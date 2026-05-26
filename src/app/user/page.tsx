@@ -12,6 +12,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
 import { getActiveMembership } from "@/lib/membership";
 import { canUserCancelOrder } from "@/lib/order-rules";
+import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
 import { buildUserToolEntitlements, type UserEntitlementTool } from "@/lib/user-entitlements";
 import { formatCurrency } from "@/lib/utils";
 
@@ -184,6 +185,9 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                       {formatStatus(order.orderStatus, locale)} · {t.userCenter.proof}{" "}
                       {formatStatus(order.paymentProof?.reviewStatus ?? "not_submitted", locale)}
                     </p>
+                    {order.orderStatus === "pending_review" || order.paymentProof?.reviewStatus === "pending" ? (
+                      <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{getReviewNotice(locale)}</p>
+                    ) : null}
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Link href={`/orders/${order.id}`} className="rounded-full border border-white/12 px-3 py-1 text-xs">
                         {t.userCenter.details}
@@ -266,6 +270,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
               comments.map((comment) => (
                 <p key={comment.id} className="border-b border-white/10 py-3 text-sm text-[#8B95A7]">
                   {comment.tool.name} · {formatStatus(comment.status, locale)} · {comment.content}
+                  {comment.status === "pending" ? <span> · {getReviewNotice(locale)}</span> : null}
                 </p>
               ))
             ) : (
@@ -381,4 +386,8 @@ function formatPlanName(name: string, durationDays: number, locale: Locale) {
   if (!durationDays || durationDays >= 36500) return "Lifetime VIP";
   if (durationDays % 30 === 0) return `${durationDays / 30}-Month VIP`;
   return `${durationDays}-Day VIP`;
+}
+
+function getReviewNotice(locale: Locale) {
+  return locale === "en" ? reviewCompletionNoticeEn : reviewCompletionNotice;
 }
