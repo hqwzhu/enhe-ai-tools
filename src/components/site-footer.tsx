@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { legalPages } from "@/lib/legal";
 import { Container } from "@/components/ui";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
@@ -25,6 +26,17 @@ export async function SiteFooter() {
               </Link>
             ))}
           </nav>
+        </div>
+        <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-[rgba(210,230,255,0.1)] pt-5 text-xs text-[#7FA5E8]">
+          <a
+            href="https://beian.mps.gov.cn/#/query/webSearch?code=35030302900035"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 transition hover:text-[#AFCBFF]"
+          >
+            <Image src="/images/beian-icon.png" alt="备案编号图标" width={20} height={20} unoptimized />
+            <span>闽公网安备35030302900035号</span>
+          </a>
         </div>
       </Container>
     </footer>
