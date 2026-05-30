@@ -4,10 +4,23 @@ import { Container } from "@/components/ui";
 import { getOrCreateCsrfToken } from "@/lib/csrf";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams
+}: {
+  searchParams: Promise<{ message?: string }>;
+}) {
   const locale = await getCurrentLocale();
   const t = getDictionary(locale);
   const csrfToken = await getOrCreateCsrfToken();
+  const params = await searchParams;
+
+  const errorMessages: Record<string, string> = {
+    invalid: t.auth.loginErrorInvalid,
+    "login-limited": t.auth.loginErrorLimited,
+    "account-exists": t.auth.loginErrorAccountExists
+  };
+
+  const errorMessage = params.message ? errorMessages[params.message] || t.auth.loginErrorDefault : null;
 
   return (
     <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
@@ -15,7 +28,12 @@ export default async function LoginPage() {
         <input type="hidden" name="csrfToken" value={csrfToken} />
         <h1 className="text-3xl font-semibold">{t.auth.loginTitle}</h1>
         <p className="mt-3 text-sm text-[#8B95A7]">{t.auth.loginIntro}</p>
-        <label className="mt-8 block text-sm">{t.auth.email}</label>
+        {errorMessage && (
+          <div className="mt-4 rounded-lg bg-red-500/20 border border-red-500/30 px-4 py-3 text-sm text-red-400">
+            {errorMessage}
+          </div>
+        )}
+        <label className="mt-6 block text-sm">{t.auth.email}</label>
         <input name="email" type="email" required className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
         <label className="mt-5 block text-sm">{t.auth.password}</label>
         <input name="password" type="password" required className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />

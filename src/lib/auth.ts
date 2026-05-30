@@ -115,7 +115,7 @@ export async function assertLoginNotLimited(identifier: string) {
     select: { createdAt: true }
   });
   if (isLoginLimited(attempts.map((attempt) => attempt.createdAt))) {
-    throw new Error("登录失败次数过多，请 15 分钟后再试。");
+    throw new Error("LOGIN_LIMITED");
   }
 }
 

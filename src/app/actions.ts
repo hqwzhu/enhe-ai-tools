@@ -58,7 +58,14 @@ export async function loginAction(formData: FormData) {
     email: formData.get("email"),
     password: formData.get("password")
   });
-  await assertLoginNotLimited(input.email);
+  try {
+    await assertLoginNotLimited(input.email);
+  } catch (e) {
+    if (e instanceof Error && e.message === "LOGIN_LIMITED") {
+      redirect("/login?message=login-limited");
+    }
+    throw e;
+  }
   const user = await prisma.user.findUnique({ where: { email: input.email } });
   if (!user || user.status !== "active" || !(await verifyPassword(input.password, user.passwordHash))) {
     await recordLoginAttempt(input.email, false);

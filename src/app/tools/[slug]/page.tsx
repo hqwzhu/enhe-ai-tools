@@ -5,11 +5,15 @@ import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
-import { reviewCompletionNotice } from "@/lib/review-copy";
+import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
 
 export default async function ToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const user = await getCurrentUser();
+  const [user, locale] = await Promise.all([getCurrentUser(), getCurrentLocale()]);
+  const t = getDictionary(locale);
+  const td = t.toolDetail;
+  const reviewNotice = locale === "en" ? reviewCompletionNoticeEn : reviewCompletionNotice;
   const { slug } = await params;
   const tool = await prisma.tool.findUnique({
     where: { slug },
@@ -47,7 +51,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-[#030611]/82 via-[#030611]/12 to-transparent" />
               <div className="absolute bottom-5 left-5 right-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7DD3FC]">ENHE Tool Cover</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7DD3FC]">{td.coverLabel}</p>
                 <p className="mt-2 line-clamp-2 text-2xl font-semibold text-[#F6FAFF]">{tool.name}</p>
               </div>
             </div>
@@ -56,9 +60,9 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
           <div className="flex min-w-0 flex-col justify-between gap-6">
             <div>
               <div className="flex flex-wrap gap-2">
-                <Badge>{tool.category?.name ?? "未分类"}</Badge>
-                <Badge>{tool.type === "software" ? "电脑软件" : "在线网页工具"}</Badge>
-                <Badge className={tool.isVipRequired ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>{tool.isVipRequired ? "VIP" : "免费"}</Badge>
+                <Badge>{tool.category?.name ?? td.uncategorized}</Badge>
+                <Badge>{tool.type === "software" ? td.software : td.online}</Badge>
+                <Badge className={tool.isVipRequired ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>{tool.isVipRequired ? td.vip : td.free}</Badge>
                 {tool.tagLinks.map(({ tag }) => (
                   <Badge key={tag.id} className="text-[#7DD3FC]">
                     {tag.name}
@@ -70,10 +74,10 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <p className="mt-5 max-w-3xl text-base leading-8 text-[#8F9DB2] md:text-lg">{tool.shortDescription}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <Info label="版本" value={tool.version ?? "在线版本"} />
-                <Info label="系统要求" value={tool.systemRequirement ?? "浏览器"} />
-                <Info label="下载次数" value={String(tool.downloadCount)} />
-                <Info label="使用次数" value={String(tool.usageCount)} />
+                <Info label={td.version} value={tool.version ?? td.onlineVersion} />
+                <Info label={td.systemRequirement} value={tool.systemRequirement ?? td.browser} />
+                <Info label={td.downloadCount} value={String(tool.downloadCount)} />
+                <Info label={td.usageCount} value={String(tool.usageCount)} />
               </div>
 
               <div className="mt-7 flex flex-wrap gap-3">
@@ -82,33 +86,35 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                     <form action={createSoftwareDownloadOrderAction} className="flex flex-wrap items-center gap-3">
                       <input type="hidden" name="toolId" value={tool.id} />
                       <select name="paymentMethod" className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]">
-                        <option value="alipay">支付宝</option>
-                        <option value="wechat">微信</option>
+                        <option value="alipay">{td.alipay}</option>
+                        <option value="wechat">{td.wechat}</option>
                       </select>
                       <button className="rounded-full bg-[#7DD3FC] px-5 py-3 text-sm font-semibold text-[#030611] transition hover:shadow-[0_0_26px_rgba(125,211,252,0.18)]">
-                        购买下载 ¥{Number(tool.downloadPrice).toFixed(2)}
+                        {td.buyDownload.replace("{price}", Number(tool.downloadPrice).toFixed(2))}
                       </button>
                     </form>
                   ) : (
-                    <ButtonLink href={`/api/tools/${tool.id}/download`}>下载软件</ButtonLink>
+                    <ButtonLink href={`/api/tools/${tool.id}/download`}>{td.downloadSoftware}</ButtonLink>
                   )
                 ) : (
-                  <ButtonLink href={`/api/tools/${tool.id}/use`}>在线使用</ButtonLink>
+                  <ButtonLink href={`/api/tools/${tool.id}/use`}>{td.useOnline}</ButtonLink>
                 )}
                 <ButtonLink href="/pricing" variant="ghost">
-                  开通 VIP
+                  {td.openVip}
                 </ButtonLink>
               </div>
 
               {tool.type === "software" && tool.isDownloadPaid ? (
-                <p className="mt-4 text-sm leading-6 text-[#FFB86B]">该软件为单独付费下载，VIP 用户也需要购买后才能下载。</p>
+                <p className="mt-4 text-sm leading-6 text-[#FFB86B]">{td.paidDownloadNote}</p>
               ) : null}
             </div>
 
             <div className="rounded-2xl border border-[rgba(210,230,255,0.14)] bg-[rgba(238,246,255,0.06)] p-5">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-xl font-semibold text-[#F6FAFF]">版本更新记录</h2>
-                <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8F9DB2]">{tool.changelogs.length} 条记录</span>
+                <h2 className="text-xl font-semibold text-[#F6FAFF]">{td.changelogTitle}</h2>
+                <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8F9DB2]">
+                  {td.changelogCount.replace("{count}", String(tool.changelogs.length))}
+                </span>
               </div>
               <div className="mt-4 grid gap-3">
                 {tool.changelogs.length ? (
@@ -116,14 +122,14 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                     <div key={item.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-semibold text-[#7DD3FC]">{item.version}</p>
-                        {item.releaseDate ? <p className="text-xs text-[#8F9DB2]">{item.releaseDate.toLocaleDateString("zh-CN")}</p> : null}
+                        {item.releaseDate ? <p className="text-xs text-[#8F9DB2]">{item.releaseDate.toLocaleDateString(locale === "en" ? "en-US" : "zh-CN")}</p> : null}
                       </div>
                       <h3 className="mt-2 font-semibold text-[#F6FAFF]">{item.title}</h3>
                       <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#8F9DB2]">{item.content}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm leading-6 text-[#8F9DB2]">暂无更新记录。</p>
+                  <p className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm leading-6 text-[#8F9DB2]">{td.noChangelogs}</p>
                 )}
               </div>
             </div>
@@ -133,26 +139,26 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
 
       <div className="mt-10 space-y-10">
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title="工具介绍" intro={tool.content} />
+          <SectionTitle title={td.introTitle} intro={tool.content} />
         </section>
 
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title="使用教程" intro="每个工具支持独立教程、步骤排序、图片和视频链接。" />
+          <SectionTitle title={td.tutorialsTitle} intro={td.tutorialsIntro} />
           <div className="space-y-4">
             {tool.tutorials.map((tutorial, index) => (
               <div key={tutorial.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
-                <p className="text-sm text-[#7DD3FC]">STEP {index + 1}</p>
+                <p className="text-sm text-[#7DD3FC]">{td.step.replace("{index}", String(index + 1))}</p>
                 <h3 className="mt-2 text-xl font-semibold">{tutorial.title}</h3>
                 <p className="mt-3 leading-7 text-[#8F9DB2]">{tutorial.content}</p>
                 {tutorial.notes ? (
                   <div className="mt-4 rounded-xl border border-[#5EF1C7]/20 bg-[#5EF1C7]/8 p-4">
-                    <p className="text-sm font-semibold text-[#5EF1C7]">注意事项</p>
+                    <p className="text-sm font-semibold text-[#5EF1C7]">{td.notes}</p>
                     <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#8F9DB2]">{tutorial.notes}</p>
                   </div>
                 ) : null}
                 {tutorial.commonErrors ? (
                   <div className="mt-4 rounded-xl border border-[#FFB86B]/20 bg-[#FFB86B]/8 p-4">
-                    <p className="text-sm font-semibold text-[#FFB86B]">常见错误</p>
+                    <p className="text-sm font-semibold text-[#FFB86B]">{td.commonErrors}</p>
                     <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#8F9DB2]">{tutorial.commonErrors}</p>
                   </div>
                 ) : null}
@@ -163,7 +169,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         </section>
 
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title="常见问题" intro="后台可为每个工具维护独立 FAQ。" />
+          <SectionTitle title={td.faqsTitle} intro={td.faqsIntro} />
           <div className="space-y-4">
             {tool.faqs.length ? (
               tool.faqs.map((faq) => (
@@ -173,29 +179,29 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 </div>
               ))
             ) : (
-              <p className="text-sm text-[#8F9DB2]">暂无常见问题。</p>
+              <p className="text-sm text-[#8F9DB2]">{td.noFaqs}</p>
             )}
           </div>
         </section>
 
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title="用户评论" intro={`评论提交后进入后台审核，通过后展示。${reviewCompletionNotice}`} />
+          <SectionTitle title={td.commentsTitle} intro={td.commentsIntro.replace("{notice}", reviewNotice)} />
           {user ? (
             <form action={createCommentAction} className="mb-6">
               <input type="hidden" name="toolId" value={tool.id} />
               <input type="hidden" name="slug" value={tool.slug} />
-              <textarea name="content" required className="min-h-28 w-full rounded-xl border border-white/12 bg-white/8 p-4 outline-none" placeholder="写下你的使用体验" />
-              <p className="mt-2 text-xs leading-5 text-[#8F9DB2]">{reviewCompletionNotice}</p>
-              <button className="mt-3 rounded-full bg-[#7DD3FC] px-5 py-3 font-semibold text-[#030611]">提交评论</button>
+              <textarea name="content" required className="min-h-28 w-full rounded-xl border border-white/12 bg-white/8 p-4 outline-none" placeholder={td.commentPlaceholder} />
+              <p className="mt-2 text-xs leading-5 text-[#8F9DB2]">{reviewNotice}</p>
+              <button className="mt-3 rounded-full bg-[#7DD3FC] px-5 py-3 font-semibold text-[#030611]">{td.submitComment}</button>
             </form>
           ) : (
-            <p className="mb-6 text-sm text-[#8F9DB2]">登录后可以评论。</p>
+            <p className="mb-6 text-sm text-[#8F9DB2]">{td.loginToComment}</p>
           )}
           <div className="space-y-3">
             {tool.comments.map((comment) => (
               <div key={comment.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
                 <p className="text-sm text-[#8F9DB2]">
-                  {comment.user.nickname ?? comment.user.email} {comment.isPinned ? <span className="text-[#FFB86B]">· 置顶</span> : null}
+                  {comment.user.nickname ?? comment.user.email} {comment.isPinned ? <span className="text-[#FFB86B]">· {td.pinned}</span> : null}
                 </p>
                 <p className="mt-2 leading-7">{comment.content}</p>
               </div>
@@ -205,8 +211,8 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
       </div>
 
       <section className="mt-12">
-        <SectionTitle title="相关推荐工具" />
-        <div className="grid gap-5 md:grid-cols-3">{related.map((item) => <ToolCard key={item.id} tool={item} />)}</div>
+        <SectionTitle title={td.relatedTitle} />
+        <div className="grid gap-5 md:grid-cols-3">{related.map((item) => <ToolCard key={item.id} tool={item} locale={locale} />)}</div>
       </section>
     </Container>
   );

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { deleteToolAction, upsertToolAction } from "@/app/admin/actions";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import { getAdminToolBasePath, getAdminToolEditPath, getAdminToolNewPath } from "@/lib/admin-tool-routes";
+import type { Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
 import { getToolPublishIssues } from "@/lib/tool-publish-check";
 
@@ -35,10 +36,16 @@ type FileItem = { id: string; fileName: string; fileUrl: string | null };
 type Notice = Record<string, string | undefined>;
 type ToolListFilters = { q: string; status?: string; categoryId?: string; page: number };
 
-const statusText: Record<string, string> = {
+const statusTextZh: Record<string, string> = {
   draft: "草稿",
   published: "发布",
   offline: "下架"
+};
+
+const statusTextEn: Record<string, string> = {
+  draft: "Draft",
+  published: "Published",
+  offline: "Offline"
 };
 
 const statusClass: Record<string, string> = {
@@ -47,15 +54,16 @@ const statusClass: Record<string, string> = {
   offline: "border-amber-300/30 bg-amber-300/10 text-amber-100"
 };
 
-function NoticeBar({ notice }: { notice?: Notice }) {
+function NoticeBar({ notice, locale }: { notice?: Notice; locale: Locale }) {
+  const copy = toolAdminCopy[locale];
   if (notice?.saved) {
-    return <p className="mt-4 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">保存成功。</p>;
+    return <p className="mt-4 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">{copy.saved}</p>;
   }
   if (notice?.deleted) {
-    return <p className="mt-4 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">删除成功。</p>;
+    return <p className="mt-4 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">{copy.deleted}</p>;
   }
   if (notice?.error) {
-    return <p className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">操作失败：{notice.error}</p>;
+    return <p className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">{copy.failed}: {notice.error}</p>;
   }
   return null;
 }
@@ -72,6 +80,7 @@ function Badge({ children, className = "" }: React.PropsWithChildren<{ className
 export function ToolAdminList({
   title,
   type,
+  locale = "zh",
   tools,
   notice,
   categories = [],
@@ -82,6 +91,7 @@ export function ToolAdminList({
 }: {
   title: string;
   type: AdminToolType;
+  locale?: Locale;
   tools: ToolItem[];
   notice?: Notice;
   categories?: ToolCategoryItem[];
@@ -90,6 +100,8 @@ export function ToolAdminList({
   pageCount?: number;
   buildPageHref?: (page: number) => string;
 }) {
+  const copy = toolAdminCopy[locale];
+  const statusText = locale === "en" ? statusTextEn : statusTextZh;
   const listPath = getAdminToolBasePath(type);
   const matchingCategories = categories.filter((category) => category.type === type);
 
@@ -99,51 +111,51 @@ export function ToolAdminList({
         <div>
           <h1 className="text-3xl font-semibold">{title}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
-            以清单模式管理已保存工具，点击查看/编辑进入单独详情页后再修改、上下架或删除。
+            {copy.listIntro}
           </p>
         </div>
         <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
-          新增工具
+          {copy.newTool}
         </Link>
       </div>
 
-      <NoticeBar notice={notice} />
+      <NoticeBar notice={notice} locale={locale} />
 
       {filters && buildPageHref ? (
         <>
           <form className="glass mt-6 grid gap-3 rounded-2xl p-5 md:grid-cols-[1fr_180px_220px_auto]" action={listPath}>
-            <input name="q" defaultValue={filters.q} placeholder="搜索工具名称、Slug、简介" className={inputClass} />
+            <input name="q" defaultValue={filters.q} placeholder={copy.searchPlaceholder} className={inputClass} />
             <select name="status" defaultValue={filters.status ?? ""} className={selectClass}>
-              <option value="">全部状态</option>
-              <option value="draft">草稿</option>
-              <option value="published">发布</option>
-              <option value="offline">下架</option>
+              <option value="">{copy.allStatus}</option>
+              <option value="draft">{statusText.draft}</option>
+              <option value="published">{statusText.published}</option>
+              <option value="offline">{statusText.offline}</option>
             </select>
             <select name="categoryId" defaultValue={filters.categoryId ?? ""} className={selectClass}>
-              <option value="">全部分类</option>
+              <option value="">{copy.allCategories}</option>
               {matchingCategories.map((category) => (
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
-            <button className="rounded-full border border-white/12 px-5 py-3 text-sm font-semibold text-[#E8EEF8]">筛选</button>
+            <button className="rounded-full border border-white/12 px-5 py-3 text-sm font-semibold text-[#E8EEF8]">{copy.filter}</button>
           </form>
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-[#8B95A7]">
-            <span>共 {total ?? tools.length} 个工具，当前第 {filters.page} / {pageCount ?? 1} 页</span>
+            <span>{copy.pagination.replace("{total}", String(total ?? tools.length)).replace("{page}", String(filters.page)).replace("{pageCount}", String(pageCount ?? 1))}</span>
             <div className="flex gap-2">
               <Link
                 href={buildPageHref(filters.page - 1)}
                 aria-disabled={filters.page <= 1}
                 className={`rounded-full border border-white/12 px-4 py-2 ${filters.page <= 1 ? "pointer-events-none opacity-40" : ""}`}
               >
-                上一页
+                {copy.prev}
               </Link>
               <Link
                 href={buildPageHref(filters.page + 1)}
                 aria-disabled={filters.page >= (pageCount ?? 1)}
                 className={`rounded-full border border-white/12 px-4 py-2 ${filters.page >= (pageCount ?? 1) ? "pointer-events-none opacity-40" : ""}`}
               >
-                下一页
+                {copy.next}
               </Link>
             </div>
           </div>
@@ -152,16 +164,16 @@ export function ToolAdminList({
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
         <div className="grid min-w-[1080px] grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
-          <span>工具</span>
-          <span>分类</span>
-          <span>状态</span>
-          <span>权限/价格</span>
-          <span>上架检查</span>
-          <span className="text-right">操作</span>
+          <span>{copy.tool}</span>
+          <span>{copy.category}</span>
+          <span>{copy.status}</span>
+          <span>{copy.accessPrice}</span>
+          <span>{copy.publishCheck}</span>
+          <span className="text-right">{copy.actions}</span>
         </div>
 
         {tools.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">暂无工具，先新增一个工具。</div>
+          <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">{copy.noTools}</div>
         ) : (
           <div className="min-w-[1080px] divide-y divide-white/10">
             {tools.map((tool) => {
@@ -183,12 +195,12 @@ export function ToolAdminList({
                       <p className="mt-1 text-xs text-[#8B95A7]">{tool.slug}</p>
                     </div>
                   </div>
-                  <div className="text-[#C5D0E2]">{tool.category?.name ?? "未分类"}</div>
+                  <div className="text-[#C5D0E2]">{tool.category?.name ?? copy.uncategorized}</div>
                   <div>
                     <Badge className={statusClass[tool.status] ?? statusClass.draft}>{statusText[tool.status] ?? tool.status}</Badge>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {tool.isVipRequired ? <Badge className="border-[#7AA7FF]/30 bg-[#7AA7FF]/10 text-[#AFC8FF]">VIP</Badge> : <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">免费</Badge>}
+                    {tool.isVipRequired ? <Badge className="border-[#7AA7FF]/30 bg-[#7AA7FF]/10 text-[#AFC8FF]">VIP</Badge> : <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">{copy.free}</Badge>}
                     {type === "software" && tool.isDownloadPaid ? (
                       <Badge className="border-[#FFB86B]/40 bg-[#FFB86B]/10 text-[#FFB86B]">{formatPrice(tool.downloadPrice)}</Badge>
                     ) : null}
@@ -197,17 +209,17 @@ export function ToolAdminList({
                     {publishIssues.length ? (
                       <>
                         {publishIssues.slice(0, 3).map((issue) => (
-                          <Badge key={issue} className="border-[#FFB86B]/30 bg-[#FFB86B]/10 text-[#FFB86B]">{issue}</Badge>
+                          <Badge key={issue} className="border-[#FFB86B]/30 bg-[#FFB86B]/10 text-[#FFB86B]">{localizePublishIssue(issue, locale)}</Badge>
                         ))}
                         {publishIssues.length > 3 ? <Badge className="border-white/15 bg-white/8 text-[#8B95A7]">+{publishIssues.length - 3}</Badge> : null}
                       </>
                     ) : (
-                      <Badge className="border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#48F5D3]">可上架</Badge>
+                      <Badge className="border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#48F5D3]">{copy.publishable}</Badge>
                     )}
                   </div>
                   <div className="text-right">
                     <Link href={getAdminToolEditPath(type, tool.id)} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
-                      查看/编辑
+                      {copy.viewEdit}
                     </Link>
                   </div>
                 </div>
@@ -223,6 +235,7 @@ export function ToolAdminList({
 export function ToolEditor({
   title,
   type,
+  locale = "zh",
   tool,
   categories,
   files,
@@ -230,11 +243,14 @@ export function ToolEditor({
 }: {
   title: string;
   type: AdminToolType;
+  locale?: Locale;
   tool?: ToolItem;
   categories: ToolCategoryItem[];
   files: FileItem[];
   notice?: Notice;
 }) {
+  const copy = toolAdminCopy[locale];
+  const statusText = locale === "en" ? statusTextEn : statusTextZh;
   const editorPath = getAdminToolEditPath(type, tool?.id ?? "new");
   const listPath = getAdminToolBasePath(type);
   const matchingCategories = categories.filter((category) => category.type === type);
@@ -245,89 +261,89 @@ export function ToolEditor({
         <div>
           <h1 className="text-3xl font-semibold">{title}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
-            在单独详情页编辑工具基础信息、权限、封面、截图、下载文件或在线地址。
+            {copy.editorIntro}
           </p>
         </div>
         <Link href={listPath} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
-          返回工具清单
+          {copy.backToList}
         </Link>
       </div>
 
-      <NoticeBar notice={notice} />
+      <NoticeBar notice={notice} locale={locale} />
 
       <form action={upsertToolAction} className="glass mt-8 grid gap-4 rounded-2xl p-6 md:grid-cols-2">
         {tool ? <input type="hidden" name="id" value={tool.id} /> : null}
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="returnTo" value={editorPath} />
 
-        <Field label="工具名称">
+        <Field label={copy.toolName}>
           <input name="name" required defaultValue={tool?.name ?? ""} className={inputClass} />
         </Field>
         <Field label="Slug">
-          <input name="slug" defaultValue={tool?.slug ?? ""} placeholder="留空自动生成" className={inputClass} />
+          <input name="slug" defaultValue={tool?.slug ?? ""} placeholder={copy.slugPlaceholder} className={inputClass} />
         </Field>
-        <Field label="分类">
+        <Field label={copy.category}>
           <select name="categoryId" defaultValue={tool?.categoryId ?? ""} className={selectClass}>
-            <option value="">未分类</option>
+            <option value="">{copy.uncategorized}</option>
             {matchingCategories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
           </select>
         </Field>
-        <Field label="状态">
+        <Field label={copy.status}>
           <select name="status" defaultValue={tool?.status ?? "draft"} className={selectClass}>
-            <option value="draft">草稿</option>
-            <option value="published">发布</option>
-            <option value="offline">下架</option>
+            <option value="draft">{statusText.draft}</option>
+            <option value="published">{statusText.published}</option>
+            <option value="offline">{statusText.offline}</option>
           </select>
         </Field>
-        <Field label="排序">
+        <Field label={copy.sortOrder}>
           <input name="sortOrder" type="number" defaultValue={tool?.sortOrder ?? 0} className={inputClass} />
         </Field>
-        <Field label="封面图地址">
-          <input name="coverImage" defaultValue={tool?.coverImage ?? ""} placeholder="/uploads/cover.jpg 或 https://..." className={inputClass} />
+        <Field label={copy.coverUrl}>
+          <input name="coverImage" defaultValue={tool?.coverImage ?? ""} placeholder={copy.coverPlaceholder} className={inputClass} />
         </Field>
-        <Field label="本地上传封面图">
+        <Field label={copy.coverUpload}>
           <input name="coverImageFile" type="file" accept="image/*" className={inputClass} />
           <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
-            建议尺寸 1200x675 或 16:9，JPG/PNG/WebP，8MB 以内。上传后会自动覆盖封面图地址。
+            {copy.coverHint}
           </span>
         </Field>
-        <Field label="版本">
+        <Field label={copy.version}>
           <input name="version" defaultValue={tool?.version ?? ""} className={inputClass} />
         </Field>
-        <Field label="系统要求">
+        <Field label={copy.systemRequirement}>
           <input name="systemRequirement" defaultValue={tool?.systemRequirement ?? ""} disabled={type !== "software"} className={inputClass} />
         </Field>
-        <Field label="下载文件">
+        <Field label={copy.downloadFile}>
           <select name="downloadFileId" defaultValue={tool?.downloadFileId ?? ""} className={selectClass} disabled={type !== "software"}>
-            <option value="">不绑定</option>
+            <option value="">{copy.unbound}</option>
             {files.map((file) => <option key={file.id} value={file.id}>{file.fileName}</option>)}
           </select>
         </Field>
-        <Field label="在线地址">
+        <Field label={copy.onlineUrl}>
           <input name="onlineUrl" defaultValue={tool?.onlineUrl ?? ""} disabled={type !== "online"} className={inputClass} />
         </Field>
         <label className="inline-flex items-center gap-2 text-sm">
-          <input name="isVipRequired" type="checkbox" defaultChecked={tool?.isVipRequired ?? true} /> 需要 VIP
+          <input name="isVipRequired" type="checkbox" defaultChecked={tool?.isVipRequired ?? true} /> {copy.needVip}
         </label>
         <label className="inline-flex items-center gap-2 text-sm">
-          <input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} disabled={type !== "software"} /> 下载单独付费
+          <input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} disabled={type !== "software"} /> {copy.paidDownload}
         </label>
-        <Field label="下载价格">
+        <Field label={copy.downloadPrice}>
           <input name="downloadPrice" type="number" step="0.01" defaultValue={tool?.downloadPrice != null ? String(tool.downloadPrice) : "0"} disabled={type !== "software"} className={inputClass} />
         </Field>
-        <Field label="截图地址，逗号或换行分隔" className="md:col-span-2">
+        <Field label={copy.screenshots} className="md:col-span-2">
           <textarea name="screenshots" defaultValue={tool?.screenshots.join("\n") ?? ""} className={textareaClass} />
         </Field>
-        <Field label="简介" className="md:col-span-2">
+        <Field label={copy.shortDescription} className="md:col-span-2">
           <textarea name="shortDescription" required defaultValue={tool?.shortDescription ?? ""} className={textareaClass} />
         </Field>
-        <Field label="详细介绍" className="md:col-span-2">
+        <Field label={copy.content} className="md:col-span-2">
           <textarea name="content" required defaultValue={tool?.content ?? ""} className={textareaClass} />
         </Field>
         <div className="md:col-span-2">
-          <SubmitButton>{tool ? "保存工具" : "新增工具"}</SubmitButton>
+          <SubmitButton>{tool ? copy.saveTool : copy.createTool}</SubmitButton>
         </div>
       </form>
 
@@ -335,9 +351,123 @@ export function ToolEditor({
         <form action={deleteToolAction} className="mt-4">
           <input type="hidden" name="id" value={tool.id} />
           <input type="hidden" name="type" value={type} />
-          <DangerButton>删除工具</DangerButton>
+          <DangerButton>{copy.deleteTool}</DangerButton>
         </form>
       ) : null}
     </div>
   );
+}
+
+const toolAdminCopy = {
+  zh: {
+    saved: "保存成功。",
+    deleted: "删除成功。",
+    failed: "操作失败",
+    listIntro: "以清单模式管理已保存工具，点击查看/编辑进入单独详情页后再修改、上下架或删除。",
+    newTool: "新增工具",
+    searchPlaceholder: "搜索工具名称、Slug、简介",
+    allStatus: "全部状态",
+    allCategories: "全部分类",
+    filter: "筛选",
+    pagination: "共 {total} 个工具，当前第 {page} / {pageCount} 页",
+    prev: "上一页",
+    next: "下一页",
+    tool: "工具",
+    category: "分类",
+    status: "状态",
+    accessPrice: "权限/价格",
+    publishCheck: "上架检查",
+    actions: "操作",
+    noTools: "暂无工具，先新增一个工具。",
+    uncategorized: "未分类",
+    free: "免费",
+    publishable: "可上架",
+    viewEdit: "查看/编辑",
+    editorIntro: "在单独详情页编辑工具基础信息、权限、封面、截图、下载文件或在线地址。",
+    backToList: "返回工具清单",
+    toolName: "工具名称",
+    slugPlaceholder: "留空自动生成",
+    sortOrder: "排序",
+    coverUrl: "封面图地址",
+    coverPlaceholder: "/uploads/cover.jpg 或 https://...",
+    coverUpload: "本地上传封面图",
+    coverHint: "建议尺寸 1200x675 或 16:9，JPG/PNG/WebP，8MB 以内。上传后会自动覆盖封面图地址。",
+    version: "版本",
+    systemRequirement: "系统要求",
+    downloadFile: "下载文件",
+    unbound: "不绑定",
+    onlineUrl: "在线地址",
+    needVip: "需要 VIP",
+    paidDownload: "下载单独付费",
+    downloadPrice: "下载价格",
+    screenshots: "截图地址，逗号或换行分隔",
+    shortDescription: "简介",
+    content: "详细介绍",
+    saveTool: "保存工具",
+    createTool: "新增工具",
+    deleteTool: "删除工具"
+  },
+  en: {
+    saved: "Saved successfully.",
+    deleted: "Deleted successfully.",
+    failed: "Operation failed",
+    listIntro: "Manage saved tools in list mode. Open View/Edit to update details, publish status, or delete a tool.",
+    newTool: "New tool",
+    searchPlaceholder: "Search name, slug, or description",
+    allStatus: "All statuses",
+    allCategories: "All categories",
+    filter: "Filter",
+    pagination: "{total} tools, page {page} / {pageCount}",
+    prev: "Previous",
+    next: "Next",
+    tool: "Tool",
+    category: "Category",
+    status: "Status",
+    accessPrice: "Access / price",
+    publishCheck: "Publish check",
+    actions: "Actions",
+    noTools: "No tools yet. Create one first.",
+    uncategorized: "Uncategorized",
+    free: "Free",
+    publishable: "Publishable",
+    viewEdit: "View/Edit",
+    editorIntro: "Edit tool basics, permissions, cover image, screenshots, download file, or online URL on this detail page.",
+    backToList: "Back to tool list",
+    toolName: "Tool name",
+    slugPlaceholder: "Leave blank to auto-generate",
+    sortOrder: "Sort order",
+    coverUrl: "Cover image URL",
+    coverPlaceholder: "/uploads/cover.jpg or https://...",
+    coverUpload: "Upload local cover",
+    coverHint: "Recommended size: 1200x675 or 16:9, JPG/PNG/WebP, under 8MB. Uploading will replace the cover image URL.",
+    version: "Version",
+    systemRequirement: "System requirement",
+    downloadFile: "Download file",
+    unbound: "Unbound",
+    onlineUrl: "Online URL",
+    needVip: "Requires VIP",
+    paidDownload: "Separate paid download",
+    downloadPrice: "Download price",
+    screenshots: "Screenshot URLs, separated by commas or new lines",
+    shortDescription: "Short description",
+    content: "Detailed introduction",
+    saveTool: "Save tool",
+    createTool: "Create tool",
+    deleteTool: "Delete tool"
+  }
+} as const;
+
+const publishIssueTranslations: Record<string, string> = {
+  未选择分类: "No category selected",
+  未设置封面图: "No cover image",
+  未填写简介: "Missing short description",
+  未填写详细介绍: "Missing detailed introduction",
+  未绑定下载文件: "No download file bound",
+  "付费下载价格需大于 0": "Paid-download price must be greater than 0",
+  未配置在线地址: "No online URL configured"
+};
+
+function localizePublishIssue(issue: string, locale: Locale) {
+  if (locale === "zh") return issue;
+  return publishIssueTranslations[issue] ?? issue;
 }

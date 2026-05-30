@@ -1,3 +1,5 @@
+import type { Locale } from "@/lib/i18n";
+
 export type DevelopmentItemStatus = "completed" | "partial" | "not_started" | "recommended";
 
 export type DevelopmentProgressItem = {
@@ -29,10 +31,39 @@ export const statusMeta: Record<DevelopmentItemStatus, { label: string; weight: 
   }
 };
 
+const statusMetaEn: Record<DevelopmentItemStatus, { label: string; weight: number; className: string }> = {
+  completed: {
+    label: "Completed",
+    weight: 1,
+    className: statusMeta.completed.className
+  },
+  partial: {
+    label: "Partially complete",
+    weight: 0.5,
+    className: statusMeta.partial.className
+  },
+  not_started: {
+    label: "Not started",
+    weight: 0,
+    className: statusMeta.not_started.className
+  },
+  recommended: {
+    label: "Recommended",
+    weight: 0,
+    className: statusMeta.recommended.className
+  }
+};
+
 export const priorityMeta = {
   high: { label: "高优先级", className: "text-red-200" },
   medium: { label: "中优先级", className: "text-[#FFB86B]" },
   low: { label: "低优先级", className: "text-[#8B95A7]" }
+} as const;
+
+const priorityMetaEn = {
+  high: { label: "High priority", className: priorityMeta.high.className },
+  medium: { label: "Medium priority", className: priorityMeta.medium.className },
+  low: { label: "Low priority", className: priorityMeta.low.className }
 } as const;
 
 export const versionStatusMeta = {
@@ -41,6 +72,25 @@ export const versionStatusMeta = {
   released: "已发布",
   archived: "已归档"
 } as const;
+
+const versionStatusMetaEn = {
+  active: "In development",
+  planned: "Planned",
+  released: "Released",
+  archived: "Archived"
+} as const;
+
+export function getDevelopmentStatusMeta(locale: Locale) {
+  return locale === "en" ? statusMetaEn : statusMeta;
+}
+
+export function getDevelopmentPriorityMeta(locale: Locale) {
+  return locale === "en" ? priorityMetaEn : priorityMeta;
+}
+
+export function getDevelopmentVersionStatusMeta(locale: Locale) {
+  return locale === "en" ? versionStatusMetaEn : versionStatusMeta;
+}
 
 export function calculateDevelopmentSummary(items: { status: DevelopmentItemStatus }[]) {
   const total = items.length;

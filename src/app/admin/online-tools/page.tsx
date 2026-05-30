@@ -1,9 +1,10 @@
 import { buildAdminToolPageHref, buildAdminToolWhere, parseAdminToolListParams } from "@/lib/admin-list";
 import { prisma } from "@/lib/db";
+import { getCurrentLocale } from "@/lib/i18n";
 import { ToolAdminList } from "../tool-admin-list";
 
 export default async function AdminOnlineToolsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const params = await searchParams;
+  const [params, locale] = await Promise.all([searchParams, getCurrentLocale()]);
   const filters = parseAdminToolListParams(params);
   const where = buildAdminToolWhere("online", filters);
   const [tools, total, categories] = await Promise.all([
@@ -21,8 +22,9 @@ export default async function AdminOnlineToolsPage({ searchParams }: { searchPar
 
   return (
     <ToolAdminList
-      title="在线网页工具管理"
+      title={locale === "en" ? "Online tool management" : "在线网页工具管理"}
       type="online"
+      locale={locale}
       tools={tools}
       notice={params}
       categories={categories}

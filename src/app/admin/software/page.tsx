@@ -1,9 +1,10 @@
 import { buildAdminToolPageHref, buildAdminToolWhere, parseAdminToolListParams } from "@/lib/admin-list";
 import { prisma } from "@/lib/db";
+import { getCurrentLocale } from "@/lib/i18n";
 import { ToolAdminList } from "../tool-admin-list";
 
 export default async function AdminSoftwarePage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const params = await searchParams;
+  const [params, locale] = await Promise.all([searchParams, getCurrentLocale()]);
   const filters = parseAdminToolListParams(params);
   const where = buildAdminToolWhere("software", filters);
   const [tools, total, categories] = await Promise.all([
@@ -21,8 +22,9 @@ export default async function AdminSoftwarePage({ searchParams }: { searchParams
 
   return (
     <ToolAdminList
-      title="电脑软件工具管理"
+      title={locale === "en" ? "Software tool management" : "电脑软件工具管理"}
       type="software"
+      locale={locale}
       tools={tools}
       notice={params}
       categories={categories}

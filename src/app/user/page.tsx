@@ -11,6 +11,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
 import { getActiveMembership } from "@/lib/membership";
+import { getNotificationDisplay } from "@/lib/notification-display";
 import { canUserCancelOrder } from "@/lib/order-rules";
 import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
 import { buildUserToolEntitlements, type UserEntitlementTool } from "@/lib/user-entitlements";
@@ -106,48 +107,52 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
             </Link>
           </Panel>
 
-          <Panel title={locale === "en" ? `Notifications (${unreadNotificationCount})` : `站内通知（${unreadNotificationCount}）`}>
+          <Panel title={t.notifications.title.replace("{count}", String(unreadNotificationCount))}>
             {notifications.length ? (
               <div className="space-y-3">
                 <form action={markAllNotificationsReadAction}>
                   <button className="rounded-full border border-white/12 px-3 py-1 text-xs transition hover:border-[#48F5D3]/60 hover:text-[#48F5D3]">
-                    {locale === "en" ? "Mark all read" : "全部标为已读"}
+                    {t.notifications.markAllRead}
                   </button>
                 </form>
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`rounded-xl border p-3 text-sm ${
-                      notification.readAt
-                        ? "border-white/10 bg-white/5 text-[#8B95A7]"
-                        : "border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#E8EEF8]"
-                    }`}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <p className="font-semibold">{notification.title}</p>
-                        <p className="mt-1 leading-6 text-[#8B95A7]">{notification.content}</p>
-                        <p className="mt-2 text-xs text-[#8B95A7]">{formatDateTime(notification.createdAt, locale)}</p>
+                {notifications.map((notification) => {
+                  const display = getNotificationDisplay(notification, locale);
+
+                  return (
+                    <div
+                      key={notification.id}
+                      className={`rounded-xl border p-3 text-sm ${
+                        notification.readAt
+                          ? "border-white/10 bg-white/5 text-[#8B95A7]"
+                          : "border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#E8EEF8]"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold">{display.title}</p>
+                          <p className="mt-1 leading-6 text-[#8B95A7]">{display.content}</p>
+                          <p className="mt-2 text-xs text-[#8B95A7]">{formatDateTime(notification.createdAt, locale)}</p>
+                        </div>
+                        {!notification.readAt ? (
+                          <form action={markNotificationReadAction}>
+                            <input type="hidden" name="id" value={notification.id} />
+                            <button className="rounded-full border border-white/12 px-2 py-1 text-xs">
+                              {t.notifications.markRead}
+                            </button>
+                          </form>
+                        ) : null}
                       </div>
-                      {!notification.readAt ? (
-                        <form action={markNotificationReadAction}>
-                          <input type="hidden" name="id" value={notification.id} />
-                          <button className="rounded-full border border-white/12 px-2 py-1 text-xs">
-                            {locale === "en" ? "Read" : "已读"}
-                          </button>
-                        </form>
+                      {notification.linkUrl ? (
+                        <Link href={notification.linkUrl} className="mt-3 inline-flex text-xs text-[#48F5D3]">
+                          {t.notifications.viewDetails}
+                        </Link>
                       ) : null}
                     </div>
-                    {notification.linkUrl ? (
-                      <Link href={notification.linkUrl} className="mt-3 inline-flex text-xs text-[#48F5D3]">
-                        {locale === "en" ? "View details" : "查看详情"}
-                      </Link>
-                    ) : null}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <EmptyText>{locale === "en" ? "No notifications yet." : "暂无站内通知。"}</EmptyText>
+              <EmptyText>{t.notifications.empty}</EmptyText>
             )}
           </Panel>
 
@@ -201,7 +206,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                         <form action={cancelOrderAction}>
                           <input type="hidden" name="orderId" value={order.id} />
                           <button className="rounded-full border border-white/12 px-3 py-1 text-xs">
-                            取消订单
+                            {t.userCenter.cancelOrder}
                           </button>
                         </form>
                       ) : null}
