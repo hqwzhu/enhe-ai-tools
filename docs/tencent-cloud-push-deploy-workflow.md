@@ -56,5 +56,6 @@ Use an explicit key file instead of the default key folder:
 ## Safety notes
 
 - The script refuses to commit `.env`, `.env.*`, `.codex-logs`, `.dev-logs`, or `web-access`.
+- On Windows, the script copies the selected SSH private key to `%USERPROFILE%\.ssh\enhe-ai-tools-tencent.pem` and locks its ACL before connecting, so OpenSSH will not reject it as "too open".
 - The remote deployment still uses the existing project directory `/opt/enhe-ai-tools`.
 - The remote deployment relies on the existing `deploy.sh`, which uses the isolated ENHE Docker Compose file and port `3001:3000`.

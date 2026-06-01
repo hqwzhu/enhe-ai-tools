@@ -49,6 +49,33 @@ function Resolve-SshKey {
   throw "SSH key not found. Provide -SshKeyPath with a private key file or a folder containing .pem/.key/id_rsa/id_ed25519."
 }
 
+function Protect-WindowsSshKey {
+  param([string]$KeyPath)
+
+  if ($env:OS -ne "Windows_NT") {
+    return $KeyPath
+  }
+
+  $sshDir = Join-Path $HOME ".ssh"
+  if (-not (Test-Path -LiteralPath $sshDir -PathType Container)) {
+    New-Item -ItemType Directory -Path $sshDir -Force | Out-Null
+  }
+
+  $safeKeyPath = Join-Path $sshDir "enhe-ai-tools-tencent.pem"
+  Copy-Item -LiteralPath $KeyPath -Destination $safeKeyPath -Force
+
+  $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+  & icacls $safeKeyPath /inheritance:r | Out-Null
+  & icacls $safeKeyPath /grant:r "${currentUser}:R" | Out-Null
+
+  foreach ($identity in @("BUILTIN\Users", "Authenticated Users", "Everyone")) {
+    & icacls $safeKeyPath /remove:g $identity 2>$null | Out-Null
+    & icacls $safeKeyPath /remove $identity 2>$null | Out-Null
+  }
+
+  return $safeKeyPath
+}
+
 function Assert-RequiredCommand {
   param([string]$Name)
 
@@ -109,7 +136,7 @@ if ($NoDeploy) {
   exit 0
 }
 
-$resolvedKey = Resolve-SshKey $SshKeyPath
+$resolvedKey = Protect-WindowsSshKey (Resolve-SshKey $SshKeyPath)
 $remoteCommand = "set -e; cd $RemoteProjectDir; chmod +x deploy.sh; ./deploy.sh"
 
 Invoke-Native -FilePath ssh -Arguments @("-i", $resolvedKey, "-p", "$SshPort", "-o", "StrictHostKeyChecking=accept-new", "$ServerUser@$ServerHost", $remoteCommand)
