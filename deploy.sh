@@ -17,6 +17,14 @@ echo "===== 查看容器状态 ====="
 docker ps | grep enhe-ai-tools
 
 echo "===== 测试应用 ====="
-docker exec hot-content-nginx wget -qO- http://enhe-ai-tools-app:3000 | head -n 20
+docker exec hot-content-nginx wget -qO- http://enhe-ai-tools-app:3000/api/health | head -n 20
+
+echo "===== 重载 Nginx 代理 ====="
+if docker ps --format '{{.Names}}' | grep -qx 'hot-content-nginx'; then
+  docker exec hot-content-nginx nginx -t
+  docker exec hot-content-nginx nginx -s reload
+else
+  echo "hot-content-nginx 未运行，跳过 Nginx 重载。"
+fi
 
 echo "===== 部署完成 ====="
