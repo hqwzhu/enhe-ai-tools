@@ -11,3 +11,6 @@ test-results
 playwright-report
 *.log
 *.tsbuildinfo
+.codex-logs/
+.dev-logs/
+web-access/
