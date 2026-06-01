@@ -35,7 +35,7 @@ export default async function LoginPage({
           </div>
         )}
         <label className="mt-6 block text-sm">{t.auth.email}</label>
-        <input name="email" type="email" required className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
+        <input name="email" type="text" required autoComplete="username" className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
         <label className="mt-5 block text-sm">{t.auth.password}</label>
         <PasswordInput
           name="password"

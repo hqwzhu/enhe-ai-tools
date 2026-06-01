@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { parseAccountCredentials } from "@/lib/account-identity";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { prisma } from "@/lib/db";
 import { createOrderNo } from "@/lib/order";
@@ -27,25 +28,20 @@ import { createUserNotification } from "@/lib/notifications";
 import { canUserCancelOrder, canUserRequestRefundForOrder, normalizeRefundRecordAmount } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
 
-const accountSchema = z.object({
-  email: z.string().email("邮箱格式不正确"),
-  password: z.string().min(6, "密码至少 6 位")
-});
-
 export async function registerAction(formData: FormData) {
   await assertValidCsrfToken(formData.get("csrfToken"));
-  const input = accountSchema.parse({
-    email: formData.get("email"),
+  const input = parseAccountCredentials({
+    identifier: formData.get("email"),
     password: formData.get("password")
   });
-  const exists = await prisma.user.findUnique({ where: { email: input.email } });
+  const exists = await prisma.user.findUnique({ where: { email: input.identifier } });
   if (exists) redirect("/login?message=account-exists");
 
   const user = await prisma.user.create({
     data: {
-      email: input.email,
+      email: input.identifier,
       passwordHash: await hashPassword(input.password),
-      nickname: input.email.split("@")[0]
+      nickname: input.identifier.split("@")[0]
     }
   });
   await signInUser(user.id);
@@ -54,24 +50,24 @@ export async function registerAction(formData: FormData) {
 
 export async function loginAction(formData: FormData) {
   await assertValidCsrfToken(formData.get("csrfToken"));
-  const input = accountSchema.parse({
-    email: formData.get("email"),
+  const input = parseAccountCredentials({
+    identifier: formData.get("email"),
     password: formData.get("password")
   });
   try {
-    await assertLoginNotLimited(input.email);
+    await assertLoginNotLimited(input.identifier);
   } catch (e) {
     if (e instanceof Error && e.message === "LOGIN_LIMITED") {
       redirect("/login?message=login-limited");
     }
     throw e;
   }
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const user = await prisma.user.findUnique({ where: { email: input.identifier } });
   if (!user || user.status !== "active" || !(await verifyPassword(input.password, user.passwordHash))) {
-    await recordLoginAttempt(input.email, false);
+    await recordLoginAttempt(input.identifier, false);
     redirect("/login?message=invalid");
   }
-  await recordLoginAttempt(input.email, true);
+  await recordLoginAttempt(input.identifier, true);
   await signInUser(user.id);
   redirect(user.role === "admin" ? "/admin" : "/user");
 }

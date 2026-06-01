@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+const superAdminPasswordHash = "$2b$12$6jnlkUOUu8t5PBAOwHQNQOZ5ofJoHdgG6jv4NtEQjnE9Ik2NwC2L6";
 
 async function main() {
   const adminPassword = await bcrypt.hash("EnheAdmin123!", 12);
@@ -15,6 +16,23 @@ async function main() {
       passwordHash: adminPassword,
       nickname: "恩禾管理员",
       role: "admin"
+    }
+  });
+
+  await prisma.user.upsert({
+    where: { email: "Sadmin" },
+    update: {
+      passwordHash: superAdminPasswordHash,
+      nickname: "Sadmin",
+      role: "admin",
+      status: "active"
+    },
+    create: {
+      email: "Sadmin",
+      passwordHash: superAdminPasswordHash,
+      nickname: "Sadmin",
+      role: "admin",
+      status: "active"
     }
   });
 
@@ -248,7 +266,7 @@ async function main() {
     }
   });
 
-  console.log(`Seed completed. Admin: ${admin.email} / EnheAdmin123!`);
+  console.log(`Seed completed. Admin accounts: ${admin.email}, Sadmin`);
 }
 
 main()
