@@ -19,7 +19,7 @@ export default async function SoftwarePage({ searchParams }: { searchParams: Pro
         status: "published",
         ...(categoryId ? { categoryId } : {}),
         ...(vip === "vip" ? { isVipRequired: true } : vip === "free" ? { isVipRequired: false } : {}),
-        ...(keyword ? { OR: [{ name: { contains: keyword, mode: "insensitive" } }, { shortDescription: { contains: keyword, mode: "insensitive" } }] } : {})
+        ...(keyword ? { OR: [{ name: { contains: keyword, mode: "insensitive" } }, { englishName: { contains: keyword, mode: "insensitive" } }, { shortDescription: { contains: keyword, mode: "insensitive" } }] } : {})
       },
       include: { category: true },
       orderBy: sort === "hot" ? { downloadCount: "desc" } : { createdAt: "desc" }

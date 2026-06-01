@@ -6,6 +6,24 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export function resolveToolSlug({
+  name,
+  slugInput,
+  fallbackSeed
+}: {
+  name: string;
+  slugInput?: string | null;
+  fallbackSeed: string;
+}) {
+  const manualSlug = slugInput ? slugify(slugInput) : "";
+  if (manualSlug) return manualSlug;
+
+  const nameSlug = slugify(name);
+  if (nameSlug) return nameSlug;
+
+  return `tool-${slugify(fallbackSeed) || "item"}`;
+}
+
 export function parseBooleanField(value: FormDataEntryValue | null) {
   return value === "on" || value === "true" || value === "1";
 }

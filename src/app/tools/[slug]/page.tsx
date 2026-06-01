@@ -7,7 +7,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
+import { userHasVip } from "@/lib/membership";
 import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
+import { canShowDownloadLinkArea } from "@/lib/tool-download-link";
 
 export default async function ToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [user, locale] = await Promise.all([getCurrentUser(), getCurrentLocale()]);
@@ -19,9 +21,9 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
     where: { slug },
     include: {
       category: true,
+      downloadFile: true,
       tagLinks: { include: { tag: true }, orderBy: { tag: { sortOrder: "asc" } } },
       tutorials: { where: { status: "active" }, orderBy: { sortOrder: "asc" } },
-      faqs: { where: { status: "active" }, orderBy: { sortOrder: "asc" } },
       changelogs: { where: { status: "active" }, orderBy: [{ releaseDate: "desc" }, { sortOrder: "asc" }] },
       comments: { where: { status: "approved" }, include: { user: true }, orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }] }
     }
@@ -29,9 +31,14 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   if (!tool || tool.status !== "published") notFound();
 
   const coverImage = normalizeImageSrc(tool.coverImage);
-  const hasDownloadPurchase = user
-    ? Boolean(await prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }))
-    : false;
+  const [hasDownloadPurchase, hasVip] = user
+    ? await Promise.all([
+        prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }).then(Boolean),
+        userHasVip(user.id)
+      ])
+    : [false, false];
+  const showDownloadLinkArea = tool.type === "software" && canShowDownloadLinkArea({ isDownloadLinkVipOnly: tool.isDownloadLinkVipOnly, hasVip });
+  const protectedDownloadHref = `/api/tools/${tool.id}/download`;
   const related = await prisma.tool.findMany({
     where: { type: tool.type, status: "published", id: { not: tool.id } },
     include: { category: true },
@@ -53,6 +60,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <div className="absolute bottom-5 left-5 right-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7DD3FC]">{td.coverLabel}</p>
                 <p className="mt-2 line-clamp-2 text-2xl font-semibold text-[#F6FAFF]">{tool.name}</p>
+                {tool.englishName ? <p className="mt-1 line-clamp-1 text-sm font-medium text-[#7DD3FC]">{tool.englishName}</p> : null}
               </div>
             </div>
           </div>
@@ -71,6 +79,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               </div>
 
               <h1 className="mt-5 text-4xl font-semibold leading-tight text-[#F6FAFF] md:text-5xl">{tool.name}</h1>
+              {tool.englishName ? <p className="mt-3 text-lg font-medium tracking-wide text-[#7DD3FC] md:text-xl">{tool.englishName}</p> : null}
               <p className="mt-5 max-w-3xl text-base leading-8 text-[#8F9DB2] md:text-lg">{tool.shortDescription}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -139,7 +148,30 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
 
       <div className="mt-10 space-y-10">
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title={td.introTitle} intro={tool.content} />
+          <SectionTitle title={td.introTitle} intro={td.productImagesIntro} />
+          <div className={`mt-6 grid gap-8 ${tool.screenshots.length ? "lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" : ""}`}>
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
+              <p className="whitespace-pre-line text-base leading-8 text-[#C5D0E2]">{tool.content}</p>
+            </div>
+            {tool.screenshots.length ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {tool.screenshots.map((screenshot, index) => {
+                  const imageSrc = normalizeImageSrc(screenshot);
+                  return (
+                    <div key={`${screenshot}-${index}`} className="overflow-hidden rounded-2xl border border-white/10 bg-[#07101E]">
+                      <div className="relative aspect-[4/3]">
+                        {imageSrc ? (
+                          <Image src={imageSrc} alt={`${tool.name} ${td.productImageAlt} ${index + 1}`} fill className="object-cover" sizes="(min-width: 1024px) 360px, 50vw" unoptimized />
+                        ) : (
+                          <div className="absolute inset-0 bg-white/6" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
         </section>
 
         <section className="glass rounded-2xl p-7">
@@ -169,22 +201,6 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         </section>
 
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title={td.faqsTitle} intro={td.faqsIntro} />
-          <div className="space-y-4">
-            {tool.faqs.length ? (
-              tool.faqs.map((faq) => (
-                <div key={faq.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
-                  <h3 className="text-lg font-semibold">{faq.question}</h3>
-                  <p className="mt-3 leading-7 text-[#8F9DB2]">{faq.answer}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-[#8F9DB2]">{td.noFaqs}</p>
-            )}
-          </div>
-        </section>
-
-        <section className="glass rounded-2xl p-7">
           <SectionTitle title={td.commentsTitle} intro={td.commentsIntro.replace("{notice}", reviewNotice)} />
           {user ? (
             <form action={createCommentAction} className="mb-6">
@@ -208,6 +224,24 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
             ))}
           </div>
         </section>
+
+        {tool.type === "software" ? (
+          <section className="glass rounded-2xl p-7">
+            <SectionTitle title={td.downloadLinksTitle} intro={showDownloadLinkArea ? td.downloadLinksIntro : td.downloadLinksVipOnlyIntro} />
+            {showDownloadLinkArea ? (
+              <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/8 p-5 md:flex-row md:items-center md:justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm text-[#8F9DB2]">{td.protectedDownloadLink}</p>
+                  <p className="mt-2 break-all text-base font-semibold text-[#F6FAFF]">{protectedDownloadHref}</p>
+                  <p className="mt-2 text-sm text-[#8F9DB2]">{tool.downloadFile?.fileName ?? td.noDownloadFileName}</p>
+                </div>
+                <ButtonLink href={protectedDownloadHref}>{td.downloadNow}</ButtonLink>
+              </div>
+            ) : (
+              <p className="mt-6 rounded-2xl border border-white/10 bg-white/8 p-5 text-sm leading-7 text-[#8F9DB2]">{td.downloadLinksHidden}</p>
+            )}
+          </section>
+        ) : null}
       </div>
 
       <section className="mt-12">

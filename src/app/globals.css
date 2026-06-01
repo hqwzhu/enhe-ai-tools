@@ -112,6 +112,33 @@ a {
   text-decoration: none;
 }
 
+select {
+  color-scheme: dark;
+  background-color: rgba(7, 16, 30, 0.96);
+  color: var(--foreground);
+}
+
+select option,
+select optgroup {
+  background-color: #0b1324;
+  color: #f6faff;
+}
+
+select option:checked {
+  background-color: #263a58;
+  color: #f6faff;
+}
+
+select option:hover,
+select option:focus {
+  background-color: #334866;
+  color: #ffffff;
+}
+
+select option:disabled {
+  color: rgba(200, 214, 234, 0.72);
+}
+
 .glass {
   border: 1px solid var(--border);
   background:

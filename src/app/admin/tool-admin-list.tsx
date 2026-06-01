@@ -12,6 +12,7 @@ type AdminToolType = "software" | "online";
 type ToolItem = {
   id: string;
   name: string;
+  englishName: string | null;
   slug: string;
   type: AdminToolType;
   status: string;
@@ -24,6 +25,7 @@ type ToolItem = {
   systemRequirement: string | null;
   isVipRequired: boolean;
   isDownloadPaid: boolean;
+  isDownloadLinkVipOnly: boolean;
   downloadPrice: unknown;
   onlineUrl: string | null;
   downloadFileId: string | null;
@@ -192,6 +194,7 @@ export function ToolAdminList({
                     </div>
                     <div>
                       <p className="font-semibold text-[#E8EEF8]">{tool.name}</p>
+                      {tool.englishName ? <p className="mt-1 text-xs font-medium text-[#7DD3FC]">{tool.englishName}</p> : null}
                       <p className="mt-1 text-xs text-[#8B95A7]">{tool.slug}</p>
                     </div>
                   </div>
@@ -279,6 +282,9 @@ export function ToolEditor({
         <Field label={copy.toolName}>
           <input name="name" required defaultValue={tool?.name ?? ""} className={inputClass} />
         </Field>
+        <Field label={copy.englishName}>
+          <input name="englishName" defaultValue={tool?.englishName ?? ""} placeholder={copy.englishNamePlaceholder} className={inputClass} />
+        </Field>
         <Field label="Slug">
           <input name="slug" defaultValue={tool?.slug ?? ""} placeholder={copy.slugPlaceholder} className={inputClass} />
         </Field>
@@ -328,13 +334,13 @@ export function ToolEditor({
           <input name="isVipRequired" type="checkbox" defaultChecked={tool?.isVipRequired ?? true} /> {copy.needVip}
         </label>
         <label className="inline-flex items-center gap-2 text-sm">
+          <input name="isDownloadLinkVipOnly" type="checkbox" defaultChecked={tool?.isDownloadLinkVipOnly ?? true} disabled={type !== "software"} /> {copy.downloadLinkVipOnly}
+        </label>
+        <label className="inline-flex items-center gap-2 text-sm">
           <input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} disabled={type !== "software"} /> {copy.paidDownload}
         </label>
         <Field label={copy.downloadPrice}>
           <input name="downloadPrice" type="number" step="0.01" defaultValue={tool?.downloadPrice != null ? String(tool.downloadPrice) : "0"} disabled={type !== "software"} className={inputClass} />
-        </Field>
-        <Field label={copy.screenshots} className="md:col-span-2">
-          <textarea name="screenshots" defaultValue={tool?.screenshots.join("\n") ?? ""} className={textareaClass} />
         </Field>
         <Field label={copy.shortDescription} className="md:col-span-2">
           <textarea name="shortDescription" required defaultValue={tool?.shortDescription ?? ""} className={textareaClass} />
@@ -342,6 +348,37 @@ export function ToolEditor({
         <Field label={copy.content} className="md:col-span-2">
           <textarea name="content" required defaultValue={tool?.content ?? ""} className={textareaClass} />
         </Field>
+        <div className="md:col-span-2">
+          <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productImages}</p>
+          <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+            <input name="screenshotFiles" type="file" accept="image/*" multiple className={inputClass} />
+            <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{copy.productImagesHint}</p>
+            {tool?.screenshots.length ? (
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {tool.screenshots.map((screenshot) => {
+                  const imageSrc = normalizeImageSrc(screenshot);
+                  return (
+                    <label key={screenshot} className="group overflow-hidden rounded-2xl border border-white/10 bg-[#07101E]">
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        {imageSrc ? (
+                          <Image src={imageSrc} alt={copy.productImageAlt} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="240px" unoptimized />
+                        ) : (
+                          <div className="absolute inset-0 bg-white/6" />
+                        )}
+                      </div>
+                      <span className="flex items-center gap-2 px-3 py-3 text-xs text-[#C5D0E2]">
+                        <input name="existingScreenshots" type="checkbox" value={screenshot} defaultChecked />
+                        {copy.keepProductImage}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="mt-4 rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#8B95A7]">{copy.noProductImages}</p>
+            )}
+          </div>
+        </div>
         <div className="md:col-span-2">
           <SubmitButton>{tool ? copy.saveTool : copy.createTool}</SubmitButton>
         </div>
@@ -383,9 +420,11 @@ const toolAdminCopy = {
     free: "免费",
     publishable: "可上架",
     viewEdit: "查看/编辑",
-    editorIntro: "在单独详情页编辑工具基础信息、权限、封面、截图、下载文件或在线地址。",
+    editorIntro: "在单独详情页编辑工具基础信息、权限、封面、商品图、下载文件或在线地址。",
     backToList: "返回工具清单",
     toolName: "工具名称",
+    englishName: "英文名称",
+    englishNamePlaceholder: "例如：ENHE Batch Renamer",
     slugPlaceholder: "留空自动生成",
     sortOrder: "排序",
     coverUrl: "封面图地址",
@@ -398,11 +437,16 @@ const toolAdminCopy = {
     unbound: "不绑定",
     onlineUrl: "在线地址",
     needVip: "需要 VIP",
+    downloadLinkVipOnly: "下载链接仅 VIP 可见",
     paidDownload: "下载单独付费",
     downloadPrice: "下载价格",
-    screenshots: "截图地址，逗号或换行分隔",
     shortDescription: "简介",
     content: "详细介绍",
+    productImages: "详细介绍商品图",
+    productImagesHint: "支持多张 JPG/PNG/WebP，建议 1200x900 或 4:3。图片会在工具详情页按电商图文格式展示；勾选保留已有图片，取消勾选后保存会移除。",
+    productImageAlt: "商品图",
+    keepProductImage: "保留此图",
+    noProductImages: "暂无商品图，上传后会在详情页展示。",
     saveTool: "保存工具",
     createTool: "新增工具",
     deleteTool: "删除工具"
@@ -431,9 +475,11 @@ const toolAdminCopy = {
     free: "Free",
     publishable: "Publishable",
     viewEdit: "View/Edit",
-    editorIntro: "Edit tool basics, permissions, cover image, screenshots, download file, or online URL on this detail page.",
+    editorIntro: "Edit tool basics, permissions, cover image, product images, download file, or online URL on this detail page.",
     backToList: "Back to tool list",
     toolName: "Tool name",
+    englishName: "English name",
+    englishNamePlaceholder: "e.g. ENHE Batch Renamer",
     slugPlaceholder: "Leave blank to auto-generate",
     sortOrder: "Sort order",
     coverUrl: "Cover image URL",
@@ -446,11 +492,16 @@ const toolAdminCopy = {
     unbound: "Unbound",
     onlineUrl: "Online URL",
     needVip: "Requires VIP",
+    downloadLinkVipOnly: "Download link visible to VIP only",
     paidDownload: "Separate paid download",
     downloadPrice: "Download price",
-    screenshots: "Screenshot URLs, separated by commas or new lines",
     shortDescription: "Short description",
     content: "Detailed introduction",
+    productImages: "Product images in detail intro",
+    productImagesHint: "Upload multiple JPG/PNG/WebP images. 1200x900 or 4:3 is recommended. Images appear in the tool detail page like an ecommerce product gallery; keep checked images or uncheck them before saving to remove.",
+    productImageAlt: "Product image",
+    keepProductImage: "Keep this image",
+    noProductImages: "No product images yet. Upload images to display them on the detail page.",
     saveTool: "Save tool",
     createTool: "Create tool",
     deleteTool: "Delete tool"

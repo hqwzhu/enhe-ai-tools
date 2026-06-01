@@ -176,6 +176,18 @@ docker system prune
 docker stop $(docker ps -q)
 ```
 
+## 上传体积限制
+
+后台文件管理用于上传软件安装包，应用侧 Server Action 请求体上限已经配置为 `520mb`，与后台文件上传 `500MB` 的业务限制保持一致。
+
+如果后续把域名接入 Nginx 反向代理，也需要在对应 `server` 配置中加入或调整：
+
+```nginx
+client_max_body_size 520m;
+```
+
+否则超过 Nginx 默认限制的安装包会在到达 Next.js 应用前被拦截，浏览器可能显示 `Application error` 或上传请求中断。
+
 ## 暂不修改 Nginx
 
 当前阶段只支持通过 `http://服务器IP:3001` 测试访问。暂时不要修改现有 Nginx，也不要改 `hot-content-nginx` 配置。

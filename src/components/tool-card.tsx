@@ -9,6 +9,7 @@ type ToolCardProps = {
   locale?: Locale;
   tool: {
     name: string;
+    englishName?: string | null;
     slug: string;
     type: "software" | "online";
     shortDescription: string;
@@ -62,6 +63,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
               ) : null}
             </div>
             <h3 className="text-xl font-semibold text-[#F6FAFF]">{tool.name}</h3>
+            {tool.englishName ? <p className="mt-1 text-sm font-medium text-[#7DD3FC]">{tool.englishName}</p> : null}
           </div>
           <ArrowUpRight className="text-[#8F9DB2] transition group-hover:text-[#7DD3FC]" />
         </div>

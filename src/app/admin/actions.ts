@@ -11,9 +11,8 @@ import {
   parseBooleanField,
   parseNumberField,
   parseOptionalString,
-  parseScreenshotsField,
   buildPublicUploadUrl,
-  slugify
+  resolveToolSlug
 } from "@/lib/admin-form";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
@@ -44,11 +43,28 @@ import {
   saveUploadedFile
 } from "@/lib/storage";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
+import { mergeToolProductImages } from "@/lib/tool-product-images";
 import { getUploadDiskPath } from "@/lib/upload-path";
+import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
 
 const idSchema = z.string().min(1);
 const maxCoverImageBytes = 8 * 1024 * 1024;
 const deleteUserConfirmationToken = "DELETE_USER";
+
+async function writeAdminAuditLogBestEffort(input: Parameters<typeof writeAdminAuditLog>[0]) {
+  try {
+    await writeAdminAuditLog(input);
+  } catch (error) {
+    console.error("[admin-audit] failed to write audit log", error);
+  }
+}
+
+function normalizeUploadActionError(error: unknown) {
+  const message = error instanceof Error ? error.message : "上传失败，请稍后重试。";
+  const trimmed = message.trim();
+  if (!trimmed) return "上传失败，请稍后重试。";
+  return trimmed.length > 240 ? `${trimmed.slice(0, 240)}...` : trimmed;
+}
 
 async function saveAdminImageUpload(file: FormDataEntryValue | null, prefix: string) {
   if (!(file instanceof File) || file.size === 0) return null;
@@ -61,6 +77,15 @@ async function saveAdminImageUpload(file: FormDataEntryValue | null, prefix: str
   await mkdir(uploadDir, { recursive: true });
   await writeFile(diskPath, Buffer.from(await file.arrayBuffer()));
   return publicUrl;
+}
+
+async function saveAdminImageUploads(files: FormDataEntryValue[], prefix: string) {
+  const uploadedImages: string[] = [];
+  for (const file of files) {
+    const uploaded = await saveAdminImageUpload(file, prefix);
+    if (uploaded) uploadedImages.push(uploaded);
+  }
+  return uploadedImages;
 }
 
 export async function generateLicenseCodeAdminAction(
@@ -736,7 +761,7 @@ export async function uploadFileAdminAction(formData: FormData) {
   try {
     const stored = await saveUploadedFile(file, {
       folder: "files",
-      maxBytes: 500 * 1024 * 1024
+      maxBytes: adminFileUploadMaxBytes
     });
     const record = await prisma.file.create({
       data: {
@@ -747,7 +772,7 @@ export async function uploadFileAdminAction(formData: FormData) {
         mimeType: stored.mimeType
       }
     });
-    await writeAdminAuditLog({
+    await writeAdminAuditLogBestEffort({
       adminId: admin.id,
       action: "file.upload",
       targetType: "file",
@@ -757,8 +782,8 @@ export async function uploadFileAdminAction(formData: FormData) {
     });
     uploadedFileId = record.id;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "上传失败，请稍后重试。";
-    await writeAdminAuditLog({
+    const message = normalizeUploadActionError(error);
+    await writeAdminAuditLogBestEffort({
       adminId: admin.id,
       action: "file.upload.failed",
       targetType: "file",
@@ -882,21 +907,32 @@ export async function upsertToolAction(formData: FormData) {
   try {
     const id = parseOptionalString(formData.get("id"));
     const name = z.string().min(1).parse(formData.get("name"));
+    const englishName = parseOptionalString(formData.get("englishName"));
     const slugInput = parseOptionalString(formData.get("slug"));
-    const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `tool-cover-${slugInput ?? slugify(name)}`);
+    const generatedFallbackSeed = id ?? Date.now().toString(36);
+    const resolvedSlug = resolveToolSlug({ name, slugInput, fallbackSeed: generatedFallbackSeed });
+    const safeToolKey = resolvedSlug;
+    const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `tool-cover-${safeToolKey}`);
+    const existingProductImages = formData
+      .getAll("existingScreenshots")
+      .map((value) => String(value ?? ""))
+      .filter(Boolean);
+    const uploadedProductImages = await saveAdminImageUploads(formData.getAll("screenshotFiles"), `tool-product-${safeToolKey}`);
     const data = {
       name,
-      slug: slugInput ?? slugify(name),
+      englishName,
+      slug: resolvedSlug,
       type,
       categoryId: parseOptionalString(formData.get("categoryId")),
       shortDescription: z.string().min(1).parse(formData.get("shortDescription")),
       content: z.string().min(1).parse(formData.get("content")),
       coverImage: uploadedCoverImage ?? parseOptionalString(formData.get("coverImage")),
-      screenshots: parseScreenshotsField(formData.get("screenshots")),
+      screenshots: mergeToolProductImages(existingProductImages, uploadedProductImages),
       version: parseOptionalString(formData.get("version")),
       systemRequirement: parseOptionalString(formData.get("systemRequirement")),
       isVipRequired: parseBooleanField(formData.get("isVipRequired")),
       isDownloadPaid: parseBooleanField(formData.get("isDownloadPaid")),
+      isDownloadLinkVipOnly: parseBooleanField(formData.get("isDownloadLinkVipOnly")),
       downloadPrice: parseNumberField(formData.get("downloadPrice"), 0),
       onlineUrl: parseOptionalString(formData.get("onlineUrl")),
       downloadFileId: parseOptionalString(formData.get("downloadFileId")),

@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { buildPublicUploadUrl, parseBooleanField, parseNumberField, parseScreenshotsField, slugify } from "@/lib/admin-form";
+import { buildPublicUploadUrl, parseBooleanField, parseNumberField, parseScreenshotsField, resolveToolSlug, slugify } from "@/lib/admin-form";
 
 describe("admin form helpers", () => {
   it("creates stable lowercase slugs from names", () => {
     expect(slugify("ENHE Batch Tool 1.0")).toBe("enhe-batch-tool-1-0");
     expect(slugify("  ---Copy Cleaner---  ")).toBe("copy-cleaner");
+  });
+
+  it("creates a non-empty fallback slug for Chinese-only tool names", () => {
+    expect(resolveToolSlug({ name: "测试", fallbackSeed: "cmptpgzow0007toe0ld9yuc0w" })).toBe("tool-cmptpgzow0007toe0ld9yuc0w");
+  });
+
+  it("normalizes manual tool slugs before saving", () => {
+    expect(resolveToolSlug({ name: "测试", slugInput: " My Tool 01 ", fallbackSeed: "seed" })).toBe("my-tool-01");
   });
 
   it("parses checkbox-style boolean fields", () => {

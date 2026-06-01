@@ -114,6 +114,7 @@ export function buildAdminToolWhere(
   if (filters.q) {
     where.OR = [
       { name: { contains: filters.q, mode: "insensitive" } },
+      { englishName: { contains: filters.q, mode: "insensitive" } },
       { slug: { contains: filters.q, mode: "insensitive" } },
       { shortDescription: { contains: filters.q, mode: "insensitive" } }
     ];

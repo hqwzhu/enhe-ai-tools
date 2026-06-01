@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/db";
-import { deleteFileAdminAction, uploadFileAdminAction, upsertFileAction } from "@/app/admin/actions";
+import { deleteFileAdminAction, upsertFileAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
 import { buildAdminFilePageHref, buildAdminFileWhere, parseAdminFileListParams } from "@/lib/admin-list";
 import { getStorageDiagnostics } from "@/lib/storage-diagnostics";
 import { parseCosFilePath } from "@/lib/storage";
+import { AdminFileUploadForm } from "@/app/admin/files/upload-progress-form";
 import Link from "next/link";
 
 export default async function AdminFilesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
@@ -86,10 +87,7 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
 
       <div className="glass mb-8 rounded-2xl p-6">
         <h2 className="text-xl font-semibold">上传文件</h2>
-        <form action={uploadFileAdminAction} className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
-          <input name="file" type="file" required className={inputClass} />
-          <button className="rounded-full bg-[#48F5D3] px-5 py-3 text-sm font-semibold text-[#05110e]">上传并创建记录</button>
-        </form>
+        <AdminFileUploadForm />
         <p className="mt-3 text-xs text-[#8B95A7]">推荐软件安装包命名包含工具名和版本号。COS 环境变量完整时自动使用 COS。</p>
       </div>
 

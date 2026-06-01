@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildAdminToolWhere,
   buildAdminCommentPageHref,
   buildAdminFilePageHref,
   buildAdminRefundPageHref,
@@ -44,6 +45,16 @@ describe("admin list helpers", () => {
       page: 4,
       skip: 60,
       take: 20
+    });
+  });
+
+  it("searches tools by English name as well as Chinese name", () => {
+    expect(buildAdminToolWhere("software", { q: "license", status: undefined, categoryId: undefined })).toMatchObject({
+      type: "software",
+      OR: expect.arrayContaining([
+        { name: { contains: "license", mode: "insensitive" } },
+        { englishName: { contains: "license", mode: "insensitive" } }
+      ])
     });
   });
 

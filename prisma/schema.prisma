@@ -195,6 +195,7 @@ model ToolCategory {
 model Tool {
   id                String         @id @default(cuid())
   name              String
+  englishName       String?        @map("english_name")
   slug              String         @unique
   type              ToolType
   categoryId        String?        @map("category_id")
@@ -206,6 +207,7 @@ model Tool {
   systemRequirement String?        @map("system_requirement")
   isVipRequired     Boolean        @default(true) @map("is_vip_required")
   isDownloadPaid    Boolean        @default(false) @map("is_download_paid")
+  isDownloadLinkVipOnly Boolean    @default(true) @map("is_download_link_vip_only")
   downloadPrice     Decimal        @default(0) @map("download_price") @db.Decimal(10, 2)
   onlineUrl         String?        @map("online_url")
   downloadFileId    String?        @unique @map("download_file_id")
