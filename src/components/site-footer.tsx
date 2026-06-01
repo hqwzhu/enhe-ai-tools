@@ -37,6 +37,14 @@ export async function SiteFooter() {
             <Image src="/images/beian-icon.png" alt="备案编号图标" width={20} height={20} unoptimized />
             <span>闽公网安备35030302900035号</span>
           </a>
+          <a
+            href="https://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center transition hover:text-[#AFCBFF]"
+          >
+            闽ICP备2025092404号-2
+          </a>
         </div>
       </Container>
     </footer>
