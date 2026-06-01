@@ -3,7 +3,7 @@ param(
   [string]$ServerHost = "111.229.135.3",
   [string]$ServerUser = "ubuntu",
   [int]$SshPort = 22,
-  [string]$SshKeyPath = "E:\Ai Project\01.网站相关资料\密钥",
+  [string]$SshKeyPath = "",
   [string]$RemoteProjectDir = "/opt/enhe-ai-tools",
   [string]$Branch = "main",
   [switch]$SkipChecks,
@@ -32,17 +32,30 @@ function Invoke-Native {
 function Resolve-SshKey {
   param([string]$Path)
 
-  if (Test-Path -LiteralPath $Path -PathType Leaf) {
-    return (Resolve-Path -LiteralPath $Path).Path
+  $siteInfoFolder = -join ([char[]](0x7F51, 0x7AD9, 0x76F8, 0x5173, 0x8D44, 0x6599))
+  $keyFolder = -join ([char[]](0x5BC6, 0x94A5))
+  $defaultKeyFolder = Join-Path "E:\Ai Project" "01.$siteInfoFolder\$keyFolder"
+  $candidatePaths = @()
+
+  if ($Path) {
+    $candidatePaths += $Path
   }
+  $candidatePaths += (Join-Path $HOME ".ssh\enhe-ai-tools-tencent.pem")
+  $candidatePaths += $defaultKeyFolder
 
-  if (Test-Path -LiteralPath $Path -PathType Container) {
-    $key = Get-ChildItem -LiteralPath $Path -File |
-      Where-Object { $_.Name -match '(\.pem|\.key)$|^id_(rsa|ed25519)$' } |
-      Select-Object -First 1
+  foreach ($candidatePath in $candidatePaths) {
+    if (Test-Path -LiteralPath $candidatePath -PathType Leaf) {
+      return (Resolve-Path -LiteralPath $candidatePath).Path
+    }
 
-    if ($key) {
-      return $key.FullName
+    if (Test-Path -LiteralPath $candidatePath -PathType Container) {
+      $key = Get-ChildItem -LiteralPath $candidatePath -File |
+        Where-Object { $_.Name -match '(\.pem|\.key)$|^id_(rsa|ed25519)$' } |
+        Select-Object -First 1
+
+      if ($key) {
+        return $key.FullName
+      }
     }
   }
 
