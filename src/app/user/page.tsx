@@ -6,6 +6,7 @@ import {
   markAllNotificationsReadAction,
   markNotificationReadAction
 } from "@/app/actions";
+import { PasswordInput } from "@/components/password-input";
 import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -167,9 +168,35 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
               </p>
             ) : null}
             <form action={changePasswordAction} className="mt-5 grid gap-3">
-              <input name="currentPassword" type="password" required placeholder={t.userCenter.currentPassword} className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
-              <input name="newPassword" type="password" minLength={8} required placeholder={t.userCenter.newPassword} className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
-              <input name="confirmPassword" type="password" minLength={8} required placeholder={t.userCenter.confirmPassword} className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
+              <PasswordInput
+                name="currentPassword"
+                required
+                autoComplete="current-password"
+                placeholder={t.userCenter.currentPassword}
+                showLabel={t.auth.showPassword}
+                hideLabel={t.auth.hidePassword}
+                className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
+              />
+              <PasswordInput
+                name="newPassword"
+                minLength={8}
+                required
+                autoComplete="new-password"
+                placeholder={t.userCenter.newPassword}
+                showLabel={t.auth.showPassword}
+                hideLabel={t.auth.hidePassword}
+                className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
+              />
+              <PasswordInput
+                name="confirmPassword"
+                minLength={8}
+                required
+                autoComplete="new-password"
+                placeholder={t.userCenter.confirmPassword}
+                showLabel={t.auth.showPassword}
+                hideLabel={t.auth.hidePassword}
+                className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
+              />
               <button className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">{t.userCenter.changePassword}</button>
             </form>
           </Panel>

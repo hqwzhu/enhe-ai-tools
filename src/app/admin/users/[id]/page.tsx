@@ -7,6 +7,7 @@ import {
   updateUserAdminAction
 } from "@/app/admin/actions";
 import { AdminSection, DangerButton, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
+import { PasswordInput } from "@/components/password-input";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, type Locale } from "@/lib/i18n";
 
@@ -167,9 +168,8 @@ export default async function AdminUserDetailPage({ params, searchParams }: Admi
           <form action={resetUserPasswordAction} className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <input type="hidden" name="id" value={user.id} />
             <Field label={t.resetPassword}>
-              <input
+              <PasswordInput
                 name="password"
-                type="password"
                 minLength={8}
                 required
                 placeholder={t.passwordPlaceholder}

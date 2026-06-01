@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import { generateLicenseCodeAdminAction } from "@/app/admin/actions";
 import { inputClass, selectClass, textareaClass } from "@/app/admin/admin-ui";
+import { PasswordInput } from "@/components/password-input";
 import {
   initialLicenseGeneratorState,
   type LicenseGeneratorActionState
@@ -102,7 +103,7 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
 
         <label>
           <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.adminKey}</span>
-          <input name="adminKey" type="password" className={inputClass} />
+          <PasswordInput name="adminKey" className={inputClass} />
           <span className="mt-2 block text-xs text-[#8F9DB2]">{labels.adminKeyHint}</span>
         </label>
 
