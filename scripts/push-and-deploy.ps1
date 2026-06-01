@@ -75,7 +75,16 @@ function Protect-WindowsSshKey {
   }
 
   $safeKeyPath = Join-Path $sshDir "enhe-ai-tools-tencent.pem"
-  Copy-Item -LiteralPath $KeyPath -Destination $safeKeyPath -Force
+  $sourcePath = (Resolve-Path -LiteralPath $KeyPath).Path
+  $destinationPath = if (Test-Path -LiteralPath $safeKeyPath) {
+    (Resolve-Path -LiteralPath $safeKeyPath).Path
+  } else {
+    $safeKeyPath
+  }
+
+  if ($sourcePath -ne $destinationPath) {
+    Copy-Item -LiteralPath $sourcePath -Destination $safeKeyPath -Force
+  }
 
   $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
   & icacls $safeKeyPath /inheritance:r | Out-Null
