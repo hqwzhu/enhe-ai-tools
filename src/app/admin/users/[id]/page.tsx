@@ -42,6 +42,7 @@ const copy = {
     grant: "开通 / 延长",
     cancel: "取消 VIP",
     vipDuration: "VIP 时长",
+    vip1: "1天VIP",
     vip7: "7天VIP",
     vip30: "1个月VIP",
     vip180: "6个月VIP",
@@ -82,6 +83,7 @@ const copy = {
     grant: "Grant / extend",
     cancel: "Cancel VIP",
     vipDuration: "VIP duration",
+    vip1: "1-day VIP",
     vip7: "7-day VIP",
     vip30: "1-month VIP",
     vip180: "6-month VIP",
@@ -195,6 +197,7 @@ export default async function AdminUserDetailPage({ params, searchParams }: Admi
               </Field>
               <Field label={t.vipDuration}>
                 <select name="durationDays" defaultValue={30} className={selectClass}>
+                  <option value={1}>{t.vip1}</option>
                   <option value={7}>{t.vip7}</option>
                   <option value={30}>{t.vip30}</option>
                   <option value={180}>{t.vip180}</option>
