@@ -9,4 +9,11 @@ describe("admin tool editor source", () => {
     expect(source).not.toContain('action={upsertToolAction} encType=');
     expect(source).not.toContain('action={upsertToolAction} method=');
   });
+
+  it("includes a direct download URL field for software tools", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/admin/tool-admin-list.tsx"), "utf8");
+
+    expect(source).toContain('name="downloadFileUrl"');
+    expect(source).toContain("downloadFileUrlHint");
+  });
 });

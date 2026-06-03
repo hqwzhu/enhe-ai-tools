@@ -37,7 +37,8 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         userHasVip(user.id)
       ])
     : [false, false];
-  const showDownloadLinkArea = tool.type === "software" && canShowDownloadLinkArea({ isDownloadLinkVipOnly: tool.isDownloadLinkVipOnly, hasVip });
+  const hasDownloadLink = Boolean(tool.downloadFileId && tool.downloadFile);
+  const showDownloadLinkArea = hasDownloadLink && canShowDownloadLinkArea({ isDownloadLinkVipOnly: tool.isDownloadLinkVipOnly, hasVip });
   const protectedDownloadHref = `/api/tools/${tool.id}/download`;
   const related = await prisma.tool.findMany({
     where: { type: tool.type, status: "published", id: { not: tool.id } },
@@ -225,7 +226,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
           </div>
         </section>
 
-        {tool.type === "software" ? (
+        {hasDownloadLink ? (
           <section className="glass rounded-2xl p-7">
             <SectionTitle title={td.downloadLinksTitle} intro={showDownloadLinkArea ? td.downloadLinksIntro : td.downloadLinksVipOnlyIntro} />
             {showDownloadLinkArea ? (

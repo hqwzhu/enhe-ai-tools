@@ -66,7 +66,7 @@ async function main() {
         originalPrice,
         isRecommended,
         sortOrder,
-        description: "开通后可下载会员软件并使用在线网页工具。"
+        description: "开通后可下载会员本地应用并使用云端工具。"
       }
     });
   }
@@ -162,8 +162,10 @@ async function main() {
     ["site_name", "恩禾 ENHE AI", "网站名称"],
     ["site_logo", "/images/enhe-logo.svg", "Logo 图片地址"],
     ["home_hero_title", "ENHE AI Tools", "首页主标题"],
-    ["home_hero_subtitle", "自研电脑软件与在线网页工具分享共研平台", "首页副标题"],
-    ["home_hero_intro", "下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。", "首页介绍文案"],
+    ["home_hero_subtitle", "驾驭 AI 智能，重塑你的人生", "首页副标题"],
+    ["home_hero_intro", "用本地应用和云端工具放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。", "首页介绍文案"],
+    ["home_hero_subtitle_en", "Master AI intelligence and reshape your life", "首页英文副标题"],
+    ["home_hero_intro_en", "Use desktop apps and web tools to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation.", "首页英文介绍文案"],
     ["footer_copyright", "© 2026 ENHE AI Tools HQW.", "页脚版权"],
     ["alipay_qr", "/images/payment/alipay-qr.jpg", "支付宝个人收款码"],
     ["wechat_qr", "/images/payment/wechat-qr.jpg", "微信个人收款码"],
@@ -199,12 +201,12 @@ async function main() {
   });
 
   const progressItems = [
-    ["基础页面", "首页与工具入口", "completed", "medium", "src/app/page.tsx, src/app/software/page.tsx, src/app/online-tools/page.tsx", "首页、电脑软件工具、在线网页工具入口已具备。", 10],
+    ["基础页面", "首页与工具入口", "completed", "medium", "src/app/page.tsx, src/app/software/page.tsx, src/app/online-tools/page.tsx", "首页、本地应用、云端工具入口已具备。", 10],
     ["用户与权限", "注册登录与用户中心", "completed", "high", "src/app/(auth), src/app/user/page.tsx, src/lib/auth.ts", "已支持注册、登录、退出、用户中心和会话安全。", 20],
     ["用户与权限", "管理员后台权限", "completed", "high", "src/app/admin/layout.tsx, src/lib/auth.ts", "普通用户不能进入后台，管理员可访问后台菜单。", 30],
-    ["工具系统", "工具分类后台自定义", "completed", "high", "src/app/admin/categories/page.tsx", "电脑软件与在线网页工具分类由后台维护。", 40],
-    ["工具系统", "电脑软件工具管理", "completed", "high", "src/app/admin/software/page.tsx, src/app/admin/software/[id]/page.tsx", "已支持清单、详情编辑、封面上传、下载文件绑定和上架检查。", 50],
-    ["工具系统", "在线网页工具管理", "completed", "high", "src/app/admin/online-tools/page.tsx, src/app/admin/online-tools/[id]/page.tsx", "已支持在线地址、权限和上架管理。", 60],
+    ["工具系统", "工具分类后台自定义", "completed", "high", "src/app/admin/categories/page.tsx", "本地应用与云端工具分类由后台维护。", 40],
+    ["工具系统", "本地应用管理", "completed", "high", "src/app/admin/software/page.tsx, src/app/admin/software/[id]/page.tsx", "已支持清单、详情编辑、封面上传、下载文件绑定和上架检查。", 50],
+    ["工具系统", "云端工具管理", "completed", "high", "src/app/admin/online-tools/page.tsx, src/app/admin/online-tools/[id]/page.tsx", "已支持在线地址、权限和上架管理。", 60],
     ["工具系统", "工具详情页与教程", "completed", "high", "src/app/tools/[slug]/page.tsx, src/app/admin/tutorials/page.tsx", "详情页已展示教程、截图、评论和相关推荐；教程支持注意事项与常见错误。", 70],
     ["VIP 与订单", "会员套餐管理", "completed", "high", "src/app/admin/plans/page.tsx, src/app/pricing/page.tsx", "后台可维护套餐，前台可创建会员订单。", 80],
     ["VIP 与订单", "订单创建与取消", "completed", "high", "src/app/actions.ts, src/app/user/page.tsx", "用户可创建订单，并可取消允许取消状态的订单。", 90],

@@ -8,6 +8,7 @@ const baseTool = {
   content: "Content",
   coverImage: "/cover.jpg",
   downloadFileId: "file-1",
+  downloadFileUrl: null,
   onlineUrl: null,
   isDownloadPaid: false,
   downloadPrice: 0
@@ -16,6 +17,10 @@ const baseTool = {
 describe("getToolPublishIssues", () => {
   it("requires software download files before publishing confidently", () => {
     expect(getToolPublishIssues({ ...baseTool, downloadFileId: null })).toContain("未绑定下载文件");
+  });
+
+  it("accepts a direct software download URL as a publishable download source", () => {
+    expect(getToolPublishIssues({ ...baseTool, downloadFileId: null, downloadFileUrl: "https://example.com/app.zip" })).not.toContain("未绑定下载文件");
   });
 
   it("requires online tool URL before publishing confidently", () => {

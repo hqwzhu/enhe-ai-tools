@@ -88,6 +88,81 @@ async function saveAdminImageUploads(files: FormDataEntryValue[], prefix: string
   return uploadedImages;
 }
 
+function parseDownloadFileUrl(value: FormDataEntryValue | null) {
+  const downloadUrl = parseOptionalString(value);
+  if (!downloadUrl) return null;
+  if (downloadUrl.startsWith("/") || downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://")) {
+    return downloadUrl;
+  }
+  throw new Error("下载链接需以 https://、http:// 或 /uploads/ 开头。");
+}
+
+function deriveDownloadFileName(downloadUrl: string, fallbackName: string) {
+  const pathPart = downloadUrl.split("?")[0]?.split("#")[0] ?? "";
+  const lastSegment = pathPart.split("/").filter(Boolean).pop();
+  if (!lastSegment) return fallbackName;
+  try {
+    return decodeURIComponent(lastSegment);
+  } catch {
+    return lastSegment;
+  }
+}
+
+async function upsertDirectDownloadFileForTool({
+  toolId,
+  currentFileId,
+  toolName,
+  version,
+  downloadFileUrl
+}: {
+  toolId: string;
+  currentFileId: string | null;
+  toolName: string;
+  version: string | null;
+  downloadFileUrl: string;
+}) {
+  const fileName = deriveDownloadFileName(downloadFileUrl, toolName);
+  const fileData = {
+    toolId,
+    fileName,
+    filePath: downloadFileUrl,
+    fileUrl: downloadFileUrl,
+    version,
+    mimeType: null,
+    fileSize: null
+  };
+  const currentFile = currentFileId
+    ? await prisma.file.findUnique({
+        where: { id: currentFileId },
+        select: { id: true, toolId: true, filePath: true, fileUrl: true }
+      })
+    : null;
+
+  if (currentFile?.toolId === toolId && currentFile.filePath === currentFile.fileUrl) {
+    const updated = await prisma.file.update({
+      where: { id: currentFile.id },
+      data: fileData,
+      select: { id: true }
+    });
+    return updated.id;
+  }
+
+  const existingDirectFile = await prisma.file.findFirst({
+    where: { toolId, filePath: downloadFileUrl, fileUrl: downloadFileUrl },
+    select: { id: true }
+  });
+  if (existingDirectFile) {
+    await prisma.file.update({ where: { id: existingDirectFile.id }, data: fileData });
+    return existingDirectFile.id;
+  }
+
+  const created = await prisma.file.create({
+    data: fileData,
+    select: { id: true }
+  });
+  return created.id;
+}
+
 export async function generateLicenseCodeAdminAction(
   _prevState: LicenseGeneratorActionState,
   formData: FormData
@@ -913,6 +988,8 @@ export async function upsertToolAction(formData: FormData) {
     const resolvedSlug = resolveToolSlug({ name, slugInput, fallbackSeed: generatedFallbackSeed });
     const safeToolKey = resolvedSlug;
     const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `tool-cover-${safeToolKey}`);
+    const downloadFileUrl = parseDownloadFileUrl(formData.get("downloadFileUrl"));
+    const selectedDownloadFileId = parseOptionalString(formData.get("downloadFileId"));
     const existingProductImages = formData
       .getAll("existingScreenshots")
       .map((value) => String(value ?? ""))
@@ -935,7 +1012,7 @@ export async function upsertToolAction(formData: FormData) {
       isDownloadLinkVipOnly: parseBooleanField(formData.get("isDownloadLinkVipOnly")),
       downloadPrice: parseNumberField(formData.get("downloadPrice"), 0),
       onlineUrl: parseOptionalString(formData.get("onlineUrl")),
-      downloadFileId: parseOptionalString(formData.get("downloadFileId")),
+      downloadFileId: selectedDownloadFileId,
       status: z.enum(["draft", "published", "offline"]).parse(formData.get("status") ?? "draft"),
       sortOrder: parseNumberField(formData.get("sortOrder"), 0)
     };
@@ -947,15 +1024,27 @@ export async function upsertToolAction(formData: FormData) {
       const created = await prisma.tool.create({ data });
       savedToolId = created.id;
     }
+    if (downloadFileUrl && savedToolId) {
+      const directDownloadFileId = await upsertDirectDownloadFileForTool({
+        toolId: savedToolId,
+        currentFileId: data.downloadFileId,
+        toolName: name,
+        version: data.version,
+        downloadFileUrl
+      });
+      await prisma.tool.update({ where: { id: savedToolId }, data: { downloadFileId: directDownloadFileId } });
+      data.downloadFileId = directDownloadFileId;
+    }
     await writeAdminAuditLog({
       adminId: admin.id,
       action: id ? "tool.update" : "tool.create",
       targetType: "tool",
       targetId: savedToolId,
       summary: id ? "Updated tool." : "Created tool.",
-      metadata: { type, name, slug: data.slug, status: data.status }
+      metadata: { type, name, slug: data.slug, status: data.status, downloadFileUrl: downloadFileUrl ?? null }
     });
     revalidatePath(adminPath);
+    revalidatePath("/admin/files");
     revalidatePath(type === "software" ? "/software" : "/online-tools");
     revalidatePath(`/tools/${data.slug}`);
   } catch (error) {

@@ -4,7 +4,17 @@ import type { Locale } from "@/lib/i18n";
 export type SettingsMap = Record<string, string | undefined>;
 
 const legacyHomeHeroTitle = "恩禾 ENHE AI工具站";
-const legacyHomeHeroSubtitle = "自研电脑软件与在线网页工具会员平台";
+const legacyHomeHeroSubtitles = [
+  "自研电脑软件与在线网页工具会员平台",
+  "自研电脑软件与在线网页工具分享共研平台",
+  "驾驭 AI 工具，重塑你的工作与人生"
+];
+const legacyHomeHeroSubtitlesEn = [
+  "Master AI tools and reshape your work, growth, and life"
+];
+const legacyHomeHeroIntros = [
+  "下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。"
+];
 const legacyTextLogo = "ENHE";
 
 export async function getSettingsMap() {
@@ -38,16 +48,20 @@ export function getEffectiveHomeHeroTitle(settings: SettingsMap, fallback: strin
 
 export function getEffectiveHomeHeroSubtitle(settings: SettingsMap, fallback: string) {
   const value = cleanSettingValue(settings.home_hero_subtitle);
-  if (!value || value === legacyHomeHeroSubtitle) return fallback;
+  if (!value || legacyHomeHeroSubtitles.includes(value)) return fallback;
   return value;
 }
 
 export function getEffectiveHomeHeroIntro(settings: SettingsMap, fallback: string) {
-  return cleanSettingValue(settings.home_hero_intro) ?? fallback;
+  const value = cleanSettingValue(settings.home_hero_intro);
+  if (!value || legacyHomeHeroIntros.includes(value)) return fallback;
+  return value;
 }
 
 export function getEffectiveLocalizedHomeHeroSubtitle(settings: SettingsMap, locale: Locale, fallback: string) {
   const localized = cleanSettingValue(settings[`home_hero_subtitle_${locale}`]);
+  if (locale === "en" && localized && legacyHomeHeroSubtitlesEn.includes(localized)) return fallback;
+  if (locale === "zh" && localized && legacyHomeHeroSubtitles.includes(localized)) return fallback;
   if (localized) return localized;
   if (locale === "en") return fallback;
   return getEffectiveHomeHeroSubtitle(settings, fallback);

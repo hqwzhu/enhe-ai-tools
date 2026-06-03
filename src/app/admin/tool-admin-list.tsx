@@ -29,6 +29,7 @@ type ToolItem = {
   downloadPrice: unknown;
   onlineUrl: string | null;
   downloadFileId: string | null;
+  downloadFile?: { filePath: string; fileUrl: string | null } | null;
   categoryId: string | null;
   category?: { name: string } | null;
 };
@@ -73,6 +74,12 @@ function NoticeBar({ notice, locale }: { notice?: Notice; locale: Locale }) {
 function formatPrice(price: unknown) {
   const value = Number(price ?? 0);
   return Number.isFinite(value) ? `¥${value.toFixed(2)}` : "¥0.00";
+}
+
+function getDirectDownloadUrl(tool?: ToolItem) {
+  const file = tool?.downloadFile;
+  if (!file?.fileUrl) return "";
+  return file.filePath === file.fileUrl ? file.fileUrl : "";
 }
 
 function Badge({ children, className = "" }: React.PropsWithChildren<{ className?: string }>) {
@@ -257,6 +264,7 @@ export function ToolEditor({
   const editorPath = getAdminToolEditPath(type, tool?.id ?? "new");
   const listPath = getAdminToolBasePath(type);
   const matchingCategories = categories.filter((category) => category.type === type);
+  const directDownloadUrl = getDirectDownloadUrl(tool);
 
   return (
     <div>
@@ -322,10 +330,21 @@ export function ToolEditor({
           <input name="systemRequirement" defaultValue={tool?.systemRequirement ?? ""} disabled={type !== "software"} className={inputClass} />
         </Field>
         <Field label={copy.downloadFile}>
-          <select name="downloadFileId" defaultValue={tool?.downloadFileId ?? ""} className={selectClass} disabled={type !== "software"}>
+          <select name="downloadFileId" defaultValue={tool?.downloadFileId ?? ""} className={selectClass}>
             <option value="">{copy.unbound}</option>
             {files.map((file) => <option key={file.id} value={file.id}>{file.fileName}</option>)}
           </select>
+        </Field>
+        <Field label={copy.downloadFileUrl}>
+          <input
+            name="downloadFileUrl"
+            defaultValue={directDownloadUrl}
+            placeholder={copy.downloadFileUrlPlaceholder}
+            className={inputClass}
+          />
+          <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
+            {copy.downloadFileUrlHint}
+          </span>
         </Field>
         <Field label={copy.onlineUrl}>
           <input name="onlineUrl" defaultValue={tool?.onlineUrl ?? ""} disabled={type !== "online"} className={inputClass} />
@@ -334,7 +353,7 @@ export function ToolEditor({
           <input name="isVipRequired" type="checkbox" defaultChecked={tool?.isVipRequired ?? true} /> {copy.needVip}
         </label>
         <label className="inline-flex items-center gap-2 text-sm">
-          <input name="isDownloadLinkVipOnly" type="checkbox" defaultChecked={tool?.isDownloadLinkVipOnly ?? true} disabled={type !== "software"} /> {copy.downloadLinkVipOnly}
+          <input name="isDownloadLinkVipOnly" type="checkbox" defaultChecked={tool?.isDownloadLinkVipOnly ?? true} /> {copy.downloadLinkVipOnly}
         </label>
         <label className="inline-flex items-center gap-2 text-sm">
           <input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} disabled={type !== "software"} /> {copy.paidDownload}
@@ -434,6 +453,9 @@ const toolAdminCopy = {
     version: "版本",
     systemRequirement: "系统要求",
     downloadFile: "下载文件",
+    downloadFileUrl: "下载链接 URL",
+    downloadFileUrlPlaceholder: "https://.../app.zip 或 /uploads/app.zip",
+    downloadFileUrlHint: "填写后会自动创建或更新文件记录，并作为该工具的主下载文件；如同时选择下载文件，将优先使用此链接。",
     unbound: "不绑定",
     onlineUrl: "在线地址",
     needVip: "需要 VIP",
@@ -489,6 +511,9 @@ const toolAdminCopy = {
     version: "Version",
     systemRequirement: "System requirement",
     downloadFile: "Download file",
+    downloadFileUrl: "Download link URL",
+    downloadFileUrlPlaceholder: "https://.../app.zip or /uploads/app.zip",
+    downloadFileUrlHint: "When filled, the system will create or update a file record and use it as this tool's primary download file. This URL takes priority over the selected file.",
     unbound: "Unbound",
     onlineUrl: "Online URL",
     needVip: "Requires VIP",

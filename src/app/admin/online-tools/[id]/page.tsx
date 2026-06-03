@@ -12,7 +12,7 @@ export default async function AdminOnlineToolEditorPage({
 }) {
   const [{ id }, notice, locale] = await Promise.all([params, searchParams, getCurrentLocale()]);
   const [tool, categories, files] = await Promise.all([
-    id === "new" ? Promise.resolve(null) : prisma.tool.findFirst({ where: { id, type: "online" }, include: { category: true } }),
+    id === "new" ? Promise.resolve(null) : prisma.tool.findFirst({ where: { id, type: "online" }, include: { category: true, downloadFile: true } }),
     prisma.toolCategory.findMany({ orderBy: { sortOrder: "asc" } }),
     prisma.file.findMany({ orderBy: { createdAt: "desc" } })
   ]);
