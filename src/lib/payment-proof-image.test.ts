@@ -8,8 +8,8 @@ describe("getPaymentProofImageSrc", () => {
     );
   });
 
-  it("keeps local and public proof image URLs directly usable", () => {
-    expect(getPaymentProofImageSrc({ id: "proof-1", proofImage: "/uploads/proof.png" })).toBe("/uploads/proof.png");
+  it("keeps local and public proof image URLs renderable", () => {
+    expect(getPaymentProofImageSrc({ id: "proof-1", proofImage: "/uploads/proof.png" })).toBe("/api/uploads/proof.png");
     expect(getPaymentProofImageSrc({ id: "proof-1", proofImage: "https://cdn.example/proof.png" })).toBe(
       "https://cdn.example/proof.png"
     );

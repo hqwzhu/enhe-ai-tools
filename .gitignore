@@ -5,7 +5,7 @@ node_modules
 .env.local
 dist
 coverage
-uploads
+/uploads
 public/uploads
 test-results
 playwright-report

@@ -8,8 +8,14 @@ describe("media helpers", () => {
     expect(isImagePath("plain payment note")).toBe(false);
   });
 
-  it("normalizes relative image paths for Next image rendering", () => {
-    expect(normalizeImageSrc("uploads/proof.jpg")).toBe("/uploads/proof.jpg");
+  it("normalizes runtime upload image paths through the upload API", () => {
+    expect(normalizeImageSrc("uploads/proof.jpg")).toBe("/api/uploads/proof.jpg");
+    expect(normalizeImageSrc("/uploads/proof.jpg")).toBe("/api/uploads/proof.jpg");
+  });
+
+  it("normalizes bundled image paths for Next image rendering", () => {
     expect(normalizeImageSrc("/images/qr.jpg")).toBe("/images/qr.jpg");
+    expect(normalizeImageSrc("images/qr.jpg")).toBe("/images/qr.jpg");
+    expect(normalizeImageSrc("https://example.com/qr.png")).toBe("https://example.com/qr.png");
   });
 });
