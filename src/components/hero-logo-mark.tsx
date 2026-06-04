@@ -95,19 +95,19 @@ export function HeroLogoMark({ label }: { label: string }) {
           <path d="M418 202H504V96L518 82H578V372H504V262H418V202Z" fill="url(#heroRightDepthFill)" />
         </g>
         <g filter="url(#heroLogoSoftGlow)">
-          <g className="enhe-logo-part enhe-logo-takeoff-tail enhe-logo-slat-top">
+          <g className="enhe-logo-part enhe-logo-takeoff-front enhe-logo-slat-top">
             <path d="M108 126L166 68H424V126H108Z" fill="url(#heroBlueFill)" />
             <path className="enhe-logo-highlight" d="M128 114L174 80H407" />
           </g>
-          <g className="enhe-logo-part enhe-logo-takeoff-tail enhe-logo-slat-mid">
+          <g className="enhe-logo-part enhe-logo-takeoff-front enhe-logo-slat-mid">
             <path d="M106 179H366V231H106V179Z" fill="url(#heroBlueFill)" />
             <path className="enhe-logo-highlight" d="M127 191H344" />
           </g>
-          <g className="enhe-logo-part enhe-logo-takeoff-tail enhe-logo-slat-bottom">
+          <g className="enhe-logo-part enhe-logo-takeoff-front enhe-logo-slat-bottom">
             <path d="M108 285H424V343H166L108 285Z" fill="url(#heroBlueFill)" />
             <path className="enhe-logo-highlight" d="M127 296H405" />
           </g>
-          <g className="enhe-logo-part enhe-logo-takeoff-front enhe-logo-metal">
+          <g className="enhe-logo-part enhe-logo-takeoff-tail enhe-logo-metal">
             <path d="M394 180H480V74L494 60H554V350H480V240H394V180Z" fill="url(#heroRightFill)" />
             <path className="enhe-logo-highlight" d="M501 78H540V330" />
           </g>
