@@ -9,7 +9,7 @@ import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
 import { userHasVip } from "@/lib/membership";
 import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
-import { canShowDownloadLinkArea } from "@/lib/tool-download-link";
+import { canOpenProtectedDownloadEntry, canShowDownloadLinkArea, getDownloadLinkContent } from "@/lib/tool-download-link";
 
 export default async function ToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [user, locale] = await Promise.all([getCurrentUser(), getCurrentLocale()]);
@@ -37,8 +37,10 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         userHasVip(user.id)
       ])
     : [false, false];
-  const hasDownloadLink = Boolean(tool.downloadFileId && tool.downloadFile);
+  const downloadLinkContent = getDownloadLinkContent(tool.downloadFile);
+  const hasDownloadLink = Boolean(tool.downloadFileId && tool.downloadFile && downloadLinkContent);
   const showDownloadLinkArea = hasDownloadLink && canShowDownloadLinkArea({ isDownloadLinkVipOnly: tool.isDownloadLinkVipOnly, hasVip });
+  const canOpenDownloadEntry = canOpenProtectedDownloadEntry(downloadLinkContent);
   const protectedDownloadHref = `/api/tools/${tool.id}/download`;
   const related = await prisma.tool.findMany({
     where: { type: tool.type, status: "published", id: { not: tool.id } },
@@ -230,13 +232,17 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
           <section className="glass rounded-2xl p-7">
             <SectionTitle title={td.downloadLinksTitle} intro={showDownloadLinkArea ? td.downloadLinksIntro : td.downloadLinksVipOnlyIntro} />
             {showDownloadLinkArea ? (
-              <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/8 p-5 md:flex-row md:items-center md:justify-between">
+              <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/8 p-5">
                 <div className="min-w-0">
                   <p className="text-sm text-[#8F9DB2]">{td.protectedDownloadLink}</p>
-                  <p className="mt-2 break-all text-base font-semibold text-[#F6FAFF]">{protectedDownloadHref}</p>
+                  <p className="mt-2 whitespace-pre-wrap break-words text-base font-semibold leading-7 text-[#F6FAFF]">{downloadLinkContent}</p>
                   <p className="mt-2 text-sm text-[#8F9DB2]">{tool.downloadFile?.fileName ?? td.noDownloadFileName}</p>
                 </div>
-                <ButtonLink href={protectedDownloadHref}>{td.downloadNow}</ButtonLink>
+                {canOpenDownloadEntry ? (
+                  <div>
+                    <ButtonLink href={protectedDownloadHref}>{td.downloadNow}</ButtonLink>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <p className="mt-6 rounded-2xl border border-white/10 bg-white/8 p-5 text-sm leading-7 text-[#8F9DB2]">{td.downloadLinksHidden}</p>

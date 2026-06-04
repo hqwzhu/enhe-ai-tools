@@ -335,17 +335,6 @@ export function ToolEditor({
             {files.map((file) => <option key={file.id} value={file.id}>{file.fileName}</option>)}
           </select>
         </Field>
-        <Field label={copy.downloadFileUrl}>
-          <input
-            name="downloadFileUrl"
-            defaultValue={directDownloadUrl}
-            placeholder={copy.downloadFileUrlPlaceholder}
-            className={inputClass}
-          />
-          <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
-            {copy.downloadFileUrlHint}
-          </span>
-        </Field>
         <Field label={copy.onlineUrl}>
           <input name="onlineUrl" defaultValue={tool?.onlineUrl ?? ""} disabled={type !== "online"} className={inputClass} />
         </Field>
@@ -398,6 +387,17 @@ export function ToolEditor({
             )}
           </div>
         </div>
+        <Field label={copy.downloadFileUrl} className="md:col-span-2">
+          <textarea
+            name="downloadFileUrl"
+            defaultValue={directDownloadUrl}
+            placeholder={copy.downloadFileUrlPlaceholder}
+            className={textareaClass}
+          />
+          <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
+            {copy.downloadFileUrlHint}
+          </span>
+        </Field>
         <div className="md:col-span-2">
           <SubmitButton>{tool ? copy.saveTool : copy.createTool}</SubmitButton>
         </div>
@@ -453,9 +453,9 @@ const toolAdminCopy = {
     version: "版本",
     systemRequirement: "系统要求",
     downloadFile: "下载文件",
-    downloadFileUrl: "下载链接 URL",
-    downloadFileUrlPlaceholder: "https://.../app.zip 或 /uploads/app.zip",
-    downloadFileUrlHint: "填写后会自动创建或更新文件记录，并作为该工具的主下载文件；如同时选择下载文件，将优先使用此链接。",
+    downloadFileUrl: "下载链接",
+    downloadFileUrlPlaceholder: "可填写网盘链接、提取码、下载说明、中文备注等任意内容",
+    downloadFileUrlHint: "填写后会自动创建或更新文件记录，并作为该工具详情页的下载链接内容；如同时选择下载文件，将优先使用这里填写的内容。",
     unbound: "不绑定",
     onlineUrl: "在线地址",
     needVip: "需要 VIP",
@@ -511,9 +511,9 @@ const toolAdminCopy = {
     version: "Version",
     systemRequirement: "System requirement",
     downloadFile: "Download file",
-    downloadFileUrl: "Download link URL",
-    downloadFileUrlPlaceholder: "https://.../app.zip or /uploads/app.zip",
-    downloadFileUrlHint: "When filled, the system will create or update a file record and use it as this tool's primary download file. This URL takes priority over the selected file.",
+    downloadFileUrl: "Download link",
+    downloadFileUrlPlaceholder: "Enter any download link, extraction code, instructions, notes, or plain text",
+    downloadFileUrlHint: "When filled, the system will create or update a file record and show this content in the tool detail download-link area. This content takes priority over the selected file.",
     unbound: "Unbound",
     onlineUrl: "Online URL",
     needVip: "Requires VIP",

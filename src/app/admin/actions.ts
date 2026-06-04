@@ -43,6 +43,7 @@ import {
   saveUploadedFile
 } from "@/lib/storage";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
+import { canOpenProtectedDownloadEntry } from "@/lib/tool-download-link";
 import { mergeToolProductImages } from "@/lib/tool-product-images";
 import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
@@ -89,15 +90,11 @@ async function saveAdminImageUploads(files: FormDataEntryValue[], prefix: string
 }
 
 function parseDownloadFileUrl(value: FormDataEntryValue | null) {
-  const downloadUrl = parseOptionalString(value);
-  if (!downloadUrl) return null;
-  if (downloadUrl.startsWith("/") || downloadUrl.startsWith("https://") || downloadUrl.startsWith("http://")) {
-    return downloadUrl;
-  }
-  throw new Error("下载链接需以 https://、http:// 或 /uploads/ 开头。");
+  return parseOptionalString(value);
 }
 
 function deriveDownloadFileName(downloadUrl: string, fallbackName: string) {
+  if (!canOpenProtectedDownloadEntry(downloadUrl)) return `${fallbackName} 下载链接`;
   const pathPart = downloadUrl.split("?")[0]?.split("#")[0] ?? "";
   const lastSegment = pathPart.split("/").filter(Boolean).pop();
   if (!lastSegment) return fallbackName;
