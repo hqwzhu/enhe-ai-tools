@@ -5,6 +5,7 @@ import {
   getEffectiveLocalizedHomeHeroSubtitle,
   getEffectiveHomeHeroSubtitle,
   getEffectiveHomeHeroTitle,
+  getEffectivePaymentQrCode,
   getEffectiveSiteLogo,
   getEffectiveSiteName
 } from "@/lib/settings";
@@ -75,5 +76,17 @@ describe("public site settings", () => {
 
     expect(getEffectiveLocalizedHomeHeroSubtitle(settings, "en", "fallback")).toBe("Custom English subtitle");
     expect(getEffectiveLocalizedHomeHeroIntro(settings, "en", "fallback")).toBe("Custom English intro");
+  });
+
+  it("resolves payment QR code settings with default fallbacks", () => {
+    expect(getEffectivePaymentQrCode(undefined, "/images/payment/alipay-qr.jpg", "/images/alipay-qr.svg")).toBe(
+      "/images/payment/alipay-qr.jpg"
+    );
+    expect(getEffectivePaymentQrCode("/images/alipay-qr.svg", "/images/payment/alipay-qr.jpg", "/images/alipay-qr.svg")).toBe(
+      "/images/payment/alipay-qr.jpg"
+    );
+    expect(getEffectivePaymentQrCode("/uploads/alipay-new.png", "/images/payment/alipay-qr.jpg", "/images/alipay-qr.svg")).toBe(
+      "/uploads/alipay-new.png"
+    );
   });
 });

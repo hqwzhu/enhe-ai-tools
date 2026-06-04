@@ -50,6 +50,7 @@ import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
 
 const idSchema = z.string().min(1);
 const maxCoverImageBytes = 8 * 1024 * 1024;
+const maxPaymentQrImageBytes = 8 * 1024 * 1024;
 const deleteUserConfirmationToken = "DELETE_USER";
 
 async function writeAdminAuditLogBestEffort(input: Parameters<typeof writeAdminAuditLog>[0]) {
@@ -87,6 +88,20 @@ async function saveAdminImageUploads(files: FormDataEntryValue[], prefix: string
     if (uploaded) uploadedImages.push(uploaded);
   }
   return uploadedImages;
+}
+
+async function resolvePaymentQrCodeInput(urlValue: FormDataEntryValue | null, fileValue: FormDataEntryValue | null, method: "alipay" | "wechat") {
+  if (fileValue instanceof File && fileValue.size > 0) {
+    const stored = await saveUploadedFile(fileValue, {
+      folder: `payment-qr/${method}`,
+      maxBytes: maxPaymentQrImageBytes,
+      accept: isLikelyUploadableImage,
+      invalidTypeMessage: "请上传 JPG、PNG、WebP、GIF 或 SVG 图片格式的收款码。"
+    });
+    return stored.fileUrl;
+  }
+
+  return parseOptionalString(urlValue) ?? "";
 }
 
 function parseDownloadFileUrl(value: FormDataEntryValue | null) {
@@ -1338,6 +1353,47 @@ export async function updateSiteSettingAction(formData: FormData) {
   revalidatePath("/pricing");
   revalidatePath("/software");
   revalidatePath("/online-tools");
+}
+
+export async function updatePaymentQrCodesAction(formData: FormData) {
+  const admin = await requireAdmin();
+  let alipayQr = "";
+  let wechatQr = "";
+
+  try {
+    alipayQr = await resolvePaymentQrCodeInput(formData.get("alipayQr"), formData.get("alipayQrFile"), "alipay");
+    wechatQr = await resolvePaymentQrCodeInput(formData.get("wechatQr"), formData.get("wechatQrFile"), "wechat");
+
+    await prisma.$transaction([
+      prisma.siteSetting.upsert({
+        where: { key: "alipay_qr" },
+        update: { value: alipayQr, description: "支付宝个人收款码图片地址，用于订单支付页展示。" },
+        create: { key: "alipay_qr", value: alipayQr, description: "支付宝个人收款码图片地址，用于订单支付页展示。" }
+      }),
+      prisma.siteSetting.upsert({
+        where: { key: "wechat_qr" },
+        update: { value: wechatQr, description: "微信个人收款码图片地址，用于订单支付页展示。" },
+        create: { key: "wechat_qr", value: wechatQr, description: "微信个人收款码图片地址，用于订单支付页展示。" }
+      })
+    ]);
+
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: "payment_qr.update",
+      targetType: "site_setting",
+      targetId: "payment_qr",
+      summary: "Updated payment QR codes.",
+      metadata: { alipayQr: Boolean(alipayQr), wechatQr: Boolean(wechatQr) }
+    });
+  } catch (error) {
+    const message = encodeURIComponent(normalizeUploadActionError(error));
+    redirect(`/admin/payment-codes?error=${message}`);
+  }
+
+  revalidatePath("/admin/payment-codes");
+  revalidatePath("/admin/settings");
+  revalidatePath("/orders/[id]/pay", "page");
+  redirect("/admin/payment-codes?saved=1");
 }
 
 export async function goToPayAction(formData: FormData) {

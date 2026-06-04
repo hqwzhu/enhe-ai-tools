@@ -77,3 +77,9 @@ export function getEffectiveLocalizedHomeHeroIntro(settings: SettingsMap, locale
 export function getEffectiveFooterCopyright(settings: SettingsMap, fallback: string) {
   return cleanSettingValue(settings.footer_copyright) ?? fallback;
 }
+
+export function getEffectivePaymentQrCode(value: string | undefined, fallback: string, legacyPlaceholder: string) {
+  const qrCode = cleanSettingValue(value);
+  if (!qrCode || qrCode === legacyPlaceholder) return fallback;
+  return qrCode;
+}

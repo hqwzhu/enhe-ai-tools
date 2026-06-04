@@ -13,6 +13,7 @@ const adminNav = [
   ["plans", "/admin/plans"],
   ["orders", "/admin/orders"],
   ["payments", "/admin/payments"],
+  ["paymentCodes", "/admin/payment-codes"],
   ["refunds", "/admin/refunds"],
   ["software", "/admin/software"],
   ["onlineTools", "/admin/online-tools"],

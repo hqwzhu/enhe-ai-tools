@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isImagePath, normalizeImageSrc } from "@/lib/media";
 import { reviewCompletionNotice } from "@/lib/review-copy";
-import { getSettingsMap } from "@/lib/settings";
+import { getEffectivePaymentQrCode, getSettingsMap } from "@/lib/settings";
 import { formatCurrency } from "@/lib/utils";
 
 type PayPageProps = {
@@ -22,8 +22,8 @@ export default async function PayPage({ params, searchParams }: PayPageProps) {
   ]);
   if (!order) notFound();
 
-  const alipayQr = resolveQrSetting(settings.alipay_qr, "/images/payment/alipay-qr.jpg", "/images/alipay-qr.svg");
-  const wechatQr = resolveQrSetting(settings.wechat_qr, "/images/payment/wechat-qr.jpg", "/images/wechat-qr.svg");
+  const alipayQr = getEffectivePaymentQrCode(settings.alipay_qr, "/images/payment/alipay-qr.jpg", "/images/alipay-qr.svg");
+  const wechatQr = getEffectivePaymentQrCode(settings.wechat_qr, "/images/payment/wechat-qr.jpg", "/images/wechat-qr.svg");
 
   return (
     <Container className="py-14">
@@ -73,11 +73,6 @@ export default async function PayPage({ params, searchParams }: PayPageProps) {
       </div>
     </Container>
   );
-}
-
-function resolveQrSetting(value: string | undefined, fallback: string, legacyPlaceholder: string) {
-  if (!value || value === legacyPlaceholder) return fallback;
-  return value;
 }
 
 function QrBox({ title, value }: { title: string; value?: string }) {
