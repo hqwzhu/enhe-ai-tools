@@ -10,8 +10,11 @@ describe("hero logo source", () => {
     expect(component).toContain("heroLogoGlassHighlight");
     expect(component).toContain("enhe-logo-depth");
     expect(component).toContain("enhe-logo-highlight");
+    expect(component).toContain("enhe-logo-takeoff-front");
+    expect(component).toContain("enhe-logo-takeoff-tail");
     expect(css).toContain("perspective:");
     expect(css).toContain(".enhe-logo-depth");
     expect(css).toContain(".enhe-logo-highlight");
+    expect(css).toContain("rotateZ(-");
   });
 });
