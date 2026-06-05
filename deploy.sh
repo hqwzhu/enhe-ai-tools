@@ -4,8 +4,12 @@ set -e
 echo "===== 进入项目目录 ====="
 cd /opt/enhe-ai-tools
 
-echo "===== 拉取最新代码 ====="
-git pull origin main
+if [ "${SKIP_GIT_PULL:-0}" = "1" ]; then
+  echo "===== Skip git pull (SKIP_GIT_PULL=1) ====="
+else
+  echo "===== 拉取最新代码 ====="
+  git pull origin main
+fi
 
 echo "===== 重新构建并启动 Docker ====="
 docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml up -d --build
