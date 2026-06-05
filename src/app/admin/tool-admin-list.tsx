@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { deleteToolAction, upsertToolAction } from "@/app/admin/actions";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
+import { ToolMediaUploadGuard } from "@/app/admin/tool-media-upload-guard";
 import { getAdminToolBasePath, getAdminToolEditPath, getAdminToolNewPath } from "@/lib/admin-tool-routes";
 import type { Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
@@ -318,7 +319,7 @@ export function ToolEditor({
           <input name="coverImage" defaultValue={tool?.coverImage ?? ""} placeholder={copy.coverPlaceholder} className={inputClass} />
         </Field>
         <Field label={copy.coverUpload}>
-          <input name="coverImageFile" type="file" accept="image/*" className={inputClass} />
+          <ToolMediaUploadGuard name="coverImageFile" inputClass={inputClass} />
           <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
             {copy.coverHint}
           </span>
@@ -359,7 +360,7 @@ export function ToolEditor({
         <div className="md:col-span-2">
           <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productImages}</p>
           <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
-            <input name="screenshotFiles" type="file" accept="image/*" multiple className={inputClass} />
+            <ToolMediaUploadGuard name="screenshotFiles" inputClass={inputClass} multiple />
             <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{copy.productImagesHint}</p>
             {tool?.screenshots.length ? (
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
