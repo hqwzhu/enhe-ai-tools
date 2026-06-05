@@ -51,24 +51,18 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   return (
     <Container className="py-14">
       <section className="glass overflow-hidden rounded-[2rem] p-4 md:p-6 lg:p-8">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-stretch">
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-[rgba(210,230,255,0.16)] bg-[#07101E]">
-            <div className="relative aspect-[16/10] min-h-[260px] lg:min-h-[430px]">
+        <div className="tool-detail-hero-stack flex flex-col gap-8">
+          <div className="tool-detail-cover-frame relative overflow-hidden rounded-[1.75rem] border border-[rgba(210,230,255,0.16)] bg-[#07101E]">
+            <div className="relative aspect-[16/9]">
               {coverImage ? (
-                <Image src={coverImage} alt={tool.name} fill className="object-cover" sizes="(min-width: 1024px) 620px, 100vw" unoptimized />
+                <Image src={coverImage} alt={tool.name} fill className="object-contain" sizes="(min-width: 1024px) 1120px, 100vw" unoptimized />
               ) : (
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(125,211,252,0.2),transparent_32%),radial-gradient(circle_at_72%_70%,rgba(142,167,255,0.18),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#030611]/82 via-[#030611]/12 to-transparent" />
-              <div className="absolute bottom-5 left-5 right-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7DD3FC]">{td.coverLabel}</p>
-                <p className="mt-2 line-clamp-2 text-2xl font-semibold text-[#F6FAFF]">{tool.name}</p>
-                {tool.englishName ? <p className="mt-1 line-clamp-1 text-sm font-medium text-[#7DD3FC]">{tool.englishName}</p> : null}
-              </div>
             </div>
           </div>
 
-          <div className="flex min-w-0 flex-col justify-between gap-6">
+          <div className="flex min-w-0 flex-col gap-7">
             <div>
               <div className="flex flex-wrap gap-2">
                 <Badge>{tool.category?.name ?? td.uncategorized}</Badge>
@@ -81,11 +75,12 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 ))}
               </div>
 
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-[#7DD3FC]">{td.coverLabel}</p>
               <h1 className="mt-5 text-4xl font-semibold leading-tight text-[#F6FAFF] md:text-5xl">{tool.name}</h1>
               {tool.englishName ? <p className="mt-3 text-lg font-medium tracking-wide text-[#7DD3FC] md:text-xl">{tool.englishName}</p> : null}
               <p className="mt-5 max-w-3xl text-base leading-8 text-[#8F9DB2] md:text-lg">{tool.shortDescription}</p>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Info label={td.version} value={tool.version ?? td.onlineVersion} />
                 <Info label={td.systemRequirement} value={tool.systemRequirement ?? td.browser} />
                 <Info label={td.downloadCount} value={String(tool.downloadCount)} />
@@ -152,19 +147,16 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
       <div className="mt-10 space-y-10">
         <section className="glass rounded-2xl p-7">
           <SectionTitle title={td.introTitle} intro={td.productImagesIntro} />
-          <div className={`mt-6 grid gap-8 ${tool.screenshots.length ? "lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" : ""}`}>
-            <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
-              <p className="whitespace-pre-line text-base leading-8 text-[#C5D0E2]">{tool.content}</p>
-            </div>
+          <div className="mt-6 space-y-7">
             {tool.screenshots.length ? (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="tool-detail-product-gallery grid gap-5">
                 {tool.screenshots.map((screenshot, index) => {
                   const imageSrc = normalizeImageSrc(screenshot);
                   return (
-                    <div key={`${screenshot}-${index}`} className="overflow-hidden rounded-2xl border border-white/10 bg-[#07101E]">
-                      <div className="relative aspect-[4/3]">
+                    <div key={`${screenshot}-${index}`} className="tool-detail-product-image-frame overflow-hidden rounded-2xl border border-white/10 bg-[#07101E] p-3">
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#030A14]">
                         {imageSrc ? (
-                          <Image src={imageSrc} alt={`${tool.name} ${td.productImageAlt} ${index + 1}`} fill className="object-cover" sizes="(min-width: 1024px) 360px, 50vw" unoptimized />
+                          <Image src={imageSrc} alt={`${tool.name} ${td.productImageAlt} ${index + 1}`} fill className="object-contain" sizes="(min-width: 1024px) 1040px, 100vw" unoptimized />
                         ) : (
                           <div className="absolute inset-0 bg-white/6" />
                         )}
@@ -174,6 +166,9 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 })}
               </div>
             ) : null}
+            <div className="tool-detail-copy-card rounded-2xl border border-white/10 bg-white/8 p-5">
+              <p className="whitespace-pre-line text-base leading-8 text-[#C5D0E2]">{tool.content}</p>
+            </div>
           </div>
         </section>
 
