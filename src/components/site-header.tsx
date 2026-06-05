@@ -26,11 +26,11 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-[rgba(210,230,255,0.14)] bg-[#070A12]/78 backdrop-blur-2xl">
       <Container className="flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center overflow-hidden rounded-2xl border border-[rgba(210,230,255,0.16)] bg-[rgba(238,246,255,0.08)] shadow-[0_0_24px_rgba(125,211,252,0.12)]">
-            <Image src={logoSrc} alt={brand} width={34} height={34} priority unoptimized />
+        <Link href="/" className="site-brand group" aria-label={brand}>
+          <span className="site-brand-mark" aria-hidden="true">
+            <Image className="site-brand-logo" src={logoSrc} alt="" width={30} height={30} priority unoptimized />
           </span>
-          <span className="font-semibold text-[#F6FAFF]">{brand}</span>
+          <span className="site-brand-wordmark">{brand}</span>
         </Link>
         <nav className="hidden items-center gap-1 lg:flex">
           {navItems.map(([label, href]) => (
