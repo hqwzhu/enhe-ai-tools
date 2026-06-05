@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -35,5 +35,30 @@ describe("admin tool editor source", () => {
     expect(guardSource).toContain('"screenshotFiles"');
     expect(guardSource).toContain("event.preventDefault()");
     expect(guardSource).toContain("input.value = \"\"");
+  });
+
+  it("centers access price and publish-check badges in tall admin list rows", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/admin/tool-admin-list.tsx"), "utf8");
+
+    expect(source).toContain("grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] items-center gap-4 px-5 py-4");
+    expect(source).toContain('className="flex flex-wrap items-center gap-2 self-center"');
+  });
+
+  it("uses an interactive product image manager that submits existing images in sorted order", () => {
+    const editorSource = readFileSync(join(process.cwd(), "src/app/admin/tool-admin-list.tsx"), "utf8");
+    const managerPath = join(process.cwd(), "src/app/admin/tool-product-image-manager.tsx");
+
+    expect(editorSource).toContain("ToolProductImageManager");
+    expect(editorSource).not.toContain('name="existingScreenshots" type="checkbox"');
+    expect(existsSync(managerPath)).toBe(true);
+
+    const managerSource = existsSync(managerPath) ? readFileSync(managerPath, "utf8") : "";
+    expect(managerSource).toContain('"use client"');
+    expect(managerSource).toContain("moveImage");
+    expect(managerSource).toContain('name="existingScreenshots"');
+    expect(managerSource).toContain("ArrowUp");
+    expect(managerSource).toContain("ArrowDown");
+    expect(managerSource).toContain("productImageMoveUp");
+    expect(managerSource).toContain("productImageMoveDown");
   });
 });

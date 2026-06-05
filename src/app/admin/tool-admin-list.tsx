@@ -3,6 +3,7 @@ import Image from "next/image";
 import { deleteToolAction, upsertToolAction } from "@/app/admin/actions";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import { ToolMediaUploadGuard } from "@/app/admin/tool-media-upload-guard";
+import { ToolProductImageManager } from "@/app/admin/tool-product-image-manager";
 import { getAdminToolBasePath, getAdminToolEditPath, getAdminToolNewPath } from "@/lib/admin-tool-routes";
 import type { Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
@@ -191,7 +192,7 @@ export function ToolAdminList({
               const coverImage = normalizeImageSrc(tool.coverImage);
 
               return (
-                <div key={tool.id} className="grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
+                <div key={tool.id} className="grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] items-center gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-[#0B1220]">
                       {coverImage ? (
@@ -210,13 +211,13 @@ export function ToolAdminList({
                   <div>
                     <Badge className={statusClass[tool.status] ?? statusClass.draft}>{statusText[tool.status] ?? tool.status}</Badge>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2 self-center">
                     {tool.isVipRequired ? <Badge className="border-[#7AA7FF]/30 bg-[#7AA7FF]/10 text-[#AFC8FF]">VIP</Badge> : <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">{copy.free}</Badge>}
                     {type === "software" && tool.isDownloadPaid ? (
                       <Badge className="border-[#FFB86B]/40 bg-[#FFB86B]/10 text-[#FFB86B]">{formatPrice(tool.downloadPrice)}</Badge>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2 self-center">
                     {publishIssues.length ? (
                       <>
                         {publishIssues.slice(0, 3).map((issue) => (
@@ -363,26 +364,17 @@ export function ToolEditor({
             <ToolMediaUploadGuard name="screenshotFiles" inputClass={inputClass} multiple />
             <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{copy.productImagesHint}</p>
             {tool?.screenshots.length ? (
-              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {tool.screenshots.map((screenshot) => {
-                  const imageSrc = normalizeImageSrc(screenshot);
-                  return (
-                    <label key={screenshot} className="group overflow-hidden rounded-2xl border border-white/10 bg-[#07101E]">
-                      <div className="relative aspect-[4/3] overflow-hidden">
-                        {imageSrc ? (
-                          <Image src={imageSrc} alt={copy.productImageAlt} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="240px" unoptimized />
-                        ) : (
-                          <div className="absolute inset-0 bg-white/6" />
-                        )}
-                      </div>
-                      <span className="flex items-center gap-2 px-3 py-3 text-xs text-[#C5D0E2]">
-                        <input name="existingScreenshots" type="checkbox" value={screenshot} defaultChecked />
-                        {copy.keepProductImage}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
+              <ToolProductImageManager
+                screenshots={tool.screenshots}
+                copy={{
+                  productImageAlt: copy.productImageAlt,
+                  keepProductImage: copy.keepProductImage,
+                  productImagePosition: copy.productImagePosition,
+                  productImageMoveUp: copy.productImageMoveUp,
+                  productImageMoveDown: copy.productImageMoveDown,
+                  productImageRemoved: copy.productImageRemoved
+                }}
+              />
             ) : (
               <p className="mt-4 rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#8B95A7]">{copy.noProductImages}</p>
             )}
@@ -466,9 +458,13 @@ const toolAdminCopy = {
     shortDescription: "简介",
     content: "详细介绍",
     productImages: "详细介绍商品图",
-    productImagesHint: "支持多张 JPG/PNG/WebP，建议 1200x900 或 4:3。图片会在工具详情页按电商图文格式展示；勾选保留已有图片，取消勾选后保存会移除。",
+    productImagesHint: "支持多张 JPG/PNG/WebP，建议 1200x900 或 4:3。图片会在工具详情页按电商图文格式展示；用上移/下移调整展示顺序，取消勾选后保存会移除。",
     productImageAlt: "商品图",
     keepProductImage: "保留此图",
+    productImagePosition: "第 {position} 张",
+    productImageMoveUp: "上移商品图",
+    productImageMoveDown: "下移商品图",
+    productImageRemoved: "保存后移除",
     noProductImages: "暂无商品图，上传后会在详情页展示。",
     saveTool: "保存工具",
     createTool: "新增工具",
@@ -524,9 +520,13 @@ const toolAdminCopy = {
     shortDescription: "Short description",
     content: "Detailed introduction",
     productImages: "Product images in detail intro",
-    productImagesHint: "Upload multiple JPG/PNG/WebP images. 1200x900 or 4:3 is recommended. Images appear in the tool detail page like an ecommerce product gallery; keep checked images or uncheck them before saving to remove.",
+    productImagesHint: "Upload multiple JPG/PNG/WebP images. 1200x900 or 4:3 is recommended. Images appear in the tool detail page like an ecommerce product gallery; use move up/down to adjust display order, or uncheck images before saving to remove.",
     productImageAlt: "Product image",
     keepProductImage: "Keep this image",
+    productImagePosition: "Image {position}",
+    productImageMoveUp: "Move product image up",
+    productImageMoveDown: "Move product image down",
+    productImageRemoved: "Will be removed",
     noProductImages: "No product images yet. Upload images to display them on the detail page.",
     saveTool: "Save tool",
     createTool: "Create tool",
