@@ -37,6 +37,12 @@ if [ -f "$HOT_NGINX_CONF" ]; then
       sed -i '/server_name www.enhe-tech.com.cn;/a\    client_max_body_size 520m;' "$HOT_NGINX_CONF"
     fi
     sed -i 's/enhe-ai-tools-app-1:3000/enhe-ai-tools-app:3000/g' "$HOT_NGINX_CONF"
+    if ! grep -q "proxy_set_header X-Forwarded-Host" "$HOT_NGINX_CONF"; then
+      sed -i '/proxy_set_header Host \$host;/a\        proxy_set_header X-Forwarded-Host $host;' "$HOT_NGINX_CONF"
+    fi
+    if ! grep -q "proxy_set_header X-Forwarded-Proto https;" "$HOT_NGINX_CONF"; then
+      sed -i 's/proxy_set_header X-Forwarded-Proto .*/proxy_set_header X-Forwarded-Proto https;/g' "$HOT_NGINX_CONF"
+    fi
   else
     echo "未找到 www.enhe-tech.com.cn 的 Nginx server 配置，跳过自动修正。"
   fi

@@ -22,6 +22,17 @@ describe("resolveFormRedirectUrl", () => {
     ).toBe("http://127.0.0.1:3000/orders/order-1?uploaded=1");
   });
 
+  it("uses the public form origin when the proxied request URL contains an internal container host", () => {
+    expect(
+      resolveFormRedirectUrl("/orders/order-1?uploaded=1", "http://d74b6da9e7d6/api/uploads/payment-proof", {
+        appUrl: "http://www.enhe-tech.com.cn",
+        host: "www.enhe-tech.com.cn",
+        forwardedProto: "https",
+        originHeader: "https://www.enhe-tech.com.cn"
+      }).toString()
+    ).toBe("https://www.enhe-tech.com.cn/orders/order-1?uploaded=1");
+  });
+
   it("rejects untrusted cross-site origins", () => {
     expect(
       resolveFormRedirectUrl("/orders/order-1?uploaded=1", "https://www.enhe-tech.com.cn/api/uploads/payment-proof", "https://evil.example").toString()

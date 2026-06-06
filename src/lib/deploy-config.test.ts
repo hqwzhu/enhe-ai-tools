@@ -21,6 +21,13 @@ describe("server deployment compose config", () => {
     expect(deployScript).toContain("enhe-ai-tools-app:3000");
   });
 
+  it("preserves public proxy headers for form and server-action redirects", () => {
+    const deployScript = readFileSync(resolve(root, "deploy.sh"), "utf8");
+
+    expect(deployScript).toContain("proxy_set_header X-Forwarded-Host $host");
+    expect(deployScript).toContain("proxy_set_header X-Forwarded-Proto https");
+  });
+
   it("can skip the internal git pull when the caller already verified the server head", () => {
     const deployScript = readFileSync(resolve(root, "deploy.sh"), "utf8");
 

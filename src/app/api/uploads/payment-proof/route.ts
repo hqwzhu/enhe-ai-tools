@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { resolveFormRedirectUrl } from "@/lib/redirect-url";
+import { resolveFormRedirectUrlFromRequest } from "@/lib/redirect-url";
 import { saveUploadedFile } from "@/lib/storage";
 
 const maxProofBytes = 8 * 1024 * 1024;
 
 function redirectToPay(request: Request, orderId: string, params: Record<string, string>) {
-  const url = resolveFormRedirectUrl(`/orders/${orderId}/pay`, request.url, request.headers.get("origin"));
+  const url = resolveFormRedirectUrlFromRequest(`/orders/${orderId}/pay`, request);
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }
@@ -16,7 +16,7 @@ function redirectToPay(request: Request, orderId: string, params: Record<string,
 }
 
 function redirectToOrder(request: Request, orderId: string, params: Record<string, string>) {
-  const url = resolveFormRedirectUrl(`/orders/${orderId}`, request.url, request.headers.get("origin"));
+  const url = resolveFormRedirectUrlFromRequest(`/orders/${orderId}`, request);
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }
