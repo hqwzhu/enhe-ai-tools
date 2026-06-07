@@ -53,7 +53,7 @@ export default async function AdminPaymentsPage() {
       <p className="mt-3 text-sm text-[#8B95A7]">{t.intro}</p>
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
-        <div className="grid min-w-[1080px] grid-cols-[1.15fr_1fr_0.9fr_0.65fr_0.7fr_0.8fr_0.55fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
+        <div className="grid min-w-[1120px] grid-cols-[1.15fr_1fr_0.9fr_0.65fr_0.7fr_0.8fr_0.75fr] items-center gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
           <span>{t.orderNo}</span>
           <span>{t.user}</span>
           <span>{t.item}</span>
@@ -62,9 +62,9 @@ export default async function AdminPaymentsPage() {
           <span>{t.proofStatus}</span>
           <span className="text-right">{t.action}</span>
         </div>
-        <div className="min-w-[1080px] divide-y divide-white/10">
+        <div className="min-w-[1120px] divide-y divide-white/10">
           {proofs.map((proof) => (
-            <div key={proof.id} className="grid grid-cols-[1.15fr_1fr_0.9fr_0.65fr_0.7fr_0.8fr_0.55fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
+            <div key={proof.id} className="grid grid-cols-[1.15fr_1fr_0.9fr_0.65fr_0.7fr_0.8fr_0.75fr] items-center gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
               <Link href={`/admin/orders/${proof.order.id}`} className="font-semibold text-[#E8EEF8] transition hover:text-[#48F5D3]">
                 {proof.order.orderNo}
               </Link>
@@ -73,8 +73,8 @@ export default async function AdminPaymentsPage() {
               <span className="text-[#FFB86B]">{formatCurrency(proof.order.amount.toString())}</span>
               <span>{paymentMethodLabel(proof.paymentMethod, locale)}</span>
               <span className="text-[#FFB86B]">{getStatusLabel(proofStatusLabels, proof.reviewStatus, locale)}</span>
-              <span className="text-right">
-                <Link href={`/admin/payments/${proof.id}`} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+              <span className="flex justify-end">
+                <Link href={`/admin/payments/${proof.id}`} className="inline-flex whitespace-nowrap rounded-full border border-white/15 px-4 py-2 text-xs font-semibold leading-none transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
                   {t.viewPayment}
                 </Link>
               </span>

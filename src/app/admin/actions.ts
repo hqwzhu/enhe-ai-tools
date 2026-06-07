@@ -378,7 +378,9 @@ export async function updateOrderAdminAction(formData: FormData) {
   const paymentMethod = paymentMethodValue ? z.enum(["alipay", "wechat"]).parse(paymentMethodValue) : null;
   const amount = parseNumberField(formData.get("amount"), 0);
   const order = await prisma.order.findUnique({ where: { id } });
-  assertAdminOrderStatusUpdateAllowed(orderStatus);
+  if (order) {
+    assertAdminOrderStatusUpdateAllowed(orderStatus, order.orderStatus);
+  }
   if (!order) throw new Error("订单不存在");
 
   await prisma.order.update({
@@ -403,6 +405,7 @@ export async function updateOrderAdminAction(formData: FormData) {
   revalidatePath(`/admin/orders/${id}`);
   revalidatePath("/admin/payments");
   revalidatePath("/user");
+  redirect(`/admin/orders/${id}?saved=1`);
 }
 
 export async function deleteOrderAdminAction(formData: FormData) {

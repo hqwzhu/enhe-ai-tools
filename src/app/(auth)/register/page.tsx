@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { registerAction } from "@/app/actions";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import { PasswordInput } from "@/components/password-input";
 import { Container } from "@/components/ui";
 import { getOrCreateCsrfToken } from "@/lib/csrf";
@@ -29,7 +30,7 @@ export default async function RegisterPage() {
           wrapperClassName="mt-2"
           className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]"
         />
-        <button className="mt-8 w-full rounded-full bg-[#7AA7FF] px-5 py-3 font-semibold text-[#07101f]">{t.auth.createAccount}</button>
+        <FormSubmitButton className="mt-8 w-full bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel="创建中...">{t.auth.createAccount}</FormSubmitButton>
         <p className="mt-5 text-center text-sm text-[#8B95A7]">
           {t.auth.hasAccount}<Link className="text-[#48F5D3]" href="/login">{t.auth.goLogin}</Link>
         </p>

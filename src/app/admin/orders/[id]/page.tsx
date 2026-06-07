@@ -55,6 +55,10 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
         <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">售后/退款记录已保存。</p>
       ) : null}
 
+      {query.saved ? (
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm font-semibold text-[#48F5D3]">订单已保存。</p>
+      ) : null}
+
       <div className="glass rounded-2xl p-6">
         <div className="grid gap-4 md:grid-cols-3">
           <Info label="订单号" value={order.orderNo} />
@@ -92,7 +96,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
             </select>
           </Field>
           <div className="flex items-end gap-3">
-            <SubmitButton>保存订单</SubmitButton>
+            <SubmitButton pendingLabel="保存中...">保存订单</SubmitButton>
             <p className="pb-3 text-xs leading-5 text-[#8B95A7]">如需开通权益，请到支付审核通过，或在用户管理中手动调整 VIP。</p>
           </div>
         </form>
@@ -127,8 +131,8 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
                 <form action={processRefundRecordAdminAction} className="mt-3 grid gap-2 md:grid-cols-[1fr_120px_120px]">
                   <input type="hidden" name="refundId" value={refund.id} />
                   <input name="note" placeholder="处理备注" className={inputClass} />
-                  <button name="status" value="completed" className="rounded-full bg-[#48F5D3] px-4 py-2 text-xs font-semibold text-[#05110e]">确认退款</button>
-                  <button name="status" value="rejected" className="rounded-full border border-white/12 px-4 py-2 text-xs text-[#E8EEF8]">拒绝申请</button>
+                  <SubmitButton name="status" value="completed" variant="success" pendingLabel="处理中..." className="px-4 py-2 text-xs">确认退款</SubmitButton>
+                  <SubmitButton name="status" value="rejected" variant="secondary" pendingLabel="处理中..." className="px-4 py-2 text-xs">拒绝申请</SubmitButton>
                 </form>
               ) : null}
             </div>
@@ -178,7 +182,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
             <span>该订单已支付、已开通或已退款。删除订单不会自动恢复资金流水，请确认已完成售后处理并承担删除风险。</span>
           </label>
         ) : null}
-        <button className="rounded-full border border-red-400/40 px-4 py-2 text-sm text-red-200">删除订单</button>
+        <SubmitButton variant="danger" pendingLabel="删除中...">删除订单</SubmitButton>
       </form>
     </AdminSection>
   );

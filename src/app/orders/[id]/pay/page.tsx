@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -67,7 +68,7 @@ export default async function PayPage({ params, searchParams }: PayPageProps) {
             <input name="paymentRemark" defaultValue={order.paymentProof?.paymentRemark ?? order.orderNo} className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none" />
             <label className="block text-sm">付款截图</label>
             <input name="file" type="file" accept="image/*" required className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm" />
-            <button className="rounded-full bg-[#7AA7FF] px-5 py-3 font-semibold text-[#07101f]">上传并提交审核</button>
+            <FormSubmitButton className="bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel="上传中...">上传并提交审核</FormSubmitButton>
           </form>
         </div>
       </div>

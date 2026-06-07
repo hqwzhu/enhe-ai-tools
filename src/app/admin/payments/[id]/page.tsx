@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { reviewPaymentProofAction } from "@/app/actions";
-import { AdminSection, inputClass } from "@/app/admin/admin-ui";
+import { AdminSection, SubmitButton, inputClass } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, type Locale } from "@/lib/i18n";
 import { getPaymentProofImageSrc, isRenderablePaymentProofImage } from "@/lib/payment-proof-image";
@@ -11,6 +11,7 @@ import { formatCurrency } from "@/lib/utils";
 
 type AdminPaymentDetailPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 };
 
 const copy = {
@@ -36,7 +37,11 @@ const copy = {
     approve: "通过",
     reject: "驳回",
     alipay: "支付宝",
-    wechat: "微信"
+    wechat: "微信",
+    reviewedApproved: "付款审核已通过，系统已同步开通权益。",
+    reviewedRejected: "付款审核已驳回，用户会收到站内通知。",
+    approving: "通过中...",
+    rejecting: "驳回中..."
   },
   en: {
     title: "Payment record",
@@ -60,12 +65,16 @@ const copy = {
     approve: "Approve",
     reject: "Reject",
     alipay: "Alipay",
-    wechat: "WeChat"
+    wechat: "WeChat",
+    reviewedApproved: "Payment approved. The related benefits have been activated.",
+    reviewedRejected: "Payment rejected. The user has been notified.",
+    approving: "Approving...",
+    rejecting: "Rejecting..."
   }
 } as const;
 
-export default async function AdminPaymentDetailPage({ params }: AdminPaymentDetailPageProps) {
-  const [{ id }, locale] = await Promise.all([params, getCurrentLocale()]);
+export default async function AdminPaymentDetailPage({ params, searchParams }: AdminPaymentDetailPageProps) {
+  const [{ id }, query, locale] = await Promise.all([params, searchParams, getCurrentLocale()]);
   const t = copy[locale];
   const proof = await prisma.paymentProof.findUnique({
     where: { id },
@@ -73,6 +82,8 @@ export default async function AdminPaymentDetailPage({ params }: AdminPaymentDet
   });
   if (!proof) notFound();
   const proofImage = getPaymentProofImageSrc(proof);
+  const reviewNotice =
+    query.review === "approved" ? t.reviewedApproved : query.review === "rejected" ? t.reviewedRejected : null;
 
   return (
     <AdminSection title={t.title} intro={t.intro}>
@@ -84,6 +95,12 @@ export default async function AdminPaymentDetailPage({ params }: AdminPaymentDet
           {t.orderDetail}
         </Link>
       </div>
+
+      {reviewNotice ? (
+        <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm font-semibold text-[#48F5D3]">
+          {reviewNotice}
+        </p>
+      ) : null}
 
       <div className="glass rounded-2xl p-6">
         <div className="grid gap-4 md:grid-cols-3">
@@ -112,8 +129,12 @@ export default async function AdminPaymentDetailPage({ params }: AdminPaymentDet
         <form action={reviewPaymentProofAction} className="mt-6 grid gap-3 border-t border-white/10 pt-6 md:grid-cols-[1fr_120px_120px]">
           <input type="hidden" name="orderId" value={proof.orderId} />
           <input name="reviewNote" placeholder={t.reviewPlaceholder} className={inputClass} />
-          <button name="decision" value="approved" className="rounded-full bg-[#48F5D3] px-5 py-3 font-semibold text-[#05110e]">{t.approve}</button>
-          <button name="decision" value="rejected" className="rounded-full border border-white/12 px-5 py-3">{t.reject}</button>
+          <SubmitButton name="decision" value="approved" variant="success" pendingLabel={t.approving}>
+            {t.approve}
+          </SubmitButton>
+          <SubmitButton name="decision" value="rejected" variant="secondary" pendingLabel={t.rejecting}>
+            {t.reject}
+          </SubmitButton>
         </form>
       </div>
     </AdminSection>

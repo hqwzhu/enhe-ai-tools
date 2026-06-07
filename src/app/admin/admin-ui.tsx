@@ -1,3 +1,5 @@
+import { FormSubmitButton, type FormSubmitButtonProps } from "@/components/form-submit-button";
+
 export function AdminSection({
   title,
   intro,
@@ -29,10 +31,14 @@ export const inputClass = "w-full rounded-xl border border-[rgba(210,230,255,0.1
 export const selectClass = "w-full rounded-xl border border-[rgba(210,230,255,0.16)] bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF] outline-none focus:border-[#7DD3FC]";
 export const textareaClass = "min-h-28 w-full rounded-xl border border-[rgba(210,230,255,0.16)] bg-[rgba(238,246,255,0.06)] px-4 py-3 text-sm text-[#F6FAFF] outline-none placeholder:text-[#8F9DB2]/75 focus:border-[#7DD3FC]";
 
-export function SubmitButton({ children = "Save" }: { children?: React.ReactNode }) {
-  return <button className="rounded-full bg-[#7DD3FC] px-5 py-3 text-sm font-semibold text-[#030611] transition hover:shadow-[0_0_26px_rgba(125,211,252,0.18)]">{children}</button>;
+export function SubmitButton({ children = "Save", ...props }: FormSubmitButtonProps) {
+  return <FormSubmitButton {...props}>{children}</FormSubmitButton>;
 }
 
-export function DangerButton({ children = "Delete" }: { children?: React.ReactNode }) {
-  return <button className="rounded-full border border-red-400/40 px-4 py-2 text-sm text-red-200">{children}</button>;
+export function DangerButton({ children = "Delete", ...props }: FormSubmitButtonProps) {
+  return (
+    <FormSubmitButton variant="danger" {...props}>
+      {children}
+    </FormSubmitButton>
+  );
 }

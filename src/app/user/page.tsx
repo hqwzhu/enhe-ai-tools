@@ -6,6 +6,7 @@ import {
   markAllNotificationsReadAction,
   markNotificationReadAction
 } from "@/app/actions";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import { PasswordInput } from "@/components/password-input";
 import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
@@ -81,7 +82,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
       <div className="mb-8 flex items-center justify-between gap-4">
         <SectionTitle title={t.userCenter.title} intro={t.userCenter.intro} />
         <form action={logoutAction}>
-          <button className="rounded-full border border-white/12 px-5 py-3 text-sm">{t.userCenter.logout}</button>
+          <FormSubmitButton variant="secondary" pendingLabel="退出中...">{t.userCenter.logout}</FormSubmitButton>
         </form>
       </div>
       {orderMessage ? (
@@ -112,9 +113,9 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
             {notifications.length ? (
               <div className="space-y-3">
                 <form action={markAllNotificationsReadAction}>
-                  <button className="rounded-full border border-white/12 px-3 py-1 text-xs transition hover:border-[#48F5D3]/60 hover:text-[#48F5D3]">
+                  <FormSubmitButton variant="secondary" pendingLabel="处理中..." className="px-3 py-1 text-xs">
                     {t.notifications.markAllRead}
-                  </button>
+                  </FormSubmitButton>
                 </form>
                 {notifications.map((notification) => {
                   const display = getNotificationDisplay(notification, locale);
@@ -137,9 +138,9 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                         {!notification.readAt ? (
                           <form action={markNotificationReadAction}>
                             <input type="hidden" name="id" value={notification.id} />
-                            <button className="rounded-full border border-white/12 px-2 py-1 text-xs">
+                            <FormSubmitButton variant="secondary" pendingLabel="处理中..." className="px-2 py-1 text-xs">
                               {t.notifications.markRead}
-                            </button>
+                            </FormSubmitButton>
                           </form>
                         ) : null}
                       </div>
@@ -197,7 +198,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                 hideLabel={t.auth.hidePassword}
                 className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
               />
-              <button className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">{t.userCenter.changePassword}</button>
+              <FormSubmitButton className="bg-[#7AA7FF] text-[#07101f]" pendingLabel="保存中...">{t.userCenter.changePassword}</FormSubmitButton>
             </form>
           </Panel>
         </aside>
@@ -232,9 +233,9 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                       {canUserCancelOrder(order.orderStatus) ? (
                         <form action={cancelOrderAction}>
                           <input type="hidden" name="orderId" value={order.id} />
-                          <button className="rounded-full border border-white/12 px-3 py-1 text-xs">
+                          <FormSubmitButton variant="secondary" pendingLabel="取消中..." className="px-3 py-1 text-xs">
                             {t.userCenter.cancelOrder}
-                          </button>
+                          </FormSubmitButton>
                         </form>
                       ) : null}
                     </div>

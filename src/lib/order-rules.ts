@@ -46,8 +46,8 @@ export function isAdminDeleteRiskConfirmed(value: string | null | undefined) {
   return value === adminDeleteRiskConfirmationToken;
 }
 
-export function assertAdminOrderStatusUpdateAllowed(status: OrderStatus) {
-  if (status === "activated") {
+export function assertAdminOrderStatusUpdateAllowed(status: OrderStatus, currentStatus?: OrderStatus | null) {
+  if (status === "activated" && currentStatus !== "activated") {
     throw new Error("订单不能通过手动改状态开通权益，请使用支付审核通过或手动调整 VIP 功能。");
   }
 }

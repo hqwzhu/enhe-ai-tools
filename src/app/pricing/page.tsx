@@ -1,5 +1,6 @@
 import { Crown } from "lucide-react";
 import { createOrderAction } from "@/app/actions";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import { Container, SectionTitle } from "@/components/ui";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
@@ -33,7 +34,7 @@ export default async function PricingPage() {
               <option value="alipay">{t.pricing.alipay}</option>
               <option value="wechat">{t.pricing.wechat}</option>
             </select>
-            <button className="mt-4 w-full rounded-full bg-[#7AA7FF] px-5 py-3 font-semibold text-[#07101f]">{t.pricing.createOrder}</button>
+            <FormSubmitButton className="mt-4 w-full bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel="创建订单中...">{t.pricing.createOrder}</FormSubmitButton>
           </form>
         ))}
       </div>

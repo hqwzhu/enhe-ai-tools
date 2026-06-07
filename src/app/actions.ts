@@ -275,6 +275,8 @@ export async function reviewPaymentProofAction(formData: FormData) {
   const decision = z.enum(["approved", "rejected"]).parse(formData.get("decision"));
   const reviewNote = z.string().optional().parse(formData.get("reviewNote") ?? undefined);
   const order = await prisma.order.findUnique({ where: { id: orderId }, select: { id: true, userId: true, orderNo: true } });
+  const proof = await prisma.paymentProof.findUnique({ where: { orderId }, select: { id: true } });
+  if (!proof) throw new Error("付款记录不存在。");
   if (!order) throw new Error("订单不存在。");
 
   if (decision === "approved") {
@@ -300,6 +302,7 @@ export async function reviewPaymentProofAction(formData: FormData) {
   revalidatePath("/admin/payments");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath(`/orders/${orderId}`);
+  redirect(`/admin/payments/${proof.id}?review=${decision}`);
 }
 
 export async function updateCommentStatusAction(formData: FormData) {

@@ -26,6 +26,11 @@ describe("order business rules", () => {
     expect(() => assertAdminOrderStatusUpdateAllowed("cancelled")).not.toThrow();
   });
 
+  it("allows saving an already activated order without changing its status", () => {
+    expect(() => assertAdminOrderStatusUpdateAllowed("activated", "activated")).not.toThrow();
+    expect(() => assertAdminOrderStatusUpdateAllowed("activated", "paid")).toThrow();
+  });
+
   it("marks activated, paid, and refunded orders as risky to delete", () => {
     expect(canAdminDeleteOrderSafely("activated")).toBe(false);
     expect(canAdminDeleteOrderSafely("paid")).toBe(false);

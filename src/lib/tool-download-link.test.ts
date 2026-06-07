@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   canOpenProtectedDownloadEntry,
   canShowDownloadLinkArea,
-  getDownloadLinkContent
+  getDownloadLinkContent,
+  resolveSoftwareDownloadCtaHref
 } from "@/lib/tool-download-link";
 
 describe("tool download link visibility", () => {
@@ -26,5 +27,37 @@ describe("tool download link visibility", () => {
     expect(canOpenProtectedDownloadEntry("/uploads/app.zip")).toBe(true);
     expect(canOpenProtectedDownloadEntry("https://example.com/app.zip")).toBe(true);
     expect(canOpenProtectedDownloadEntry("cos://bucket/app.zip")).toBe(true);
+  });
+
+  it("routes VIP users to the download-link section and ordinary users to pricing", () => {
+    expect(
+      resolveSoftwareDownloadCtaHref({
+        hasDownloadLink: true,
+        showDownloadLinkArea: true,
+        isVipRequired: true,
+        hasVip: true,
+        protectedDownloadHref: "/api/tools/tool-1/download"
+      })
+    ).toBe("#download-links");
+
+    expect(
+      resolveSoftwareDownloadCtaHref({
+        hasDownloadLink: true,
+        showDownloadLinkArea: false,
+        isVipRequired: true,
+        hasVip: false,
+        protectedDownloadHref: "/api/tools/tool-1/download"
+      })
+    ).toBe("/pricing");
+
+    expect(
+      resolveSoftwareDownloadCtaHref({
+        hasDownloadLink: false,
+        showDownloadLinkArea: false,
+        isVipRequired: false,
+        hasVip: false,
+        protectedDownloadHref: "/api/tools/tool-1/download"
+      })
+    ).toBe("/api/tools/tool-1/download");
   });
 });

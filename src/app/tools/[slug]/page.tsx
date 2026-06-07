@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createCommentAction, createSoftwareDownloadOrderAction } from "@/app/actions";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getCurrentUser } from "@/lib/auth";
@@ -9,7 +10,12 @@ import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
 import { userHasVip } from "@/lib/membership";
 import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
-import { canOpenProtectedDownloadEntry, canShowDownloadLinkArea, getDownloadLinkContent } from "@/lib/tool-download-link";
+import {
+  canOpenProtectedDownloadEntry,
+  canShowDownloadLinkArea,
+  getDownloadLinkContent,
+  resolveSoftwareDownloadCtaHref
+} from "@/lib/tool-download-link";
 
 export default async function ToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [user, locale] = await Promise.all([getCurrentUser(), getCurrentLocale()]);
@@ -42,6 +48,13 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   const showDownloadLinkArea = hasDownloadLink && canShowDownloadLinkArea({ isDownloadLinkVipOnly: tool.isDownloadLinkVipOnly, hasVip });
   const canOpenDownloadEntry = canOpenProtectedDownloadEntry(downloadLinkContent);
   const protectedDownloadHref = `/api/tools/${tool.id}/download`;
+  const softwareDownloadCtaHref = resolveSoftwareDownloadCtaHref({
+    hasDownloadLink,
+    showDownloadLinkArea,
+    isVipRequired: tool.isVipRequired,
+    hasVip,
+    protectedDownloadHref
+  });
   const related = await prisma.tool.findMany({
     where: { type: tool.type, status: "published", id: { not: tool.id } },
     include: { category: true },
@@ -96,12 +109,12 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                         <option value="alipay">{td.alipay}</option>
                         <option value="wechat">{td.wechat}</option>
                       </select>
-                      <button className="rounded-full bg-[#7DD3FC] px-5 py-3 text-sm font-semibold text-[#030611] transition hover:shadow-[0_0_26px_rgba(125,211,252,0.18)]">
+                      <FormSubmitButton pendingLabel="创建订单中...">
                         {td.buyDownload.replace("{price}", Number(tool.downloadPrice).toFixed(2))}
-                      </button>
+                      </FormSubmitButton>
                     </form>
                   ) : (
-                    <ButtonLink href={`/api/tools/${tool.id}/download`}>{td.downloadSoftware}</ButtonLink>
+                    <ButtonLink href={softwareDownloadCtaHref}>{td.downloadSoftware}</ButtonLink>
                   )
                 ) : (
                   <ButtonLink href={`/api/tools/${tool.id}/use`}>{td.useOnline}</ButtonLink>
@@ -206,7 +219,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <input type="hidden" name="slug" value={tool.slug} />
               <textarea name="content" required className="min-h-28 w-full rounded-xl border border-white/12 bg-white/8 p-4 outline-none" placeholder={td.commentPlaceholder} />
               <p className="mt-2 text-xs leading-5 text-[#8F9DB2]">{reviewNotice}</p>
-              <button className="mt-3 rounded-full bg-[#7DD3FC] px-5 py-3 font-semibold text-[#030611]">{td.submitComment}</button>
+              <FormSubmitButton className="mt-3 text-base" pendingLabel="提交中...">{td.submitComment}</FormSubmitButton>
             </form>
           ) : (
             <p className="mb-6 text-sm text-[#8F9DB2]">{td.loginToComment}</p>
@@ -224,7 +237,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         </section>
 
         {hasDownloadLink ? (
-          <section className="glass rounded-2xl p-7">
+          <section id="download-links" className="glass scroll-mt-24 rounded-2xl p-7">
             <SectionTitle title={td.downloadLinksTitle} intro={showDownloadLinkArea ? td.downloadLinksIntro : td.downloadLinksVipOnlyIntro} />
             {showDownloadLinkArea ? (
               <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/8 p-5">
