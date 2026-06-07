@@ -5,6 +5,19 @@ import { describe, expect, it } from "vitest";
 const root = resolve(__dirname, "../..");
 
 describe("server deployment compose config", () => {
+  it("runs the standalone Next server in production start mode", () => {
+    const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+    const startScript = readFileSync(resolve(root, "scripts/start-standalone.cjs"), "utf8");
+
+    expect(packageJson.scripts?.start).toBe("node scripts/start-standalone.cjs");
+    expect(startScript).toContain("copyStandaloneAsset");
+    expect(startScript).toContain('".next/static"');
+    expect(startScript).toContain('"public"');
+    expect(startScript).toContain('"server.js"');
+  });
+
   it("builds the app image from the repository root", () => {
     const compose = readFileSync(resolve(root, "deploy/enhe-ai-tools/docker-compose.yml"), "utf8");
 

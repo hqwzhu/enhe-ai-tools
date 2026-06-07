@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "dev:reset": "powershell -ExecutionPolicy Bypass -File scripts/restart-local-dev.ps1",
     "build": "prisma generate && next build",
-    "start": "next start",
+    "start": "node scripts/start-standalone.cjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
