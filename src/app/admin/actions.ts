@@ -16,6 +16,10 @@ import {
 } from "@/lib/admin-form";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
+import {
+  sendManualVipAdjustmentAdminEmail,
+  sendRefundProcessedAdminEmail
+} from "@/lib/admin-email-notifications";
 import { getAdminUserDeleteBlockReason } from "@/lib/admin-user-rules";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
 import { manuallyAdjustVip, revokeEntitlementsForRefundedOrder } from "@/lib/membership";
@@ -496,6 +500,13 @@ export async function createRefundRecordAdminAction(formData: FormData) {
     summary: "Created order after-sales/refund record.",
     metadata: { refundId: refund.id, amount, status, reason, refundReceiverQr, refundProofImage }
   });
+  if (status !== "pending") {
+    await sendRefundProcessedAdminEmail(orderId, {
+      status,
+      actorLabel: admin.email ?? admin.nickname ?? admin.id,
+      note
+    });
+  }
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
@@ -545,6 +556,11 @@ export async function processRefundRecordAdminAction(formData: FormData) {
       note
     })
   );
+  await sendRefundProcessedAdminEmail(refund.orderId, {
+    status,
+    actorLabel: admin.email ?? admin.nickname ?? admin.id,
+    note
+  });
 
   await writeAdminAuditLog({
     adminId: admin.id,
@@ -587,6 +603,13 @@ export async function adjustVipAdminAction(formData: FormData) {
       reason
     })
   );
+  await sendManualVipAdjustmentAdminEmail({
+    userId,
+    actionType,
+    vipType: getManualVipType(durationDays),
+    actorLabel: admin.email ?? admin.nickname ?? admin.id,
+    reason
+  });
   await writeAdminAuditLog({
     adminId: admin.id,
     action: "vip.adjust",

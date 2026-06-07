@@ -19,6 +19,11 @@ import {
   verifyPassword
 } from "@/lib/auth";
 import { assertValidCsrfToken } from "@/lib/csrf";
+import {
+  sendPaymentProofSubmittedAdminEmail,
+  sendPaymentReviewAdminEmail,
+  sendRefundRequestAdminEmail
+} from "@/lib/admin-email-notifications";
 import { activateVipForOrder } from "@/lib/membership";
 import {
   buildPaymentReviewNotification,
@@ -167,6 +172,7 @@ export async function submitPaymentProofAction(formData: FormData) {
     create: { orderId, userId: user.id, paymentMethod, paymentRemark, proofImage, reviewStatus: "pending" }
   });
   await prisma.order.update({ where: { id: orderId }, data: { orderStatus: "pending_review", paymentMethod } });
+  await sendPaymentProofSubmittedAdminEmail(orderId);
   redirect("/user?tab=orders");
 }
 
@@ -236,6 +242,7 @@ export async function createRefundRequestAction(formData: FormData) {
     user.id,
     buildRefundRequestNotification({ orderId: order.id, orderNo: order.orderNo })
   );
+  await sendRefundRequestAdminEmail(order.id, { reason, note });
 
   revalidatePath(`/orders/${order.id}`);
   revalidatePath("/user");
@@ -291,6 +298,11 @@ export async function reviewPaymentProofAction(formData: FormData) {
     order.userId,
     buildPaymentReviewNotification({ orderId: order.id, orderNo: order.orderNo, decision, reviewNote })
   );
+  await sendPaymentReviewAdminEmail(order.id, {
+    decision,
+    actorLabel: admin.email ?? admin.nickname ?? admin.id,
+    note: reviewNote
+  });
   await writeAdminAuditLog({
     adminId: admin.id,
     action: "payment.review",
