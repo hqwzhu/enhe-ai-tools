@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { updateCommentPinAction, updateCommentStatusAction } from "@/app/actions";
-import { inputClass, selectClass } from "@/app/admin/admin-ui";
+import { SubmitButton, inputClass, selectClass } from "@/app/admin/admin-ui";
 import { buildAdminCommentPageHref, buildAdminCommentWhere, parseAdminCommentListParams } from "@/lib/admin-list";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, type Locale } from "@/lib/i18n";
@@ -137,9 +137,9 @@ export default async function AdminCommentsPage({ searchParams }: AdminCommentsP
               <form action={updateCommentPinAction}>
                 <input type="hidden" name="id" value={comment.id} />
                 <input type="hidden" name="isPinned" value={comment.isPinned ? "false" : "true"} />
-                <button className="rounded-full border border-[#FFB86B]/40 px-5 py-2 text-sm text-[#FFB86B]">
+                <SubmitButton variant="secondary" pendingLabel={locale === "zh" ? "处理中..." : "Processing..."} className="border-[#FFB86B]/40 px-5 py-2 text-sm text-[#FFB86B]">
                   {comment.isPinned ? t.unpin : t.pin}
-                </button>
+                </SubmitButton>
               </form>
             </div>
           </div>
@@ -165,9 +165,9 @@ function CommentStatusForm({
     <form action={updateCommentStatusAction}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="status" value={status} />
-      <button className={primary ? "rounded-full bg-[#48F5D3] px-5 py-2 text-sm font-semibold text-[#05110e]" : "rounded-full border border-white/12 px-5 py-2 text-sm"}>
+      <SubmitButton variant={primary ? "success" : "secondary"} pendingLabel="处理中..." className="px-5 py-2 text-sm">
         {label}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

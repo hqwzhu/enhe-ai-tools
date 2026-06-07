@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { processRefundRecordAdminAction } from "@/app/admin/actions";
-import { AdminSection, Field, inputClass, textareaClass } from "@/app/admin/admin-ui";
+import { AdminSection, Field, SubmitButton, inputClass, textareaClass } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";
 import { getRefundRecordActorLabel } from "@/lib/order-rules";
 import { getStatusLabel, orderStatusLabels, refundStatusLabels } from "@/lib/status-labels";
@@ -104,12 +104,12 @@ export default async function AdminRefundDetailPage({ params, searchParams }: Ad
               <input name="note" placeholder="Refund transaction id, communication note, or rejection reason" className={inputClass} />
             </Field>
             <div className="flex flex-wrap gap-3 md:col-span-2">
-              <button name="status" value="completed" className="rounded-full bg-[#48F5D3] px-5 py-3 text-sm font-semibold text-[#05110e]">
+              <SubmitButton name="status" value="completed" variant="success" pendingLabel="Processing..." className="px-5 py-3 text-sm">
                 Mark refunded and revoke access
-              </button>
-              <button name="status" value="rejected" className="rounded-full border border-white/12 px-5 py-3 text-sm text-[#E8EEF8]">
+              </SubmitButton>
+              <SubmitButton name="status" value="rejected" variant="secondary" pendingLabel="Processing..." className="px-5 py-3 text-sm">
                 Reject refund
-              </button>
+              </SubmitButton>
             </div>
           </form>
         ) : (

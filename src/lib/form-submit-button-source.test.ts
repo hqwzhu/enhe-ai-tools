@@ -9,6 +9,16 @@ describe("form submit feedback", () => {
     expect(source).toContain('"use client"');
     expect(source).toContain("useFormStatus");
     expect(source).toContain("pendingLabel");
-    expect(source).toContain("disabled={isDisabled}");
+    expect(source).toContain("aria-disabled={isDisabled}");
+  });
+
+  it("prevents duplicate submit clicks and shows a clear duplicate notice", () => {
+    const source = readFileSync(join(process.cwd(), "src/components/form-submit-button.tsx"), "utf8");
+
+    expect(source).toContain("duplicateSubmitLabel");
+    expect(source).toContain("已经提交，请勿重复提交");
+    expect(source).toContain("event.preventDefault()");
+    expect(source).toContain("aria-live=\"polite\"");
+    expect(source).toContain("form.dataset.submitted");
   });
 });

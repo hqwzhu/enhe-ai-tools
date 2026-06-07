@@ -161,9 +161,9 @@ export default async function AdminFilesPage({ searchParams }: { searchParams: P
 
             <form action={deleteFileAdminAction} className="mt-4 border-t border-white/10 pt-4">
               <input type="hidden" name="id" value={file.id} />
-              <button className="rounded-full border border-red-400/40 px-4 py-2 text-sm text-red-200 transition hover:border-red-300 hover:bg-red-400/10">
+              <SubmitButton variant="danger" pendingLabel="删除中...">
                 删除文件
-              </button>
+              </SubmitButton>
               <span className="ml-3 text-xs text-[#8B95A7]">
                 删除时会解绑作为下载文件使用的工具，并清理该文件的下载记录。
               </span>

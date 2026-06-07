@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createRefundRequestAction } from "@/app/actions";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -137,9 +138,9 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
               <input name="refundReceiverQr" required maxLength={1000} placeholder="退款收款码图片地址或收款信息（必填）" className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
               <textarea name="note" maxLength={1000} placeholder="补充说明，可填写付款账号、沟通记录或退款方式" className="min-h-24 rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]" />
               <p className="text-xs leading-5 text-[#8B95A7]">{reviewCompletionNotice}</p>
-              <button className="w-fit rounded-full border border-[#FFB86B]/40 px-5 py-3 text-sm font-semibold text-[#FFB86B] transition hover:bg-[#FFB86B]/10">
+              <FormSubmitButton variant="secondary" pendingLabel="提交中..." className="w-fit border-[#FFB86B]/40 px-5 py-3 text-sm font-semibold text-[#FFB86B] hover:bg-[#FFB86B]/10">
                 提交售后/退款申请
-              </button>
+              </FormSubmitButton>
             </form>
           ) : !hasPendingRefundRequest && !order.refundRecords.length ? (
             <p className="mt-4 text-sm text-[#8B95A7]">当前订单状态暂不支持提交售后/退款申请。</p>
