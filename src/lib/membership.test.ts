@@ -72,6 +72,38 @@ describe("membership service", () => {
     );
   });
 
+  it("repairs a VIP order that is already activated but has no active membership", async () => {
+    const activatedAt = new Date("2026-06-06T05:10:30.000Z");
+    const { activateVipForOrder } = await import("@/lib/membership");
+    db.tx.order.findUnique.mockResolvedValue({
+      id: "order-1",
+      userId: "user-1",
+      planId: "plan-1",
+      orderType: "vip",
+      orderStatus: "activated",
+      paidAt: activatedAt,
+      activatedAt,
+      plan: { id: "plan-1", name: "特惠VIP", durationDays: 30 },
+      paymentProof: null
+    });
+    db.tx.membership.findFirst.mockResolvedValue(null);
+
+    await activateVipForOrder("order-1", "admin-1", "repair");
+
+    expect(db.tx.membership.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: "user-1",
+          planId: "plan-1",
+          vipType: "特惠VIP",
+          startTime: activatedAt,
+          status: "active"
+        })
+      })
+    );
+    expect(db.tx.order.update).not.toHaveBeenCalled();
+  });
+
   it("creates software purchase authorization when a paid software order is approved", async () => {
     const { activateVipForOrder } = await import("@/lib/membership");
     db.tx.order.findUnique.mockResolvedValue({

@@ -176,9 +176,51 @@ export async function activateVipForOrder(orderId: string, reviewerId?: string, 
       include: { plan: true, paymentProof: true }
     });
     if (!order) throw new Error("Order not found.");
-    if (order.orderStatus === "activated") return order;
-
     const start = new Date();
+
+    if (order.orderStatus === "activated") {
+      const entitlementStart = order.activatedAt ?? order.paidAt ?? start;
+
+      if (order.orderType === "software_download") {
+        if (!order.toolId) throw new Error("Software order is missing tool binding.");
+
+        await tx.toolPurchase.upsert({
+          where: { userId_toolId: { userId: order.userId, toolId: order.toolId } },
+          update: { amount: order.amount, orderId: order.id },
+          create: {
+            userId: order.userId,
+            toolId: order.toolId,
+            orderId: order.id,
+            amount: order.amount
+          }
+        });
+      } else {
+        if (!order.planId || !order.plan) throw new Error("VIP order is missing plan binding.");
+        const currentMembership = await findCurrentMembership(tx, order.userId);
+
+        if (!currentMembership) {
+          await grantVipMembership(tx, {
+            userId: order.userId,
+            planId: order.planId,
+            vipType: order.plan.name,
+            durationDays: order.plan.durationDays,
+            now: entitlementStart
+          });
+        }
+      }
+
+      await tx.paymentProof.updateMany({
+        where: { orderId },
+        data: {
+          reviewStatus: "approved",
+          reviewerId,
+          reviewedAt: entitlementStart,
+          reviewNote
+        }
+      });
+
+      return order;
+    }
 
     if (order.orderType === "software_download") {
       if (!order.toolId) throw new Error("Software order is missing tool binding.");
