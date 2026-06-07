@@ -22,4 +22,18 @@ describe("tool detail layout source", () => {
 
     expect(source.indexOf("tool-detail-product-gallery")).toBeLessThan(source.indexOf("tool-detail-copy-card"));
   });
+
+  it("does not show review-promise or VIP-only download-link notices on the public tool page", () => {
+    const pageSource = readFileSync(resolve(root, "src/app/tools/[slug]/page.tsx"), "utf8");
+    const i18nSource = readFileSync(resolve(root, "src/lib/i18n.ts"), "utf8");
+
+    expect(pageSource).not.toContain("reviewCompletionNotice");
+    expect(pageSource).not.toContain("reviewNotice");
+    expect(pageSource).not.toContain('commentsIntro.replace("{notice}"');
+    expect(pageSource).not.toContain("downloadLinksVipOnlyIntro");
+    expect(pageSource).not.toContain("downloadLinksHidden");
+    expect(i18nSource).not.toContain("评论提交后进入后台审核，通过后展示。{notice}");
+    expect(i18nSource).not.toContain("该工具设置为下载链接仅 VIP 可见。");
+    expect(i18nSource).not.toContain("当前下载链接仅对 VIP 用户显示");
+  });
 });

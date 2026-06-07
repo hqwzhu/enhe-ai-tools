@@ -9,7 +9,6 @@ import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
 import { userHasVip } from "@/lib/membership";
-import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
 import {
   canOpenProtectedDownloadEntry,
   canShowDownloadLinkArea,
@@ -21,7 +20,6 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   const [user, locale] = await Promise.all([getCurrentUser(), getCurrentLocale()]);
   const t = getDictionary(locale);
   const td = t.toolDetail;
-  const reviewNotice = locale === "en" ? reviewCompletionNoticeEn : reviewCompletionNotice;
   const { slug } = await params;
   const tool = await prisma.tool.findUnique({
     where: { slug },
@@ -212,13 +210,12 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         </section>
 
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title={td.commentsTitle} intro={td.commentsIntro.replace("{notice}", reviewNotice)} />
+          <SectionTitle title={td.commentsTitle} />
           {user ? (
             <form action={createCommentAction} className="mb-6">
               <input type="hidden" name="toolId" value={tool.id} />
               <input type="hidden" name="slug" value={tool.slug} />
               <textarea name="content" required className="min-h-28 w-full rounded-xl border border-white/12 bg-white/8 p-4 outline-none" placeholder={td.commentPlaceholder} />
-              <p className="mt-2 text-xs leading-5 text-[#8F9DB2]">{reviewNotice}</p>
               <FormSubmitButton className="mt-3 text-base" pendingLabel="提交中...">{td.submitComment}</FormSubmitButton>
             </form>
           ) : (
@@ -236,25 +233,21 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
           </div>
         </section>
 
-        {hasDownloadLink ? (
+        {showDownloadLinkArea ? (
           <section id="download-links" className="glass scroll-mt-24 rounded-2xl p-7">
-            <SectionTitle title={td.downloadLinksTitle} intro={showDownloadLinkArea ? td.downloadLinksIntro : td.downloadLinksVipOnlyIntro} />
-            {showDownloadLinkArea ? (
-              <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/8 p-5">
-                <div className="min-w-0">
-                  <p className="text-sm text-[#8F9DB2]">{td.protectedDownloadLink}</p>
-                  <p className="mt-2 whitespace-pre-wrap break-words text-base font-semibold leading-7 text-[#F6FAFF]">{downloadLinkContent}</p>
-                  <p className="mt-2 text-sm text-[#8F9DB2]">{tool.downloadFile?.fileName ?? td.noDownloadFileName}</p>
-                </div>
-                {canOpenDownloadEntry ? (
-                  <div>
-                    <ButtonLink href={protectedDownloadHref}>{td.downloadNow}</ButtonLink>
-                  </div>
-                ) : null}
+            <SectionTitle title={td.downloadLinksTitle} intro={td.downloadLinksIntro} />
+            <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/8 p-5">
+              <div className="min-w-0">
+                <p className="text-sm text-[#8F9DB2]">{td.protectedDownloadLink}</p>
+                <p className="mt-2 whitespace-pre-wrap break-words text-base font-semibold leading-7 text-[#F6FAFF]">{downloadLinkContent}</p>
+                <p className="mt-2 text-sm text-[#8F9DB2]">{tool.downloadFile?.fileName ?? td.noDownloadFileName}</p>
               </div>
-            ) : (
-              <p className="mt-6 rounded-2xl border border-white/10 bg-white/8 p-5 text-sm leading-7 text-[#8F9DB2]">{td.downloadLinksHidden}</p>
-            )}
+              {canOpenDownloadEntry ? (
+                <div>
+                  <ButtonLink href={protectedDownloadHref}>{td.downloadNow}</ButtonLink>
+                </div>
+              ) : null}
+            </div>
           </section>
         ) : null}
       </div>
