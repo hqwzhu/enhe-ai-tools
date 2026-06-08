@@ -15,7 +15,7 @@ echo "===== 重新构建并启动 Docker ====="
 docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml up -d --build
 
 echo "===== 同步数据库结构 ====="
-docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec app npx -y prisma@6.19.3 db push
+docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec app npx prisma migrate deploy
 
 echo "===== 查看容器状态 ====="
 docker ps | grep enhe-ai-tools
