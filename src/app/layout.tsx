@@ -5,7 +5,7 @@ import { InteractiveBackground } from "@/components/interactive-background";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
-import { buildPageMetadata, siteBaseUrl } from "@/lib/seo";
+import { buildPageMetadata, getSiteBaseUrl } from "@/lib/seo";
 import { getEffectiveLocalizedHomeHeroSubtitle, getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const [locale, settings] = await Promise.all([getCurrentLocale(), getSettingsMap()]);
   const t = getDictionary(locale);
   return {
-    metadataBase: new URL(siteBaseUrl),
+    metadataBase: new URL(getSiteBaseUrl()),
     applicationName: getEffectiveSiteName(settings, t.footer.siteName),
     robots: {
       index: true,

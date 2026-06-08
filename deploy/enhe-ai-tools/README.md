@@ -51,9 +51,12 @@ nano /opt/enhe-ai-tools/.env
 ```env
 POSTGRES_PASSWORD=换成强密码
 AUTH_SECRET=换成长随机字符串
+APP_URL=http://服务器IP:3001
 NEXT_PUBLIC_APP_URL=http://服务器IP:3001
 TENCENT_COS_SIGNED_URL_EXPIRES_SECONDS=600
 ```
+
+正式绑定 HTTPS 域名后，请把 `APP_URL` 和 `NEXT_PUBLIC_APP_URL` 都改为 `https://你的域名`，这样 canonical、robots 和 sitemap 会输出正式域名。
 
 如果使用腾讯云 COS 保存软件安装包，建议将 COS Bucket 设为私有读，并在后台文件记录中使用 `cos://bucket/key` 作为文件路径。用户下载时系统会先做 VIP / 付费权限校验，再生成短期签名下载链接。
 

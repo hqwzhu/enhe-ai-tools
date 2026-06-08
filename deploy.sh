@@ -8,7 +8,7 @@ if [ "${SKIP_GIT_PULL:-0}" = "1" ]; then
   echo "===== Skip git pull (SKIP_GIT_PULL=1) ====="
 else
   echo "===== 拉取最新代码 ====="
-  git pull origin main
+  git -c http.version=HTTP/1.1 pull origin main
 fi
 
 echo "===== 重新构建并启动 Docker ====="
@@ -21,7 +21,19 @@ echo "===== 查看容器状态 ====="
 docker ps | grep enhe-ai-tools
 
 echo "===== 测试应用 ====="
-docker exec hot-content-nginx wget -qO- --header="Host: www.enhe-tech.com.cn" http://enhe-ai-tools-app:3000/api/health | head -n 20
+for attempt in $(seq 1 30); do
+  HEALTH_RESPONSE="$(docker exec hot-content-nginx wget -qO- --header="Host: www.enhe-tech.com.cn" http://enhe-ai-tools-app:3000/api/health 2>/dev/null || true)"
+  if echo "$HEALTH_RESPONSE" | grep -q '"status":"ok"'; then
+    echo "$HEALTH_RESPONSE" | head -n 20
+    break
+  fi
+  if [ "$attempt" = "30" ]; then
+    echo "应用健康检查失败。最后响应：$HEALTH_RESPONSE" >&2
+    docker logs --tail=80 enhe-ai-tools-app >&2
+    exit 1
+  fi
+  sleep 2
+done
 
 echo "===== 确保 Nginx 支持后台大文件表单 ====="
 HOT_NGINX_CONF="/opt/hot-content-os/app/hot-content-os/infra/nginx/default.conf"

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const siteBaseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") ?? "https://www.enhe-tech.com.cn";
+export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
 export const siteName = "恩禾 ENHE AI";
 export const defaultSiteDescription =
   "恩禾 ENHE AI 提供本地应用与云端 AI 工具，覆盖内容创作、办公效率、文件处理和自动化工作流。";
@@ -15,7 +15,11 @@ type PageMetadataInput = {
 
 export function absoluteUrl(path = "/") {
   if (/^https?:\/\//i.test(path)) return path;
-  return `${siteBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${getSiteBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+export function getSiteBaseUrl() {
+  return (process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? fallbackSiteBaseUrl).replace(/\/+$/, "");
 }
 
 export function buildPageMetadata({ title, description, path = "/", image }: PageMetadataInput): Metadata {

@@ -46,7 +46,15 @@ describe("server deployment compose config", () => {
 
     expect(deployScript).toContain("SKIP_GIT_PULL");
     expect(deployScript).toContain('if [ "${SKIP_GIT_PULL:-0}" = "1" ]; then');
-    expect(deployScript).toContain("git pull origin main");
+    expect(deployScript).toContain("git -c http.version=HTTP/1.1 pull origin main");
+  });
+
+  it("waits for the app health endpoint after recreating the container", () => {
+    const deployScript = readFileSync(resolve(root, "deploy.sh"), "utf8");
+
+    expect(deployScript).toContain("for attempt in $(seq 1 30)");
+    expect(deployScript).toContain('"status":"ok"');
+    expect(deployScript).toContain("docker logs --tail=80 enhe-ai-tools-app");
   });
 
   it("uses the skip flag after the PowerShell deploy wrapper pulls on the server", () => {
