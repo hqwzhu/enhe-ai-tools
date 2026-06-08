@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Crown, LayoutDashboard, UserRound } from "lucide-react";
 import { setLocaleAction } from "@/app/language-actions";
 import { getCurrentUser } from "@/lib/auth";
+import { MobileNavMenu } from "@/components/mobile-nav-menu";
 import { ButtonLink, Container } from "@/components/ui";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
@@ -46,21 +47,22 @@ export async function SiteHeader() {
           ) : null}
         </nav>
         <div className="flex items-center gap-2">
+          <MobileNavMenu labels={{ menu: t.nav.menu, admin: t.nav.admin }} navItems={navItems} showAdmin={user?.role === "admin"} />
           <LanguageSwitcher locale={locale} labels={t.language} />
           {user ? (
-            <Link href="/user" className="inline-flex items-center gap-2 rounded-full border border-[rgba(210,230,255,0.16)] bg-[rgba(238,246,255,0.05)] px-3 py-2 text-sm text-[#F6FAFF]">
+            <Link href="/user" className="inline-flex max-w-[136px] items-center gap-2 truncate rounded-full border border-[rgba(210,230,255,0.16)] bg-[rgba(238,246,255,0.05)] px-3 py-2 text-sm text-[#F6FAFF] sm:max-w-none">
               <span className="relative inline-flex">
                 <UserRound size={16} />
                 {membership ? (
                   <Crown className="absolute -right-2 -top-2 text-[#FFB86B]" size={12} fill="currentColor" />
                 ) : null}
               </span>
-              {user.nickname ?? user.email ?? t.nav.userFallback}
+              <span className="truncate">{user.nickname ?? user.email ?? t.nav.userFallback}</span>
             </Link>
           ) : (
             <>
               <span className="hidden sm:inline-flex"><ButtonLink href="/login" variant="ghost">{t.nav.login}</ButtonLink></span>
-              <ButtonLink href="/register" variant="ghost">{t.nav.register}</ButtonLink>
+              <span className="hidden sm:inline-flex"><ButtonLink href="/register" variant="ghost">{t.nav.register}</ButtonLink></span>
             </>
           )}
         </div>

@@ -31,6 +31,8 @@ export const dictionaries = {
       admin: "后台管理",
       login: "登录",
       register: "注册",
+      menu: "菜单",
+      closeMenu: "收起菜单",
       userFallback: "用户"
     },
     language: {
@@ -54,7 +56,18 @@ export const dictionaries = {
     toolCard: {
       uncategorized: "未分类",
       free: "免费",
-      paidDownload: "下载"
+      paidDownload: "下载",
+      valuePrefix: "价值",
+      audienceLabel: "适合",
+      viewDetails: "查看详情",
+      capabilityAccess: "权限清晰",
+      capabilitySoftware: "本地运行",
+      capabilityOnline: "浏览器使用",
+      capabilityVip: "VIP 可用",
+      capabilityFree: "免费体验",
+      capabilityPaidDownload: "付费下载",
+      capabilityUpdated: "持续更新",
+      defaultAudience: "效率提升用户"
     },
     listing: {
       softwareTitle: "本地应用",
@@ -77,12 +90,45 @@ export const dictionaries = {
       alipay: "支付宝",
       wechat: "微信",
       createOrder: "创建订单",
+      primaryCta: "立即开通",
+      pending: "订单创建中...",
       lifetime: "永久 VIP",
       days: "{days}天 VIP",
       months: "{months}个月 VIP",
       durationNote: "{days} 天有效期",
       lifetimeNote: "永久有效",
-      planDescription: "开通后可访问会员工具、查看订单与使用记录。"
+      planDescription: "开通后可访问会员工具、查看订单与使用记录。",
+      benefitsTitle: "开通 VIP 后可以做什么",
+      benefitsIntro: "购买前把权益、开通路径和售后边界说清楚，付款后按订单进入审核流程。",
+      benefits: [
+        "使用标记为 VIP 的云端工具",
+        "查看会员可用的本地应用下载入口",
+        "用户中心集中查看订单、下载和使用记录",
+        "付款截图提交后进入后台审核，审核通过即开通",
+        "售后/退款规则在用户中心和页脚长期可查"
+      ],
+      processTitle: "开通流程",
+      processSteps: [
+        "选择套餐并点击立即开通",
+        "扫码付款后上传付款凭证",
+        "后台审核通过后自动开通 VIP",
+        "到用户中心查看会员与可用工具"
+      ],
+      benefitComparisonTitle: "权益对比",
+      comparisonHeaders: ["权益", "普通用户", "VIP 用户"],
+      comparisonRows: [
+        ["免费工具", "可使用", "可使用"],
+        ["VIP 云端工具", "不可使用", "可使用"],
+        ["VIP 本地应用入口", "不可查看", "可查看"],
+        ["付费下载软件", "单独购买", "单独购买"],
+        ["订单与售后记录", "可查看", "可查看"]
+      ],
+      serviceTitle: "付款与售后说明",
+      serviceItems: [
+        "付款后请上传截图凭证，系统会通知管理员审核。",
+        "审核通过后会员状态和可用工具会显示在用户中心。",
+        "如需售后/退款，可在订单详情提交申请并按规则处理。"
+      ]
     },
     tutorials: {
       title: "使用教程",
@@ -203,6 +249,18 @@ export const dictionaries = {
       step: "STEP {index}",
       notes: "注意事项",
       commonErrors: "常见错误",
+      faqTitle: "常见问题",
+      noFaqs: "暂无常见问题，后续会随版本继续补充。",
+      trustTitle: "使用前确认",
+      trustIntro: "购买和使用前可以先查看演示、环境要求、版本记录与售后入口。",
+      demoVideo: "演示/教程",
+      demoVideoFallback: "暂无视频链接，请查看下方图文教程。",
+      updateLog: "更新记录",
+      refundRules: "退款规则",
+      refundRulesIntro: "查看会员服务与退款规则",
+      supportEmail: "客服联系方式",
+      supportEmailValue: "292055066@qq.com",
+      contactSupport: "联系售后",
       commentsTitle: "用户评论",
       commentPlaceholder: "写下你的使用体验",
       submitComment: "提交评论",
@@ -240,6 +298,8 @@ export const dictionaries = {
       admin: "Admin",
       login: "Log in",
       register: "Sign up",
+      menu: "Menu",
+      closeMenu: "Close menu",
       userFallback: "User"
     },
     language: {
@@ -263,7 +323,18 @@ export const dictionaries = {
     toolCard: {
       uncategorized: "Uncategorized",
       free: "Free",
-      paidDownload: "Download"
+      paidDownload: "Download",
+      valuePrefix: "Value",
+      audienceLabel: "Best for",
+      viewDetails: "View details",
+      capabilityAccess: "Clear access",
+      capabilitySoftware: "Desktop run",
+      capabilityOnline: "Browser use",
+      capabilityVip: "VIP access",
+      capabilityFree: "Free trial",
+      capabilityPaidDownload: "Paid download",
+      capabilityUpdated: "Updated",
+      defaultAudience: "Productivity users"
     },
     listing: {
       softwareTitle: "Desktop Apps",
@@ -286,12 +357,45 @@ export const dictionaries = {
       alipay: "Alipay",
       wechat: "WeChat",
       createOrder: "Create order",
+      primaryCta: "Activate now",
+      pending: "Creating order...",
       lifetime: "Lifetime VIP",
       days: "{days}-Day VIP",
       months: "{months}-Month VIP",
       durationNote: "Valid for {days} days",
       lifetimeNote: "Lifetime access",
-      planDescription: "Unlock member tools and access your orders, downloads, and usage records."
+      planDescription: "Unlock member tools and access your orders, downloads, and usage records.",
+      benefitsTitle: "What VIP unlocks",
+      benefitsIntro: "Understand the benefits, activation path, and after-sales boundary before you pay.",
+      benefits: [
+        "Use web tools marked as VIP",
+        "View VIP desktop app download entries",
+        "Track orders, downloads, and usage from the account center",
+        "Submit payment proof for admin review and activation",
+        "Access refund rules from the account center and footer"
+      ],
+      processTitle: "Activation flow",
+      processSteps: [
+        "Choose a plan and click Activate now",
+        "Scan to pay and upload payment proof",
+        "Admin approval activates VIP automatically",
+        "Check membership and usable tools in the account center"
+      ],
+      benefitComparisonTitle: "Benefits comparison",
+      comparisonHeaders: ["Benefit", "Free user", "VIP user"],
+      comparisonRows: [
+        ["Free tools", "Available", "Available"],
+        ["VIP web tools", "Locked", "Available"],
+        ["VIP desktop entries", "Hidden", "Visible"],
+        ["Paid downloads", "Separate purchase", "Separate purchase"],
+        ["Orders and after-sales records", "Visible", "Visible"]
+      ],
+      serviceTitle: "Payment and after-sales",
+      serviceItems: [
+        "After payment, upload a screenshot proof so admins can review it.",
+        "After approval, membership status and available tools appear in the account center.",
+        "For after-sales or refund requests, submit from the order detail page under the published rules."
+      ]
     },
     tutorials: {
       title: "Tutorials",
@@ -412,6 +516,18 @@ export const dictionaries = {
       step: "STEP {index}",
       notes: "Notes",
       commonErrors: "Common errors",
+      faqTitle: "FAQ",
+      noFaqs: "No FAQ yet. More answers will be added with future updates.",
+      trustTitle: "Before you use it",
+      trustIntro: "Review demos, requirements, version history, after-sales rules, and support before buying or using.",
+      demoVideo: "Demo/tutorial",
+      demoVideoFallback: "No video link yet. See the written tutorials below.",
+      updateLog: "Update log",
+      refundRules: "Refund rules",
+      refundRulesIntro: "View membership and refund rules",
+      supportEmail: "Support contact",
+      supportEmailValue: "292055066@qq.com",
+      contactSupport: "Contact support",
       commentsTitle: "User comments",
       commentPlaceholder: "Write your experience",
       submitComment: "Submit comment",

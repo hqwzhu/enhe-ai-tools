@@ -129,6 +129,7 @@ model User {
   comments        Comment[]
   downloadLogs    DownloadLog[]
   toolUsageLogs   ToolUsageLog[]
+  analyticsEvents AnalyticsEvent[]
   toolPurchases   ToolPurchase[]
   vipAdjustments   VipAdjustmentLog[] @relation("VipAdjustmentTarget")
   vipOperations    VipAdjustmentLog[] @relation("VipAdjustmentAdmin")
@@ -460,6 +461,25 @@ model ToolUsageLog {
   tool      Tool     @relation(fields: [toolId], references: [id])
 
   @@map("tool_usage_logs")
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  eventName  String   @map("event_name")
+  path       String?
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id")
+  userId     String?  @map("user_id")
+  metadata   Json?
+  ip         String?
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventName, createdAt])
+  @@index([path, createdAt])
+  @@index([userId, createdAt])
+  @@map("analytics_events")
 }
 
 model SiteSetting {

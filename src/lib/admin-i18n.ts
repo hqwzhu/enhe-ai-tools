@@ -57,7 +57,19 @@ export const adminDictionaries = {
       popularTools: "热门工具",
       popularToolsNote: "按下载次数和在线使用次数综合排序",
       popularToolStats: "下载 {downloads} / 使用 {usage} / 热度 {score}",
-      noPublishedTools: "暂无已发布工具数据。"
+      noPublishedTools: "暂无已发布工具数据。",
+      funnelTitle: "7 天运营漏斗",
+      funnelNote: "访问、开通、审核和退款关键节点",
+      funnelConversion: "相邻转化 {rate}%",
+      funnelLabels: {
+        visit_home: "访问首页",
+        view_tool: "查看工具",
+        click_open_vip: "点击开通",
+        create_order: "创建订单",
+        payment_proof_submitted: "提交凭证",
+        payment_review_approved: "审核通过",
+        refund_request_submitted: "退款申请"
+      }
     },
     licenseGenerator: {
       title: "授权码生成器",
@@ -132,7 +144,19 @@ export const adminDictionaries = {
       popularTools: "Popular tools",
       popularToolsNote: "Ranked by downloads plus online usage",
       popularToolStats: "Downloads {downloads} / Usage {usage} / Score {score}",
-      noPublishedTools: "No published tool data yet."
+      noPublishedTools: "No published tool data yet.",
+      funnelTitle: "7-day operations funnel",
+      funnelNote: "Visit, activation, review, and refund milestones",
+      funnelConversion: "Step conversion {rate}%",
+      funnelLabels: {
+        visit_home: "Visit home",
+        view_tool: "View tool",
+        click_open_vip: "Click activate",
+        create_order: "Create order",
+        payment_proof_submitted: "Submit proof",
+        payment_review_approved: "Approved",
+        refund_request_submitted: "Refund request"
+      }
     },
     licenseGenerator: {
       title: "License generator",

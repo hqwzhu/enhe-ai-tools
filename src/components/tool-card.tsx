@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Crown, Download, MousePointer2 } from "lucide-react";
+import { ArrowUpRight, Check, Crown, Download, MousePointer2, UserRound } from "lucide-react";
 import { Badge } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
@@ -26,6 +26,9 @@ type ToolCardProps = {
 export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
   const t = getDictionary(locale);
   const coverImage = normalizeImageSrc(tool.coverImage);
+  const summary = buildValueSentence(tool.shortDescription, locale);
+  const highlights = buildCardHighlights(tool, locale);
+  const audience = tool.category?.name ?? t.toolCard.defaultAudience;
 
   return (
     <Link href={`/tools/${tool.slug}`} className="evidence-card group block overflow-hidden transition hover:-translate-y-1 hover:border-[#7DD3FC]/45">
@@ -67,18 +70,50 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
           </div>
           <ArrowUpRight className="text-[#8F9DB2] transition group-hover:text-[#7DD3FC]" />
         </div>
-        <p className="min-h-14 text-sm leading-6 text-[#8F9DB2]">{tool.shortDescription}</p>
-        <div className="mt-6 flex items-center gap-4 text-xs text-[#8F9DB2]">
-          <span className="inline-flex items-center gap-1">
-            <Download size={14} />
-            {tool.downloadCount}
+        <p className="min-h-14 text-sm leading-6 text-[#C5D0E2]">
+          <span className="font-semibold text-[#7DD3FC]">{t.toolCard.valuePrefix}：</span>
+          {summary}
+        </p>
+        <div className="mt-5 grid gap-2">
+          {highlights.map((item) => (
+            <span key={item} className="inline-flex items-center gap-2 text-sm text-[#8F9DB2]">
+              <Check size={14} className="shrink-0 text-[#5EF1C7]" />
+              {item}
+            </span>
+          ))}
+        </div>
+        <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs text-[#8F9DB2]">
+          <UserRound size={14} className="shrink-0 text-[#7DD3FC]" />
+          <span>{t.toolCard.audienceLabel}：{audience}</span>
+        </div>
+        <div className="mt-6 flex items-center justify-between gap-4 text-xs text-[#8F9DB2]">
+          <span className="inline-flex items-center gap-3">
+            <span className="inline-flex items-center gap-1">
+              <Download size={14} />
+              {tool.downloadCount}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <MousePointer2 size={14} />
+              {tool.usageCount}
+            </span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <MousePointer2 size={14} />
-            {tool.usageCount}
-          </span>
+          <span className="font-semibold text-[#7DD3FC]">{t.toolCard.viewDetails}</span>
         </div>
       </div>
     </Link>
   );
+}
+
+function buildValueSentence(description: string, locale: Locale) {
+  const sentence = description.split(/[。.!！？?]/).find(Boolean)?.trim() ?? description.trim();
+  const maxLength = locale === "zh" ? 44 : 86;
+  return sentence.length > maxLength ? `${sentence.slice(0, maxLength - 1)}…` : sentence;
+}
+
+function buildCardHighlights(tool: ToolCardProps["tool"], locale: Locale) {
+  const t = getDictionary(locale);
+  const access = tool.isVipRequired ? t.toolCard.capabilityVip : t.toolCard.capabilityFree;
+  const runtime = tool.type === "software" ? t.toolCard.capabilitySoftware : t.toolCard.capabilityOnline;
+  const commerce = tool.type === "software" && tool.isDownloadPaid ? t.toolCard.capabilityPaidDownload : t.toolCard.capabilityAccess;
+  return [runtime, access, commerce];
 }

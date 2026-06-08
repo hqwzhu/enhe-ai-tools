@@ -59,6 +59,19 @@ TENCENT_COS_SIGNED_URL_EXPIRES_SECONDS=600
 
 数据库连接在 `docker-compose.yml` 中自动生成，连接到内部容器 `enhe-ai-tools-db:5432`，不会连接宿主机 `5432`。
 
+如需管理员审核通知、健康告警和登录提醒邮件，请配置：
+
+```env
+ADMIN_ALERT_EMAILS=huqingwei5942@gmail.com
+ADMIN_EMAIL_NOTIFICATIONS_ENABLED=true
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=你的邮箱
+SMTP_PASSWORD=邮箱应用专用密码
+SMTP_FROM=恩禾 ENHE AI <你的邮箱>
+```
+
 ## 启动
 
 推荐使用脚本：
@@ -118,6 +131,28 @@ curl http://127.0.0.1:3001/api/health
   "database": "ok",
   "checkedAt": "2026-05-19T00:00:00.000Z"
 }
+```
+
+## 上线运维保障
+
+安装每日数据库备份和站点异常告警：
+
+```bash
+chmod +x /opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/*.sh
+/opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/enhe-install-cron.sh
+```
+
+默认策略：
+
+- 每天 03:15 备份 PostgreSQL 到 `/opt/enhe-ai-tools/backups/db`，保留 14 天。
+- 每 5 分钟检查 `http://127.0.0.1:3001/api/health`，异常时通过 SMTP 发邮件。
+- 健康告警 30 分钟内只发送一次，恢复后自动清除告警状态。
+
+也可以手动执行：
+
+```bash
+/opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/enhe-backup-db.sh
+/opt/enhe-ai-tools/deploy/enhe-ai-tools/scripts/enhe-health-watch.sh
 ```
 
 ## 日志与排查

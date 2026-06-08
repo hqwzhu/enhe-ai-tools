@@ -271,6 +271,62 @@ export async function sendManualVipAdjustmentAdminEmail(input: {
   });
 }
 
+export async function sendAdminLoginSecurityEmail(input: {
+  userId: string;
+  adminLabel: string;
+  ip?: string | null;
+  userAgent?: string | null;
+}) {
+  await safeSend(async () => {
+    const appUrl = normalizeAppUrl(process.env.NEXT_PUBLIC_APP_URL ?? "https://www.enhe-tech.com.cn");
+    const subject = `[ENHE AI] 后台管理员登录提醒：${input.adminLabel}`;
+    const lines: Array<[string, string]> = [
+      ["管理员", input.adminLabel],
+      ["用户 ID", input.userId],
+      ["登录时间", new Date().toLocaleString("zh-CN")],
+      ["IP", input.ip ?? "未知"],
+      ["浏览器", input.userAgent ?? "未知"]
+    ];
+    const links: Array<[string, string]> = [
+      ["后台数据看板", `${appUrl}/admin`],
+      ["操作审计", `${appUrl}/admin/audit`]
+    ];
+
+    await sendAdminEmail({
+      subject,
+      text: [
+        subject,
+        "",
+        ...lines.map(([label, value]) => `${label}：${value}`),
+        "",
+        "跳转链接：",
+        ...links.map(([label, url]) => `${label}：${url}`)
+      ].join("\n"),
+      html: `
+        <div style="font-family:Arial,'Microsoft YaHei',sans-serif;line-height:1.7;color:#0f172a">
+          <h2 style="margin:0 0 12px">ENHE AI 管理员登录提醒</h2>
+          <p style="margin:0 0 16px;color:#475569">如非本人操作，请立即修改管理员密码并检查服务器登录记录。</p>
+          <table style="border-collapse:collapse;width:100%;max-width:720px">
+            ${lines
+              .map(
+                ([label, value]) => `
+                  <tr>
+                    <td style="border:1px solid #e2e8f0;background:#f8fafc;padding:8px 10px;width:120px;font-weight:600">${escapeHtml(label)}</td>
+                    <td style="border:1px solid #e2e8f0;padding:8px 10px">${escapeHtml(value)}</td>
+                  </tr>`
+              )
+              .join("")}
+          </table>
+          <p style="margin:18px 0 8px;font-weight:600">跳转链接</p>
+          <ul>
+            ${links.map(([label, url]) => `<li><a href="${escapeAttribute(url)}">${escapeHtml(label)}</a></li>`).join("")}
+          </ul>
+        </div>
+      `
+    });
+  });
+}
+
 async function sendOrderAdminEmail(
   orderId: string,
   eventType: AdminOperationEmailEvent,

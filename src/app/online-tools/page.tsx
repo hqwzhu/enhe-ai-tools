@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { Container, EmptyState, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
+import { buildPageMetadata } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getCurrentLocale();
+  const t = getDictionary(locale);
+  return buildPageMetadata({
+    title: `${t.listing.onlineTitle} - ${t.brand}`,
+    description: t.listing.onlineIntro,
+    path: "/online-tools"
+  });
+}
 
 export default async function OnlineToolsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;

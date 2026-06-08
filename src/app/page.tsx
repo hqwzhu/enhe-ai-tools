@@ -1,14 +1,26 @@
+import type { Metadata } from "next";
 import { ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { HeroLogoMark } from "@/components/hero-logo-mark";
 import { ToolCard } from "@/components/tool-card";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
+import { buildPageMetadata } from "@/lib/seo";
 import {
   getEffectiveLocalizedHomeHeroIntro,
   getEffectiveLocalizedHomeHeroSubtitle,
   getEffectiveHomeHeroTitle,
   getSettingsMap
 } from "@/lib/settings";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const [locale, settings] = await Promise.all([getCurrentLocale(), getSettingsMap()]);
+  const t = getDictionary(locale);
+  return buildPageMetadata({
+    title: `${getEffectiveHomeHeroTitle(settings, t.home.title)} - ${t.brand}`,
+    description: getEffectiveLocalizedHomeHeroIntro(settings, locale, t.home.intro),
+    path: "/"
+  });
+}
 
 export default async function HomePage() {
   const [software, onlineTools, locale, settings] = await Promise.all([

@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createCommentAction, createSoftwareDownloadOrderAction } from "@/app/actions";
 import { FormSubmitButton } from "@/components/form-submit-button";
@@ -9,12 +11,37 @@ import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
 import { userHasVip } from "@/lib/membership";
+import { buildPageMetadata } from "@/lib/seo";
 import {
   canOpenProtectedDownloadEntry,
   canShowDownloadLinkArea,
   getDownloadLinkContent,
   resolveSoftwareDownloadCtaHref
 } from "@/lib/tool-download-link";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const [{ slug }, locale] = await Promise.all([params, getCurrentLocale()]);
+  const t = getDictionary(locale);
+  const tool = await prisma.tool.findUnique({
+    where: { slug },
+    select: { name: true, englishName: true, shortDescription: true, coverImage: true, status: true }
+  });
+  const canonical = `/tools/${slug}`;
+  if (!tool || tool.status !== "published") {
+    return buildPageMetadata({
+      title: `${t.toolDetail.introTitle} - ${t.brand}`,
+      description: t.listing.emptyText,
+      path: canonical
+    });
+  }
+
+  return buildPageMetadata({
+    title: `${tool.name}${tool.englishName ? ` ${tool.englishName}` : ""} - ${t.brand}`,
+    description: tool.shortDescription,
+    path: canonical,
+    image: normalizeImageSrc(tool.coverImage)
+  });
+}
 
 export default async function ToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [user, locale] = await Promise.all([getCurrentUser(), getCurrentLocale()]);
@@ -28,6 +55,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
       downloadFile: true,
       tagLinks: { include: { tag: true }, orderBy: { tag: { sortOrder: "asc" } } },
       tutorials: { where: { status: "active" }, orderBy: { sortOrder: "asc" } },
+      faqs: { where: { status: "active" }, orderBy: { sortOrder: "asc" } },
       changelogs: { where: { status: "active" }, orderBy: [{ releaseDate: "desc" }, { sortOrder: "asc" }] },
       comments: { where: { status: "approved" }, include: { user: true }, orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }] }
     }
@@ -58,6 +86,8 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
     include: { category: true },
     take: 3
   });
+  const tutorialVideos = tool.tutorials.filter((tutorial) => tutorial.videoUrl);
+  const supportEmail = td.supportEmailValue;
 
   return (
     <Container className="py-14">
@@ -127,7 +157,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               ) : null}
             </div>
 
-            <div className="rounded-2xl border border-[rgba(210,230,255,0.14)] bg-[rgba(238,246,255,0.06)] p-5">
+            <div id="tool-changelog" className="scroll-mt-24 rounded-2xl border border-[rgba(210,230,255,0.14)] bg-[rgba(238,246,255,0.06)] p-5">
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-xl font-semibold text-[#F6FAFF]">{td.changelogTitle}</h2>
                 <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8F9DB2]">
@@ -156,6 +186,43 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
       </section>
 
       <div className="mt-10 space-y-10">
+        <section className="glass rounded-2xl p-7">
+          <SectionTitle title={td.trustTitle} intro={td.trustIntro} />
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <TrustItem label={td.demoVideo}>
+              {tutorialVideos.length ? (
+                <div className="space-y-2">
+                  {tutorialVideos.slice(0, 2).map((tutorial) => (
+                    <a key={tutorial.id} href={tutorial.videoUrl ?? "#"} target="_blank" rel="noreferrer" className="block break-all text-sm leading-6 text-[#7DD3FC] hover:text-[#BFE9FF]">
+                      {tutorial.title}
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm leading-6 text-[#8F9DB2]">{td.demoVideoFallback}</p>
+              )}
+            </TrustItem>
+            <TrustItem label={td.systemRequirement}>
+              <p className="text-sm leading-6 text-[#C5D0E2]">{tool.systemRequirement ?? td.browser}</p>
+              <p className="mt-2 text-xs text-[#8F9DB2]">{td.version}：{tool.version ?? td.onlineVersion}</p>
+            </TrustItem>
+            <TrustItem label={td.updateLog}>
+              <p className="text-sm leading-6 text-[#C5D0E2]">{td.changelogCount.replace("{count}", String(tool.changelogs.length))}</p>
+              <Link href="#tool-changelog" className="mt-2 inline-flex text-sm font-semibold text-[#7DD3FC] hover:text-[#BFE9FF]">
+                {td.changelogTitle}
+              </Link>
+            </TrustItem>
+            <TrustItem label={td.supportEmail}>
+              <a href={`mailto:${supportEmail}`} className="break-all text-sm font-semibold text-[#7DD3FC] hover:text-[#BFE9FF]">
+                {supportEmail}
+              </a>
+              <Link href="/legal/membership-refund" className="mt-2 block text-sm leading-6 text-[#FFB86B] hover:text-[#FFD29B]">
+                {td.refundRulesIntro}
+              </Link>
+            </TrustItem>
+          </div>
+        </section>
+
         <section className="glass rounded-2xl p-7">
           <SectionTitle title={td.introTitle} intro={td.productImagesIntro} />
           <div className="mt-6 space-y-7">
@@ -206,6 +273,24 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 {tutorial.videoUrl ? <p className="mt-3 text-sm text-[#C4B5FD]">{tutorial.videoUrl}</p> : null}
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="glass rounded-2xl p-7">
+          <SectionTitle title={td.faqTitle} />
+          <div className="mt-5 grid gap-3">
+            {tool.faqs.length ? (
+              tool.faqs.map((faq) => (
+                <details key={faq.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
+                  <summary className="cursor-pointer list-none font-semibold text-[#F6FAFF] [&::-webkit-details-marker]:hidden">
+                    {faq.question}
+                  </summary>
+                  <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#8F9DB2]">{faq.answer}</p>
+                </details>
+              ))
+            ) : (
+              <p className="rounded-2xl border border-white/10 bg-white/8 p-5 text-sm leading-6 text-[#8F9DB2]">{td.noFaqs}</p>
+            )}
           </div>
         </section>
 
@@ -265,6 +350,15 @@ function Info({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-white/10 bg-white/8 p-4">
       <p className="text-xs text-[#8F9DB2]">{label}</p>
       <p className="mt-2 font-semibold text-[#F6FAFF]">{value}</p>
+    </div>
+  );
+}
+
+function TrustItem({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
+      <p className="text-sm font-semibold text-[#F6FAFF]">{label}</p>
+      <div className="mt-3">{children}</div>
     </div>
   );
 }

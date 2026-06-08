@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { analyticsFunnelSteps, buildAnalyticsFunnel } from "@/lib/analytics";
 import { prisma } from "@/lib/db";
 import { getAdminDictionary } from "@/lib/admin-i18n";
 import {
@@ -46,7 +47,8 @@ export default async function AdminDashboardPage() {
     activeMemberships,
     expiringMemberships,
     popularTools,
-    recentRevenueOrders
+    recentRevenueOrders,
+    analyticsEventCounts
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { createdAt: { gte: last7Days } } }),
@@ -74,6 +76,11 @@ export default async function AdminDashboardPage() {
     prisma.order.findMany({
       where: { orderStatus: { in: ["paid", "activated"] }, createdAt: { gte: trendStart } },
       select: { createdAt: true, amount: true }
+    }),
+    prisma.analyticsEvent.groupBy({
+      by: ["eventName"],
+      where: { createdAt: { gte: last7Days }, eventName: { in: [...analyticsFunnelSteps] } },
+      _count: { _all: true }
     })
   ]);
 
@@ -87,6 +94,10 @@ export default async function AdminDashboardPage() {
     recentRevenueOrders.map((order) => ({ date: order.createdAt, amount: Number(order.amount), count: 1 }))
   );
   const maxTrendAmount = Math.max(1, ...revenueTrend.map((bucket) => bucket.amount));
+  const analyticsFunnel = buildAnalyticsFunnel(
+    analyticsEventCounts.map((row) => ({ eventName: row.eventName, count: row._count._all }))
+  );
+  const maxFunnelCount = Math.max(1, ...analyticsFunnel.map((row) => row.count));
 
   return (
     <div>
@@ -109,6 +120,25 @@ export default async function AdminDashboardPage() {
         <Stat label={t.stats.activeVips} value={activeMemberships} href="/admin/users" />
         <Stat label={t.stats.vipExpiring7d} value={expiringMemberships} href="/admin/messages" warn={expiringMemberships > 0} />
       </div>
+
+      <section className="glass mt-8 rounded-2xl p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">{t.funnelTitle}</h2>
+          <span className="text-xs text-[#8B95A7]">{t.funnelNote}</span>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-7">
+          {analyticsFunnel.map((row) => (
+            <div key={row.eventName} className="rounded-2xl border border-white/10 bg-white/6 p-4">
+              <p className="text-sm font-semibold text-[#E8EEF8]">{t.funnelLabels[row.eventName]}</p>
+              <p className="mt-3 text-3xl font-semibold text-[#7DD3FC]">{row.count}</p>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-[#48F5D3]" style={{ width: `${Math.max(4, (row.count / maxFunnelCount) * 100)}%` }} />
+              </div>
+              <p className="mt-3 text-xs text-[#8B95A7]">{t.funnelConversion.replace("{rate}", String(row.conversionRate))}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]">
         <section className="glass rounded-2xl p-6">

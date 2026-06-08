@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { parseAccountCredentials } from "@/lib/account-identity";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 import { prisma } from "@/lib/db";
 import { createOrderNo } from "@/lib/order";
 import {
@@ -20,6 +22,7 @@ import {
 } from "@/lib/auth";
 import { assertValidCsrfToken } from "@/lib/csrf";
 import {
+  sendAdminLoginSecurityEmail,
   sendPaymentProofSubmittedAdminEmail,
   sendPaymentReviewAdminEmail,
   sendRefundRequestAdminEmail
@@ -74,6 +77,15 @@ export async function loginAction(formData: FormData) {
   }
   await recordLoginAttempt(input.identifier, true);
   await signInUser(user.id);
+  if (user.role === "admin") {
+    const requestInfo = await getRequestSecurityInfo();
+    await sendAdminLoginSecurityEmail({
+      userId: user.id,
+      adminLabel: user.email ?? user.nickname ?? user.id,
+      ip: requestInfo.ip,
+      userAgent: requestInfo.userAgent
+    });
+  }
   redirect(user.role === "admin" ? "/admin" : "/user");
 }
 
@@ -124,6 +136,14 @@ export async function createOrderAction(formData: FormData) {
       orderStatus: "pending_payment"
     }
   });
+  await trackAnalyticsEvent({
+    eventName: "create_order",
+    path: "/pricing",
+    entityType: "order",
+    entityId: order.id,
+    userId: user.id,
+    metadata: { orderType: "vip", planId: plan.id, amount: plan.price.toString() }
+  });
   redirect(`/orders/${order.id}/pay`);
 }
 
@@ -153,6 +173,14 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
       orderStatus: "pending_payment"
     }
   });
+  await trackAnalyticsEvent({
+    eventName: "create_order",
+    path: `/tools/${tool.slug}`,
+    entityType: "order",
+    entityId: order.id,
+    userId: user.id,
+    metadata: { orderType: "software_download", toolId: tool.id, amount: tool.downloadPrice.toString() }
+  });
   redirect(`/orders/${order.id}/pay`);
 }
 
@@ -172,6 +200,14 @@ export async function submitPaymentProofAction(formData: FormData) {
     create: { orderId, userId: user.id, paymentMethod, paymentRemark, proofImage, reviewStatus: "pending" }
   });
   await prisma.order.update({ where: { id: orderId }, data: { orderStatus: "pending_review", paymentMethod } });
+  await trackAnalyticsEvent({
+    eventName: "payment_proof_submitted",
+    path: `/orders/${orderId}/pay`,
+    entityType: "order",
+    entityId: orderId,
+    userId: user.id,
+    metadata: { paymentMethod }
+  });
   await sendPaymentProofSubmittedAdminEmail(orderId);
   redirect("/user?tab=orders");
 }
@@ -238,6 +274,14 @@ export async function createRefundRequestAction(formData: FormData) {
       refundReceiverQr
     }
   });
+  await trackAnalyticsEvent({
+    eventName: "refund_request_submitted",
+    path: `/orders/${order.id}`,
+    entityType: "order",
+    entityId: order.id,
+    userId: user.id,
+    metadata: { reason }
+  });
   await createUserNotification(
     user.id,
     buildRefundRequestNotification({ orderId: order.id, orderNo: order.orderNo })
@@ -303,6 +347,14 @@ export async function reviewPaymentProofAction(formData: FormData) {
     actorLabel: admin.email ?? admin.nickname ?? admin.id,
     note: reviewNote
   });
+  await trackAnalyticsEvent({
+    eventName: decision === "approved" ? "payment_review_approved" : "payment_review_rejected",
+    path: `/admin/payments/${proof.id}`,
+    entityType: "order",
+    entityId: orderId,
+    userId: order.userId,
+    metadata: { decision, adminId: admin.id }
+  });
   await writeAdminAuditLog({
     adminId: admin.id,
     action: "payment.review",
@@ -353,4 +405,12 @@ export async function updateCommentPinAction(formData: FormData) {
 export async function getSessionSnapshot() {
   const user = await getCurrentUser();
   return user;
+}
+
+async function getRequestSecurityInfo() {
+  const headerStore = await headers();
+  return {
+    ip: headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    userAgent: headerStore.get("user-agent")
+  };
 }
