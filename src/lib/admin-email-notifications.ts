@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import type { Transporter } from "nodemailer";
+import type { SendMailOptions, Transporter } from "nodemailer";
 import { prisma } from "@/lib/db";
 
 const defaultAdminAlertEmail = "huqingwei5942@gmail.com";
@@ -194,6 +194,24 @@ export function buildAdminOperationEmail(input: AdminOperationEmailInput): Admin
   return { subject, text, html };
 }
 
+export function buildAdminMailOptions(
+  config: { from?: string; recipients: string[] },
+  email: AdminOperationEmail
+): SendMailOptions {
+  return {
+    from: config.from,
+    to: config.recipients,
+    subject: email.subject,
+    text: email.text,
+    html: email.html,
+    encoding: "utf-8",
+    textEncoding: "base64",
+    headers: {
+      "Content-Language": "zh-CN"
+    }
+  };
+}
+
 export async function sendPaymentProofSubmittedAdminEmail(orderId: string) {
   await sendOrderAdminEmail(orderId, "payment_proof_submitted");
 }
@@ -292,13 +310,7 @@ async function sendAdminEmail(email: AdminOperationEmail) {
   }
 
   const transporter = createTransporter(config);
-  await transporter.sendMail({
-    from: config.from,
-    to: config.recipients,
-    subject: email.subject,
-    text: email.text,
-    html: email.html
-  });
+  await transporter.sendMail(buildAdminMailOptions(config, email));
 }
 
 async function safeSend(send: () => Promise<void>) {

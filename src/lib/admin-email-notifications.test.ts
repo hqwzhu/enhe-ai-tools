@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildAdminOperationEmail, getAdminAlertEmailConfig } from "@/lib/admin-email-notifications";
+import nodemailer from "nodemailer";
+import {
+  buildAdminMailOptions,
+  buildAdminOperationEmail,
+  getAdminAlertEmailConfig
+} from "@/lib/admin-email-notifications";
 
 describe("admin email notifications", () => {
   it("builds payment review email with order details and admin links", () => {
@@ -41,5 +46,41 @@ describe("admin email notifications", () => {
 
     expect(config.recipients).toEqual(["huqingwei5942@gmail.com"]);
     expect(config.enabled).toBe(true);
+  });
+
+  it("renders Chinese admin emails with explicit UTF-8 MIME encoding", async () => {
+    const email = buildAdminOperationEmail({
+      eventType: "payment_review_approved",
+      appUrl: "https://www.enhe-tech.com.cn",
+      actorLabel: "恩禾管理员",
+      note: "凭证审核通过，请查看订单。",
+      order: {
+        id: "order-1",
+        orderNo: "ENHE202606080001",
+        userLabel: "user@example.com",
+        itemName: "特惠VIP",
+        amount: "9.90",
+        paymentMethod: "alipay",
+        orderStatus: "activated"
+      }
+    });
+    const mailOptions = buildAdminMailOptions(
+      {
+        from: "ENHE AI <huqingwei5942@gmail.com>",
+        recipients: ["huqingwei5942@gmail.com"]
+      },
+      email
+    );
+
+    expect(mailOptions.encoding).toBe("utf-8");
+    expect(mailOptions.textEncoding).toBe("base64");
+
+    const transport = nodemailer.createTransport({ streamTransport: true, buffer: true });
+    const info = await transport.sendMail(mailOptions);
+    const rawMessage = info.message.toString("utf8");
+
+    expect(rawMessage).toContain("Content-Type: text/plain; charset=utf-8");
+    expect(rawMessage).toContain("Content-Transfer-Encoding: base64");
+    expect(rawMessage).toContain("Subject: =?UTF-8?");
   });
 });
