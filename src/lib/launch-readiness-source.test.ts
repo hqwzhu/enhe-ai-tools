@@ -12,6 +12,7 @@ describe("launch readiness source coverage", () => {
   it("ships crawlable SEO endpoints and metadata foundations", () => {
     expect(existsSync(join(root, "src/app/robots.ts"))).toBe(true);
     expect(existsSync(join(root, "src/app/sitemap.ts"))).toBe(true);
+    expect(read("src/app/sitemap.ts")).toContain("force-dynamic");
 
     const layout = read("src/app/layout.tsx");
     expect(layout).toContain("metadataBase");
