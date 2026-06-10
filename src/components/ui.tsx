@@ -16,8 +16,9 @@ export function Badge({ children, className }: React.PropsWithChildren<{ classNa
 export function ButtonLink({
   href,
   children,
-  variant = "primary"
-}: React.PropsWithChildren<{ href: string; variant?: "primary" | "ghost" }>) {
+  variant = "primary",
+  className
+}: React.PropsWithChildren<{ href: string; variant?: "primary" | "ghost"; className?: string }>) {
   return (
     <Link
       className={cn(
@@ -25,7 +26,8 @@ export function ButtonLink({
         "before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-[#7DD3FC]/18 before:to-transparent before:transition before:duration-500 hover:before:translate-x-full",
         variant === "primary"
           ? ""
-          : ""
+          : "",
+        className
       )}
       href={href}
     >

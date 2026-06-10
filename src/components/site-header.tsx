@@ -24,7 +24,7 @@ export async function SiteHeader() {
 
   return (
     <header className="site-header-transparent sticky top-0 z-50">
-      <Container className="flex h-16 items-center justify-between gap-4">
+      <Container className="site-header-inner flex h-20 max-w-none items-center justify-between gap-4 px-10 sm:px-12 lg:px-12">
         <Link href="/" className="site-brand group" aria-label={brand}>
           <span className="site-brand-mark" aria-hidden="true">
             <FlatEnheLogoSvg className="site-brand-logo" decorative />
