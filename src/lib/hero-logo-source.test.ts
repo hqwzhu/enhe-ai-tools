@@ -10,6 +10,9 @@ describe("hero logo source", () => {
     expect(component).toContain("referenceHeroLogoWhite");
     expect(component).toContain("enhe-reference-logo-slat-top");
     expect(component).toContain("enhe-flat-logo-stem");
+    expect(component).toContain('x="111" y="58" width="220"');
+    expect(component).toContain('x="111" y="148" width="168"');
+    expect(component).toContain('d="M381 58H449V292H381V202H329V148H381V58Z"');
     expect(component).not.toContain("enhe-flat-logo-lines");
     expect(component).not.toContain("enhe-flat-logo-scan");
     expect(component).not.toContain("enhe-logo-energy-line");
@@ -19,6 +22,8 @@ describe("hero logo source", () => {
     expect(css).toContain(".enhe-reference-logo-slat-top");
     expect(css).toContain("flat-logo-assemble");
     expect(css).toContain("aspect-ratio: 1;");
+    expect(css).toContain("left: 50%;");
+    expect(css).not.toContain("left: 56%;");
     expect(css).not.toContain("orbit-drift");
     expect(css).not.toContain("rotate(5deg)");
     expect(css).not.toContain("rotate(-7deg)");

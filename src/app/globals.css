@@ -489,7 +489,7 @@ select option:disabled {
 
 .enhe-orbital-system {
   position: absolute;
-  left: 56%;
+  left: 50%;
   top: 50%;
   z-index: 1;
   width: clamp(30rem, 34vw, 40.625rem);

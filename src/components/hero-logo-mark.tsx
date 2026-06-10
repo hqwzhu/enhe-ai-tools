@@ -18,7 +18,7 @@ export function FlatEnheLogoSvg({
       aria-label={decorative ? undefined : label}
     >
       <defs>
-        <linearGradient id="referenceHeroLogoCyan" x1="86" y1="58" x2="366" y2="198" gradientUnits="userSpaceOnUse">
+        <linearGradient id="referenceHeroLogoCyan" x1="111" y1="58" x2="331" y2="198" gradientUnits="userSpaceOnUse">
           <stop stopColor="#20BFF0" />
           <stop offset="0.58" stopColor="#55D9F8" />
           <stop offset="1" stopColor="#8BF5FF" />
@@ -43,10 +43,10 @@ export function FlatEnheLogoSvg({
       </defs>
 
       <g className="enhe-reference-logo" filter="url(#referenceHeroLogoGlow)">
-        <rect className="enhe-reference-logo-slat enhe-reference-logo-slat-top" x="86" y="58" width="280" height="54" rx="1.5" fill="url(#referenceHeroLogoCyan)" />
-        <rect className="enhe-reference-logo-slat enhe-reference-logo-slat-mid" x="86" y="148" width="214" height="54" rx="1.5" fill="url(#referenceHeroLogoCyan)" />
-        <rect className="enhe-reference-logo-slat enhe-reference-logo-slat-bottom" x="86" y="238" width="280" height="54" rx="1.5" fill="url(#referenceHeroLogoWhite)" />
-        <path className="enhe-flat-logo-stem" d="M366 58H430V14H496V346H430V292H366V238H430V202H366V148H430V112H366V58Z" fill="url(#referenceHeroLogoWhite)" />
+        <rect className="enhe-reference-logo-slat enhe-reference-logo-slat-top" x="111" y="58" width="220" height="54" rx="1.5" fill="url(#referenceHeroLogoCyan)" />
+        <rect className="enhe-reference-logo-slat enhe-reference-logo-slat-mid" x="111" y="148" width="168" height="54" rx="1.5" fill="url(#referenceHeroLogoCyan)" />
+        <rect className="enhe-reference-logo-slat enhe-reference-logo-slat-bottom" x="111" y="238" width="220" height="54" rx="1.5" fill="url(#referenceHeroLogoWhite)" />
+        <path className="enhe-flat-logo-stem" d="M381 58H449V292H381V202H329V148H381V58Z" fill="url(#referenceHeroLogoWhite)" />
       </g>
     </svg>
   );
