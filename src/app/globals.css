@@ -301,15 +301,15 @@ select option:disabled {
 
 .site-brand-mark {
   display: grid;
-  width: 2.3rem;
-  height: 2.3rem;
+  width: 2.65rem;
+  height: 2.65rem;
   flex: none;
   place-items: center;
 }
 
 .site-brand-logo {
-  width: 2.3rem;
-  height: 2.3rem;
+  width: 2.65rem;
+  height: 2.65rem;
   overflow: visible;
   filter: drop-shadow(0 0 10px rgba(125, 211, 252, 0.18));
   transition: filter 180ms ease, transform 180ms ease;
@@ -324,8 +324,8 @@ select option:disabled {
   max-width: min(34vw, 9.5rem);
   overflow: hidden;
   color: #f6faff;
-  font-size: 0.96rem;
-  font-weight: 700;
+  font-size: 1.58rem;
+  font-weight: 500;
   line-height: 1;
   letter-spacing: 0;
   text-overflow: ellipsis;
@@ -483,39 +483,45 @@ select option:disabled {
   animation: hero-mark-hum 5.8s ease-in-out infinite;
 }
 
+.enhe-hero-mark {
+  transform: translateY(-3.85rem);
+}
+
 .enhe-orbital-system {
   position: absolute;
-  inset: 0;
+  left: 56%;
+  top: 50%;
   z-index: 1;
+  width: clamp(30rem, 34vw, 40.625rem);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
 .enhe-orbit-ring {
   position: absolute;
-  inset: 8% 8%;
+  inset: 0;
   border: 1px solid rgba(85, 217, 248, 0.14);
   border-radius: 999px;
   box-shadow: 0 0 52px rgba(85, 217, 248, 0.05);
   opacity: 0;
-  animation: orbit-arrive 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards, orbit-drift 12s linear 1.1s infinite;
+  animation: orbit-arrive 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards, orbit-circle-pulse 5.8s ease-in-out 1.1s infinite;
 }
 
 .enhe-orbit-ring-a {
-  inset: 10% 13%;
+  inset: 12%;
   animation-delay: 0.16s, 1.1s;
 }
 
 .enhe-orbit-ring-b {
-  inset: 5% 8%;
+  inset: 6%;
   border-color: rgba(85, 217, 248, 0.1);
-  transform: rotate(5deg);
   animation-delay: 0.28s, 1.1s;
 }
 
 .enhe-orbit-ring-c {
-  inset: 0 3%;
+  inset: 0;
   border-color: rgba(85, 217, 248, 0.08);
-  transform: rotate(-7deg);
   animation-delay: 0.4s, 1.1s;
 }
 
@@ -671,53 +677,25 @@ select option:disabled {
 .enhe-hero-logo-button {
   position: relative;
   z-index: 10;
-  width: clamp(330px, 24vw, 470px);
-  aspect-ratio: 1.52;
-  padding: 0;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-  outline: none;
+  display: block;
+  width: clamp(340px, 23vw, 450px);
+  aspect-ratio: 1.56;
   filter:
-    brightness(1.08)
+    brightness(1.03)
     saturate(1.02)
-    drop-shadow(0 0 16px rgba(125, 211, 252, 0.13));
+    drop-shadow(0 0 14px rgba(125, 211, 252, 0.12))
+    drop-shadow(0 28px 64px rgba(53, 190, 231, 0.13));
   animation: flat-logo-float 5.2s ease-in-out infinite;
 }
 
-.enhe-hero-logo-button::before,
-.enhe-hero-logo-button::after {
+.enhe-hero-logo-button::before {
   position: absolute;
-  inset: 12% 7%;
+  inset: 18% 7%;
   z-index: -1;
   content: "";
-  background:
-    linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.14), transparent),
-    linear-gradient(180deg, transparent, rgba(125, 211, 252, 0.055), transparent);
-  filter: blur(16px);
-  opacity: 0.32;
-}
-
-.enhe-hero-logo-button::after {
-  inset: 28% 11%;
-  opacity: 0;
-}
-
-.enhe-hero-logo-button:hover {
-  filter:
-    brightness(1.16)
-    saturate(1.06)
-    drop-shadow(0 0 24px rgba(125, 211, 252, 0.22));
-}
-
-.enhe-hero-logo-button:focus-visible {
-  outline: 2px solid rgba(125, 211, 252, 0.72);
-  outline-offset: 10px;
-  border-radius: 32px;
-}
-
-.enhe-hero-logo-button.is-ignited::after {
-  animation: logo-ignition 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.18), transparent 62%);
+  filter: blur(22px);
+  opacity: 0.5;
 }
 
 .enhe-hero-logo-svg {
@@ -729,102 +707,28 @@ select option:disabled {
   shape-rendering: geometricPrecision;
 }
 
-.enhe-flat-logo-rails path {
-  fill: none;
-  stroke: url("#flatHeroLogoRail");
-  stroke-width: 1.2;
-  stroke-linecap: round;
-  stroke-dasharray: 18 22;
-  animation: rail-drift 8s linear infinite;
-}
-
-.enhe-flat-logo-slat,
+.enhe-reference-logo-slat,
 .enhe-flat-logo-stem {
   transform-box: fill-box;
   transform-origin: center;
-  vector-effect: non-scaling-stroke;
   opacity: 0;
-  animation: flat-logo-assemble 0.92s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: flat-logo-assemble 0.74s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.enhe-flat-logo-slat-top {
+.enhe-reference-logo-slat-top {
   animation-delay: 0.1s;
 }
 
-.enhe-flat-logo-slat-mid {
+.enhe-reference-logo-slat-mid {
   animation-delay: 0.2s;
 }
 
-.enhe-flat-logo-slat-bottom {
+.enhe-reference-logo-slat-bottom {
   animation-delay: 0.3s;
 }
 
 .enhe-flat-logo-stem {
   animation-delay: 0.4s;
-}
-
-.enhe-flat-logo-lines path {
-  fill: none;
-  stroke: rgba(3, 6, 17, 0.32);
-  stroke-width: 2.3;
-  stroke-linecap: round;
-}
-
-.enhe-flat-logo-scan {
-  fill: none;
-  stroke: rgba(167, 243, 255, 0.62);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-dasharray: 72 470;
-  opacity: 0;
-  filter: drop-shadow(0 0 7px rgba(125, 211, 252, 0.5));
-  animation: flat-logo-scan 4.2s ease-in-out 1.2s infinite;
-}
-
-.enhe-hero-logo-button.is-ignited .enhe-flat-logo-scan {
-  animation: flat-logo-scan-fast 1.1s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.enhe-logo-energy-line {
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  z-index: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.52), transparent);
-  opacity: 0.38;
-}
-
-.enhe-logo-energy-line-a {
-  top: 28%;
-  animation: energy-line-a 4.6s ease-in-out infinite;
-}
-
-.enhe-logo-energy-line-b {
-  bottom: 24%;
-  animation: energy-line-b 5.2s ease-in-out infinite;
-}
-
-.enhe-logo-node {
-  position: absolute;
-  z-index: 1;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: #7dd3fc;
-  box-shadow: 0 0 16px rgba(125, 211, 252, 0.62);
-}
-
-.enhe-logo-node-a {
-  left: 12%;
-  top: 30%;
-  animation: node-blink 2.4s ease-in-out infinite;
-}
-
-.enhe-logo-node-b {
-  right: 10%;
-  bottom: 28%;
-  animation: node-blink 2.7s ease-in-out 0.4s infinite;
 }
 
 .enhe-signal {
@@ -863,6 +767,7 @@ select option:disabled {
 
   .enhe-hero-mark {
     min-height: 300px;
+    transform: none;
   }
 
   .enhe-circuit-line {
@@ -875,6 +780,16 @@ select option:disabled {
     height: 4.25rem;
     padding-right: 1rem;
     padding-left: 1rem;
+  }
+
+  .site-brand-mark,
+  .site-brand-logo {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .site-brand-wordmark {
+    font-size: 1.32rem;
   }
 
   .home-hero-reference-frame {
@@ -919,19 +834,14 @@ select option:disabled {
   .enhe-mark-plane-b,
   .enhe-mark-scanfield,
   .enhe-hero-logo-button,
-  .enhe-flat-logo-rails path,
-  .enhe-flat-logo-slat,
+  .enhe-reference-logo-slat,
   .enhe-flat-logo-stem,
-  .enhe-flat-logo-scan,
-  .enhe-logo-energy-line-a,
-  .enhe-logo-energy-line-b,
-  .enhe-logo-node,
   .enhe-signal {
     animation: none !important;
   }
 
   .home-hero-copy,
-  .enhe-flat-logo-slat,
+  .enhe-reference-logo-slat,
   .enhe-flat-logo-stem {
     opacity: 1;
     transform: none;
@@ -1030,12 +940,6 @@ select option:disabled {
   }
 }
 
-@keyframes orbit-drift {
-  to {
-    rotate: 360deg;
-  }
-}
-
 @keyframes circuit-draw {
   0% {
     opacity: 0;
@@ -1044,6 +948,18 @@ select option:disabled {
   100% {
     opacity: 0.82;
     transform: rotate(var(--circuit-rotate)) scaleX(1);
+  }
+}
+
+@keyframes orbit-circle-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.018);
   }
 }
 
@@ -1087,26 +1003,6 @@ select option:disabled {
   }
 }
 
-@keyframes logo-ignition {
-  0% {
-    opacity: 0;
-    transform: scaleX(0.12);
-  }
-  36% {
-    opacity: 0.72;
-  }
-  100% {
-    opacity: 0;
-    transform: scaleX(1.08);
-  }
-}
-
-@keyframes rail-drift {
-  to {
-    stroke-dashoffset: -80;
-  }
-}
-
 @keyframes flat-logo-assemble {
   from {
     opacity: 0;
@@ -1115,61 +1011,6 @@ select option:disabled {
   to {
     opacity: 1;
     transform: translateX(0) scaleX(1);
-  }
-}
-
-@keyframes flat-logo-scan {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: 230;
-  }
-  22%,
-  42% {
-    opacity: 0.88;
-  }
-  58%,
-  100% {
-    opacity: 0;
-    stroke-dashoffset: -250;
-  }
-}
-
-@keyframes flat-logo-scan-fast {
-  0% {
-    opacity: 0;
-    stroke-dashoffset: 270;
-  }
-  26%,
-  72% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    stroke-dashoffset: -270;
-  }
-}
-
-@keyframes energy-line-a {
-  0%,
-  100% {
-    transform: translateX(-18px) scaleX(0.82);
-    opacity: 0.22;
-  }
-  50% {
-    transform: translateX(18px) scaleX(1);
-    opacity: 0.62;
-  }
-}
-
-@keyframes energy-line-b {
-  0%,
-  100% {
-    transform: translateX(18px) scaleX(0.88);
-    opacity: 0.2;
-  }
-  50% {
-    transform: translateX(-18px) scaleX(1);
-    opacity: 0.56;
   }
 }
 

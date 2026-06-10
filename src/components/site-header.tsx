@@ -14,6 +14,7 @@ export async function SiteHeader() {
   const membership = user ? await getActiveMembership(user.id) : null;
   const t = getDictionary(locale);
   const brand = getEffectiveSiteName(settings, t.brand);
+  const brandWordmark = brand.includes("ENHE") ? "ENHE AI" : brand;
   const navItems = [
     [t.nav.home, "/"],
     [t.nav.software, "/software"],
@@ -29,7 +30,7 @@ export async function SiteHeader() {
           <span className="site-brand-mark" aria-hidden="true">
             <FlatEnheLogoSvg className="site-brand-logo" decorative />
           </span>
-          <span className="site-brand-wordmark">{brand}</span>
+          <span className="site-brand-wordmark">{brandWordmark}</span>
         </Link>
         <nav className="hidden items-center gap-1 lg:flex">
           {navItems.map(([label, href]) => (

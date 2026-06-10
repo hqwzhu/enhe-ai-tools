@@ -22,8 +22,8 @@ describe("homepage redesign source", () => {
     expect(header).not.toContain("bg-[#070A12]/78");
     expect(header).not.toContain("backdrop-blur-2xl");
 
-    expect(logo).toContain("flatHeroLogoFill");
-    expect(logo).toContain("enhe-flat-logo-slat");
+    expect(logo).toContain("referenceHeroLogoCyan");
+    expect(logo).toContain("enhe-reference-logo-slat-top");
     expect(logo).not.toContain("heroLogoDepthFill");
     expect(logo).not.toContain("enhe-logo-depth");
 
@@ -32,7 +32,9 @@ describe("homepage redesign source", () => {
     expect(css).toContain(".home-feature-sections");
     expect(css).toContain(".enhe-orbital-system");
     expect(css).toContain(".enhe-circuit-line");
-    expect(css).toContain(".enhe-flat-logo-slat");
+    expect(css).toContain(".enhe-reference-logo-slat-top");
+    expect(css).toContain("aspect-ratio: 1;");
+    expect(css).not.toContain("orbit-drift");
     expect(css).toContain("radial-gradient(circle at var(--mouse-x) var(--mouse-y)");
     expect(css).not.toContain("linear-gradient(115deg");
     expect(css).not.toContain("linear-gradient(105deg");
