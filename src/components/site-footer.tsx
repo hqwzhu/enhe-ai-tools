@@ -34,7 +34,7 @@ export async function SiteFooter() {
             rel="noreferrer"
             className="inline-flex items-center gap-2 transition hover:text-[#AFCBFF]"
           >
-            <Image src="/images/beian-icon.png" alt="备案编号图标" width={20} height={20} unoptimized />
+            <Image src="/images/beian-icon.png" alt="备案编号图标" width={18} height={20} unoptimized />
             <span>闽公网安备35030302900035号</span>
           </a>
           <a

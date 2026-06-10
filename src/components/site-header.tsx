@@ -1,21 +1,19 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Crown, LayoutDashboard, UserRound } from "lucide-react";
 import { setLocaleAction } from "@/app/language-actions";
+import { FlatEnheLogoSvg } from "@/components/hero-logo-mark";
 import { getCurrentUser } from "@/lib/auth";
 import { MobileNavMenu } from "@/components/mobile-nav-menu";
 import { ButtonLink, Container } from "@/components/ui";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
-import { normalizeImageSrc } from "@/lib/media";
 import { getActiveMembership } from "@/lib/membership";
-import { getEffectiveSiteLogo, getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
+import { getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
 export async function SiteHeader() {
   const [user, locale, settings] = await Promise.all([getCurrentUser(), getCurrentLocale(), getSettingsMap()]);
   const membership = user ? await getActiveMembership(user.id) : null;
   const t = getDictionary(locale);
   const brand = getEffectiveSiteName(settings, t.brand);
-  const logoSrc = normalizeImageSrc(getEffectiveSiteLogo(settings, "/images/enhe-logo.svg")) ?? "/images/enhe-logo.svg";
   const navItems = [
     [t.nav.home, "/"],
     [t.nav.software, "/software"],
@@ -25,11 +23,11 @@ export async function SiteHeader() {
   ] as const;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[rgba(210,230,255,0.14)] bg-[#070A12]/78 backdrop-blur-2xl">
+    <header className="site-header-transparent sticky top-0 z-50">
       <Container className="flex h-16 items-center justify-between gap-4">
         <Link href="/" className="site-brand group" aria-label={brand}>
           <span className="site-brand-mark" aria-hidden="true">
-            <Image className="site-brand-logo" src={logoSrc} alt="" width={30} height={30} priority unoptimized />
+            <FlatEnheLogoSvg className="site-brand-logo" decorative />
           </span>
           <span className="site-brand-wordmark">{brand}</span>
         </Link>

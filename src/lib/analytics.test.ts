@@ -3,7 +3,8 @@ import {
   analyticsFunnelSteps,
   buildAnalyticsFunnel,
   getPageViewEventName,
-  isAnalyticsEventName
+  isAnalyticsEventName,
+  isMissingAnalyticsStorageError
 } from "@/lib/analytics";
 
 describe("analytics funnel helpers", () => {
@@ -31,5 +32,11 @@ describe("analytics funnel helpers", () => {
   it("validates only known event names", () => {
     expect(isAnalyticsEventName("refund_request_submitted")).toBe(true);
     expect(isAnalyticsEventName("unknown_event")).toBe(false);
+  });
+
+  it("recognizes missing analytics storage errors as non-blocking", () => {
+    expect(isMissingAnalyticsStorageError({ code: "P2021", meta: { table: "public.analytics_events" } })).toBe(true);
+    expect(isMissingAnalyticsStorageError({ code: "P2002" })).toBe(false);
+    expect(isMissingAnalyticsStorageError(new Error("other failure"))).toBe(false);
   });
 });

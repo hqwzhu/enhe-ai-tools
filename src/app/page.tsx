@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Cloud, MonitorDown } from "lucide-react";
 import { ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { HeroLogoMark } from "@/components/hero-logo-mark";
 import { ToolCard } from "@/components/tool-card";
@@ -33,44 +34,42 @@ export default async function HomePage() {
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
   const heroSubtitle = getEffectiveLocalizedHomeHeroSubtitle(settings, locale, t.home.eyebrow);
   const heroIntro = getEffectiveLocalizedHomeHeroIntro(settings, locale, t.home.intro);
+  const heroTitleParts = heroTitle === "ENHE AI Tools" ? ["ENHE AI", "Tools"] : [heroTitle, null];
 
   return (
     <>
-      <section className="relative overflow-hidden py-18 md:py-24">
-        <Container className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>
-            <div className="hud-pill mb-6 inline-flex px-4 py-2 text-sm font-semibold">
+      <section className="home-hero-shell relative min-h-[calc(100dvh-4rem)] overflow-hidden">
+        <Container className="home-hero-grid grid min-h-[calc(100dvh-4rem)] items-center gap-12 py-12 lg:grid-cols-[1.02fr_0.98fr]">
+          <div className="home-hero-copy">
+            <div className="hud-pill mb-7 inline-flex px-4 py-2 text-sm font-semibold">
               {heroSubtitle}
             </div>
-            <h1 className="max-w-5xl text-4xl font-semibold tracking-normal text-[#F6FAFF] sm:text-5xl xl:text-6xl">
-              {heroTitle}
+            <h1 className="max-w-5xl text-5xl font-semibold tracking-normal text-[#F6FAFF] sm:text-6xl xl:text-7xl">
+              {heroTitleParts[0]}
+              {heroTitleParts[1] ? <span className="home-hero-title-accent"> {heroTitleParts[1]}</span> : null}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8F9DB2]">
               {heroIntro}
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <ButtonLink href="/software">{t.home.softwareButton}</ButtonLink>
-              <ButtonLink href="/online-tools" variant="ghost">{t.home.onlineButton}</ButtonLink>
+            <div className="mt-10 flex flex-wrap gap-3">
+              <ButtonLink href="/software"><MonitorDown size={17} />{t.home.softwareButton}</ButtonLink>
+              <ButtonLink href="/online-tools" variant="ghost"><Cloud size={17} />{t.home.onlineButton}</ButtonLink>
             </div>
           </div>
-          <div className="enhe-hero-mark relative mx-auto flex min-h-[460px] w-full max-w-[600px] items-center justify-center">
-            <div className="enhe-holo-ring enhe-holo-ring-a" />
-            <div className="enhe-holo-ring enhe-holo-ring-b" />
-            <div className="enhe-holo-panel enhe-holo-panel-a" />
-            <div className="enhe-holo-panel enhe-holo-panel-b" />
-            <div className="enhe-orbit enhe-orbit-a" />
-            <div className="enhe-orbit enhe-orbit-b" />
-            <div className="enhe-orbit enhe-orbit-c" />
-            <div className="enhe-logo-aura" />
+          <div className="enhe-hero-mark relative mx-auto flex min-h-[420px] w-full max-w-[620px] items-center justify-center">
+            <div className="enhe-mark-plane enhe-mark-plane-a" aria-hidden="true" />
+            <div className="enhe-mark-plane enhe-mark-plane-b" aria-hidden="true" />
+            <div className="enhe-mark-scanfield" aria-hidden="true" />
             <HeroLogoMark label={t.brand} />
-            <span className="enhe-signal enhe-signal-1" />
-            <span className="enhe-signal enhe-signal-2" />
-            <span className="enhe-signal enhe-signal-3" />
+            <span className="enhe-signal enhe-signal-1" aria-hidden="true" />
+            <span className="enhe-signal enhe-signal-2" aria-hidden="true" />
+            <span className="enhe-signal enhe-signal-3" aria-hidden="true" />
           </div>
         </Container>
+        <div className="home-hero-scroll-cue" aria-hidden="true" />
       </section>
 
-      <Container className="space-y-20 pb-24">
+      <Container className="home-feature-sections space-y-20 pb-24 pt-24 md:pt-32">
         <div className="grid gap-10 lg:grid-cols-2">
           <section>
             <SectionTitle eyebrow={t.home.featuredSoftwareEyebrow} title={t.home.featuredSoftwareTitle} intro={t.home.featuredSoftwareIntro} />

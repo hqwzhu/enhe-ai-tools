@@ -58,6 +58,12 @@ export function buildAnalyticsFunnel(rows: AnalyticsFunnelInput[]): AnalyticsFun
   });
 }
 
+export function isMissingAnalyticsStorageError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: unknown; meta?: { table?: unknown } };
+  return candidate.code === "P2021" && typeof candidate.meta?.table === "string" && candidate.meta.table.includes("analytics_events");
+}
+
 export async function trackAnalyticsEvent(input: {
   eventName: AnalyticsEventName;
   path?: string | null;
@@ -81,6 +87,10 @@ export async function trackAnalyticsEvent(input: {
       }
     });
   } catch (error) {
+    if (isMissingAnalyticsStorageError(error)) {
+      console.warn("[analytics] analytics_events table is missing; event skipped");
+      return;
+    }
     console.error("[analytics] failed to track event", error);
   }
 }

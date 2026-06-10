@@ -29,7 +29,7 @@ export function ButtonLink({
       )}
       href={href}
     >
-      <span className="relative z-10">{children}</span>
+      <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
     </Link>
   );
 }
