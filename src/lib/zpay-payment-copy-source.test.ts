@@ -16,4 +16,11 @@ describe("zpay payment page copy", () => {
     expect(poller).not.toContain("支付状态");
     expect(poller).not.toContain("等待支付结果回调");
   });
+
+  it("does not render stale payment QR codes for cancelled or refunded orders", () => {
+    const payPage = readFileSync(resolve(root, "src/app/orders/[id]/pay/page.tsx"), "utf8");
+
+    expect(payPage).toContain('order.orderStatus === "cancelled" || order.orderStatus === "refunded"');
+    expect(payPage).toContain("order.paymentTransaction && !isTerminalUnpayable");
+  });
 });

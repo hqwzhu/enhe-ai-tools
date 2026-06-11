@@ -31,14 +31,15 @@ export default async function PayPage({ params }: PayPageProps) {
   let zpayError: string | null = null;
   const isSoftwareDownloadOrder = order.orderType === "software_download";
   const isUnlocked = order.orderStatus === "activated" || order.orderStatus === "paid" || Boolean(order.toolPurchase);
+  const isTerminalUnpayable = order.orderStatus === "cancelled" || order.orderStatus === "refunded";
 
-  if (isSoftwareDownloadOrder && !isUnlocked && order.orderStatus !== "cancelled" && order.orderStatus !== "refunded") {
+  if (isSoftwareDownloadOrder && !isUnlocked && !isTerminalUnpayable) {
     try {
       zpayPayment = await ensureZpayPaymentForOrder({ orderId: order.id, userId: user.id, clientIp });
     } catch (error) {
       zpayError = error instanceof Error ? error.message : "支付订单创建失败。";
     }
-  } else if (order.paymentTransaction) {
+  } else if (order.paymentTransaction && !isTerminalUnpayable) {
     zpayPayment = {
       transaction: order.paymentTransaction,
       displayUrl: order.paymentTransaction.qrImageUrl ?? order.paymentTransaction.qrCodeUrl ?? order.paymentTransaction.payUrl ?? order.paymentTransaction.payUrl2,
