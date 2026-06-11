@@ -41,7 +41,7 @@ type ZpayRefundResponse = {
   msg?: string;
   [key: string]: unknown;
 };
-const zpayPaymentRequestVersion = "paid-download-v2";
+const zpayPaymentRequestVersion = "paid-download-v3";
 
 export type ZpayNotifyValidationResult =
   | { ok: true; reason: null }
