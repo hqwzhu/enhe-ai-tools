@@ -113,7 +113,7 @@ export function buildZpayPaymentRequest(input: {
       type: paymentType,
       out_trade_no: input.order.orderNo,
       notify_url: `${input.config.siteUrl}/api/zpay/notify`,
-      return_url: `${input.config.siteUrl}/orders/${input.order.id}`,
+      return_url: `${input.config.siteUrl}/login?payment=success`,
       name: itemName,
       money: formatZpayAmount(input.order.amount.toString()),
       clientip: input.clientIp,

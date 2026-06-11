@@ -23,4 +23,11 @@ describe("zpay payment page copy", () => {
     expect(payPage).toContain('order.orderStatus === "cancelled" || order.orderStatus === "refunded"');
     expect(payPage).toContain("order.paymentTransaction && !isTerminalUnpayable");
   });
+
+  it("shows a purchase success hint when mobile payment returns to login", () => {
+    const loginPage = readFileSync(resolve(root, "src/app/(auth)/login/page.tsx"), "utf8");
+
+    expect(loginPage).toContain('params.payment === "success"');
+    expect(loginPage).toContain("购买成功，请返回网页或者手机登入账号查看下载链接。");
+  });
 });

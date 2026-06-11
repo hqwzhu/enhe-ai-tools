@@ -9,7 +9,7 @@ import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 export default async function LoginPage({
   searchParams
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string; payment?: string }>;
 }) {
   const locale = await getCurrentLocale();
   const t = getDictionary(locale);
@@ -23,6 +23,7 @@ export default async function LoginPage({
   };
 
   const errorMessage = params.message ? errorMessages[params.message] || t.auth.loginErrorDefault : null;
+  const paymentSuccess = params.payment === "success";
 
   return (
     <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
@@ -30,6 +31,11 @@ export default async function LoginPage({
         <input type="hidden" name="csrfToken" value={csrfToken} />
         <h1 className="text-3xl font-semibold">{t.auth.loginTitle}</h1>
         <p className="mt-3 text-sm text-[#8B95A7]">{t.auth.loginIntro}</p>
+        {paymentSuccess && (
+          <div className="mt-4 rounded-lg border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm leading-6 text-[#DFFCF7]">
+            购买成功，请返回网页或者手机登入账号查看下载链接。
+          </div>
+        )}
         {errorMessage && (
           <div className="mt-4 rounded-lg bg-red-500/20 border border-red-500/30 px-4 py-3 text-sm text-red-400">
             {errorMessage}

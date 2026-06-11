@@ -38,7 +38,7 @@ describe("buildZpayPaymentRequest", () => {
       type: "wxpay",
       out_trade_no: "ENHE202606111930001234",
       notify_url: "https://www.enhe-tech.com.cn/api/zpay/notify",
-      return_url: "https://www.enhe-tech.com.cn/orders/order123",
+      return_url: "https://www.enhe-tech.com.cn/login?payment=success",
       money: "9.90",
       clientip: "203.0.113.10",
       param: "order123",
@@ -47,7 +47,7 @@ describe("buildZpayPaymentRequest", () => {
     expect(String(request.params.name)).toMatch(/^AI Video Studio/);
     expect(Buffer.byteLength(String(request.params.name), "utf8")).toBeLessThanOrEqual(96);
     expect(request.params.notify_url).not.toContain("?");
-    expect(request.params.return_url).not.toContain("?");
+    expect(request.params.return_url).toContain("payment=success");
     expect(request.params.sign).toMatch(/^[a-f0-9]{32}$/);
   });
 });
