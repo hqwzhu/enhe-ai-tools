@@ -61,4 +61,14 @@ describe("admin tool editor source", () => {
     expect(managerSource).toContain("productImageMoveUp");
     expect(managerSource).toContain("productImageMoveDown");
   });
+
+  it("lets admins mark a tool as recommended for the homepage", () => {
+    const editorSource = readFileSync(join(process.cwd(), "src/app/admin/tool-admin-list.tsx"), "utf8");
+    const actionsSource = readFileSync(join(process.cwd(), "src/app/admin/actions.ts"), "utf8");
+
+    expect(editorSource).toContain('name="isHomeRecommended"');
+    expect(editorSource).toContain("homeRecommended");
+    expect(actionsSource).toContain("isHomeRecommended: parseBooleanField(formData.get(\"isHomeRecommended\"))");
+    expect(actionsSource).toContain('revalidatePath("/")');
+  });
 });

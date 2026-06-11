@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ChevronRight, Cloud, MonitorDown } from "lucide-react";
-import { ButtonLink, Container, SectionTitle } from "@/components/ui";
+import { ButtonLink, Container } from "@/components/ui";
 import { HeroLogoMark } from "@/components/hero-logo-mark";
 import { ToolCard } from "@/components/tool-card";
 import { prisma } from "@/lib/db";
@@ -24,9 +24,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [software, onlineTools, locale, settings] = await Promise.all([
-    prisma.tool.findMany({ where: { type: "software", status: "published" }, include: { category: true }, orderBy: { sortOrder: "asc" }, take: 3 }),
-    prisma.tool.findMany({ where: { type: "online", status: "published" }, include: { category: true }, orderBy: { sortOrder: "asc" }, take: 3 }),
+  const [recommendedTools, locale, settings] = await Promise.all([
+    prisma.tool.findMany({
+      where: { status: "published", isHomeRecommended: true },
+      include: { category: true },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      take: 40
+    }),
     getCurrentLocale(),
     getSettingsMap()
   ]);
@@ -80,18 +84,13 @@ export default async function HomePage() {
         <div className="home-hero-scroll-cue" aria-hidden="true" />
       </section>
 
-      <Container className="home-feature-sections space-y-20 pb-24 pt-24 md:pt-32">
-        <div className="grid gap-10 lg:grid-cols-2">
-          <section>
-            <SectionTitle eyebrow={t.home.featuredSoftwareEyebrow} title={t.home.featuredSoftwareTitle} intro={t.home.featuredSoftwareIntro} />
-            <div className="grid gap-5">{software.map((tool) => <ToolCard key={tool.id} tool={tool} locale={locale} />)}</div>
-          </section>
-          <section>
-            <SectionTitle eyebrow={t.home.onlineToolsEyebrow} title={t.home.onlineToolsTitle} intro={t.home.onlineToolsIntro} />
-            <div className="grid gap-5">{onlineTools.map((tool) => <ToolCard key={tool.id} tool={tool} locale={locale} />)}</div>
-          </section>
-        </div>
-      </Container>
+      {recommendedTools.length > 0 ? (
+        <Container className="home-feature-sections pb-24 pt-24 md:pt-32">
+          <div className="home-recommended-tool-grid grid gap-6 lg:grid-cols-2">
+            {recommendedTools.map((tool) => <ToolCard key={tool.id} tool={tool} locale={locale} />)}
+          </div>
+        </Container>
+      ) : null}
     </>
   );
 }

@@ -13,6 +13,13 @@ describe("homepage redesign source", () => {
     expect(page).toContain("min-h-[calc(100dvh-4rem)]");
     expect(page).toContain("heroSubtitle");
     expect(page).toContain("home-feature-sections");
+    expect(page).toContain("home-recommended-tool-grid");
+    expect(page).toContain("recommendedTools");
+    expect(page).toContain("isHomeRecommended: true");
+    expect(page).toContain("take: 40");
+    expect(page).not.toContain("SectionTitle");
+    expect(page).not.toContain("featuredSoftwareTitle");
+    expect(page).not.toContain("onlineToolsTitle");
     expect(page).toContain("enhe-orbital-system");
     expect(page).toContain("enhe-circuit-line");
 

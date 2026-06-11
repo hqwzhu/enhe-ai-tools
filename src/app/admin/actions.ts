@@ -1001,6 +1001,7 @@ export async function upsertToolAction(formData: FormData) {
       isVipRequired: parseBooleanField(formData.get("isVipRequired")),
       isDownloadPaid: parseBooleanField(formData.get("isDownloadPaid")),
       isDownloadLinkVipOnly: parseBooleanField(formData.get("isDownloadLinkVipOnly")),
+      isHomeRecommended: parseBooleanField(formData.get("isHomeRecommended")),
       downloadPrice: parseNumberField(formData.get("downloadPrice"), 0),
       onlineUrl: parseOptionalString(formData.get("onlineUrl")),
       downloadFileId: selectedDownloadFileId,
@@ -1036,6 +1037,7 @@ export async function upsertToolAction(formData: FormData) {
     });
     revalidatePath(adminPath);
     revalidatePath("/admin/files");
+    revalidatePath("/");
     revalidatePath(type === "software" ? "/software" : "/online-tools");
     revalidatePath(`/tools/${data.slug}`);
   } catch (error) {
@@ -1156,6 +1158,7 @@ export async function deleteToolAction(formData: FormData) {
     }
   });
   revalidatePath(adminPath);
+  revalidatePath("/");
   redirect(`${adminPath}?deleted=1`);
 }
 

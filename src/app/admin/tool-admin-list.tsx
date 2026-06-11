@@ -28,6 +28,7 @@ type ToolItem = {
   isVipRequired: boolean;
   isDownloadPaid: boolean;
   isDownloadLinkVipOnly: boolean;
+  isHomeRecommended: boolean;
   downloadPrice: unknown;
   onlineUrl: string | null;
   downloadFileId: string | null;
@@ -317,6 +318,9 @@ export function ToolEditor({
         <Field label={copy.sortOrder}>
           <input name="sortOrder" type="number" defaultValue={tool?.sortOrder ?? 0} className={inputClass} />
         </Field>
+        <label className="inline-flex items-center gap-2 text-sm">
+          <input name="isHomeRecommended" type="checkbox" defaultChecked={tool?.isHomeRecommended ?? false} /> {copy.homeRecommended}
+        </label>
         <Field label={copy.coverUrl}>
           <input name="coverImage" defaultValue={tool?.coverImage ?? ""} placeholder={copy.coverPlaceholder} className={inputClass} />
         </Field>
@@ -448,6 +452,7 @@ const toolAdminCopy = {
     onlineUrl: "在线地址",
     needVip: "需要付费",
     downloadLinkVipOnly: "下载链接需购买后可见",
+    homeRecommended: "首页推荐",
     paidDownload: "下载单独付费",
     downloadPrice: "下载价格",
     shortDescription: "简介",
@@ -510,6 +515,7 @@ const toolAdminCopy = {
     onlineUrl: "Online URL",
     needVip: "Requires payment",
     downloadLinkVipOnly: "Download link visible after purchase",
+    homeRecommended: "Homepage recommended",
     paidDownload: "Separate paid download",
     downloadPrice: "Download price",
     shortDescription: "Short description",
