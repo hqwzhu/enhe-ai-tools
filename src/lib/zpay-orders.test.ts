@@ -27,7 +27,7 @@ describe("buildZpayPaymentRequest", () => {
     const request = buildZpayPaymentRequest({
       config,
       order,
-      itemName: "对话模拟器 下载授权",
+      itemName: "AI Video Studio 无所不能版本｜本地AI视频生成工作站｜文生视频 图生视频 视频增强 完整部署包 下载授权",
       clientIp: "203.0.113.10"
     });
 
@@ -39,12 +39,13 @@ describe("buildZpayPaymentRequest", () => {
       out_trade_no: "ENHE202606111930001234",
       notify_url: "https://www.enhe-tech.com.cn/api/zpay/notify",
       return_url: "https://www.enhe-tech.com.cn/orders/order123",
-      name: "对话模拟器 下载授权",
       money: "9.90",
       clientip: "203.0.113.10",
       param: "order123",
       sign_type: "MD5"
     });
+    expect(String(request.params.name)).toMatch(/^AI Video Studio/);
+    expect(Buffer.byteLength(String(request.params.name), "utf8")).toBeLessThanOrEqual(96);
     expect(request.params.notify_url).not.toContain("?");
     expect(request.params.return_url).not.toContain("?");
     expect(request.params.sign).toMatch(/^[a-f0-9]{32}$/);

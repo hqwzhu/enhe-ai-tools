@@ -6,6 +6,7 @@ import {
   buildZpaySignedParams,
   formatZpayAmount,
   mapPaymentMethodToZpayType,
+  normalizeZpayItemName,
   verifyZpayNotifyPayload
 } from "@/lib/zpay";
 import { loadZpayConfig } from "@/lib/zpay-config";
@@ -105,6 +106,15 @@ describe("zpay request normalization", () => {
   it("formats decimal amounts with two places", () => {
     expect(formatZpayAmount("9.9")).toBe("9.90");
     expect(formatZpayAmount(0.01)).toBe("0.01");
+  });
+
+  it("keeps item names within the payment channel byte limit", () => {
+    const itemName = normalizeZpayItemName(
+      "AI Video Studio 无所不能版本｜本地AI视频生成工作站｜文生视频 图生视频 视频增强 完整部署包 下载授权"
+    );
+
+    expect(Buffer.byteLength(itemName, "utf8")).toBeLessThanOrEqual(96);
+    expect(itemName).toMatch(/^AI Video Studio/);
   });
 
   it("maps local payment methods to zpay payment types", () => {

@@ -36,7 +36,7 @@ export default async function PayPage({ params }: PayPageProps) {
     try {
       zpayPayment = await ensureZpayPaymentForOrder({ orderId: order.id, userId: user.id, clientIp });
     } catch (error) {
-      zpayError = error instanceof Error ? error.message : "ZPAY 支付订单创建失败。";
+      zpayError = error instanceof Error ? error.message : "支付订单创建失败。";
     }
   } else if (order.paymentTransaction) {
     zpayPayment = {
@@ -52,7 +52,7 @@ export default async function PayPage({ params }: PayPageProps) {
     <Container className="py-14">
       <SectionTitle
         title="订单支付"
-        intro="请使用 ZPAY 动态订单二维码完成支付。支付成功后系统会通过回调自动解锁该软件的下载链接。"
+        intro="请使用当前订单二维码完成支付。支付成功后，系统会自动解锁该软件的下载链接。"
       />
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -89,12 +89,12 @@ export default async function PayPage({ params }: PayPageProps) {
             </div>
           ) : zpayError ? (
             <div>
-              <h2 className="text-xl font-semibold text-[#FFB86B]">ZPAY 支付订单创建失败</h2>
+              <h2 className="text-xl font-semibold text-[#FFB86B]">支付订单创建失败</h2>
               <p className="mt-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm leading-6 text-[#FFD6A5]">
                 {zpayError}
               </p>
               <p className="mt-4 text-sm leading-6 text-[#8B95A7]">
-                请稍后刷新重试。如果问题持续存在，请联系管理员检查 ZPAY 通道或服务器环境变量。
+                请稍后刷新重试。如果问题持续存在，请联系管理员检查支付通道或服务器配置。
               </p>
             </div>
           ) : zpayPayment ? (
@@ -106,9 +106,6 @@ export default async function PayPage({ params }: PayPageProps) {
                     二维码为当前订单动态生成，请确认金额与订单号无误后支付。
                   </p>
                 </div>
-                <span className="rounded-full border border-[#48F5D3]/30 px-3 py-1 text-xs text-[#48F5D3]">
-                  {zpayPayment.transaction.status}
-                </span>
               </div>
 
               <div className="mt-6 grid gap-5 md:grid-cols-[280px_1fr]">
@@ -116,7 +113,7 @@ export default async function PayPage({ params }: PayPageProps) {
                   {zpayPayment.displayImageUrl ? (
                     <Image
                       src={zpayPayment.displayImageUrl}
-                      alt="ZPAY 动态支付二维码"
+                      alt="动态支付二维码"
                       width={280}
                       height={280}
                       className="aspect-square w-full rounded-xl object-contain"
@@ -135,15 +132,15 @@ export default async function PayPage({ params }: PayPageProps) {
 
                 <div className="flex flex-col justify-between gap-5">
                   <div className="space-y-3 text-sm leading-6 text-[#8B95A7]">
-                    <p>支付成功后，ZPAY 会通知网站自动解锁该软件的下载链接。</p>
-                    <p>如果手机无法识别二维码，可以点击下方按钮打开 ZPAY 收银台。</p>
+                    <p>支付成功后，自动解锁该软件的下载链接。</p>
+                    <p>请使用微信扫码完成支付，付款后页面会自动更新。</p>
                     {zpayPayment.transaction.providerTradeNo ? (
-                      <p className="break-all">ZPAY 订单号：{zpayPayment.transaction.providerTradeNo}</p>
+                      <p className="break-all">支付订单号：{zpayPayment.transaction.providerTradeNo}</p>
                     ) : null}
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    {zpayPayment.payUrl ?? zpayPayment.qrcodeUrl ?? zpayPayment.displayUrl ? (
+                    {zpayPayment.transaction.paymentType !== "wxpay" && (zpayPayment.payUrl ?? zpayPayment.qrcodeUrl ?? zpayPayment.displayUrl) ? (
                       <a
                         href={zpayPayment.payUrl ?? zpayPayment.qrcodeUrl ?? zpayPayment.displayUrl ?? "#"}
                         target="_blank"

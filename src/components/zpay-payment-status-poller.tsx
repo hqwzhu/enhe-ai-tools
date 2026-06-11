@@ -10,7 +10,7 @@ type ZpayPaymentStatusPollerProps = {
 
 export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatusPollerProps) {
   const router = useRouter();
-  const [message, setMessage] = useState("等待支付结果回调...");
+  const [message, setMessage] = useState("正在等待支付结果，请保持页面打开。");
 
   useEffect(() => {
     let stopped = false;
@@ -21,13 +21,11 @@ export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatus
       try {
         const response = await fetch(`/api/orders/${orderId}/payment-status`, { cache: "no-store" });
         if (!response.ok) {
-          if (!stopped) setMessage("暂时无法读取订单状态，请稍后刷新。");
+          if (!stopped) setMessage("暂时无法读取支付结果，请稍后刷新页面。");
           return;
         }
         const data = (await response.json()) as {
           unlocked?: boolean;
-          orderStatus?: string;
-          paymentStatus?: string | null;
         };
         if (data.unlocked) {
           setMessage("支付成功，下载链接已解锁，正在跳转...");
@@ -36,7 +34,7 @@ export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatus
           return;
         }
         if (!stopped) {
-          setMessage(`等待支付结果回调... 当前订单状态：${data.orderStatus ?? "-"} / 支付状态：${data.paymentStatus ?? "-"}`);
+          setMessage("正在等待支付结果，请保持页面打开。");
         }
       } catch {
         if (!stopped) setMessage("正在等待支付结果，请保持页面打开。");
@@ -55,7 +53,7 @@ export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatus
   }, [orderId, router, toolSlug]);
 
   return (
-    <div className="mt-6 rounded-2xl border border-[#48F5D3]/25 bg-[#48F5D3]/10 px-4 py-3 text-sm leading-6 text-[#BDFBEF]">
+    <div className="mt-6 rounded-2xl border border-[#48F5D3]/25 bg-[#48F5D3]/10 px-4 py-3 text-sm leading-6 text-[#BDFBEF]" aria-live="polite">
       {message}
     </div>
   );

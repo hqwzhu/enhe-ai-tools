@@ -1,11 +1,13 @@
 import type { Order, PaymentMethod, PaymentTransaction, Prisma, Tool } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { createOrderNo } from "@/lib/order";
 import { loadZpayConfig, type ZpayConfig } from "@/lib/zpay-config";
 import {
   buildZpaySignedParams,
   formatZpayAmount,
   mapPaymentMethodToZpayType,
   mapZpayTypeToPaymentMethod,
+  normalizeZpayItemName,
   verifyZpayNotifyPayload,
   type ZpayParams
 } from "@/lib/zpay";
@@ -39,6 +41,7 @@ type ZpayRefundResponse = {
   msg?: string;
   [key: string]: unknown;
 };
+const zpayPaymentRequestVersion = "paid-download-v2";
 
 export type ZpayNotifyValidationResult =
   | { ok: true; reason: null }
@@ -78,6 +81,23 @@ function isPaidOrderStatus(status: Order["orderStatus"]) {
   return status === "paid" || status === "activated" || status === "refunded";
 }
 
+function buildPaidDownloadPaymentName(tool: Pick<Tool, "name" | "englishName">) {
+  const baseName = tool.englishName?.trim() || tool.name;
+  const conciseName = baseName.split(/[|｜]/)[0]?.trim() || baseName;
+  return normalizeZpayItemName(`${conciseName} 下载授权`);
+}
+
+function getRawResponseObject(transaction: PaymentTransaction) {
+  const raw = transaction.rawResponse;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  return raw as Record<string, unknown>;
+}
+
+function canReusePendingZpayPayment(transaction: PaymentTransaction) {
+  if (transaction.status !== "pending" || !getZpayDisplayUrl(transaction)) return false;
+  return getRawResponseObject(transaction)?.requestVersion === zpayPaymentRequestVersion;
+}
+
 export function buildZpayPaymentRequest(input: {
   config: ZpayConfig;
   order: OrderForPaymentRequest;
@@ -85,6 +105,7 @@ export function buildZpayPaymentRequest(input: {
   clientIp: string;
 }) {
   const paymentType = mapPaymentMethodToZpayType(input.order.paymentMethod, input.config.defaultType);
+  const itemName = normalizeZpayItemName(input.itemName);
   const params = buildZpaySignedParams(
     {
       pid: input.config.pid,
@@ -93,7 +114,7 @@ export function buildZpayPaymentRequest(input: {
       out_trade_no: input.order.orderNo,
       notify_url: `${input.config.siteUrl}/api/zpay/notify`,
       return_url: `${input.config.siteUrl}/orders/${input.order.id}`,
-      name: input.itemName.slice(0, 100),
+      name: itemName,
       money: formatZpayAmount(input.order.amount.toString()),
       clientip: input.clientIp,
       param: input.order.id
@@ -104,6 +125,17 @@ export function buildZpayPaymentRequest(input: {
   return {
     endpoint: zpayEndpoint(input.config, "mapi.php"),
     params
+  };
+}
+
+function buildStoredZpayResponse(response: ZpayCreatePaymentResponse, request: ReturnType<typeof buildZpayPaymentRequest>) {
+  return {
+    ...response,
+    requestVersion: zpayPaymentRequestVersion,
+    requestName: request.params.name,
+    requestNameBytes: Buffer.byteLength(String(request.params.name), "utf8"),
+    requestType: request.params.type,
+    requestOrderNo: request.params.out_trade_no
   };
 }
 
@@ -157,7 +189,7 @@ export async function ensureZpayPaymentForOrder(input: { orderId: string; userId
   if (!order) throw new Error("订单不存在。");
   if (!order.tool) throw new Error("订单未关联软件。");
 
-  if (order.paymentTransaction?.status === "pending" && getZpayDisplayUrl(order.paymentTransaction)) {
+  if (order.paymentTransaction && canReusePendingZpayPayment(order.paymentTransaction)) {
     return toZpayPaymentView(order.paymentTransaction);
   }
 
@@ -165,10 +197,20 @@ export async function ensureZpayPaymentForOrder(input: { orderId: string; userId
     return toZpayPaymentView(order.paymentTransaction);
   }
 
+  let payableOrder = order;
+  if (order.paymentTransaction?.status === "pending") {
+    await prisma.paymentTransaction.delete({ where: { orderId: order.id } });
+    payableOrder = await prisma.order.update({
+      where: { id: order.id },
+      data: { orderNo: createOrderNo() },
+      include: { tool: true, paymentTransaction: true }
+    });
+  }
+
   const request = buildZpayPaymentRequest({
     config,
-    order,
-    itemName: `${order.tool.name} 下载授权`,
+    order: payableOrder,
+    itemName: buildPaidDownloadPaymentName(payableOrder.tool!),
     clientIp: input.clientIp ?? "127.0.0.1"
   });
   const response = await requestZpayPayment(request);
@@ -176,8 +218,9 @@ export async function ensureZpayPaymentForOrder(input: { orderId: string; userId
     throw new Error(response.msg || "ZPAY 创建支付订单失败。");
   }
 
+  const rawResponse = buildStoredZpayResponse(response, request);
   const transaction = await prisma.paymentTransaction.upsert({
-    where: { orderId: order.id },
+    where: { orderId: payableOrder.id },
     update: {
       provider: "zpay",
       providerTradeNo: response.trade_no ?? null,
@@ -189,10 +232,10 @@ export async function ensureZpayPaymentForOrder(input: { orderId: string; userId
       qrImageUrl: response.img ?? null,
       payUrl: response.payurl ?? null,
       payUrl2: response.payurl2 ?? null,
-      rawResponse: toJson(response as Record<string, unknown>)
+      rawResponse: toJson(rawResponse as Record<string, unknown>)
     },
     create: {
-      orderId: order.id,
+      orderId: payableOrder.id,
       provider: "zpay",
       providerTradeNo: response.trade_no ?? null,
       providerOrderId: response.O_id ?? null,
@@ -203,7 +246,7 @@ export async function ensureZpayPaymentForOrder(input: { orderId: string; userId
       qrImageUrl: response.img ?? null,
       payUrl: response.payurl ?? null,
       payUrl2: response.payurl2 ?? null,
-      rawResponse: toJson(response as Record<string, unknown>)
+      rawResponse: toJson(rawResponse as Record<string, unknown>)
     }
   });
 

@@ -3,6 +3,7 @@ import type { PaymentMethod } from "@prisma/client";
 import type { ZpayPaymentType } from "@/lib/zpay-config";
 
 type ZpayParamValue = string | number | null | undefined;
+const zpayItemNameMaxBytes = 96;
 
 export type ZpayParams = Record<string, ZpayParamValue>;
 
@@ -52,6 +53,24 @@ export function formatZpayAmount(value: string | number) {
     throw new Error("Invalid payment amount.");
   }
   return amount.toFixed(2);
+}
+
+export function truncateUtf8(value: string, maxBytes: number) {
+  let result = "";
+  let bytes = 0;
+  for (const char of value) {
+    const charBytes = Buffer.byteLength(char, "utf8");
+    if (bytes + charBytes > maxBytes) break;
+    result += char;
+    bytes += charBytes;
+  }
+  return result;
+}
+
+export function normalizeZpayItemName(value: string, fallback = "ENHE 付费下载") {
+  const normalized = value.trim().replace(/\s+/g, " ");
+  const name = normalized || fallback;
+  return truncateUtf8(name, zpayItemNameMaxBytes) || fallback;
 }
 
 export function mapPaymentMethodToZpayType(method?: PaymentMethod | null, fallback: ZpayPaymentType = "alipay"): ZpayPaymentType {
