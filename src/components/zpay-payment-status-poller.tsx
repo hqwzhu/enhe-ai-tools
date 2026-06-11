@@ -1,0 +1,62 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+type ZpayPaymentStatusPollerProps = {
+  orderId: string;
+  toolSlug?: string | null;
+};
+
+export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatusPollerProps) {
+  const router = useRouter();
+  const [message, setMessage] = useState("等待支付结果回调...");
+
+  useEffect(() => {
+    let stopped = false;
+    let attempts = 0;
+
+    async function poll() {
+      attempts += 1;
+      try {
+        const response = await fetch(`/api/orders/${orderId}/payment-status`, { cache: "no-store" });
+        if (!response.ok) {
+          if (!stopped) setMessage("暂时无法读取订单状态，请稍后刷新。");
+          return;
+        }
+        const data = (await response.json()) as {
+          unlocked?: boolean;
+          orderStatus?: string;
+          paymentStatus?: string | null;
+        };
+        if (data.unlocked) {
+          setMessage("支付成功，下载链接已解锁，正在跳转...");
+          const target = toolSlug ? `/tools/${toolSlug}#download-links` : `/orders/${orderId}?paid=success`;
+          router.replace(target);
+          return;
+        }
+        if (!stopped) {
+          setMessage(`等待支付结果回调... 当前订单状态：${data.orderStatus ?? "-"} / 支付状态：${data.paymentStatus ?? "-"}`);
+        }
+      } catch {
+        if (!stopped) setMessage("正在等待支付结果，请保持页面打开。");
+      }
+
+      if (!stopped && attempts < 120) {
+        window.setTimeout(poll, 3000);
+      }
+    }
+
+    const timer = window.setTimeout(poll, 2000);
+    return () => {
+      stopped = true;
+      window.clearTimeout(timer);
+    };
+  }, [orderId, router, toolSlug]);
+
+  return (
+    <div className="mt-6 rounded-2xl border border-[#48F5D3]/25 bg-[#48F5D3]/10 px-4 py-3 text-sm leading-6 text-[#BDFBEF]">
+      {message}
+    </div>
+  );
+}

@@ -135,11 +135,11 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                   tool.isDownloadPaid && !hasDownloadPurchase ? (
                     <form id="download-purchase" action={createSoftwareDownloadOrderAction} className="flex flex-wrap items-center gap-3">
                       <input type="hidden" name="toolId" value={tool.id} />
-                      <select name="paymentMethod" className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]">
+                      <select name="paymentMethod" defaultValue="wechat" className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]">
                         <option value="alipay">{td.alipay}</option>
                         <option value="wechat">{td.wechat}</option>
                       </select>
-                      <FormSubmitButton pendingLabel="创建订单中...">
+                      <FormSubmitButton pendingLabel="生成支付二维码中...">
                         {td.buyDownload.replace("{price}", Number(tool.downloadPrice).toFixed(2))}
                       </FormSubmitButton>
                     </form>
@@ -154,8 +154,8 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               {tool.type === "software" && tool.isDownloadPaid ? (
                 <p className="mt-4 text-sm leading-6 text-[#FFB86B]">
                   {locale === "en"
-                    ? "This software is a paid download. Payment review unlocks this tool's download-link content."
-                    : "该软件为收费软件，付款审核通过后可查看该工具的下载链接内容。"}
+                    ? "This software is a paid download. Successful payment automatically unlocks this tool's download-link content."
+                    : "该软件为收费软件，支付成功后系统会自动解锁该工具的下载链接内容。"}
                 </p>
               ) : null}
             </div>

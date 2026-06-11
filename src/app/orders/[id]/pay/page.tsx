@@ -1,95 +1,186 @@
+import Link from "next/link";
 import Image from "next/image";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { FormSubmitButton } from "@/components/form-submit-button";
 import { Container, SectionTitle } from "@/components/ui";
+import { ZpayPaymentStatusPoller } from "@/components/zpay-payment-status-poller";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { isImagePath, normalizeImageSrc } from "@/lib/media";
-import { reviewCompletionNotice } from "@/lib/review-copy";
-import { getEffectivePaymentQrCode, getSettingsMap } from "@/lib/settings";
 import { formatCurrency } from "@/lib/utils";
+import { ensureZpayPaymentForOrder, type ZpayPaymentView } from "@/lib/zpay-orders";
 
 type PayPageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | undefined>>;
 };
 
-export default async function PayPage({ params, searchParams }: PayPageProps) {
+export default async function PayPage({ params }: PayPageProps) {
   const user = await requireUser();
-  const [{ id }, query] = await Promise.all([params, searchParams]);
-  const [order, settings] = await Promise.all([
-    prisma.order.findFirst({ where: { id, userId: user.id }, include: { plan: true, tool: true, paymentProof: true } }),
-    getSettingsMap()
-  ]);
+  const { id } = await params;
+  const requestHeaders = await headers();
+  const clientIp =
+    requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    requestHeaders.get("x-real-ip")?.trim() ||
+    "127.0.0.1";
+  const order = await prisma.order.findFirst({
+    where: { id, userId: user.id },
+    include: { plan: true, tool: true, toolPurchase: true, paymentTransaction: true }
+  });
   if (!order) notFound();
 
-  const alipayQr = getEffectivePaymentQrCode(settings.alipay_qr, "/images/payment/alipay-qr.jpg", "/images/alipay-qr.svg");
-  const wechatQr = getEffectivePaymentQrCode(settings.wechat_qr, "/images/payment/wechat-qr.jpg", "/images/wechat-qr.svg");
+  let zpayPayment: ZpayPaymentView | null = null;
+  let zpayError: string | null = null;
+  const isSoftwareDownloadOrder = order.orderType === "software_download";
+  const isUnlocked = order.orderStatus === "activated" || order.orderStatus === "paid" || Boolean(order.toolPurchase);
+
+  if (isSoftwareDownloadOrder && !isUnlocked && order.orderStatus !== "cancelled" && order.orderStatus !== "refunded") {
+    try {
+      zpayPayment = await ensureZpayPaymentForOrder({ orderId: order.id, userId: user.id, clientIp });
+    } catch (error) {
+      zpayError = error instanceof Error ? error.message : "ZPAY 支付订单创建失败。";
+    }
+  } else if (order.paymentTransaction) {
+    zpayPayment = {
+      transaction: order.paymentTransaction,
+      displayUrl: order.paymentTransaction.qrImageUrl ?? order.paymentTransaction.qrCodeUrl ?? order.paymentTransaction.payUrl ?? order.paymentTransaction.payUrl2,
+      displayImageUrl: order.paymentTransaction.qrImageUrl,
+      payUrl: order.paymentTransaction.payUrl ?? order.paymentTransaction.payUrl2,
+      qrcodeUrl: order.paymentTransaction.qrCodeUrl
+    };
+  }
 
   return (
     <Container className="py-14">
-      <SectionTitle title="订单支付" intro={`付款时请备注订单号，上传付款截图后订单会自动进入待审核状态。${reviewCompletionNotice}`} />
-      <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+      <SectionTitle
+        title="订单支付"
+        intro="请使用 ZPAY 动态订单二维码完成支付。支付成功后系统会通过回调自动解锁该软件的下载链接。"
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="glass rounded-2xl p-7">
           <p className="text-sm text-[#8B95A7]">订单号</p>
           <h1 className="mt-2 break-all text-2xl font-semibold text-[#48F5D3]">{order.orderNo}</h1>
-          <p className="mt-6 text-sm text-[#8B95A7]">{order.orderType === "software_download" ? "软件" : "套餐"}</p>
-          <p className="mt-2 text-xl">{order.plan?.name ?? order.tool?.name ?? "订单项目"} · {formatCurrency(order.amount.toString())}</p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <QrBox title="支付宝收款码" value={alipayQr} />
-            <QrBox title="微信收款码" value={wechatQr} />
+
+          <div className="mt-7 grid gap-4">
+            <Info label="项目" value={order.tool?.name ?? order.plan?.name ?? "订单项目"} />
+            <Info label="类型" value={isSoftwareDownloadOrder ? "软件下载解锁" : "订单"} />
+            <Info label="金额" value={formatCurrency(order.amount.toString())} />
+            <Info label="订单状态" value={order.orderStatus} />
+            <Info label="支付方式" value={order.paymentMethod === "wechat" ? "微信支付" : "支付宝"} />
           </div>
         </div>
 
         <div className="glass rounded-2xl p-7">
-          <h2 className="text-lg font-semibold">上传付款截图</h2>
-          <p className="mt-2 text-sm leading-6 text-[#8B95A7]">
-            上传成功后将进入独立订单详情页，显示待审核状态、付款截图预览和订单信息。{reviewCompletionNotice}
-          </p>
+          {isUnlocked ? (
+            <div>
+              <h2 className="text-xl font-semibold text-[#48F5D3]">已解锁下载链接</h2>
+              <p className="mt-3 text-sm leading-6 text-[#8B95A7]">
+                该订单已经完成支付并开通权益。你可以返回工具详情页查看下载链接内容。
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {order.tool ? (
+                  <Link href={`/tools/${order.tool.slug}#download-links`} className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
+                    查看下载链接
+                  </Link>
+                ) : null}
+                <Link href={`/orders/${order.id}`} className="rounded-full border border-white/12 px-5 py-3 text-sm">
+                  查看订单详情
+                </Link>
+              </div>
+            </div>
+          ) : zpayError ? (
+            <div>
+              <h2 className="text-xl font-semibold text-[#FFB86B]">ZPAY 支付订单创建失败</h2>
+              <p className="mt-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm leading-6 text-[#FFD6A5]">
+                {zpayError}
+              </p>
+              <p className="mt-4 text-sm leading-6 text-[#8B95A7]">
+                请稍后刷新重试。如果问题持续存在，请联系管理员检查 ZPAY 通道或服务器环境变量。
+              </p>
+            </div>
+          ) : zpayPayment ? (
+            <div>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-[#F6FAFF]">扫码支付</h2>
+                  <p className="mt-2 text-sm leading-6 text-[#8B95A7]">
+                    二维码为当前订单动态生成，请确认金额与订单号无误后支付。
+                  </p>
+                </div>
+                <span className="rounded-full border border-[#48F5D3]/30 px-3 py-1 text-xs text-[#48F5D3]">
+                  {zpayPayment.transaction.status}
+                </span>
+              </div>
 
-          <p className="mt-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm leading-6 text-[#FFD6A5]">
-            退款提示：订单开通后，如果账号已经下载过工具或使用过 1 次在线工具，将不再支持退款申请。付款前请确认套餐、工具和金额无误。
-          </p>
+              <div className="mt-6 grid gap-5 md:grid-cols-[280px_1fr]">
+                <div className="rounded-2xl border border-white/10 bg-white p-4">
+                  {zpayPayment.displayImageUrl ? (
+                    <Image
+                      src={zpayPayment.displayImageUrl}
+                      alt="ZPAY 动态支付二维码"
+                      width={280}
+                      height={280}
+                      className="aspect-square w-full rounded-xl object-contain"
+                      unoptimized
+                    />
+                  ) : zpayPayment.qrcodeUrl ? (
+                    <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-slate-100 p-4 text-center text-sm text-slate-900">
+                      <span className="break-all">{zpayPayment.qrcodeUrl}</span>
+                    </div>
+                  ) : (
+                    <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-900">
+                      暂无二维码图片
+                    </div>
+                  )}
+                </div>
 
-          {query.error ? (
-            <p className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">
-              {query.error}
-            </p>
-          ) : null}
+                <div className="flex flex-col justify-between gap-5">
+                  <div className="space-y-3 text-sm leading-6 text-[#8B95A7]">
+                    <p>支付成功后，ZPAY 会通知网站自动解锁该软件的下载链接。</p>
+                    <p>如果手机无法识别二维码，可以点击下方按钮打开 ZPAY 收银台。</p>
+                    {zpayPayment.transaction.providerTradeNo ? (
+                      <p className="break-all">ZPAY 订单号：{zpayPayment.transaction.providerTradeNo}</p>
+                    ) : null}
+                  </div>
 
-          <form action="/api/uploads/payment-proof" method="post" encType="multipart/form-data" className="mt-6 grid gap-4">
-            <input type="hidden" name="orderId" value={order.id} />
-            <label className="block text-sm">付款方式</label>
-            <select name="paymentMethod" defaultValue={order.paymentMethod ?? "alipay"} className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">
-              <option value="alipay">支付宝</option>
-              <option value="wechat">微信</option>
-            </select>
-            <label className="block text-sm">付款备注</label>
-            <input name="paymentRemark" defaultValue={order.paymentProof?.paymentRemark ?? order.orderNo} className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none" />
-            <label className="block text-sm">付款截图</label>
-            <input name="file" type="file" accept="image/*" required className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm" />
-            <FormSubmitButton className="bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel="上传中...">上传并提交审核</FormSubmitButton>
-          </form>
+                  <div className="flex flex-wrap gap-3">
+                    {zpayPayment.payUrl ?? zpayPayment.qrcodeUrl ?? zpayPayment.displayUrl ? (
+                      <a
+                        href={zpayPayment.payUrl ?? zpayPayment.qrcodeUrl ?? zpayPayment.displayUrl ?? "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]"
+                      >
+                        打开收银台
+                      </a>
+                    ) : null}
+                    <Link href={`/orders/${order.id}`} className="rounded-full border border-white/12 px-5 py-3 text-sm">
+                      查看订单详情
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              <ZpayPaymentStatusPoller orderId={order.id} toolSlug={order.tool?.slug ?? null} />
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-xl font-semibold text-[#FFB86B]">当前订单暂不可支付</h2>
+              <p className="mt-3 text-sm leading-6 text-[#8B95A7]">
+                该订单状态为 {order.orderStatus}，请返回订单详情查看。
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </Container>
   );
 }
 
-function QrBox({ title, value }: { title: string; value?: string }) {
-  const src = normalizeImageSrc(value);
+function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/8 p-5 text-center">
-      <div className="relative mx-auto flex aspect-[3/4] max-w-56 items-center justify-center overflow-hidden rounded-xl bg-white p-2 text-sm text-slate-900">
-        {src && isImagePath(src) ? (
-          <Image src={src} alt={title} width={360} height={480} className="h-full w-full object-contain" unoptimized />
-        ) : value ? (
-          <span className="break-all">{value}</span>
-        ) : (
-          "后台设置收款码"
-        )}
-      </div>
-      <p className="mt-4 text-sm">{title}</p>
+    <div className="rounded-xl border border-white/10 bg-white/8 p-4">
+      <p className="text-xs text-[#8B95A7]">{label}</p>
+      <p className="mt-2 break-all font-semibold text-[#F6FAFF]">{value}</p>
     </div>
   );
 }

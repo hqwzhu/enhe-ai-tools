@@ -54,6 +54,13 @@ enum OrderStatus {
   refunded
 }
 
+enum PaymentTransactionStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
 enum OrderType {
   vip
   software_download
@@ -349,12 +356,40 @@ model Order {
   plan          VipPlan?        @relation(fields: [planId], references: [id])
   tool          Tool?           @relation(fields: [toolId], references: [id])
   paymentProof  PaymentProof?
+  paymentTransaction PaymentTransaction?
   toolPurchase  ToolPurchase?
   refundRecords OrderRefundRecord[]
 
   @@index([userId, orderStatus])
   @@index([toolId, orderStatus])
   @@map("orders")
+}
+
+model PaymentTransaction {
+  id              String                   @id @default(cuid())
+  orderId         String                   @unique @map("order_id")
+  provider        String                   @default("zpay")
+  providerTradeNo String?                  @map("provider_trade_no")
+  providerOrderId String?                  @map("provider_order_id")
+  paymentType     String                   @map("payment_type")
+  status          PaymentTransactionStatus @default(pending)
+  amount          Decimal                  @db.Decimal(10, 2)
+  qrCodeUrl       String?                  @map("qr_code_url")
+  qrImageUrl      String?                  @map("qr_image_url")
+  payUrl          String?                  @map("pay_url")
+  payUrl2         String?                  @map("pay_url2")
+  rawResponse     Json?                    @map("raw_response")
+  notifyPayload   Json?                    @map("notify_payload")
+  refundPayload   Json?                    @map("refund_payload")
+  paidAt          DateTime?                @map("paid_at")
+  refundedAt      DateTime?                @map("refunded_at")
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+  order           Order                    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([providerTradeNo])
+  @@index([status])
+  @@map("payment_transactions")
 }
 
 model OrderRefundRecord {

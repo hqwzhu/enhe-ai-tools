@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import type { Prisma, Order, PaymentTransaction } from "@prisma/client";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { prisma } from "@/lib/db";
 import {
@@ -45,6 +46,7 @@ import { canOpenProtectedDownloadEntry } from "@/lib/tool-download-link";
 import { mergeToolProductImages } from "@/lib/tool-product-images";
 import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
+import { refundZpayTransactionForOrder } from "@/lib/zpay-orders";
 
 const idSchema = z.string().min(1);
 const maxCoverImageBytes = 8 * 1024 * 1024;
@@ -57,6 +59,39 @@ async function writeAdminAuditLogBestEffort(input: Parameters<typeof writeAdminA
   } catch (error) {
     console.error("[admin-audit] failed to write audit log", error);
   }
+}
+
+function toPrismaJson(value: Record<string, unknown>): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+async function requestZpayRefundBeforeCompletion(input: {
+  order: Pick<Order, "orderNo" | "amount"> & { paymentTransaction?: PaymentTransaction | null };
+  redirectPath: string;
+}) {
+  try {
+    const result = await refundZpayTransactionForOrder({ order: input.order });
+    return result.response ? (result.response as Record<string, unknown>) : null;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "ZPAY 退款接口调用失败。";
+    redirect(`${input.redirectPath}?error=${encodeURIComponent(message)}`);
+  }
+}
+
+async function markZpayTransactionRefunded(
+  tx: Prisma.TransactionClient,
+  orderId: string,
+  payload: Record<string, unknown> | null
+) {
+  if (!payload) return;
+  await tx.paymentTransaction.updateMany({
+    where: { orderId, provider: "zpay" },
+    data: {
+      status: "refunded",
+      refundedAt: new Date(),
+      refundPayload: toPrismaJson(payload)
+    }
+  });
 }
 
 function normalizeUploadActionError(error: unknown) {
@@ -447,7 +482,7 @@ export async function createRefundRecordAdminAction(formData: FormData) {
   const note = parseOptionalString(formData.get("note"));
   const refundReceiverQr = parseOptionalString(formData.get("refundReceiverQr"));
   const refundProofImage = parseOptionalString(formData.get("refundProofImage"));
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  const order = await prisma.order.findUnique({ where: { id: orderId }, include: { paymentTransaction: true } });
   if (!order) {
     redirect(`/admin/orders?error=${encodeURIComponent("订单不存在，无法记录售后/退款。")}`);
   }
@@ -463,6 +498,10 @@ export async function createRefundRecordAdminAction(formData: FormData) {
     redirect(`/admin/orders?error=${encodeURIComponent(message)}`);
   }
 
+  const zpayRefundPayload = status === "completed"
+    ? await requestZpayRefundBeforeCompletion({ order, redirectPath: `/admin/orders/${orderId}` })
+    : null;
+
   const refund = await prisma.$transaction(async (tx) => {
     const created = await tx.orderRefundRecord.create({
       data: {
@@ -473,12 +512,13 @@ export async function createRefundRecordAdminAction(formData: FormData) {
         reason,
         note,
         refundReceiverQr,
-        refundProofImage,
+        refundProofImage: refundProofImage ?? (zpayRefundPayload ? String(zpayRefundPayload.msg ?? "ZPAY refund completed") : null),
         ...getRefundStatusPatch(status, null)
       }
     });
 
     if (status === "completed") {
+      await markZpayTransactionRefunded(tx, orderId, zpayRefundPayload);
       await revokeEntitlementsForRefundedOrder(tx, order);
       await tx.order.update({ where: { id: orderId }, data: { orderStatus: "refunded" } });
     }
@@ -516,13 +556,20 @@ export async function processRefundRecordAdminAction(formData: FormData) {
   const status = z.enum(["completed", "rejected"]).parse(formData.get("status"));
   const note = parseOptionalString(formData.get("note"));
   const refundProofImage = parseOptionalString(formData.get("refundProofImage"));
-  const refund = await prisma.orderRefundRecord.findUnique({ where: { id }, include: { order: true } });
+  const refund = await prisma.orderRefundRecord.findUnique({
+    where: { id },
+    include: { order: { include: { paymentTransaction: true } } }
+  });
   if (!refund) {
     redirect(`/admin/orders?error=${encodeURIComponent("售后/退款记录不存在。")}`);
   }
   if (refund.status !== "pending") {
     redirect(`/admin/orders?error=${encodeURIComponent("该售后/退款记录已经处理。")}`);
   }
+
+  const zpayRefundPayload = status === "completed"
+    ? await requestZpayRefundBeforeCompletion({ order: refund.order, redirectPath: `/admin/refunds/${id}` })
+    : null;
 
   await prisma.$transaction(async (tx) => {
     await tx.orderRefundRecord.update({
@@ -531,12 +578,13 @@ export async function processRefundRecordAdminAction(formData: FormData) {
         status,
         adminId: admin.id,
         note: note ?? refund.note,
-        refundProofImage: refundProofImage ?? refund.refundProofImage,
+        refundProofImage: refundProofImage ?? refund.refundProofImage ?? (zpayRefundPayload ? String(zpayRefundPayload.msg ?? "ZPAY refund completed") : null),
         ...getRefundStatusPatch(status, refund.completedAt)
       }
     });
 
     if (status === "completed") {
+      await markZpayTransactionRefunded(tx, refund.orderId, zpayRefundPayload);
       await revokeEntitlementsForRefundedOrder(tx, refund.order);
       await tx.order.update({ where: { id: refund.orderId }, data: { orderStatus: "refunded" } });
     }
