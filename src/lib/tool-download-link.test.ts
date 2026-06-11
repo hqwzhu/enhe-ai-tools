@@ -7,13 +7,17 @@ import {
 } from "@/lib/tool-download-link";
 
 describe("tool download link visibility", () => {
-  it("shows public download links to every visitor", () => {
-    expect(canShowDownloadLinkArea({ isDownloadLinkVipOnly: false, hasVip: false })).toBe(true);
+  it("shows free software download links when a link exists", () => {
+    expect(canShowDownloadLinkArea({ hasDownloadLink: true, isDownloadPaid: false, hasDownloadPurchase: false })).toBe(true);
   });
 
-  it("shows VIP-only download links only to VIP users", () => {
-    expect(canShowDownloadLinkArea({ isDownloadLinkVipOnly: true, hasVip: false })).toBe(false);
-    expect(canShowDownloadLinkArea({ isDownloadLinkVipOnly: true, hasVip: true })).toBe(true);
+  it("hides paid software download links until the user has purchased that software", () => {
+    expect(canShowDownloadLinkArea({ hasDownloadLink: true, isDownloadPaid: true, hasDownloadPurchase: false })).toBe(false);
+    expect(canShowDownloadLinkArea({ hasDownloadLink: true, isDownloadPaid: true, hasDownloadPurchase: true })).toBe(true);
+  });
+
+  it("does not show a download link area without configured link content", () => {
+    expect(canShowDownloadLinkArea({ hasDownloadLink: false, isDownloadPaid: false, hasDownloadPurchase: true })).toBe(false);
   });
 
   it("keeps arbitrary download link content as display text", () => {
@@ -29,13 +33,13 @@ describe("tool download link visibility", () => {
     expect(canOpenProtectedDownloadEntry("cos://bucket/app.zip")).toBe(true);
   });
 
-  it("routes VIP users to the download-link section and ordinary users to pricing", () => {
+  it("routes purchased users to the download-link section and unpaid paid users to the purchase prompt", () => {
     expect(
       resolveSoftwareDownloadCtaHref({
         hasDownloadLink: true,
         showDownloadLinkArea: true,
-        isVipRequired: true,
-        hasVip: true,
+        isDownloadPaid: true,
+        hasDownloadPurchase: true,
         protectedDownloadHref: "/api/tools/tool-1/download"
       })
     ).toBe("#download-links");
@@ -44,18 +48,18 @@ describe("tool download link visibility", () => {
       resolveSoftwareDownloadCtaHref({
         hasDownloadLink: true,
         showDownloadLinkArea: false,
-        isVipRequired: true,
-        hasVip: false,
+        isDownloadPaid: true,
+        hasDownloadPurchase: false,
         protectedDownloadHref: "/api/tools/tool-1/download"
       })
-    ).toBe("/pricing");
+    ).toBe("#download-purchase");
 
     expect(
       resolveSoftwareDownloadCtaHref({
         hasDownloadLink: false,
         showDownloadLinkArea: false,
-        isVipRequired: false,
-        hasVip: false,
+        isDownloadPaid: false,
+        hasDownloadPurchase: false,
         protectedDownloadHref: "/api/tools/tool-1/download"
       })
     ).toBe("/api/tools/tool-1/download");

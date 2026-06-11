@@ -19,7 +19,7 @@ export default async function SoftwarePage({ searchParams }: { searchParams: Pro
   const params = await searchParams;
   const keyword = params.q;
   const categoryId = params.category;
-  const vip = params.vip;
+  const paid = params.paid;
   const sort = params.sort;
   const locale = await getCurrentLocale();
   const t = getDictionary(locale);
@@ -30,7 +30,7 @@ export default async function SoftwarePage({ searchParams }: { searchParams: Pro
         type: "software",
         status: "published",
         ...(categoryId ? { categoryId } : {}),
-        ...(vip === "vip" ? { isVipRequired: true } : vip === "free" ? { isVipRequired: false } : {}),
+        ...(paid === "paid" ? { isDownloadPaid: true } : paid === "free" ? { isDownloadPaid: false } : {}),
         ...(keyword ? { OR: [{ name: { contains: keyword, mode: "insensitive" } }, { englishName: { contains: keyword, mode: "insensitive" } }, { shortDescription: { contains: keyword, mode: "insensitive" } }] } : {})
       },
       include: { category: true },
@@ -61,9 +61,9 @@ function FilterBar({ categories, locale }: { categories: { id: string; name: str
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
       </select>
-      <select name="vip" className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">
+      <select name="paid" className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">
         <option value="">{t.listing.allAccess}</option>
-        <option value="vip">VIP</option>
+        <option value="paid">{t.toolCard.paidDownload}</option>
         <option value="free">{t.toolCard.free}</option>
       </select>
       <select name="sort" className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">

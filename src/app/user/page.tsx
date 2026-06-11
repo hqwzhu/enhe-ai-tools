@@ -12,7 +12,6 @@ import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
-import { getActiveMembership } from "@/lib/membership";
 import { getNotificationDisplay } from "@/lib/notification-display";
 import { canUserCancelOrder } from "@/lib/order-rules";
 import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
@@ -28,8 +27,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
   const passwordMessage = getPasswordMessage(params.password, locale);
   const orderMessage = params.order === "cancelled" ? (locale === "en" ? "Order cancelled." : "订单已取消。") : null;
   const user = await requireUser();
-  const [membership, notifications, orders, downloads, usages, comments, purchases, publishedTools] = await Promise.all([
-    getActiveMembership(user.id),
+  const [notifications, orders, downloads, usages, comments, purchases, publishedTools] = await Promise.all([
     prisma.notification.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -71,18 +69,23 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
     })
   ]);
   const entitlementSummary = buildUserToolEntitlements({
-    hasVip: Boolean(membership),
     purchasedToolIds: purchases.map((purchase) => purchase.toolId),
     tools: publishedTools
   });
   const unreadNotificationCount = notifications.filter((notification) => !notification.readAt).length;
+  const userCenterIntro =
+    locale === "en"
+      ? "View orders, paid downloads, usage records, comments, notifications, and account security settings."
+      : "查看订单、付费下载、使用记录、评论、通知与账号安全设置。";
 
   return (
     <Container className="py-14">
       <div className="mb-8 flex items-center justify-between gap-4">
-        <SectionTitle title={t.userCenter.title} intro={t.userCenter.intro} />
+        <SectionTitle title={t.userCenter.title} intro={userCenterIntro} />
         <form action={logoutAction}>
-          <FormSubmitButton variant="secondary" pendingLabel="退出中...">{t.userCenter.logout}</FormSubmitButton>
+          <FormSubmitButton variant="secondary" pendingLabel={locale === "en" ? "Logging out..." : "退出中..."}>
+            {t.userCenter.logout}
+          </FormSubmitButton>
         </form>
       </div>
       {orderMessage ? (
@@ -93,27 +96,11 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside className="space-y-4">
-          <Panel title={t.userCenter.membership}>
-            {membership ? (
-              <p className="leading-7 text-[#8B95A7]">
-                {membership.vipType} ·{" "}
-                {membership.isLifetime
-                  ? t.userCenter.lifetime
-                  : t.userCenter.expiresAt.replace("{date}", formatDate(membership.endTime, locale))}
-              </p>
-            ) : (
-              <p className="leading-7 text-[#8B95A7]">{t.userCenter.noMembership}</p>
-            )}
-            <Link href="/pricing" className="mt-5 inline-flex rounded-full bg-[#7AA7FF] px-4 py-2 text-sm font-semibold text-[#07101f]">
-              {t.userCenter.viewPlans}
-            </Link>
-          </Panel>
-
           <Panel title={t.notifications.title.replace("{count}", String(unreadNotificationCount))}>
             {notifications.length ? (
               <div className="space-y-3">
                 <form action={markAllNotificationsReadAction}>
-                  <FormSubmitButton variant="secondary" pendingLabel="处理中..." className="px-3 py-1 text-xs">
+                  <FormSubmitButton variant="secondary" pendingLabel={locale === "en" ? "Processing..." : "处理中..."} className="px-3 py-1 text-xs">
                     {t.notifications.markAllRead}
                   </FormSubmitButton>
                 </form>
@@ -138,7 +125,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                         {!notification.readAt ? (
                           <form action={markNotificationReadAction}>
                             <input type="hidden" name="id" value={notification.id} />
-                            <FormSubmitButton variant="secondary" pendingLabel="处理中..." className="px-2 py-1 text-xs">
+                            <FormSubmitButton variant="secondary" pendingLabel={locale === "en" ? "Processing..." : "处理中..."} className="px-2 py-1 text-xs">
                               {t.notifications.markRead}
                             </FormSubmitButton>
                           </form>
@@ -198,7 +185,9 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                 hideLabel={t.auth.hidePassword}
                 className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
               />
-              <FormSubmitButton className="bg-[#7AA7FF] text-[#07101f]" pendingLabel="保存中...">{t.userCenter.changePassword}</FormSubmitButton>
+              <FormSubmitButton className="bg-[#7AA7FF] text-[#07101f]" pendingLabel={locale === "en" ? "Saving..." : "保存中..."}>
+                {t.userCenter.changePassword}
+              </FormSubmitButton>
             </form>
           </Panel>
         </aside>
@@ -214,7 +203,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                       <span className="text-[#FFB86B]">{formatCurrency(order.amount.toString())}</span>
                     </div>
                     <p className="mt-2 text-sm text-[#8B95A7]">
-                      {order.plan ? formatPlanName(order.plan.name, order.plan.durationDays, locale) : order.tool?.name ?? t.userCenter.orderItem} ·{" "}
+                      {order.plan ? formatLegacyPlanName(locale) : order.tool?.name ?? t.userCenter.orderItem} ·{" "}
                       {formatStatus(order.orderStatus, locale)} · {t.userCenter.proof}{" "}
                       {formatStatus(order.paymentProof?.reviewStatus ?? "not_submitted", locale)}
                     </p>
@@ -233,7 +222,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                       {canUserCancelOrder(order.orderStatus) ? (
                         <form action={cancelOrderAction}>
                           <input type="hidden" name="orderId" value={order.id} />
-                          <FormSubmitButton variant="secondary" pendingLabel="取消中..." className="px-3 py-1 text-xs">
+                          <FormSubmitButton variant="secondary" pendingLabel={locale === "en" ? "Cancelling..." : "取消中..."} className="px-3 py-1 text-xs">
                             {t.userCenter.cancelOrder}
                           </FormSubmitButton>
                         </form>
@@ -344,13 +333,8 @@ function ToolAccessList({
             </Link>
             <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#8B95A7]">
               <span className="rounded-full border border-white/10 px-2 py-1">
-                {tool.isVipRequired ? t.userCenter.vipAccess : t.userCenter.freeAccess}
+                {tool.isDownloadPaid ? t.userCenter.paidDownloadAccess : t.userCenter.freeAccess}
               </span>
-              {tool.isDownloadPaid ? (
-                <span className="rounded-full border border-[#FFB86B]/30 px-2 py-1 text-[#FFB86B]">
-                  {t.userCenter.paidDownloadAccess}
-                </span>
-              ) : null}
             </div>
           </div>
           <ToolAccessAction tool={tool} action={action} locale={locale} />
@@ -396,20 +380,12 @@ function formatStatus(status: string | null | undefined, locale: Locale) {
   return t.userCenter.status[status as keyof typeof t.userCenter.status] ?? status;
 }
 
-function formatDate(value: Date | null | undefined, locale: Locale) {
-  if (!value) return "-";
-  return value.toLocaleDateString(locale === "en" ? "en-US" : "zh-CN");
-}
-
 function formatDateTime(value: Date, locale: Locale) {
   return value.toLocaleString(locale === "en" ? "en-US" : "zh-CN");
 }
 
-function formatPlanName(name: string, durationDays: number, locale: Locale) {
-  if (locale === "zh") return name;
-  if (!durationDays || durationDays >= 36500) return "Lifetime VIP";
-  if (durationDays % 30 === 0) return `${durationDays / 30}-Month VIP`;
-  return `${durationDays}-Day VIP`;
+function formatLegacyPlanName(locale: Locale) {
+  return locale === "en" ? "Legacy membership order" : "历史会员订单";
 }
 
 function getReviewNotice(locale: Locale) {

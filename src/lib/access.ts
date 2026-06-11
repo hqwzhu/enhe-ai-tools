@@ -2,8 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { userHasVip } from "@/lib/membership";
-import { canAccessVipTool, DownloadRateLimitError, getDownloadRateLimitConfig, isDownloadRateLimitExceeded } from "@/lib/access-rules";
+import { canDownloadPaidTool, DownloadRateLimitError, getDownloadRateLimitConfig, isDownloadRateLimitExceeded } from "@/lib/access-rules";
 
 async function assertBaseToolAccess(toolId: string) {
   const user = await getCurrentUser();
@@ -11,10 +10,6 @@ async function assertBaseToolAccess(toolId: string) {
 
   const tool = await prisma.tool.findUnique({ where: { id: toolId }, include: { downloadFile: true } });
   if (!tool || tool.status !== "published") throw new Error("工具不存在或未发布");
-
-  if (!canAccessVipTool({ isVipRequired: tool.isVipRequired, hasVip: await userHasVip(user.id) })) {
-    redirect("/pricing");
-  }
 
   const headerStore = await headers();
   const ip = headerStore.get("x-forwarded-for")?.split(",")[0] ?? null;
@@ -31,7 +26,9 @@ export async function assertDownloadAccess(toolId: string) {
     const purchase = await prisma.toolPurchase.findUnique({
       where: { userId_toolId: { userId: user.id, toolId: tool.id } }
     });
-    if (!purchase) redirect(`/tools/${tool.slug}?download=pay-required`);
+    if (!canDownloadPaidTool({ isDownloadPaid: tool.isDownloadPaid, hasDownloadPurchase: Boolean(purchase) })) {
+      redirect(`/tools/${tool.slug}?download=pay-required`);
+    }
   }
 
   const rateLimit = getDownloadRateLimitConfig();

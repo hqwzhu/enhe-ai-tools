@@ -1,9 +1,5 @@
-export function canDownloadVipTool(input: { isVipRequired: boolean; hasVip: boolean }) {
-  return !input.isVipRequired || input.hasVip;
-}
-
-export function canAccessVipTool(input: { isVipRequired: boolean; hasVip: boolean }) {
-  return !input.isVipRequired || input.hasVip;
+export function canDownloadPaidTool(input: { isDownloadPaid: boolean; hasDownloadPurchase: boolean }) {
+  return !input.isDownloadPaid || input.hasDownloadPurchase;
 }
 
 type AccessEnv = Record<string, string | undefined>;

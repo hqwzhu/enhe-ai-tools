@@ -10,13 +10,11 @@ export type UserEntitlementTool = {
 };
 
 type BuildUserToolEntitlementsInput<TTool extends UserEntitlementTool> = {
-  hasVip: boolean;
   purchasedToolIds: Iterable<string>;
   tools: TTool[];
 };
 
 export function buildUserToolEntitlements<TTool extends UserEntitlementTool>({
-  hasVip,
   purchasedToolIds,
   tools
 }: BuildUserToolEntitlementsInput<TTool>) {
@@ -24,21 +22,19 @@ export function buildUserToolEntitlements<TTool extends UserEntitlementTool>({
   const software = tools.filter((tool) => tool.type === "software");
 
   return {
-    downloadableSoftware: software.filter((tool) => canDownloadToolFromUserCenter(tool, hasVip, purchased)),
+    downloadableSoftware: software.filter((tool) => canDownloadToolFromUserCenter(tool, purchased)),
     purchasedSoftware: software.filter((tool) => purchased.has(tool.id)),
-    availableOnlineTools: tools.filter((tool) => tool.type === "online" && canUseOnlineToolFromUserCenter(tool, hasVip))
+    availableOnlineTools: tools.filter((tool) => tool.type === "online" && canUseOnlineToolFromUserCenter(tool))
   };
 }
 
-function canDownloadToolFromUserCenter(tool: UserEntitlementTool, hasVip: boolean, purchased: Set<string>) {
+function canDownloadToolFromUserCenter(tool: UserEntitlementTool, purchased: Set<string>) {
   if (!tool.downloadFileId) return false;
-  if (tool.isVipRequired && !hasVip) return false;
   if (tool.isDownloadPaid && !purchased.has(tool.id)) return false;
   return true;
 }
 
-function canUseOnlineToolFromUserCenter(tool: UserEntitlementTool, hasVip: boolean) {
+function canUseOnlineToolFromUserCenter(tool: UserEntitlementTool) {
   if (!tool.onlineUrl) return false;
-  if (tool.isVipRequired && !hasVip) return false;
   return true;
 }

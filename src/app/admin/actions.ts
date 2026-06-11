@@ -16,20 +16,14 @@ import {
 } from "@/lib/admin-form";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
-import {
-  sendManualVipAdjustmentAdminEmail,
-  sendRefundProcessedAdminEmail
-} from "@/lib/admin-email-notifications";
+import { sendRefundProcessedAdminEmail } from "@/lib/admin-email-notifications";
 import { getAdminUserDeleteBlockReason } from "@/lib/admin-user-rules";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
-import { manuallyAdjustVip, revokeEntitlementsForRefundedOrder } from "@/lib/membership";
+import { revokeEntitlementsForRefundedOrder } from "@/lib/membership";
 import { createLicenseCode, isUnlimitedLicenseKeyValid, parseLicenseCode } from "@/lib/license-generator";
 import type { LicenseGeneratorActionState } from "@/lib/license-generator-action-state";
 import { isLikelyUploadableImage } from "@/lib/media";
-import {
-  buildManualVipNotification,
-  buildRefundProcessedNotification
-} from "@/lib/notification-messages";
+import { buildRefundProcessedNotification } from "@/lib/notification-messages";
 import { createUserNotification } from "@/lib/notifications";
 import {
   assertAdminOrderStatusUpdateAllowed,
@@ -580,59 +574,6 @@ export async function processRefundRecordAdminAction(formData: FormData) {
   redirect(`/admin/refunds/${id}?processed=1`);
 }
 
-export async function adjustVipAdminAction(formData: FormData) {
-  const admin = await requireAdmin();
-  const userId = idSchema.parse(formData.get("userId"));
-  const actionType = z.enum(["grant", "cancel"]).parse(formData.get("actionType"));
-  const durationDays = parseNumberField(formData.get("durationDays"), 7);
-  const reason = z.string().min(2, "必须填写操作原因").parse(formData.get("reason"));
-
-  await manuallyAdjustVip({
-    userId,
-    adminId: admin.id,
-    actionType,
-    vipType: getManualVipType(durationDays),
-    durationDays,
-    reason
-  });
-  await createUserNotification(
-    userId,
-    buildManualVipNotification({
-      actionType,
-      vipType: getManualVipType(durationDays),
-      reason
-    })
-  );
-  await sendManualVipAdjustmentAdminEmail({
-    userId,
-    actionType,
-    vipType: getManualVipType(durationDays),
-    actorLabel: admin.email ?? admin.nickname ?? admin.id,
-    reason
-  });
-  await writeAdminAuditLog({
-    adminId: admin.id,
-    action: "vip.adjust",
-    targetType: "user",
-    targetId: userId,
-    summary: "Manually adjusted user VIP membership.",
-    metadata: { actionType, durationDays, reason }
-  });
-
-  revalidatePath("/admin/users");
-  revalidatePath(`/admin/users/${userId}`);
-  revalidatePath("/user");
-}
-
-function getManualVipType(durationDays: number) {
-  if (durationDays <= 0) return "永久VIP";
-  if (durationDays === 7) return "7天VIP";
-  if (durationDays === 30) return "1个月VIP";
-  if (durationDays === 180) return "6个月VIP";
-  if (durationDays === 365) return "12个月VIP";
-  return `${durationDays}天VIP`;
-}
-
 export async function upsertDevelopmentVersionAction(formData: FormData) {
   const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
@@ -825,42 +766,6 @@ export async function deleteCategoryAction(formData: FormData) {
     metadata: { name: category.name, type: category.type }
   });
   revalidatePath("/admin/categories");
-}
-
-export async function upsertVipPlanAction(formData: FormData) {
-  const admin = await requireAdmin();
-  const id = parseOptionalString(formData.get("id"));
-  const data = {
-    name: z.string().min(1).parse(formData.get("name")),
-    durationDays: parseNumberField(formData.get("durationDays"), 0),
-    price: parseNumberField(formData.get("price"), 0),
-    originalPrice: parseOptionalString(formData.get("originalPrice")) ? parseNumberField(formData.get("originalPrice"), 0) : null,
-    description: parseOptionalString(formData.get("description")),
-    isRecommended: parseBooleanField(formData.get("isRecommended")),
-    status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active"),
-    sortOrder: parseNumberField(formData.get("sortOrder"), 0)
-  };
-
-  if (data.isRecommended) {
-    await prisma.vipPlan.updateMany({ data: { isRecommended: false } });
-  }
-  let planId = id;
-  if (id) {
-    await prisma.vipPlan.update({ where: { id }, data });
-  } else {
-    const created = await prisma.vipPlan.create({ data });
-    planId = created.id;
-  }
-  await writeAdminAuditLog({
-    adminId: admin.id,
-    action: id ? "vip_plan.update" : "vip_plan.create",
-    targetType: "vip_plan",
-    targetId: planId,
-    summary: id ? "Updated VIP plan." : "Created VIP plan.",
-    metadata: { name: data.name, durationDays: data.durationDays, price: data.price, status: data.status }
-  });
-  revalidatePath("/admin/plans");
-  revalidatePath("/pricing");
 }
 
 export async function uploadFileAdminAction(formData: FormData) {

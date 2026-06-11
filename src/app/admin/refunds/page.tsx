@@ -11,7 +11,7 @@ const refundStatusOptions = ["pending", "completed", "rejected"] as const;
 const copy = {
   zh: {
     title: "售后/退款审核",
-    intro: "集中审核用户退款申请和后台售后记录。确认退款后，系统会同步撤销相关 VIP 或软件授权，并记录完成时间。",
+    intro: "集中审核用户退款申请和后台售后记录。确认退款后，系统会同步撤销相关软件购买授权，并记录完成时间。",
     search: "搜索订单、用户、原因或收款信息",
     allStatus: "全部状态",
     statusOptions: {
@@ -36,7 +36,7 @@ const copy = {
   },
   en: {
     title: "Refund review",
-    intro: "Review user refund requests and backend after-sales records. Approved refunds revoke related VIP or software entitlements and record completion data.",
+    intro: "Review user refund requests and backend after-sales records. Approved refunds revoke related software purchase entitlements and record completion data.",
     search: "Search order, user, reason, or receiver info",
     allStatus: "All statuses",
     statusOptions: {

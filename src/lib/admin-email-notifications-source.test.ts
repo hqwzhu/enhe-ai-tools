@@ -22,10 +22,10 @@ describe("admin email notification wiring", () => {
     expect(source).toContain("sendRefundRequestAdminEmail");
   });
 
-  it("emails admin for backend refund and VIP adjustment events", () => {
+  it("emails admin for backend refund events without manual VIP wiring", () => {
     const source = readFileSync(join(process.cwd(), "src/app/admin/actions.ts"), "utf8");
 
     expect(source).toContain("sendRefundProcessedAdminEmail");
-    expect(source).toContain("sendManualVipAdjustmentAdminEmail");
+    expect(source).not.toContain("sendManualVipAdjustmentAdminEmail");
   });
 });

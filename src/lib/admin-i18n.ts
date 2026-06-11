@@ -15,7 +15,7 @@ export const adminDictionaries = {
       development: "开发进度",
       releases: "产品版本",
       users: "用户管理",
-      plans: "会员套餐",
+        plans: "套餐功能已停用",
       orders: "订单管理",
       payments: "支付审核",
       paymentCodes: "收款码管理",
@@ -46,9 +46,7 @@ export const adminDictionaries = {
         orderConversion: "订单转化率",
         refundRate: "退款率",
         tools: "工具数",
-        publishedTools: "已发布工具",
-        activeVips: "有效 VIP",
-        vipExpiring7d: "7 天内到期 VIP"
+          publishedTools: "已发布工具"
       },
       trendTitle: "7 天收入趋势",
       trendNote: "仅统计已支付和已开通订单",
@@ -102,7 +100,7 @@ export const adminDictionaries = {
       development: "Development",
       releases: "Product releases",
       users: "Users",
-      plans: "VIP plans",
+        plans: "Plans disabled",
       orders: "Orders",
       payments: "Payment review",
       paymentCodes: "Payment QR codes",
@@ -133,9 +131,7 @@ export const adminDictionaries = {
         orderConversion: "Order conversion",
         refundRate: "Refund rate",
         tools: "Tools",
-        publishedTools: "Published tools",
-        activeVips: "Active VIPs",
-        vipExpiring7d: "VIP expiring in 7 days"
+          publishedTools: "Published tools"
       },
       trendTitle: "7-day revenue trend",
       trendNote: "Paid and activated orders only",

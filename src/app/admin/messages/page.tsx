@@ -14,11 +14,8 @@ export default async function AdminMessagesPage() {
   const labels = getAdminMessageTypeLabels(locale);
   const copy = messageCopy[locale];
   const dateLocale = locale === "en" ? "en-US" : "zh-CN";
-  const now = new Date();
-  const vipExpiringSoon = new Date(now);
-  vipExpiringSoon.setDate(vipExpiringSoon.getDate() + 7);
 
-  const [pendingProofs, pendingRefunds, uploadErrors, expiringMemberships] = await Promise.all([
+  const [pendingProofs, pendingRefunds, uploadErrors] = await Promise.all([
     prisma.paymentProof.findMany({
       where: { reviewStatus: "pending" },
       include: { order: true, user: true },
@@ -35,12 +32,6 @@ export default async function AdminMessagesPage() {
       where: { action: { in: ["file.upload.failed", "file.delete.cos_failed", "file.delete.local_failed"] } },
       include: { admin: true },
       orderBy: { createdAt: "desc" },
-      take: 20
-    }),
-    prisma.membership.findMany({
-      where: { status: "active", isLifetime: false, endTime: { gte: now, lte: vipExpiringSoon } },
-      include: { user: true },
-      orderBy: { endTime: "asc" },
       take: 20
     })
   ]);
@@ -72,15 +63,6 @@ export default async function AdminMessagesPage() {
       href: "/admin/files",
       severity: audit.action === "file.delete.cos_failed" ? "high" as const : "medium" as const,
       createdAt: audit.createdAt
-    })),
-    ...expiringMemberships.map((membership) => ({
-      id: `vip-${membership.id}`,
-      type: "vip_expiring" as const,
-      title: copy.vipExpiringTitle.replace("{user}", membership.user.nickname ?? membership.user.email ?? membership.user.phone ?? membership.userId),
-      content: copy.expiresAt.replace("{date}", membership.endTime?.toLocaleString(dateLocale) ?? "-"),
-      href: `/admin/users/${membership.userId}`,
-      severity: "medium" as const,
-      createdAt: membership.endTime ?? membership.updatedAt
     }))
   ];
   const sortedMessages = sortAdminMessages(messages);
@@ -88,7 +70,7 @@ export default async function AdminMessagesPage() {
 
   return (
     <AdminSection title={copy.title} intro={copy.intro}>
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         {Object.entries(labels).map(([type, label]) => (
           <div key={type} className="glass rounded-2xl p-5">
             <p className="text-sm text-[#8B95A7]">{label}</p>
@@ -127,25 +109,21 @@ export default async function AdminMessagesPage() {
 const messageCopy = {
   zh: {
     title: "管理员消息中心",
-    intro: "集中查看待审核付款、退款申请、上传异常和 VIP 到期提醒，减少运营漏处理。",
+    intro: "集中查看待审核付款、退款申请和上传异常，减少运营漏处理。",
     paymentReviewTitle: "付款待审核：{orderNo}",
     refundTitle: "退款申请：{orderNo}",
     uploadFailedTitle: "文件上传异常",
     fileCleanupFailedTitle: "文件删除清理异常",
-    vipExpiringTitle: "VIP 即将到期：{user}",
-    expiresAt: "到期时间：{date}",
     userFallback: "用户",
     empty: "当前没有待处理消息。"
   },
   en: {
     title: "Admin message center",
-    intro: "Review pending payments, refund requests, upload issues, and VIP expiry reminders in one place.",
+    intro: "Review pending payments, refund requests, and upload issues in one place.",
     paymentReviewTitle: "Payment pending review: {orderNo}",
     refundTitle: "Refund request: {orderNo}",
     uploadFailedTitle: "File upload issue",
     fileCleanupFailedTitle: "File cleanup issue",
-    vipExpiringTitle: "VIP expiring soon: {user}",
-    expiresAt: "Expires at: {date}",
     userFallback: "User",
     empty: "No pending messages."
   }
@@ -157,6 +135,6 @@ function localizeAuditSummary(summary: string, locale: "zh" | "en") {
     return "File upload failed before creating a file record";
   }
   return summary
-    .replace("文件记录已删除，但远程/物理文件清理失败", "File record was deleted, but remote or physical cleanup failed")
-    .replace("上传失败", "Upload failed");
+    .replace("鏂囦欢璁板綍宸插垹闄わ紝浣嗚繙绋?鐗╃悊鏂囦欢娓呯悊澶辫触", "File record was deleted, but remote or physical cleanup failed")
+    .replace("涓婁紶澶辫触", "Upload failed");
 }

@@ -11,7 +11,7 @@ import { formatCurrency } from "@/lib/utils";
 const copy = {
   zh: {
     title: "售后/退款详情",
-    intro: "查看退款申请、保存退款凭证，并在确认退款后同步撤销相关权益。",
+    intro: "查看退款申请、保存退款凭证，并在确认退款后同步撤销相关软件购买权益。",
     back: "返回售后/退款",
     viewOrder: "查看订单",
     processed: "退款处理结果已保存，权益已按所选状态同步。",
@@ -28,13 +28,11 @@ const copy = {
     receiverInfo: "收款码 / 收款信息",
     refundProof: "退款凭证",
     reviewNote: "处理备注",
-    orderItem: "订单项目",
+    orderItem: "历史订单项目",
     notSubmitted: "未提交",
     entitlementTitle: "权益二次核查",
-    entitlementStats: "下载记录：{downloadCount}。在线工具使用记录：{usageCount}。当前 VIP：{activeVip}。",
-    entitlementWarning: "如果状态改为已退款，系统会再次撤销相关有效 VIP 会员或软件购买授权。",
-    lifetime: "永久有效",
-    none: "无",
+    entitlementStats: "下载记录：{downloadCount}。在线工具使用记录：{usageCount}。",
+    entitlementWarning: "如果状态改为已退款，系统会撤销该订单关联的软件购买权益。",
     proofUrl: "退款凭证 URL",
     proofPlaceholder: "退款截图、转账回执或交易流水 URL",
     noteLabel: "处理备注",
@@ -46,7 +44,7 @@ const copy = {
   },
   en: {
     title: "Refund detail",
-    intro: "Review the refund request, store refund proof, and revoke related entitlements when the refund is completed.",
+    intro: "Review the refund request, store refund proof, and revoke related software purchase entitlements when the refund is completed.",
     back: "Back to refunds",
     viewOrder: "View order",
     processed: "Refund decision saved. Entitlements were synchronized according to the selected status.",
@@ -63,13 +61,11 @@ const copy = {
     receiverInfo: "Receiver QR / receiver info",
     refundProof: "Refund proof",
     reviewNote: "Review note",
-    orderItem: "Order item",
+    orderItem: "Legacy order item",
     notSubmitted: "Not submitted",
     entitlementTitle: "Entitlement second check",
-    entitlementStats: "Download logs: {downloadCount}. Online usage logs: {usageCount}. Active VIP: {activeVip}.",
-    entitlementWarning: "If the status is changed to Refunded, the system revokes the related active VIP membership or software purchase entitlement again.",
-    lifetime: "Lifetime",
-    none: "None",
+    entitlementStats: "Download logs: {downloadCount}. Online usage logs: {usageCount}.",
+    entitlementWarning: "If the status is changed to Refunded, the system revokes the software purchase entitlement related to this order.",
     proofUrl: "Refund proof URL",
     proofPlaceholder: "Receipt screenshot, transfer confirmation, or transaction URL",
     noteLabel: "Review note",
@@ -108,21 +104,10 @@ export default async function AdminRefundDetailPage({ params, searchParams }: Ad
   if (!refund) notFound();
 
   const scopedToolFilter = refund.order.toolId ? { toolId: refund.order.toolId } : {};
-  const [downloadCount, usageCount, activeMembership] = await Promise.all([
+  const [downloadCount, usageCount] = await Promise.all([
     prisma.downloadLog.count({ where: { userId: refund.order.userId, ...scopedToolFilter } }),
-    prisma.toolUsageLog.count({ where: { userId: refund.order.userId, ...scopedToolFilter } }),
-    prisma.membership.findFirst({
-      where: {
-        userId: refund.order.userId,
-        status: "active",
-        OR: [{ isLifetime: true }, { endTime: { gt: new Date() } }]
-      },
-      orderBy: [{ isLifetime: "desc" }, { endTime: "desc" }]
-    })
+    prisma.toolUsageLog.count({ where: { userId: refund.order.userId, ...scopedToolFilter } })
   ]);
-  const activeVip = activeMembership
-    ? `${activeMembership.vipType} / ${activeMembership.isLifetime ? t.lifetime : formatDateTime(activeMembership.endTime, locale)}`
-    : t.none;
 
   return (
     <AdminSection title={t.title} intro={t.intro}>
@@ -147,7 +132,7 @@ export default async function AdminRefundDetailPage({ params, searchParams }: Ad
           <Info label={t.orderStatus} value={getStatusLabel(orderStatusLabels, refund.order.orderStatus, locale)} />
           <Info label={t.refundStatus} value={getStatusLabel(refundStatusLabels, refund.status, locale)} />
           <Info label={t.user} value={refund.order.user.email ?? refund.order.user.phone ?? refund.order.user.id} />
-          <Info label={t.item} value={refund.order.plan?.name ?? refund.order.tool?.name ?? t.orderItem} />
+          <Info label={t.item} value={refund.order.tool?.name ?? t.orderItem} />
           <Info label={t.refundAmount} value={formatCurrency(refund.amount.toString())} />
           <Info label={t.createdBy} value={formatActorLabel({ adminEmail: refund.admin?.email, requesterEmail: refund.requester?.email }, locale)} />
           <Info label={t.createdAt} value={formatDateTime(refund.createdAt, locale)} />
@@ -164,7 +149,7 @@ export default async function AdminRefundDetailPage({ params, searchParams }: Ad
         <div className="mt-6 rounded-2xl border border-[#FFB86B]/25 bg-[#FFB86B]/10 p-4 text-sm leading-6 text-[#FFD6A5]">
           <p className="font-semibold text-[#FFB86B]">{t.entitlementTitle}</p>
           <p className="mt-2">
-            {formatEntitlementStats(t.entitlementStats, downloadCount, usageCount, activeVip)}
+            {formatEntitlementStats(t.entitlementStats, downloadCount, usageCount)}
           </p>
           <p className="mt-1">{t.entitlementWarning}</p>
         </div>
@@ -226,9 +211,8 @@ function formatActorLabel(input: { adminEmail?: string | null; requesterEmail?: 
   return getRefundRecordActorLabel(input);
 }
 
-function formatEntitlementStats(template: string, downloadCount: number, usageCount: number, activeVip: string) {
+function formatEntitlementStats(template: string, downloadCount: number, usageCount: number) {
   return template
     .replace("{downloadCount}", String(downloadCount))
-    .replace("{usageCount}", String(usageCount))
-    .replace("{activeVip}", activeVip);
+    .replace("{usageCount}", String(usageCount));
 }

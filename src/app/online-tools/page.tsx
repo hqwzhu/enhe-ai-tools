@@ -19,7 +19,6 @@ export default async function OnlineToolsPage({ searchParams }: { searchParams: 
   const params = await searchParams;
   const keyword = params.q;
   const categoryId = params.category;
-  const vip = params.vip;
   const sort = params.sort;
   const locale = await getCurrentLocale();
   const t = getDictionary(locale);
@@ -30,7 +29,6 @@ export default async function OnlineToolsPage({ searchParams }: { searchParams: 
         type: "online",
         status: "published",
         ...(categoryId ? { categoryId } : {}),
-        ...(vip === "vip" ? { isVipRequired: true } : vip === "free" ? { isVipRequired: false } : {}),
         ...(keyword ? { OR: [{ name: { contains: keyword, mode: "insensitive" } }, { englishName: { contains: keyword, mode: "insensitive" } }, { shortDescription: { contains: keyword, mode: "insensitive" } }] } : {})
       },
       include: { category: true },
@@ -55,22 +53,17 @@ function FilterBar({ categories, locale }: { categories: { id: string; name: str
   const t = getDictionary(locale);
 
   return (
-    <form className="glass grid gap-3 rounded-2xl p-4 md:grid-cols-[1fr_180px_160px_140px]">
+    <form className="glass grid gap-3 rounded-2xl p-4 md:grid-cols-[1fr_180px_140px]">
       <input name="q" placeholder={t.listing.searchPlaceholder} className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none" />
       <select name="category" className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
       </select>
-      <select name="vip" className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">
-        <option value="">{t.listing.allAccess}</option>
-        <option value="vip">VIP</option>
-        <option value="free">{t.toolCard.free}</option>
-      </select>
       <select name="sort" className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>
-      <button className="rounded-full bg-[#7AA7FF] px-5 py-3 font-semibold text-[#07101f] md:col-span-4">{t.listing.filter}</button>
+      <button className="rounded-full bg-[#7AA7FF] px-5 py-3 font-semibold text-[#07101f] md:col-span-3">{t.listing.filter}</button>
     </form>
   );
 }

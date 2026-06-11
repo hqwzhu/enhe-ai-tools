@@ -10,7 +10,6 @@ const adminNav = [
   ["development", "/admin/development"],
   ["releases", "/admin/releases"],
   ["users", "/admin/users"],
-  ["plans", "/admin/plans"],
   ["orders", "/admin/orders"],
   ["payments", "/admin/payments"],
   ["paymentCodes", "/admin/payment-codes"],

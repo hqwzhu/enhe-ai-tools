@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  adjustVipAdminAction,
-  deleteUserAdminAction,
-  resetUserPasswordAction,
-  updateUserAdminAction
-} from "@/app/admin/actions";
+import { deleteUserAdminAction, resetUserPasswordAction, updateUserAdminAction } from "@/app/admin/actions";
 import { AdminSection, DangerButton, Field, inputClass, selectClass, SubmitButton } from "@/app/admin/admin-ui";
 import { PasswordInput } from "@/components/password-input";
 import { prisma } from "@/lib/db";
@@ -19,7 +14,7 @@ type AdminUserDetailPageProps = {
 const copy = {
   zh: {
     title: "用户详情",
-    intro: "编辑用户基础信息、重置密码、手动调整 VIP，或在确认风险后删除用户账号。",
+    intro: "编辑用户基础信息、重置密码，或在确认风险后删除用户账号。",
     error: "操作失败：{error}",
     back: "返回用户清单",
     noEmail: "未绑定邮箱",
@@ -28,7 +23,7 @@ const copy = {
     userRole: "普通用户",
     active: "启用",
     disabled: "禁用",
-    counts: "{memberships} 条会员记录 · {orders} 个订单 · {comments} 条评论",
+    counts: "{orders} 个订单 · {comments} 条评论",
     usageCounts: "下载 {downloads} 次 · 在线工具使用 {usages} 次",
     registeredAt: "注册于 {date}",
     nickname: "昵称",
@@ -37,30 +32,14 @@ const copy = {
     saveUser: "保存用户",
     resetPassword: "重置密码",
     passwordPlaceholder: "至少 8 位临时密码",
-    manualVip: "手动调整 VIP",
-    actionType: "操作类型",
-    grant: "开通 / 延长",
-    cancel: "取消 VIP",
-    vipDuration: "VIP 时长",
-    vip1: "1天VIP",
-    vip7: "7天VIP",
-    vip30: "1个月VIP",
-    vip180: "6个月VIP",
-    vip365: "12个月VIP",
-    vipLifetime: "永久VIP",
-    reason: "操作原因",
-    reasonPlaceholder: "例如：线下补单 / 售后补偿 / 违规取消",
-    saveVip: "保存 VIP 调整",
-    vipLogs: "VIP 调整记录",
-    noVipLogs: "暂无手动调整记录。",
     deleteTitle: "删除用户",
-    deleteIntro: "删除用户会清理该用户的会员、订单、支付凭证、评论、下载记录、在线工具使用记录和登录会话。当前登录管理员不能删除自己，系统也会阻止删除最后一个管理员。",
+    deleteIntro: "删除用户会清理该用户的订单、支付凭证、评论、下载记录、在线工具使用记录和登录会话。当前登录管理员不能删除自己，系统也会阻止删除最后一个管理员。",
     confirmDelete: "我已确认该用户可以删除，并理解相关业务记录会同步清理。",
     deleteUser: "删除用户"
   },
   en: {
     title: "User details",
-    intro: "Edit profile basics, reset password, manually adjust VIP, or delete the user after risk confirmation.",
+    intro: "Edit profile basics, reset password, or delete the user after risk confirmation.",
     error: "Operation failed: {error}",
     back: "Back to user list",
     noEmail: "No email",
@@ -69,7 +48,7 @@ const copy = {
     userRole: "User",
     active: "Active",
     disabled: "Disabled",
-    counts: "{memberships} membership records · {orders} orders · {comments} comments",
+    counts: "{orders} orders · {comments} comments",
     usageCounts: "{downloads} downloads · {usages} online tool uses",
     registeredAt: "Registered {date}",
     nickname: "Nickname",
@@ -78,24 +57,8 @@ const copy = {
     saveUser: "Save user",
     resetPassword: "Reset password",
     passwordPlaceholder: "At least 8 temporary characters",
-    manualVip: "Manual VIP adjustment",
-    actionType: "Action type",
-    grant: "Grant / extend",
-    cancel: "Cancel VIP",
-    vipDuration: "VIP duration",
-    vip1: "1-day VIP",
-    vip7: "7-day VIP",
-    vip30: "1-month VIP",
-    vip180: "6-month VIP",
-    vip365: "12-month VIP",
-    vipLifetime: "Lifetime VIP",
-    reason: "Reason",
-    reasonPlaceholder: "Example: offline order, after-sales compensation, violation cancellation",
-    saveVip: "Save VIP adjustment",
-    vipLogs: "VIP adjustment logs",
-    noVipLogs: "No manual adjustment logs yet.",
     deleteTitle: "Delete user",
-    deleteIntro: "Deleting a user clears memberships, orders, payment proofs, comments, download logs, online tool usage logs, and sessions. The current admin cannot delete themselves, and the system blocks deleting the last admin.",
+    deleteIntro: "Deleting a user clears orders, payment proofs, comments, download logs, online tool usage logs, and sessions. The current admin cannot delete themselves, and the system blocks deleting the last admin.",
     confirmDelete: "I confirm this user can be deleted and understand related business records will be cleaned up.",
     deleteUser: "Delete user"
   }
@@ -107,9 +70,7 @@ export default async function AdminUserDetailPage({ params, searchParams }: Admi
   const user = await prisma.user.findUnique({
     where: { id },
     include: {
-      memberships: { orderBy: { createdAt: "desc" } },
-      vipAdjustments: { include: { admin: true }, orderBy: { createdAt: "desc" }, take: 10 },
-      _count: { select: { memberships: true, orders: true, comments: true, downloadLogs: true, toolUsageLogs: true } }
+      _count: { select: { orders: true, comments: true, downloadLogs: true, toolUsageLogs: true } }
     }
   });
   if (!user) notFound();
@@ -138,7 +99,7 @@ export default async function AdminUserDetailPage({ params, searchParams }: Admi
           </div>
           <div className="grid gap-1 text-right text-sm text-[#8B95A7]">
             <span>{roleLabel(user.role, locale)} · {statusLabel(user.status, locale)}</span>
-            <span>{formatCounts(t.counts, user._count.memberships, user._count.orders, user._count.comments)}</span>
+            <span>{formatCounts(t.counts, user._count.orders, user._count.comments)}</span>
             <span>{formatUsageCounts(t.usageCounts, user._count.downloadLogs, user._count.toolUsageLogs)}</span>
             <span>{t.registeredAt.replace("{date}", formatDate(user.createdAt, locale))}</span>
           </div>
@@ -184,48 +145,6 @@ export default async function AdminUserDetailPage({ params, searchParams }: Admi
           </form>
         </div>
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <form action={adjustVipAdminAction} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <input type="hidden" name="userId" value={user.id} />
-            <h3 className="mb-4 font-semibold">{t.manualVip}</h3>
-            <div className="grid gap-3 md:grid-cols-2">
-              <Field label={t.actionType}>
-                <select name="actionType" className={selectClass}>
-                  <option value="grant">{t.grant}</option>
-                  <option value="cancel">{t.cancel}</option>
-                </select>
-              </Field>
-              <Field label={t.vipDuration}>
-                <select name="durationDays" defaultValue={30} className={selectClass}>
-                  <option value={1}>{t.vip1}</option>
-                  <option value={7}>{t.vip7}</option>
-                  <option value={30}>{t.vip30}</option>
-                  <option value={180}>{t.vip180}</option>
-                  <option value={365}>{t.vip365}</option>
-                  <option value={0}>{t.vipLifetime}</option>
-                </select>
-              </Field>
-            </div>
-            <Field label={t.reason}>
-              <input name="reason" required minLength={2} placeholder={t.reasonPlaceholder} className={inputClass} />
-            </Field>
-            <div className="mt-4">
-              <SubmitButton>{t.saveVip}</SubmitButton>
-            </div>
-          </form>
-
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <h3 className="mb-4 font-semibold">{t.vipLogs}</h3>
-            <div className="space-y-3 text-sm text-[#8B95A7]">
-              {user.vipAdjustments.length ? user.vipAdjustments.map((log) => (
-                <p key={log.id}>
-                  {log.actionType} · {log.reason} · {log.admin.email ?? log.admin.id} · {formatDateTime(log.createdAt, locale)}
-                </p>
-              )) : <p>{t.noVipLogs}</p>}
-            </div>
-          </div>
-        </div>
-
         <div className="mt-5 rounded-2xl border border-red-400/30 bg-red-400/10 p-4">
           <h3 className="font-semibold text-red-100">{t.deleteTitle}</h3>
           <p className="mt-2 text-sm leading-6 text-red-100/80">{t.deleteIntro}</p>
@@ -257,13 +176,8 @@ function formatDate(value: Date, locale: Locale) {
   return value.toLocaleDateString(locale === "en" ? "en-US" : "zh-CN");
 }
 
-function formatDateTime(value: Date, locale: Locale) {
-  return value.toLocaleString(locale === "en" ? "en-US" : "zh-CN");
-}
-
-function formatCounts(template: string, memberships: number, orders: number, comments: number) {
+function formatCounts(template: string, orders: number, comments: number) {
   return template
-    .replace("{memberships}", String(memberships))
     .replace("{orders}", String(orders))
     .replace("{comments}", String(comments));
 }

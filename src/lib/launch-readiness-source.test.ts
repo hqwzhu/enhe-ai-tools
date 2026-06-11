@@ -27,10 +27,11 @@ describe("launch readiness source coverage", () => {
     expect(toolDetail).toContain("canonical");
   });
 
-  it("makes pricing, home cards, mobile nav, and tool detail more conversion-ready", () => {
+  it("makes paid downloads, home cards, mobile nav, and tool detail more conversion-ready", () => {
     const pricing = read("src/app/pricing/page.tsx");
-    expect(pricing).toContain("primaryCta");
-    expect(pricing).toContain("benefitComparisonTitle");
+    expect(pricing).toContain("Paid downloads");
+    expect(pricing).toContain('href="/software"');
+    expect(pricing).not.toContain("createOrderAction");
 
     const toolCard = read("src/components/tool-card.tsx");
     expect(toolCard).toContain("buildCardHighlights");

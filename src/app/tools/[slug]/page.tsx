@@ -10,7 +10,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
-import { userHasVip } from "@/lib/membership";
 import { buildPageMetadata } from "@/lib/seo";
 import {
   canOpenProtectedDownloadEntry,
@@ -63,22 +62,23 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   if (!tool || tool.status !== "published") notFound();
 
   const coverImage = normalizeImageSrc(tool.coverImage);
-  const [hasDownloadPurchase, hasVip] = user
-    ? await Promise.all([
-        prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }).then(Boolean),
-        userHasVip(user.id)
-      ])
-    : [false, false];
+  const hasDownloadPurchase = user
+    ? await prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }).then(Boolean)
+    : false;
   const downloadLinkContent = getDownloadLinkContent(tool.downloadFile);
   const hasDownloadLink = Boolean(tool.downloadFileId && tool.downloadFile && downloadLinkContent);
-  const showDownloadLinkArea = hasDownloadLink && canShowDownloadLinkArea({ isDownloadLinkVipOnly: tool.isDownloadLinkVipOnly, hasVip });
+  const showDownloadLinkArea = canShowDownloadLinkArea({
+    hasDownloadLink,
+    isDownloadPaid: tool.isDownloadPaid,
+    hasDownloadPurchase
+  });
   const canOpenDownloadEntry = canOpenProtectedDownloadEntry(downloadLinkContent);
   const protectedDownloadHref = `/api/tools/${tool.id}/download`;
   const softwareDownloadCtaHref = resolveSoftwareDownloadCtaHref({
     hasDownloadLink,
     showDownloadLinkArea,
-    isVipRequired: tool.isVipRequired,
-    hasVip,
+    isDownloadPaid: tool.isDownloadPaid,
+    hasDownloadPurchase,
     protectedDownloadHref
   });
   const related = await prisma.tool.findMany({
@@ -108,7 +108,9 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <div className="flex flex-wrap gap-2">
                 <Badge>{tool.category?.name ?? td.uncategorized}</Badge>
                 <Badge>{tool.type === "software" ? td.software : td.online}</Badge>
-                <Badge className={tool.isVipRequired ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>{tool.isVipRequired ? td.vip : td.free}</Badge>
+                <Badge className={tool.type === "software" && tool.isDownloadPaid ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>
+                  {tool.type === "software" && tool.isDownloadPaid ? (locale === "en" ? "Paid software" : "收费软件") : td.free}
+                </Badge>
                 {tool.tagLinks.map(({ tag }) => (
                   <Badge key={tag.id} className="text-[#7DD3FC]">
                     {tag.name}
@@ -131,7 +133,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <div className="mt-7 flex flex-wrap gap-3">
                 {tool.type === "software" ? (
                   tool.isDownloadPaid && !hasDownloadPurchase ? (
-                    <form action={createSoftwareDownloadOrderAction} className="flex flex-wrap items-center gap-3">
+                    <form id="download-purchase" action={createSoftwareDownloadOrderAction} className="flex flex-wrap items-center gap-3">
                       <input type="hidden" name="toolId" value={tool.id} />
                       <select name="paymentMethod" className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]">
                         <option value="alipay">{td.alipay}</option>
@@ -147,13 +149,14 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 ) : (
                   <ButtonLink href={`/api/tools/${tool.id}/use`}>{td.useOnline}</ButtonLink>
                 )}
-                <ButtonLink href="/pricing" variant="ghost">
-                  {td.openVip}
-                </ButtonLink>
               </div>
 
               {tool.type === "software" && tool.isDownloadPaid ? (
-                <p className="mt-4 text-sm leading-6 text-[#FFB86B]">{td.paidDownloadNote}</p>
+                <p className="mt-4 text-sm leading-6 text-[#FFB86B]">
+                  {locale === "en"
+                    ? "This software is a paid download. Payment review unlocks this tool's download-link content."
+                    : "该软件为收费软件，付款审核通过后可查看该工具的下载链接内容。"}
+                </p>
               ) : null}
             </div>
 

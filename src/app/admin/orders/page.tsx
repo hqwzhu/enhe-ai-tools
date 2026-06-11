@@ -13,7 +13,7 @@ type AdminOrdersPageProps = {
 const copy = {
   zh: {
     title: "订单管理",
-    intro: "订单记录以清单方式展示，点击查看详情后再编辑状态、处理退款、查看付款记录或删除订单。权益开通必须通过支付审核或手动 VIP 调整完成。",
+    intro: "订单记录以清单方式展示，点击查看详情后再编辑状态、处理退款、查看付款记录或删除订单。软件权益开通必须通过支付审核完成。",
     deleted: "订单已删除。",
     refundSaved: "售后/退款记录已保存。",
     search: "搜索订单号、用户、套餐或工具",
@@ -45,7 +45,7 @@ const copy = {
   },
   en: {
     title: "Orders",
-    intro: "Orders are listed here. Open a detail page to edit status, process refunds, view payment records, or delete an order. Benefits must be activated through payment review or manual VIP adjustment.",
+    intro: "Orders are listed here. Open a detail page to edit status, process refunds, view payment records, or delete an order. Software access must be activated through payment review.",
     deleted: "Order deleted.",
     refundSaved: "After-sales/refund record saved.",
     search: "Search order no., user, plan, or tool",

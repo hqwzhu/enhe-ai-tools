@@ -1,5 +1,6 @@
-export function canShowDownloadLinkArea(input: { isDownloadLinkVipOnly: boolean; hasVip: boolean }) {
-  return !input.isDownloadLinkVipOnly || input.hasVip;
+export function canShowDownloadLinkArea(input: { hasDownloadLink: boolean; isDownloadPaid: boolean; hasDownloadPurchase: boolean }) {
+  if (!input.hasDownloadLink) return false;
+  return !input.isDownloadPaid || input.hasDownloadPurchase;
 }
 
 export function getDownloadLinkContent(file?: { filePath?: string | null; fileUrl?: string | null } | null) {
@@ -13,11 +14,11 @@ export function canOpenProtectedDownloadEntry(content: string) {
 export function resolveSoftwareDownloadCtaHref(input: {
   hasDownloadLink: boolean;
   showDownloadLinkArea: boolean;
-  isVipRequired: boolean;
-  hasVip: boolean;
+  isDownloadPaid: boolean;
+  hasDownloadPurchase: boolean;
   protectedDownloadHref: string;
 }) {
   if (input.hasDownloadLink && input.showDownloadLinkArea) return "#download-links";
-  if (input.isVipRequired && !input.hasVip) return "/pricing";
+  if (input.isDownloadPaid && !input.hasDownloadPurchase) return "#download-purchase";
   return input.protectedDownloadHref;
 }

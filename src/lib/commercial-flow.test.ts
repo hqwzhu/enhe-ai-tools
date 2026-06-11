@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canAccessVipTool, canDownloadVipTool } from "@/lib/access-rules";
+import { canDownloadPaidTool } from "@/lib/access-rules";
 import { canUserCancelOrder } from "@/lib/order-rules";
 
 describe("critical commercial flow rules", () => {
@@ -12,13 +12,12 @@ describe("critical commercial flow rules", () => {
     expect(canUserCancelOrder("refunded")).toBe(false);
   });
 
-  it("blocks ordinary users from paid VIP download and online usage gates", () => {
-    expect(canDownloadVipTool({ isVipRequired: true, hasVip: false })).toBe(false);
-    expect(canAccessVipTool({ isVipRequired: true, hasVip: false })).toBe(false);
+  it("blocks paid software downloads until that software is purchased", () => {
+    expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: false })).toBe(false);
   });
 
-  it("allows VIP users through download and online usage gates", () => {
-    expect(canDownloadVipTool({ isVipRequired: true, hasVip: true })).toBe(true);
-    expect(canAccessVipTool({ isVipRequired: true, hasVip: true })).toBe(true);
+  it("allows free downloads and purchased paid downloads", () => {
+    expect(canDownloadPaidTool({ isDownloadPaid: false, hasDownloadPurchase: false })).toBe(true);
+    expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: true })).toBe(true);
   });
 });

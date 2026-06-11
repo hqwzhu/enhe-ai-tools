@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Check, Crown, Download, MousePointer2, UserRound } from "lucide-react";
+import { ArrowUpRight, Check, Download, MousePointer2, UserRound } from "lucide-react";
 import { Badge } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
@@ -53,17 +53,11 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
           <div>
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge>{tool.category?.name ?? t.toolCard.uncategorized}</Badge>
-              {tool.isVipRequired ? (
-                <Badge className="border-[#FFB86B]/35 text-[#FFB86B]">
-                  <Crown size={13} className="mr-1 inline" />
-                  VIP
-                </Badge>
+              {tool.type === "software" && tool.isDownloadPaid ? (
+                <Badge className="border-[#FFB86B]/35 text-[#FFB86B]">{t.toolCard.paidDownload} ¥{Number(tool.downloadPrice ?? 0).toFixed(2)}</Badge>
               ) : (
                 <Badge>{t.toolCard.free}</Badge>
               )}
-              {tool.type === "software" && tool.isDownloadPaid ? (
-                <Badge className="border-[#FFB86B]/35 text-[#FFB86B]">{t.toolCard.paidDownload} ¥{Number(tool.downloadPrice ?? 0).toFixed(2)}</Badge>
-              ) : null}
             </div>
             <h3 className="text-xl font-semibold text-[#F6FAFF]">{tool.name}</h3>
             {tool.englishName ? <p className="mt-1 text-sm font-medium text-[#7DD3FC]">{tool.englishName}</p> : null}
@@ -71,7 +65,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
           <ArrowUpRight className="text-[#8F9DB2] transition group-hover:text-[#7DD3FC]" />
         </div>
         <p className="min-h-14 text-sm leading-6 text-[#C5D0E2]">
-          <span className="font-semibold text-[#7DD3FC]">{t.toolCard.valuePrefix}：</span>
+          <span className="font-semibold text-[#7DD3FC]">{t.toolCard.valuePrefix}:</span>
           {summary}
         </p>
         <div className="mt-5 grid gap-2">
@@ -84,7 +78,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
         </div>
         <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs text-[#8F9DB2]">
           <UserRound size={14} className="shrink-0 text-[#7DD3FC]" />
-          <span>{t.toolCard.audienceLabel}：{audience}</span>
+          <span>{t.toolCard.audienceLabel}: {audience}</span>
         </div>
         <div className="mt-6 flex items-center justify-between gap-4 text-xs text-[#8F9DB2]">
           <span className="inline-flex items-center gap-3">
@@ -105,14 +99,14 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
 }
 
 function buildValueSentence(description: string, locale: Locale) {
-  const sentence = description.split(/[。.!！？?]/).find(Boolean)?.trim() ?? description.trim();
+  const sentence = description.split(/[。?!；，,.!?]/).find(Boolean)?.trim() ?? description.trim();
   const maxLength = locale === "zh" ? 44 : 86;
-  return sentence.length > maxLength ? `${sentence.slice(0, maxLength - 1)}…` : sentence;
+  return sentence.length > maxLength ? `${sentence.slice(0, maxLength - 1)}...` : sentence;
 }
 
 function buildCardHighlights(tool: ToolCardProps["tool"], locale: Locale) {
   const t = getDictionary(locale);
-  const access = tool.isVipRequired ? t.toolCard.capabilityVip : t.toolCard.capabilityFree;
+  const access = tool.type === "software" && tool.isDownloadPaid ? t.toolCard.capabilityPaidDownload : t.toolCard.capabilityFree;
   const runtime = tool.type === "software" ? t.toolCard.capabilitySoftware : t.toolCard.capabilityOnline;
   const commerce = tool.type === "software" && tool.isDownloadPaid ? t.toolCard.capabilityPaidDownload : t.toolCard.capabilityAccess;
   return [runtime, access, commerce];

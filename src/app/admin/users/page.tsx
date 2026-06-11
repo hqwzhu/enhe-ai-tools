@@ -9,7 +9,7 @@ type AdminUsersSearchParams = Promise<Record<string, string | undefined>>;
 const copy = {
   zh: {
     title: "用户管理",
-    intro: "以清单模式管理注册用户。点击查看/编辑进入单独详情页，保留角色、状态、重置密码和 VIP 调整功能。",
+    intro: "以清单模式管理注册用户。点击查看/编辑进入单独详情页，保留角色、状态、重置密码和账号删除能力。",
     deleted: "用户已删除。",
     error: "操作失败：{error}",
     search: "搜索邮箱、手机号或昵称",
@@ -26,19 +26,18 @@ const copy = {
     user: "用户",
     role: "角色",
     status: "状态",
-    membershipData: "会员 / 数据",
+    activityData: "订单 / 使用数据",
     action: "操作",
     noEmail: "未绑定邮箱",
     noPhone: "未绑定手机号",
     registeredAt: "注册于 {date}",
-    noMembership: "暂无会员",
-    counts: "{memberships} 条会员记录 · {orders} 个订单 · {comments} 条评论",
+    counts: "{orders} 个订单 · {comments} 条评论 · 下载 {downloads} 次 · 在线使用 {usages} 次",
     viewEdit: "查看/编辑",
     empty: "暂无匹配用户。"
   },
   en: {
     title: "Users",
-    intro: "Manage registered users in a list. Open a user detail page to edit role, status, password reset, VIP adjustment, and deletion.",
+    intro: "Manage registered users in a list. Open a user detail page to edit role, status, password reset, and deletion.",
     deleted: "User deleted.",
     error: "Operation failed: {error}",
     search: "Search email, phone, or nickname",
@@ -55,13 +54,12 @@ const copy = {
     user: "User",
     role: "Role",
     status: "Status",
-    membershipData: "Membership / Data",
+    activityData: "Orders / Usage",
     action: "Action",
     noEmail: "No email",
     noPhone: "No phone",
     registeredAt: "Registered {date}",
-    noMembership: "No membership",
-    counts: "{memberships} membership records · {orders} orders · {comments} comments",
+    counts: "{orders} orders · {comments} comments · {downloads} downloads · {usages} web uses",
     viewEdit: "View / Edit",
     empty: "No matching users."
   }
@@ -76,8 +74,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: A
     prisma.user.findMany({
       where,
       include: {
-        memberships: { orderBy: [{ isLifetime: "desc" }, { endTime: "desc" }, { createdAt: "desc" }], take: 1 },
-        _count: { select: { memberships: true, orders: true, comments: true } }
+        _count: { select: { orders: true, comments: true, downloadLogs: true, toolUsageLogs: true } }
       },
       orderBy: { createdAt: "desc" },
       skip: filters.skip,
@@ -136,38 +133,34 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: A
       </div>
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
-        <div className="grid min-w-[920px] grid-cols-[1.6fr_0.8fr_0.8fr_1fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
+        <div className="grid min-w-[920px] grid-cols-[1.6fr_0.8fr_0.8fr_1.1fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
           <span>{t.user}</span>
           <span>{t.role}</span>
           <span>{t.status}</span>
-          <span>{t.membershipData}</span>
+          <span>{t.activityData}</span>
           <span className="text-right">{t.action}</span>
         </div>
         {users.length ? (
           <div className="min-w-[920px] divide-y divide-white/10">
-            {users.map((user) => {
-              const latestMembership = user.memberships[0];
-              return (
-                <div key={user.id} className="grid grid-cols-[1.6fr_0.8fr_0.8fr_1fr_0.6fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
-                  <div>
-                    <p className="font-semibold text-[#E8EEF8]">{user.nickname || user.email || user.phone || user.id}</p>
-                    <p className="mt-1 text-xs text-[#8B95A7]">{user.email ?? t.noEmail} · {user.phone ?? t.noPhone}</p>
-                    <p className="mt-1 text-xs text-[#8B95A7]">{t.registeredAt.replace("{date}", formatDate(user.createdAt, locale))}</p>
-                  </div>
-                  <div className="text-[#C5D0E2]">{roleLabel(user.role, locale)}</div>
-                  <div className="text-[#C5D0E2]">{statusLabel(user.status, locale)}</div>
-                  <div className="text-xs leading-6 text-[#8B95A7]">
-                    <p>{latestMembership ? `${latestMembership.vipType} · ${latestMembership.status}` : t.noMembership}</p>
-                    <p>{formatCounts(t.counts, user._count.memberships, user._count.orders, user._count.comments)}</p>
-                  </div>
-                  <div className="text-right">
-                    <Link href={`/admin/users/${user.id}`} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
-                      {t.viewEdit}
-                    </Link>
-                  </div>
+            {users.map((user) => (
+              <div key={user.id} className="grid grid-cols-[1.6fr_0.8fr_0.8fr_1.1fr_0.6fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
+                <div>
+                  <p className="font-semibold text-[#E8EEF8]">{user.nickname || user.email || user.phone || user.id}</p>
+                  <p className="mt-1 text-xs text-[#8B95A7]">{user.email ?? t.noEmail} · {user.phone ?? t.noPhone}</p>
+                  <p className="mt-1 text-xs text-[#8B95A7]">{t.registeredAt.replace("{date}", formatDate(user.createdAt, locale))}</p>
                 </div>
-              );
-            })}
+                <div className="text-[#C5D0E2]">{roleLabel(user.role, locale)}</div>
+                <div className="text-[#C5D0E2]">{statusLabel(user.status, locale)}</div>
+                <div className="text-xs leading-6 text-[#8B95A7]">
+                  {formatCounts(t.counts, user._count.orders, user._count.comments, user._count.downloadLogs, user._count.toolUsageLogs)}
+                </div>
+                <div className="text-right">
+                  <Link href={`/admin/users/${user.id}`} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+                    {t.viewEdit}
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">{t.empty}</div>
@@ -198,9 +191,10 @@ function formatTotal(template: string, total: number, page: number, pageCount: n
     .replace("{pageCount}", String(pageCount));
 }
 
-function formatCounts(template: string, memberships: number, orders: number, comments: number) {
+function formatCounts(template: string, orders: number, comments: number, downloads: number, usages: number) {
   return template
-    .replace("{memberships}", String(memberships))
     .replace("{orders}", String(orders))
-    .replace("{comments}", String(comments));
+    .replace("{comments}", String(comments))
+    .replace("{downloads}", String(downloads))
+    .replace("{usages}", String(usages));
 }

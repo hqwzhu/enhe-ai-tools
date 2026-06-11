@@ -17,7 +17,7 @@ type AdminPaymentDetailPageProps = {
 const copy = {
   zh: {
     title: "付款记录详情",
-    intro: "查看付款截图、订单信息和审核状态。审核通过后系统会自动开通 VIP 或创建软件购买授权。",
+    intro: "查看付款截图、订单信息和审核状态。审核通过后系统会自动创建对应软件购买授权。",
     back: "返回支付审核",
     orderDetail: "查看订单详情",
     orderNo: "订单号",
@@ -45,7 +45,7 @@ const copy = {
   },
   en: {
     title: "Payment record",
-    intro: "Review the payment screenshot, order information, and proof status. Approval automatically activates VIP benefits or software purchase authorization.",
+    intro: "Review the payment screenshot, order information, and proof status. Approval automatically creates the related software purchase authorization.",
     back: "Back to payment review",
     orderDetail: "View order details",
     orderNo: "Order no.",

@@ -212,10 +212,11 @@ export function ToolAdminList({
                     <Badge className={statusClass[tool.status] ?? statusClass.draft}>{statusText[tool.status] ?? tool.status}</Badge>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 self-center">
-                    {tool.isVipRequired ? <Badge className="border-[#7AA7FF]/30 bg-[#7AA7FF]/10 text-[#AFC8FF]">VIP</Badge> : <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">{copy.free}</Badge>}
                     {type === "software" && tool.isDownloadPaid ? (
                       <Badge className="border-[#FFB86B]/40 bg-[#FFB86B]/10 text-[#FFB86B]">{formatPrice(tool.downloadPrice)}</Badge>
-                    ) : null}
+                    ) : (
+                      <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">{copy.free}</Badge>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2 self-center">
                     {publishIssues.length ? (
@@ -341,12 +342,6 @@ export function ToolEditor({
           <input name="onlineUrl" defaultValue={tool?.onlineUrl ?? ""} disabled={type !== "online"} className={inputClass} />
         </Field>
         <label className="inline-flex items-center gap-2 text-sm">
-          <input name="isVipRequired" type="checkbox" defaultChecked={tool?.isVipRequired ?? true} /> {copy.needVip}
-        </label>
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input name="isDownloadLinkVipOnly" type="checkbox" defaultChecked={tool?.isDownloadLinkVipOnly ?? true} /> {copy.downloadLinkVipOnly}
-        </label>
-        <label className="inline-flex items-center gap-2 text-sm">
           <input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} disabled={type !== "software"} /> {copy.paidDownload}
         </label>
         <Field label={copy.downloadPrice}>
@@ -451,8 +446,8 @@ const toolAdminCopy = {
     downloadFileUrlHint: "填写后会自动创建或更新文件记录，并作为该工具详情页的下载链接内容；如同时选择下载文件，将优先使用这里填写的内容。",
     unbound: "不绑定",
     onlineUrl: "在线地址",
-    needVip: "需要 VIP",
-    downloadLinkVipOnly: "下载链接仅 VIP 可见",
+    needVip: "需要付费",
+    downloadLinkVipOnly: "下载链接需购买后可见",
     paidDownload: "下载单独付费",
     downloadPrice: "下载价格",
     shortDescription: "简介",
@@ -513,8 +508,8 @@ const toolAdminCopy = {
     downloadFileUrlHint: "When filled, the system will create or update a file record and show this content in the tool detail download-link area. This content takes priority over the selected file.",
     unbound: "Unbound",
     onlineUrl: "Online URL",
-    needVip: "Requires VIP",
-    downloadLinkVipOnly: "Download link visible to VIP only",
+    needVip: "Requires payment",
+    downloadLinkVipOnly: "Download link visible after purchase",
     paidDownload: "Separate paid download",
     downloadPrice: "Download price",
     shortDescription: "Short description",

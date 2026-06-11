@@ -118,35 +118,6 @@ export async function changePasswordAction(formData: FormData) {
   redirect("/user?password=changed");
 }
 
-export async function createOrderAction(formData: FormData) {
-  const user = await requireUser();
-  const planId = z.string().min(1).parse(formData.get("planId"));
-  const paymentMethod = z.enum(["alipay", "wechat"]).parse(formData.get("paymentMethod") ?? "alipay");
-  const plan = await prisma.vipPlan.findFirst({ where: { id: planId, status: "active" } });
-  if (!plan) throw new Error("套餐不存在或已禁用");
-
-  const order = await prisma.order.create({
-    data: {
-      orderNo: createOrderNo(),
-      userId: user.id,
-      planId: plan.id,
-      orderType: "vip",
-      amount: plan.price,
-      paymentMethod,
-      orderStatus: "pending_payment"
-    }
-  });
-  await trackAnalyticsEvent({
-    eventName: "create_order",
-    path: "/pricing",
-    entityType: "order",
-    entityId: order.id,
-    userId: user.id,
-    metadata: { orderType: "vip", planId: plan.id, amount: plan.price.toString() }
-  });
-  redirect(`/orders/${order.id}/pay`);
-}
-
 export async function createSoftwareDownloadOrderAction(formData: FormData) {
   const user = await requireUser();
   const toolId = z.string().min(1).parse(formData.get("toolId"));

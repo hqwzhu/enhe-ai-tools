@@ -71,7 +71,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
           <Info label="支付时间" value={order.paidAt?.toLocaleString("zh-CN") ?? "-"} />
           <Info label="开通时间" value={order.activatedAt?.toLocaleString("zh-CN") ?? "-"} />
           <Info label="退款日期" value={order.refundRecords[0]?.completedAt?.toLocaleString("zh-CN") ?? "-"} />
-          <Info label="订单类型" value={order.orderType === "vip" ? "会员订单" : "软件下载订单"} />
+          <Info label="订单类型" value={order.orderType === "software_download" ? "软件下载订单" : "历史会员订单"} />
           <Info label="权益记录" value={order.toolPurchase ? "已生成软件购买授权" : order.activatedAt ? "已开通权益" : "未开通"} />
         </div>
 
@@ -97,7 +97,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
           </Field>
           <div className="flex items-end gap-3">
             <SubmitButton pendingLabel="保存中...">保存订单</SubmitButton>
-            <p className="pb-3 text-xs leading-5 text-[#8B95A7]">如需开通权益，请到支付审核通过，或在用户管理中手动调整 VIP。</p>
+            <p className="pb-3 text-xs leading-5 text-[#8B95A7]">如需开通软件权益，请到支付审核中通过对应付款凭证。</p>
           </div>
         </form>
       </div>
@@ -105,7 +105,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
       <div className="glass mt-6 rounded-2xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">售后/退款记录</h2>
-          <span className="text-xs text-[#8B95A7]">用户申请退款需提交收款码；确认退款后会同步撤销 VIP 或软件授权。</span>
+          <span className="text-xs text-[#8B95A7]">用户申请退款需提交收款码；确认退款后会同步撤销该订单的软件授权。</span>
         </div>
 
         <div className="mt-4 space-y-3">

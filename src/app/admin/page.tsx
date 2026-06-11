@@ -22,8 +22,6 @@ export default async function AdminDashboardPage() {
   last7Days.setDate(last7Days.getDate() - 7);
   const previous7Days = new Date(now);
   previous7Days.setDate(previous7Days.getDate() - 14);
-  const vipExpiringSoon = new Date(now);
-  vipExpiringSoon.setDate(vipExpiringSoon.getDate() + 7);
   const trendStart = new Date(now);
   trendStart.setDate(trendStart.getDate() - 6);
   trendStart.setHours(0, 0, 0, 0);
@@ -44,8 +42,6 @@ export default async function AdminDashboardPage() {
     todayPaidAmount,
     pendingProofs,
     pendingRefunds,
-    activeMemberships,
-    expiringMemberships,
     popularTools,
     recentRevenueOrders,
     analyticsEventCounts
@@ -65,8 +61,6 @@ export default async function AdminDashboardPage() {
     prisma.order.aggregate({ where: { orderStatus: { in: ["paid", "activated"] }, createdAt: { gte: todayStart } }, _sum: { amount: true } }),
     prisma.paymentProof.count({ where: { reviewStatus: "pending" } }),
     prisma.orderRefundRecord.count({ where: { status: "pending" } }),
-    prisma.membership.count({ where: { status: "active" } }),
-    prisma.membership.count({ where: { status: "active", isLifetime: false, endTime: { gte: now, lte: vipExpiringSoon } } }),
     prisma.tool.findMany({
       where: { status: "published" },
       select: { id: true, name: true, type: true, downloadCount: true, usageCount: true },
@@ -117,8 +111,6 @@ export default async function AdminDashboardPage() {
         <Stat label={t.stats.refundRate} value={`${refundRate}%`} warn={refundRate > 10} />
         <Stat label={t.stats.tools} value={tools} />
         <Stat label={t.stats.publishedTools} value={`${publishedTools} / ${tools}`} />
-        <Stat label={t.stats.activeVips} value={activeMemberships} href="/admin/users" />
-        <Stat label={t.stats.vipExpiring7d} value={expiringMemberships} href="/admin/messages" warn={expiringMemberships > 0} />
       </div>
 
       <section className="glass mt-8 rounded-2xl p-6">
@@ -165,8 +157,6 @@ export default async function AdminDashboardPage() {
           <div className="mt-5 grid gap-3 text-sm">
             <QuickItem label={t.stats.paymentReviews} value={pendingProofs} href="/admin/payments" />
             <QuickItem label={t.stats.refundReviews} value={pendingRefunds} href="/admin/refunds?status=pending" />
-            <QuickItem label={t.stats.vipExpiring7d} value={expiringMemberships} href="/admin/messages" />
-            <QuickItem label={t.stats.activeVips} value={activeMemberships} href="/admin/users" />
           </div>
           <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-[#8B95A7]">
             {t.toolMix.replace("{software}", String(softwareTools)).replace("{online}", String(onlineTools))}

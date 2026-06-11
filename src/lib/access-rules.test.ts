@@ -1,24 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
-  canAccessVipTool,
-  canDownloadVipTool,
+  canDownloadPaidTool,
   getDownloadRateLimitConfig,
   isDownloadRateLimitExceeded
 } from "@/lib/access-rules";
 
 describe("access rules", () => {
-  it("blocks ordinary users from downloading VIP software", () => {
-    expect(canDownloadVipTool({ isVipRequired: true, hasVip: false })).toBe(false);
+  it("allows free software downloads without a purchase", () => {
+    expect(canDownloadPaidTool({ isDownloadPaid: false, hasDownloadPurchase: false })).toBe(true);
   });
 
-  it("allows VIP users to download VIP software", () => {
-    expect(canDownloadVipTool({ isVipRequired: true, hasVip: true })).toBe(true);
-  });
-
-  it("uses the same VIP gate for online tool usage", () => {
-    expect(canAccessVipTool({ isVipRequired: true, hasVip: false })).toBe(false);
-    expect(canAccessVipTool({ isVipRequired: true, hasVip: true })).toBe(true);
-    expect(canAccessVipTool({ isVipRequired: false, hasVip: false })).toBe(true);
+  it("requires a matching purchase for paid software downloads", () => {
+    expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: false })).toBe(false);
+    expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: true })).toBe(true);
   });
 
   it("parses download rate limit settings with safe defaults", () => {
