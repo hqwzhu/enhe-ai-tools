@@ -63,6 +63,7 @@ export default async function PayPage({ params }: PayPageProps) {
 
           <div className="mt-7 grid gap-4">
             <Info label="项目" value={order.tool?.name ?? order.plan?.name ?? "订单项目"} />
+            {order.toolPriceSpecName ? <Info label="规格" value={order.toolPriceSpecName} /> : null}
             <Info label="类型" value={isSoftwareDownloadOrder ? "软件下载解锁" : "订单"} />
             <Info label="金额" value={formatCurrency(order.amount.toString())} />
             <Info label="订单状态" value={order.orderStatus} />

@@ -5,6 +5,7 @@ export type ToolPublishCheckInput = {
   content: string | null;
   coverImage: string | null;
   downloadFileId: string | null;
+  downloadFile?: { filePath: string; fileUrl: string | null } | null;
   downloadFileUrl?: string | null;
   onlineUrl: string | null;
   isDownloadPaid: boolean;
@@ -19,7 +20,8 @@ export function getToolPublishIssues(tool: ToolPublishCheckInput) {
   if (!tool.shortDescription?.trim()) issues.push("未填写简介");
   if (!tool.content?.trim()) issues.push("未填写详细介绍");
 
-  if (tool.type === "software" && !tool.downloadFileId && !tool.downloadFileUrl?.trim()) issues.push("未绑定下载文件");
+  const directDownloadContent = tool.downloadFile?.fileUrl || tool.downloadFile?.filePath || "";
+  if (tool.type === "software" && !directDownloadContent.trim() && !tool.downloadFileUrl?.trim()) issues.push("未填写下载链接");
   if (tool.type === "software" && tool.isDownloadPaid && Number(tool.downloadPrice) <= 0) {
     issues.push("付费下载价格需大于 0");
   }

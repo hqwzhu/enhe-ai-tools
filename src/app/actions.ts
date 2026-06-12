@@ -35,6 +35,7 @@ import {
 import { createUserNotification } from "@/lib/notifications";
 import { canUserCancelOrder, canUserRequestRefundForOrder, normalizeRefundRecordAmount } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
+import { resolveToolOrderPriceSpec } from "@/lib/tool-price-specs";
 
 export async function registerAction(formData: FormData) {
   await assertValidCsrfToken(formData.get("csrfToken"));
@@ -121,10 +122,16 @@ export async function changePasswordAction(formData: FormData) {
 export async function createSoftwareDownloadOrderAction(formData: FormData) {
   const user = await requireUser();
   const toolId = z.string().min(1).parse(formData.get("toolId"));
+  const requestedPriceSpecId = String(formData.get("priceSpecId") ?? "").trim() || null;
   const paymentMethod = z.enum(["alipay", "wechat"]).parse(formData.get("paymentMethod") ?? "alipay");
-  const tool = await prisma.tool.findFirst({ where: { id: toolId, type: "software", status: "published" } });
+  const tool = await prisma.tool.findFirst({
+    where: { id: toolId, type: "software", status: "published" },
+    include: { priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } }
+  });
   if (!tool) throw new Error("软件工具不存在或未发布");
-  if (!tool.isDownloadPaid || Number(tool.downloadPrice) <= 0) {
+  const selectedPriceSpec = resolveToolOrderPriceSpec(tool.priceSpecs, requestedPriceSpecId);
+  const orderAmount = selectedPriceSpec?.price ?? tool.downloadPrice;
+  if (!tool.isDownloadPaid || Number(orderAmount) <= 0) {
     redirect(`/api/tools/${tool.id}/download`);
   }
 
@@ -138,8 +145,10 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
       orderNo: createOrderNo(),
       userId: user.id,
       toolId: tool.id,
+      toolPriceSpecId: selectedPriceSpec?.id ?? null,
+      toolPriceSpecName: selectedPriceSpec?.name ?? null,
       orderType: "software_download",
-      amount: tool.downloadPrice,
+      amount: orderAmount,
       paymentMethod,
       orderStatus: "pending_payment"
     }
@@ -150,7 +159,13 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
     entityType: "order",
     entityId: order.id,
     userId: user.id,
-    metadata: { orderType: "software_download", toolId: tool.id, amount: tool.downloadPrice.toString() }
+    metadata: {
+      orderType: "software_download",
+      toolId: tool.id,
+      priceSpecId: selectedPriceSpec?.id ?? null,
+      priceSpecName: selectedPriceSpec?.name ?? null,
+      amount: orderAmount.toString()
+    }
   });
   redirect(`/orders/${order.id}/pay`);
 }

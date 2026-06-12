@@ -327,11 +327,17 @@ export async function activateOrderFromZpayNotify(payload: ZpayParams) {
 
     await tx.toolPurchase.upsert({
       where: { orderId: current.id },
-      update: { amount: current.amount },
+      update: {
+        amount: current.amount,
+        toolPriceSpecId: current.toolPriceSpecId,
+        toolPriceSpecName: current.toolPriceSpecName
+      },
       create: {
         userId: current.userId,
         toolId: current.toolId!,
         orderId: current.id,
+        toolPriceSpecId: current.toolPriceSpecId,
+        toolPriceSpecName: current.toolPriceSpecName,
         amount: current.amount
       }
     });

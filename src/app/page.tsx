@@ -27,7 +27,7 @@ export default async function HomePage() {
   const [recommendedTools, locale, settings] = await Promise.all([
     prisma.tool.findMany({
       where: { status: "published", isHomeRecommended: true },
-      include: { category: true },
+      include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       take: 40
     }),

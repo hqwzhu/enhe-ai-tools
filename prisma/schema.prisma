@@ -235,6 +235,7 @@ model Tool {
   toolUsageLogs     ToolUsageLog[]
   orders            Order[]
   purchases         ToolPurchase[]
+  priceSpecs        ToolPriceSpec[]
   tagLinks          ToolTagLink[]
   faqs              ToolFaq[]
   changelogs        ToolChangelog[]
@@ -302,6 +303,23 @@ model ToolChangelog {
   @@map("tool_changelogs")
 }
 
+model ToolPriceSpec {
+  id        String        @id @default(cuid())
+  toolId    String        @map("tool_id")
+  name      String
+  price     Decimal       @db.Decimal(10, 2)
+  sortOrder Int           @default(0) @map("sort_order")
+  status    ContentStatus @default(active)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  tool      Tool          @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  orders    Order[]
+  purchases ToolPurchase[]
+
+  @@index([toolId, status, sortOrder])
+  @@map("tool_price_specs")
+}
+
 model File {
   id            String        @id @default(cuid())
   toolId        String?       @map("tool_id")
@@ -346,6 +364,8 @@ model Order {
   userId        String          @map("user_id")
   planId        String?         @map("plan_id")
   toolId        String?         @map("tool_id")
+  toolPriceSpecId   String?     @map("tool_price_spec_id")
+  toolPriceSpecName String?     @map("tool_price_spec_name")
   orderType     OrderType       @default(vip) @map("order_type")
   amount        Decimal         @db.Decimal(10, 2)
   paymentMethod PaymentMethod?  @map("payment_method")
@@ -357,6 +377,7 @@ model Order {
   user          User            @relation(fields: [userId], references: [id])
   plan          VipPlan?        @relation(fields: [planId], references: [id])
   tool          Tool?           @relation(fields: [toolId], references: [id])
+  toolPriceSpec ToolPriceSpec?  @relation(fields: [toolPriceSpecId], references: [id], onDelete: SetNull)
   paymentProof  PaymentProof?
   paymentTransaction PaymentTransaction?
   toolPurchase  ToolPurchase?
@@ -422,12 +443,15 @@ model ToolPurchase {
   id        String   @id @default(cuid())
   userId    String   @map("user_id")
   toolId    String   @map("tool_id")
+  toolPriceSpecId   String? @map("tool_price_spec_id")
+  toolPriceSpecName String? @map("tool_price_spec_name")
   orderId   String   @unique @map("order_id")
   amount    Decimal  @db.Decimal(10, 2)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   user      User     @relation(fields: [userId], references: [id])
   tool      Tool     @relation(fields: [toolId], references: [id])
+  toolPriceSpec ToolPriceSpec? @relation(fields: [toolPriceSpecId], references: [id], onDelete: SetNull)
   order     Order    @relation(fields: [orderId], references: [id])
 
   @@unique([userId, toolId])

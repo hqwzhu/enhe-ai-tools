@@ -64,6 +64,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Adm
           <Info label="订单号" value={order.orderNo} />
           <Info label="用户" value={order.user.email ?? order.user.phone ?? order.user.id} />
           <Info label="项目" value={order.plan?.name ?? order.tool?.name ?? "订单项目"} />
+          {order.toolPriceSpecName ? <Info label="规格" value={order.toolPriceSpecName} /> : null}
           <Info label="金额" value={formatCurrency(order.amount.toString())} />
           <Info label="订单状态" value={getStatusLabel(orderStatusLabels, order.orderStatus)} />
           <Info label="凭证状态" value={getStatusLabel(proofStatusLabels, order.paymentProof?.reviewStatus)} />

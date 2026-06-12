@@ -4,6 +4,7 @@ import { ArrowUpRight, Check, Download, MousePointer2, UserRound } from "lucide-
 import { Badge } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
+import { getPrimaryToolPrice, type ToolPriceSpecStatus } from "@/lib/tool-price-specs";
 
 type ToolCardProps = {
   locale?: Locale;
@@ -19,6 +20,7 @@ type ToolCardProps = {
     usageCount: number;
     isDownloadPaid?: boolean;
     downloadPrice?: unknown;
+    priceSpecs?: { price: unknown; status: ToolPriceSpecStatus }[];
     category?: { name: string } | null;
   };
 };
@@ -29,7 +31,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
   const summary = buildValueSentence(tool.shortDescription, locale);
   const highlights = buildCardHighlights(tool, locale);
   const audience = tool.category?.name ?? t.toolCard.defaultAudience;
-  const servicePrice = Number(tool.downloadPrice ?? 0);
+  const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], tool.downloadPrice);
   const showPrice = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0);
 
   return (
@@ -108,7 +110,7 @@ function buildValueSentence(description: string, locale: Locale) {
 
 function buildCardHighlights(tool: ToolCardProps["tool"], locale: Locale) {
   const t = getDictionary(locale);
-  const servicePrice = Number(tool.downloadPrice ?? 0);
+  const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], tool.downloadPrice);
   const isPaid = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0);
   const access = isPaid ? (tool.type === "online" ? t.toolCard.capabilityPaidService : t.toolCard.capabilityPaidDownload) : t.toolCard.capabilityFree;
   const runtime = tool.type === "software" ? t.toolCard.capabilitySoftware : t.toolCard.capabilityOnline;

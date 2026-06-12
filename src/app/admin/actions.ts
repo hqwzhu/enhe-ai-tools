@@ -43,6 +43,7 @@ import {
 } from "@/lib/storage";
 import { parseTagNames, tagSlug } from "@/lib/tool-content";
 import { canOpenProtectedDownloadEntry } from "@/lib/tool-download-link";
+import { getPrimaryToolPriceSpec, parseToolPriceSpecsFromFormData, type ToolPriceSpecDraft } from "@/lib/tool-price-specs";
 import { mergeToolProductImages } from "@/lib/tool-product-images";
 import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
@@ -92,6 +93,42 @@ async function markZpayTransactionRefunded(
       refundPayload: toPrismaJson(payload)
     }
   });
+}
+
+async function syncToolPriceSpecs(toolId: string, specs: ToolPriceSpecDraft[]) {
+  const incomingIds = specs.map((spec) => spec.id).filter((id): id is string => Boolean(id));
+  await prisma.toolPriceSpec.updateMany({
+    where: {
+      toolId,
+      ...(incomingIds.length ? { id: { notIn: incomingIds } } : {})
+    },
+    data: { status: "disabled" }
+  });
+
+  for (const spec of specs) {
+    if (spec.id) {
+      await prisma.toolPriceSpec.updateMany({
+        where: { id: spec.id, toolId },
+        data: {
+          name: spec.name,
+          price: spec.price,
+          sortOrder: spec.sortOrder,
+          status: spec.status
+        }
+      });
+      continue;
+    }
+
+    await prisma.toolPriceSpec.create({
+      data: {
+        toolId,
+        name: spec.name,
+        price: spec.price,
+        sortOrder: spec.sortOrder,
+        status: spec.status
+      }
+    });
+  }
 }
 
 function normalizeUploadActionError(error: unknown) {
@@ -981,6 +1018,9 @@ export async function upsertToolAction(formData: FormData) {
     const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `tool-cover-${safeToolKey}`);
     const downloadFileUrl = parseDownloadFileUrl(formData.get("downloadFileUrl"));
     const selectedDownloadFileId = parseOptionalString(formData.get("downloadFileId"));
+    const priceSpecs = parseToolPriceSpecsFromFormData(formData);
+    const primaryPriceSpec = getPrimaryToolPriceSpec(priceSpecs);
+    const resolvedPurchasePrice = primaryPriceSpec?.price ?? parseNumberField(formData.get("downloadPrice"), 0);
     const existingProductImages = formData
       .getAll("existingScreenshots")
       .map((value) => String(value ?? ""))
@@ -999,10 +1039,10 @@ export async function upsertToolAction(formData: FormData) {
       version: parseOptionalString(formData.get("version")),
       systemRequirement: parseOptionalString(formData.get("systemRequirement")),
       isVipRequired: parseBooleanField(formData.get("isVipRequired")),
-      isDownloadPaid: parseBooleanField(formData.get("isDownloadPaid")),
-      isDownloadLinkVipOnly: parseBooleanField(formData.get("isDownloadLinkVipOnly")),
+      isDownloadPaid: type === "software" && resolvedPurchasePrice > 0,
+      isDownloadLinkVipOnly: type === "software" && resolvedPurchasePrice > 0,
       isHomeRecommended: parseBooleanField(formData.get("isHomeRecommended")),
-      downloadPrice: parseNumberField(formData.get("downloadPrice"), 0),
+      downloadPrice: resolvedPurchasePrice,
       onlineUrl: parseOptionalString(formData.get("onlineUrl")),
       downloadFileId: selectedDownloadFileId,
       status: z.enum(["draft", "published", "offline"]).parse(formData.get("status") ?? "draft"),
@@ -1016,6 +1056,8 @@ export async function upsertToolAction(formData: FormData) {
       const created = await prisma.tool.create({ data });
       savedToolId = created.id;
     }
+    if (!savedToolId) throw new Error("Tool save failed.");
+    await syncToolPriceSpecs(savedToolId, priceSpecs);
     if (downloadFileUrl && savedToolId) {
       const directDownloadFileId = await upsertDirectDownloadFileForTool({
         toolId: savedToolId,
@@ -1033,7 +1075,7 @@ export async function upsertToolAction(formData: FormData) {
       targetType: "tool",
       targetId: savedToolId,
       summary: id ? "Updated tool." : "Created tool.",
-      metadata: { type, name, slug: data.slug, status: data.status, downloadFileUrl: downloadFileUrl ?? null }
+      metadata: { type, name, slug: data.slug, status: data.status, downloadFileUrl: downloadFileUrl ?? null, priceSpecs: priceSpecs.length }
     });
     revalidatePath(adminPath);
     revalidatePath("/admin/files");

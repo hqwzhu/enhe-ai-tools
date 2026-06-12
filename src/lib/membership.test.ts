@@ -110,6 +110,8 @@ describe("membership service", () => {
       id: "order-2",
       userId: "user-1",
       toolId: "tool-1",
+      toolPriceSpecId: "spec-1",
+      toolPriceSpecName: "单机授权",
       orderType: "software_download",
       orderStatus: "pending_review",
       paidAt: null,
@@ -123,7 +125,14 @@ describe("membership service", () => {
     expect(db.tx.toolPurchase.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { userId_toolId: { userId: "user-1", toolId: "tool-1" } },
-        create: expect.objectContaining({ userId: "user-1", toolId: "tool-1", orderId: "order-2" })
+        update: expect.objectContaining({ toolPriceSpecId: "spec-1", toolPriceSpecName: "单机授权" }),
+        create: expect.objectContaining({
+          userId: "user-1",
+          toolId: "tool-1",
+          orderId: "order-2",
+          toolPriceSpecId: "spec-1",
+          toolPriceSpecName: "单机授权"
+        })
       })
     );
   });

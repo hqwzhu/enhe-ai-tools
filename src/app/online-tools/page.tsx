@@ -31,7 +31,7 @@ export default async function OnlineToolsPage({ searchParams }: { searchParams: 
         ...(categoryId ? { categoryId } : {}),
         ...(keyword ? { OR: [{ name: { contains: keyword, mode: "insensitive" } }, { englishName: { contains: keyword, mode: "insensitive" } }, { shortDescription: { contains: keyword, mode: "insensitive" } }] } : {})
       },
-      include: { category: true },
+      include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
       orderBy: sort === "hot" ? { usageCount: "desc" } : { createdAt: "desc" }
     })
   ]);

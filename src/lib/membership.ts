@@ -186,11 +186,18 @@ export async function activateVipForOrder(orderId: string, reviewerId?: string, 
 
         await tx.toolPurchase.upsert({
           where: { userId_toolId: { userId: order.userId, toolId: order.toolId } },
-          update: { amount: order.amount, orderId: order.id },
+          update: {
+            amount: order.amount,
+            orderId: order.id,
+            toolPriceSpecId: order.toolPriceSpecId,
+            toolPriceSpecName: order.toolPriceSpecName
+          },
           create: {
             userId: order.userId,
             toolId: order.toolId,
             orderId: order.id,
+            toolPriceSpecId: order.toolPriceSpecId,
+            toolPriceSpecName: order.toolPriceSpecName,
             amount: order.amount
           }
         });
@@ -227,11 +234,18 @@ export async function activateVipForOrder(orderId: string, reviewerId?: string, 
 
       await tx.toolPurchase.upsert({
         where: { userId_toolId: { userId: order.userId, toolId: order.toolId } },
-        update: { amount: order.amount, orderId: order.id },
+        update: {
+          amount: order.amount,
+          orderId: order.id,
+          toolPriceSpecId: order.toolPriceSpecId,
+          toolPriceSpecName: order.toolPriceSpecName
+        },
         create: {
           userId: order.userId,
           toolId: order.toolId,
           orderId: order.id,
+          toolPriceSpecId: order.toolPriceSpecId,
+          toolPriceSpecName: order.toolPriceSpecName,
           amount: order.amount
         }
       });

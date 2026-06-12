@@ -11,6 +11,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
 import { buildPageMetadata } from "@/lib/seo";
+import { getPrimaryToolPrice } from "@/lib/tool-price-specs";
 import {
   canOpenProtectedDownloadEntry,
   canShowDownloadLinkArea,
@@ -56,13 +57,15 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
       tutorials: { where: { status: "active" }, orderBy: { sortOrder: "asc" } },
       faqs: { where: { status: "active" }, orderBy: { sortOrder: "asc" } },
       changelogs: { where: { status: "active" }, orderBy: [{ releaseDate: "desc" }, { sortOrder: "asc" }] },
+      priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
       comments: { where: { status: "approved" }, include: { user: true }, orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }] }
     }
   });
   if (!tool || tool.status !== "published") notFound();
 
   const isAccountService = tool.type === "online";
-  const servicePrice = Number(tool.downloadPrice ?? 0);
+  const activePriceSpecs = tool.priceSpecs.filter((spec) => Number(spec.price) > 0);
+  const servicePrice = getPrimaryToolPrice(activePriceSpecs, tool.downloadPrice);
   const coverImage = normalizeImageSrc(tool.coverImage);
   const hasDownloadPurchase = user
     ? await prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }).then(Boolean)
@@ -85,7 +88,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   });
   const related = await prisma.tool.findMany({
     where: { type: tool.type, status: "published", id: { not: tool.id } },
-    include: { category: true },
+    include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
     take: 3
   });
   const tutorialVideos = tool.tutorials.filter((tutorial) => tutorial.videoUrl);
@@ -147,18 +150,44 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 )}
               </div>
 
+              {activePriceSpecs.length && (isAccountService || hasDownloadPurchase || !tool.isDownloadPaid) ? (
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {activePriceSpecs.map((spec) => (
+                    <div key={spec.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
+                      <p className="text-sm font-semibold text-[#F6FAFF]">{spec.name}</p>
+                      <p className="mt-2 text-xl font-semibold text-[#FFB86B]">¥{Number(spec.price).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
               <div className="mt-7 flex flex-wrap gap-3">
                 {tool.type === "software" ? (
                   tool.isDownloadPaid && !hasDownloadPurchase ? (
-                    <form id="download-purchase" action={createSoftwareDownloadOrderAction} className="flex flex-wrap items-center gap-3">
+                    <form id="download-purchase" action={createSoftwareDownloadOrderAction} className="grid w-full gap-4">
                       <input type="hidden" name="toolId" value={tool.id} />
-                      <select name="paymentMethod" defaultValue="wechat" className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]">
-                        <option value="alipay">{td.alipay}</option>
-                        <option value="wechat">{td.wechat}</option>
-                      </select>
-                      <FormSubmitButton pendingLabel="生成支付二维码中...">
-                        {td.buyDownload.replace("{price}", Number(tool.downloadPrice).toFixed(2))}
-                      </FormSubmitButton>
+                      {activePriceSpecs.length ? (
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {activePriceSpecs.map((spec, index) => (
+                            <label key={spec.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[#7DD3FC]/45">
+                              <span>
+                                <span className="block font-semibold text-[#F6FAFF]">{spec.name}</span>
+                                <span className="mt-1 block text-[#FFB86B]">¥{Number(spec.price).toFixed(2)}</span>
+                              </span>
+                              <input name="priceSpecId" type="radio" value={spec.id} defaultChecked={index === 0} />
+                            </label>
+                          ))}
+                        </div>
+                      ) : null}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <select name="paymentMethod" defaultValue="wechat" className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]">
+                          <option value="alipay">{td.alipay}</option>
+                          <option value="wechat">{td.wechat}</option>
+                        </select>
+                        <FormSubmitButton pendingLabel="生成支付二维码中...">
+                          {td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2))}
+                        </FormSubmitButton>
+                      </div>
                     </form>
                   ) : (
                     <ButtonLink href={softwareDownloadCtaHref}>{td.downloadSoftware}</ButtonLink>

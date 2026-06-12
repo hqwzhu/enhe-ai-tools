@@ -7,6 +7,7 @@ import { ToolProductImageManager } from "@/app/admin/tool-product-image-manager"
 import { getAdminToolBasePath, getAdminToolEditPath, getAdminToolNewPath } from "@/lib/admin-tool-routes";
 import type { Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
+import { getPrimaryToolPrice, type ToolPriceSpecStatus } from "@/lib/tool-price-specs";
 import { getToolPublishIssues } from "@/lib/tool-publish-check";
 
 type AdminToolType = "software" | "online";
@@ -33,12 +34,13 @@ type ToolItem = {
   onlineUrl: string | null;
   downloadFileId: string | null;
   downloadFile?: { filePath: string; fileUrl: string | null } | null;
+  priceSpecs?: ToolPriceSpecItem[];
   categoryId: string | null;
   category?: { name: string } | null;
 };
 
 type ToolCategoryItem = { id: string; name: string; type: string };
-type FileItem = { id: string; fileName: string; fileUrl: string | null };
+type ToolPriceSpecItem = { id: string; name: string; price: unknown; sortOrder: number; status: ToolPriceSpecStatus };
 type Notice = Record<string, string | undefined>;
 type ToolListFilters = { q: string; status?: string; categoryId?: string; page: number };
 
@@ -83,6 +85,38 @@ function getDirectDownloadUrl(tool?: ToolItem) {
   const file = tool?.downloadFile;
   if (!file?.fileUrl) return "";
   return file.filePath === file.fileUrl ? file.fileUrl : "";
+}
+
+function getToolDisplayPrice(tool: ToolItem) {
+  return getPrimaryToolPrice(tool.priceSpecs ?? [], tool.downloadPrice);
+}
+
+function hasToolPrice(tool: ToolItem) {
+  return getToolDisplayPrice(tool) > 0;
+}
+
+function buildEditorPriceSpecRows(tool?: ToolItem) {
+  const existing = [...(tool?.priceSpecs ?? [])].sort((left, right) => left.sortOrder - right.sortOrder);
+  const legacyRows = !existing.length && Number(tool?.downloadPrice ?? 0) > 0
+    ? [{
+        id: "",
+        name: tool?.type === "online" ? "默认服务" : "默认授权",
+        price: tool?.downloadPrice ?? 0,
+        sortOrder: 0,
+        status: "active" as ToolPriceSpecStatus
+      }]
+    : [];
+  const rows = [...existing, ...legacyRows].map((spec, index) => ({
+    id: spec.id,
+    name: spec.name,
+    price: spec.price,
+    sortOrder: spec.sortOrder ?? index,
+    status: spec.status
+  }));
+  while (rows.length < 4) {
+    rows.push({ id: "", name: "", price: "", sortOrder: rows.length, status: "disabled" as ToolPriceSpecStatus });
+  }
+  return rows.slice(0, 20);
 }
 
 function Badge({ children, className = "" }: React.PropsWithChildren<{ className?: string }>) {
@@ -192,6 +226,7 @@ export function ToolAdminList({
             {tools.map((tool) => {
               const publishIssues = getToolPublishIssues(tool);
               const coverImage = normalizeImageSrc(tool.coverImage);
+              const displayPrice = getToolDisplayPrice(tool);
 
               return (
                 <div key={tool.id} className="grid grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] items-center gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
@@ -214,8 +249,8 @@ export function ToolAdminList({
                     <Badge className={statusClass[tool.status] ?? statusClass.draft}>{statusText[tool.status] ?? tool.status}</Badge>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 self-center">
-                    {(type === "software" && tool.isDownloadPaid) || (isAccountService && Number(tool.downloadPrice) > 0) ? (
-                      <Badge className="border-[#FFB86B]/40 bg-[#FFB86B]/10 text-[#FFB86B]">{formatPrice(tool.downloadPrice)}</Badge>
+                    {hasToolPrice(tool) ? (
+                      <Badge className="border-[#FFB86B]/40 bg-[#FFB86B]/10 text-[#FFB86B]">{formatPrice(displayPrice)}</Badge>
                     ) : (
                       <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">{copy.free}</Badge>
                     )}
@@ -253,7 +288,6 @@ export function ToolEditor({
   locale = "zh",
   tool,
   categories,
-  files,
   notice
 }: {
   title: string;
@@ -261,7 +295,6 @@ export function ToolEditor({
   locale?: Locale;
   tool?: ToolItem;
   categories: ToolCategoryItem[];
-  files: FileItem[];
   notice?: Notice;
 }) {
   const copy = toolAdminCopy[locale];
@@ -271,6 +304,7 @@ export function ToolEditor({
   const matchingCategories = categories.filter((category) => category.type === type);
   const directDownloadUrl = getDirectDownloadUrl(tool);
   const isAccountService = type === "online";
+  const priceSpecRows = buildEditorPriceSpecRows(tool);
 
   return (
     <div>
@@ -288,114 +322,140 @@ export function ToolEditor({
 
       <NoticeBar notice={notice} locale={locale} />
 
-      <form action={upsertToolAction} className="glass mt-8 grid gap-4 rounded-2xl p-6 md:grid-cols-2">
+      <form action={upsertToolAction} className="mt-8 grid gap-6">
         {tool ? <input type="hidden" name="id" value={tool.id} /> : null}
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="returnTo" value={editorPath} />
+        <input type="hidden" name="coverImage" value={tool?.coverImage ?? ""} />
+        <input type="hidden" name="downloadFileId" value={tool?.downloadFileId ?? ""} />
+        <input type="hidden" name="downloadPrice" value="0" />
 
-        <Field label={isAccountService ? copy.serviceName : copy.toolName}>
-          <input name="name" required defaultValue={tool?.name ?? ""} className={inputClass} />
-        </Field>
-        <Field label={copy.englishName}>
-          <input name="englishName" defaultValue={tool?.englishName ?? ""} placeholder={copy.englishNamePlaceholder} className={inputClass} />
-        </Field>
-        <Field label="Slug">
-          <input name="slug" defaultValue={tool?.slug ?? ""} placeholder={copy.slugPlaceholder} className={inputClass} />
-        </Field>
-        <Field label={copy.category}>
-          <select name="categoryId" defaultValue={tool?.categoryId ?? ""} className={selectClass}>
-            <option value="">{copy.uncategorized}</option>
-            {matchingCategories.map((category) => (
-              <option key={category.id} value={category.id}>{category.name}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label={copy.status}>
-          <select name="status" defaultValue={tool?.status ?? "draft"} className={selectClass}>
-            <option value="draft">{statusText.draft}</option>
-            <option value="published">{statusText.published}</option>
-            <option value="offline">{statusText.offline}</option>
-          </select>
-        </Field>
-        <Field label={copy.sortOrder}>
-          <input name="sortOrder" type="number" defaultValue={tool?.sortOrder ?? 0} className={inputClass} />
-        </Field>
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input name="isHomeRecommended" type="checkbox" defaultChecked={tool?.isHomeRecommended ?? false} /> {copy.homeRecommended}
-        </label>
-        <Field label={copy.coverUrl}>
-          <input name="coverImage" defaultValue={tool?.coverImage ?? ""} placeholder={copy.coverPlaceholder} className={inputClass} />
-        </Field>
-        <Field label={copy.coverUpload}>
-          <ToolMediaUploadGuard name="coverImageFile" inputClass={inputClass} />
-          <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
-            {copy.coverHint}
-          </span>
-        </Field>
-        {!isAccountService ? (
-          <>
-            <Field label={copy.version}>
-              <input name="version" defaultValue={tool?.version ?? ""} className={inputClass} />
+        <EditorSection title={copy.basicSection} intro={isAccountService ? copy.basicServiceIntro : copy.basicToolIntro}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={isAccountService ? copy.serviceName : copy.toolName}>
+              <input name="name" required defaultValue={tool?.name ?? ""} className={inputClass} />
             </Field>
-            <Field label={copy.systemRequirement}>
-              <input name="systemRequirement" defaultValue={tool?.systemRequirement ?? ""} className={inputClass} />
+            <Field label={copy.englishName}>
+              <input name="englishName" defaultValue={tool?.englishName ?? ""} placeholder={copy.englishNamePlaceholder} className={inputClass} />
             </Field>
-            <Field label={copy.downloadFile}>
-              <select name="downloadFileId" defaultValue={tool?.downloadFileId ?? ""} className={selectClass}>
-                <option value="">{copy.unbound}</option>
-                {files.map((file) => <option key={file.id} value={file.id}>{file.fileName}</option>)}
+            <Field label="Slug">
+              <input name="slug" defaultValue={tool?.slug ?? ""} placeholder={copy.slugPlaceholder} className={inputClass} />
+            </Field>
+            <Field label={copy.category}>
+              <select name="categoryId" defaultValue={tool?.categoryId ?? ""} className={selectClass}>
+                <option value="">{copy.uncategorized}</option>
+                {matchingCategories.map((category) => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
+                ))}
               </select>
             </Field>
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} /> {copy.paidDownload}
-            </label>
-          </>
-        ) : null}
-        <Field label={isAccountService ? copy.servicePrice : copy.downloadPrice}>
-          <input name="downloadPrice" type="number" step="0.01" defaultValue={tool?.downloadPrice != null ? String(tool.downloadPrice) : "0"} className={inputClass} />
-        </Field>
-        <Field label={copy.shortDescription} className="md:col-span-2">
-          <textarea name="shortDescription" required defaultValue={tool?.shortDescription ?? ""} className={textareaClass} />
-        </Field>
-        <Field label={copy.content} className="md:col-span-2">
-          <textarea name="content" required defaultValue={tool?.content ?? ""} className={textareaClass} />
-        </Field>
-        <div className="md:col-span-2">
-          <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productImages}</p>
-          <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
-            <ToolMediaUploadGuard name="screenshotFiles" inputClass={inputClass} multiple />
-            <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{copy.productImagesHint}</p>
-            {tool?.screenshots.length ? (
-              <ToolProductImageManager
-                screenshots={tool.screenshots}
-                copy={{
-                  productImageAlt: copy.productImageAlt,
-                  keepProductImage: copy.keepProductImage,
-                  productImagePosition: copy.productImagePosition,
-                  productImageMoveUp: copy.productImageMoveUp,
-                  productImageMoveDown: copy.productImageMoveDown,
-                  productImageRemoved: copy.productImageRemoved
-                }}
-              />
-            ) : (
-              <p className="mt-4 rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#8B95A7]">{copy.noProductImages}</p>
-            )}
+            <Field label={copy.status}>
+              <select name="status" defaultValue={tool?.status ?? "draft"} className={selectClass}>
+                <option value="draft">{statusText.draft}</option>
+                <option value="published">{statusText.published}</option>
+                <option value="offline">{statusText.offline}</option>
+              </select>
+            </Field>
+            <Field label={copy.sortOrder}>
+              <input name="sortOrder" type="number" defaultValue={tool?.sortOrder ?? 0} className={inputClass} />
+            </Field>
           </div>
-        </div>
-        {!isAccountService ? (
-          <Field label={copy.downloadFileUrl} className="md:col-span-2">
-            <textarea
-              name="downloadFileUrl"
-              defaultValue={directDownloadUrl}
-              placeholder={copy.downloadFileUrlPlaceholder}
-              className={textareaClass}
-            />
-            <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
-              {copy.downloadFileUrlHint}
-            </span>
-          </Field>
-        ) : null}
-        <div className="md:col-span-2">
+        </EditorSection>
+
+        <EditorSection title={copy.displaySection} intro={copy.displaySectionIntro}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#F6FAFF]">
+              <input name="isHomeRecommended" type="checkbox" defaultChecked={tool?.isHomeRecommended ?? false} /> {copy.homeRecommended}
+            </label>
+            <Field label={copy.coverUpload}>
+              <ToolMediaUploadGuard name="coverImageFile" inputClass={inputClass} />
+              <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
+                {copy.coverHint}
+              </span>
+            </Field>
+            {!isAccountService ? (
+              <>
+                <Field label={copy.version}>
+                  <input name="version" defaultValue={tool?.version ?? ""} className={inputClass} />
+                </Field>
+                <Field label={copy.systemRequirement}>
+                  <input name="systemRequirement" defaultValue={tool?.systemRequirement ?? ""} className={inputClass} />
+                </Field>
+              </>
+            ) : null}
+          </div>
+        </EditorSection>
+
+        <EditorSection title={copy.priceSpecSection} intro={isAccountService ? copy.servicePriceSpecIntro : copy.softwarePriceSpecIntro}>
+          <input type="hidden" name="priceSpecRowCount" value={priceSpecRows.length} />
+          <div className="grid gap-3">
+            {priceSpecRows.map((spec, index) => (
+              <div key={spec.id || `blank-${index}`} className="grid gap-3 rounded-2xl border border-white/10 bg-white/6 p-4 md:grid-cols-[1.1fr_0.8fr_0.55fr_auto]">
+                <input type="hidden" name={`priceSpecId_${index}`} value={spec.id} />
+                <Field label={copy.priceSpecName}>
+                  <input name={`priceSpecName_${index}`} defaultValue={spec.name} placeholder={index === 0 ? copy.priceSpecNamePlaceholderA : copy.priceSpecNamePlaceholderB} className={inputClass} />
+                </Field>
+                <Field label={copy.purchasePrice}>
+                  <input name={`priceSpecPrice_${index}`} type="number" step="0.01" min="0" defaultValue={spec.price != null ? String(spec.price) : ""} placeholder="9.90" className={inputClass} />
+                </Field>
+                <Field label={copy.priceSpecSortOrder}>
+                  <input name={`priceSpecSortOrder_${index}`} type="number" defaultValue={spec.sortOrder} className={inputClass} />
+                </Field>
+                <label className="flex items-center gap-2 self-end rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#F6FAFF]">
+                  <input name={`priceSpecActive_${index}`} type="checkbox" defaultChecked={spec.status === "active"} /> {copy.priceSpecActive}
+                </label>
+              </div>
+            ))}
+          </div>
+        </EditorSection>
+
+        <EditorSection title={copy.detailSection} intro={copy.detailSectionIntro}>
+          <div className="grid gap-4">
+            <Field label={copy.shortDescription}>
+              <textarea name="shortDescription" required defaultValue={tool?.shortDescription ?? ""} className={textareaClass} />
+            </Field>
+            <Field label={copy.content}>
+              <textarea name="content" required defaultValue={tool?.content ?? ""} className={textareaClass} />
+            </Field>
+            <div>
+              <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productImages}</p>
+              <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+                <ToolMediaUploadGuard name="screenshotFiles" inputClass={inputClass} multiple />
+                <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{copy.productImagesHint}</p>
+                {tool?.screenshots.length ? (
+                  <ToolProductImageManager
+                    screenshots={tool.screenshots}
+                    copy={{
+                      productImageAlt: copy.productImageAlt,
+                      keepProductImage: copy.keepProductImage,
+                      productImagePosition: copy.productImagePosition,
+                      productImageMoveUp: copy.productImageMoveUp,
+                      productImageMoveDown: copy.productImageMoveDown,
+                      productImageRemoved: copy.productImageRemoved
+                    }}
+                  />
+                ) : (
+                  <p className="mt-4 rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#8B95A7]">{copy.noProductImages}</p>
+                )}
+              </div>
+            </div>
+            {!isAccountService ? (
+              <Field label={copy.downloadFileUrl}>
+                <textarea
+                  name="downloadFileUrl"
+                  defaultValue={directDownloadUrl}
+                  placeholder={copy.downloadFileUrlPlaceholder}
+                  className={textareaClass}
+                />
+                <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
+                  {copy.downloadFileUrlHint}
+                </span>
+              </Field>
+            ) : null}
+          </div>
+        </EditorSection>
+
+        <div>
           <SubmitButton>
             {tool
               ? (isAccountService ? copy.saveService : copy.saveTool)
@@ -412,6 +472,18 @@ export function ToolEditor({
         </form>
       ) : null}
     </div>
+  );
+}
+
+function EditorSection({ title, intro, children }: React.PropsWithChildren<{ title: string; intro: string }>) {
+  return (
+    <section className="glass rounded-2xl p-6">
+      <div className="mb-5">
+        <h2 className="text-xl font-semibold text-[#F6FAFF]">{title}</h2>
+        <p className="mt-2 text-sm leading-6 text-[#8B95A7]">{intro}</p>
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -447,6 +519,22 @@ const toolAdminCopy = {
     viewEdit: "查看/编辑",
     editorIntro: "在单独详情页编辑工具基础信息、权限、封面、商品图、下载文件和下载链接。",
     serviceEditorIntro: "在单独详情页编辑 AI 账号服务的基础信息、服务价格、封面、商品图、简介和详细介绍。",
+    basicSection: "基础信息",
+    basicToolIntro: "维护 AI 软件应用名称、分类、状态和排序。",
+    basicServiceIntro: "维护 AI 账号服务名称、分类、状态和排序。",
+    displaySection: "展示设置",
+    displaySectionIntro: "设置首页推荐、封面上传和软件基础运行信息。",
+    priceSpecSection: "规格与价格",
+    softwarePriceSpecIntro: "按授权规格设置购买价格。第一条启用且大于 0 的规格会作为列表和筛选中的主价格。",
+    servicePriceSpecIntro: "按服务规格设置服务价格。可配置不同账号、时长或套餐规格。",
+    detailSection: "详情内容",
+    detailSectionIntro: "维护简介、详细介绍、商品图和购买后可见的下载链接内容。",
+    priceSpecName: "规格名称",
+    priceSpecNamePlaceholderA: "例如：单机授权",
+    priceSpecNamePlaceholderB: "例如：终身授权",
+    purchasePrice: "购买价格",
+    priceSpecSortOrder: "排序",
+    priceSpecActive: "启用",
     backToList: "返回工具清单",
     toolName: "工具名称",
     serviceName: "服务名称",
@@ -468,8 +556,6 @@ const toolAdminCopy = {
     needVip: "需要付费",
     downloadLinkVipOnly: "下载链接需购买后可见",
     homeRecommended: "首页推荐",
-    paidDownload: "下载单独付费",
-    downloadPrice: "下载价格",
     servicePrice: "服务价格",
     shortDescription: "简介",
     content: "详细介绍",
@@ -520,6 +606,22 @@ const toolAdminCopy = {
     viewEdit: "View/Edit",
     editorIntro: "Edit tool basics, permissions, cover image, product images, download file, and download-link content on this detail page.",
     serviceEditorIntro: "Edit AI account service basics, service price, cover image, product images, short description, and detailed introduction.",
+    basicSection: "Basic information",
+    basicToolIntro: "Maintain AI software app name, category, status, and display order.",
+    basicServiceIntro: "Maintain AI account service name, category, status, and display order.",
+    displaySection: "Display settings",
+    displaySectionIntro: "Set homepage recommendation, cover upload, and software runtime basics.",
+    priceSpecSection: "Specifications and prices",
+    softwarePriceSpecIntro: "Set purchase prices by authorization specification. The first active price above zero becomes the primary list price.",
+    servicePriceSpecIntro: "Set service prices by account, duration, or package specification.",
+    detailSection: "Detail content",
+    detailSectionIntro: "Maintain short description, detailed intro, product images, and post-purchase download-link content.",
+    priceSpecName: "Specification name",
+    priceSpecNamePlaceholderA: "e.g. Single-machine license",
+    priceSpecNamePlaceholderB: "e.g. Lifetime license",
+    purchasePrice: "Purchase price",
+    priceSpecSortOrder: "Sort",
+    priceSpecActive: "Active",
     backToList: "Back to tool list",
     toolName: "Tool name",
     serviceName: "Service name",
@@ -541,8 +643,6 @@ const toolAdminCopy = {
     needVip: "Requires payment",
     downloadLinkVipOnly: "Download link visible after purchase",
     homeRecommended: "Homepage recommended",
-    paidDownload: "Separate paid download",
-    downloadPrice: "Download price",
     servicePrice: "Service price",
     shortDescription: "Short description",
     content: "Detailed introduction",
@@ -569,7 +669,7 @@ const publishIssueTranslations: Record<string, string> = {
   未设置封面图: "No cover image",
   未填写简介: "Missing short description",
   未填写详细介绍: "Missing detailed introduction",
-  未绑定下载文件: "No download file bound",
+  未填写下载链接: "No download link content",
   "付费下载价格需大于 0": "Paid-download price must be greater than 0"
 };
 

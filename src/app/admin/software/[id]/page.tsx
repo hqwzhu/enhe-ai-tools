@@ -11,10 +11,9 @@ export default async function AdminSoftwareToolEditorPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const [{ id }, notice, locale] = await Promise.all([params, searchParams, getCurrentLocale()]);
-  const [tool, categories, files] = await Promise.all([
-    id === "new" ? Promise.resolve(null) : prisma.tool.findFirst({ where: { id, type: "software" }, include: { category: true, downloadFile: true } }),
-    prisma.toolCategory.findMany({ orderBy: { sortOrder: "asc" } }),
-    prisma.file.findMany({ orderBy: { createdAt: "desc" } })
+  const [tool, categories] = await Promise.all([
+    id === "new" ? Promise.resolve(null) : prisma.tool.findFirst({ where: { id, type: "software" }, include: { category: true, downloadFile: true, priceSpecs: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } } }),
+    prisma.toolCategory.findMany({ orderBy: { sortOrder: "asc" } })
   ]);
 
   if (id !== "new" && !tool) notFound();
@@ -28,7 +27,6 @@ export default async function AdminSoftwareToolEditorPage({
       locale={locale}
       tool={tool ?? undefined}
       categories={categories}
-      files={files}
       notice={notice}
     />
   );

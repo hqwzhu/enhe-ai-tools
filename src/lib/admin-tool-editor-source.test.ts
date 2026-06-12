@@ -84,11 +84,23 @@ describe("admin tool editor source", () => {
     expect(source).toContain("{!isAccountService ? (");
     expect(source).toContain("<Field label={copy.version}>");
     expect(source).toContain("<Field label={copy.systemRequirement}>");
-    expect(source).toContain("<Field label={copy.downloadFile}>");
     expect(source).not.toContain('name="onlineUrl"');
-    expect(source).toContain("<input name=\"isDownloadPaid\"");
     expect(source).toContain("<Field label={copy.downloadFileUrl}");
-    expect(source).toContain("isAccountService ? copy.servicePrice : copy.downloadPrice");
     expect(source).toContain("isAccountService ? copy.deleteService : copy.deleteTool");
+  });
+
+  it("uses grouped price specifications and removes unused visible fields from the editor", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/admin/tool-admin-list.tsx"), "utf8");
+
+    expect(source).toContain("copy.priceSpecSection");
+    expect(source).toContain("priceSpecName_");
+    expect(source).toContain("priceSpecPrice_");
+    expect(source).toContain("copy.purchasePrice");
+    expect(source).not.toContain("<Field label={copy.coverUrl}>");
+    expect(source).not.toContain("<Field label={copy.downloadFile}>");
+    expect(source).not.toContain("<input name=\"isDownloadPaid\"");
+    expect(source).not.toContain("copy.paidDownload");
+    expect(source).toContain('type="hidden" name="coverImage"');
+    expect(source).toContain('type="hidden" name="downloadFileId"');
   });
 });

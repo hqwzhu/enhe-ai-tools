@@ -10,7 +10,7 @@ export default async function AdminOnlineToolsPage({ searchParams }: { searchPar
   const [tools, total, categories] = await Promise.all([
     prisma.tool.findMany({
       where,
-      include: { category: true },
+      include: { category: true, downloadFile: true, priceSpecs: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       skip: filters.skip,
       take: filters.take

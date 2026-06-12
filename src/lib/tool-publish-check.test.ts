@@ -8,6 +8,7 @@ const baseTool = {
   content: "Content",
   coverImage: "/cover.jpg",
   downloadFileId: "file-1",
+  downloadFile: { filePath: "https://example.com/app.zip", fileUrl: "https://example.com/app.zip" },
   downloadFileUrl: null,
   onlineUrl: null,
   isDownloadPaid: false,
@@ -15,12 +16,12 @@ const baseTool = {
 };
 
 describe("getToolPublishIssues", () => {
-  it("requires software download files before publishing confidently", () => {
-    expect(getToolPublishIssues({ ...baseTool, downloadFileId: null })).toContain("未绑定下载文件");
+  it("requires software download-link content before publishing confidently", () => {
+    expect(getToolPublishIssues({ ...baseTool, downloadFileId: null, downloadFile: null })).toContain("未填写下载链接");
   });
 
   it("accepts a direct software download URL as a publishable download source", () => {
-    expect(getToolPublishIssues({ ...baseTool, downloadFileId: null, downloadFileUrl: "https://example.com/app.zip" })).not.toContain("未绑定下载文件");
+    expect(getToolPublishIssues({ ...baseTool, downloadFileId: null, downloadFile: null, downloadFileUrl: "https://example.com/app.zip" })).not.toContain("未填写下载链接");
   });
 
   it("does not require account services to configure an online URL", () => {

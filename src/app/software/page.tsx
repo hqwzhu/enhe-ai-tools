@@ -33,7 +33,7 @@ export default async function SoftwarePage({ searchParams }: { searchParams: Pro
         ...(paid === "paid" ? { isDownloadPaid: true } : paid === "free" ? { isDownloadPaid: false } : {}),
         ...(keyword ? { OR: [{ name: { contains: keyword, mode: "insensitive" } }, { englishName: { contains: keyword, mode: "insensitive" } }, { shortDescription: { contains: keyword, mode: "insensitive" } }] } : {})
       },
-      include: { category: true },
+      include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
       orderBy: sort === "hot" ? { downloadCount: "desc" } : { createdAt: "desc" }
     })
   ]);
