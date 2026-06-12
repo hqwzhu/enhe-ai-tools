@@ -40,6 +40,12 @@ describe("homepage redesign source", () => {
     expect(css).toContain(".enhe-orbital-system");
     expect(css).toContain(".enhe-circuit-line");
     expect(css).toContain(".enhe-reference-logo-slat-top");
+    expect(css).toContain("font-size: clamp(3.4rem, 5.5vw, 6rem);");
+    expect(css).toContain("padding-inline: clamp(1.25rem, 5vw, 6rem);");
+    expect(css).toContain("min-height: clamp(340px, 48vh, 520px);");
+    expect(css).toContain("max-width: 72vw;");
+    expect(css).not.toContain("padding-top: 9rem;");
+    expect(css).not.toContain("transform: translateY(-3.85rem)");
     expect(css).toContain("aspect-ratio: 1;");
     expect(css).not.toContain("orbit-drift");
     expect(css).toContain("radial-gradient(circle at var(--mouse-x) var(--mouse-y)");

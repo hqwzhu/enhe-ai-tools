@@ -411,7 +411,10 @@ function createTransporter(config: AdminAlertEmailConfig): Mailer {
     host: config.host,
     port: config.port,
     secure: config.secure,
-    auth: config.user && config.password ? { user: config.user, pass: config.password } : undefined
+    auth: config.user && config.password ? { user: config.user, pass: config.password } : undefined,
+    connectionTimeout: parsePositiveInteger(process.env.SMTP_CONNECTION_TIMEOUT_MS, 8000),
+    greetingTimeout: parsePositiveInteger(process.env.SMTP_GREETING_TIMEOUT_MS, 8000),
+    socketTimeout: parsePositiveInteger(process.env.SMTP_SOCKET_TIMEOUT_MS, 12000)
   });
 }
 
@@ -431,6 +434,11 @@ function parseBoolean(value: string | undefined, fallback: boolean) {
   if (value === "true") return true;
   if (value === "false") return false;
   return fallback;
+}
+
+function parsePositiveInteger(value: string | undefined, fallback: number) {
+  const number = Number(value);
+  return Number.isInteger(number) && number > 0 ? number : fallback;
 }
 
 function normalizeAppUrl(value: string) {

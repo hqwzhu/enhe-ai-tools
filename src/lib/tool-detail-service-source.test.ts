@@ -14,10 +14,21 @@ describe("tool detail service purchase source", () => {
     expect(source).toContain('name="priceSpecId"');
   });
 
+  it("keeps service purchase CTA text independent from selected price specs", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/tools/[slug]/page.tsx"), "utf8");
+    const dictionary = readFileSync(join(process.cwd(), "src/lib/i18n.ts"), "utf8");
+
+    expect(source).toContain("isAccountService ? td.buyService : td.buyDownload.replace");
+    expect(source).not.toContain("(isAccountService ? td.buyService : td.buyDownload).replace");
+    expect(dictionary).toContain('buyService: "点击购买"');
+    expect(dictionary).toContain('buyService: "Buy service"');
+  });
+
   it("does not render product screenshots inside black image frames", () => {
     const source = readFileSync(join(process.cwd(), "src/app/tools/[slug]/page.tsx"), "utf8");
 
     expect(source).not.toContain("tool-detail-product-image-frame overflow-hidden rounded-2xl border border-white/10 bg-[#07101E] p-3");
+    expect(source).not.toContain("tool-detail-product-image-frame overflow-hidden rounded-2xl border");
     expect(source).not.toContain('className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#030A14]"');
   });
 });

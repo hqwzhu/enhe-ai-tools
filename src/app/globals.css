@@ -354,8 +354,7 @@ select option:disabled {
 
 .home-hero-reference-frame {
   position: relative;
-  padding-right: clamp(2.5rem, 4.5vw, 5rem);
-  padding-left: clamp(5rem, 6.8vw, 7.25rem);
+  padding-inline: clamp(1.25rem, 5vw, 6rem);
 }
 
 .home-hero-shell::before,
@@ -386,12 +385,18 @@ select option:disabled {
 }
 
 .home-hero-copy {
-  align-self: start;
+  align-self: center;
   max-width: 54rem;
-  padding-top: 9rem;
+  padding-top: clamp(2rem, 8vh, 6rem);
   opacity: 0;
   transform: translateY(18px);
   animation: hero-copy-arrive 0.86s cubic-bezier(0.16, 1, 0.3, 1) 0.22s forwards;
+}
+
+.home-hero-copy h1 {
+  max-width: min(100%, 56rem);
+  font-size: clamp(3.4rem, 5.5vw, 6rem);
+  line-height: 1.02;
 }
 
 .home-hero-copy .hud-pill {
@@ -489,7 +494,8 @@ select option:disabled {
 }
 
 .enhe-hero-mark {
-  transform: translateY(-3.85rem);
+  min-height: clamp(340px, 48vh, 520px);
+  transform: translateY(clamp(-2.75rem, -4vh, -1rem));
 }
 
 .enhe-orbital-system {
@@ -497,7 +503,7 @@ select option:disabled {
   left: 50%;
   top: 50%;
   z-index: 1;
-  width: clamp(30rem, 34vw, 40.625rem);
+  width: clamp(24rem, 36vw, 38rem);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -683,7 +689,8 @@ select option:disabled {
   position: relative;
   z-index: 10;
   display: block;
-  width: clamp(340px, 23vw, 450px);
+  width: clamp(260px, 24vw, 420px);
+  max-width: 72vw;
   aspect-ratio: 1.56;
   filter:
     brightness(1.03)
@@ -798,8 +805,7 @@ select option:disabled {
   }
 
   .home-hero-reference-frame {
-    padding-right: 1.25rem;
-    padding-left: 1.25rem;
+    padding-inline: 1.25rem;
   }
 
   .home-hero-copy {

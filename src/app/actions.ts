@@ -173,7 +173,7 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
       amount: orderAmount.toString()
     }
   });
-  await sendNewOrderAdminEmail(order.id);
+  void sendNewOrderAdminEmail(order.id);
   redirect(`/orders/${order.id}/pay`);
 }
 
@@ -296,7 +296,7 @@ export async function submitOrderReceiptAction(formData: FormData) {
   });
   if (!order) throw new Error("订单不存在。");
 
-  await sendOrderReceiptAdminEmail(order.id, {
+  void sendOrderReceiptAdminEmail(order.id, {
     receipt,
     actorLabel: user.email ?? user.nickname ?? user.id
   });

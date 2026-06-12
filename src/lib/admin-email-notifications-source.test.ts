@@ -25,6 +25,26 @@ describe("admin email notification wiring", () => {
     expect(source).toContain("submitOrderReceiptAction");
   });
 
+  it("does not block user-facing order flows on admin email delivery", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/actions.ts"), "utf8");
+
+    expect(source).toContain("void sendNewOrderAdminEmail(order.id)");
+    expect(source).toContain("void sendOrderReceiptAdminEmail(order.id");
+    expect(source).not.toContain("await sendNewOrderAdminEmail(order.id)");
+    expect(source).not.toContain("await sendOrderReceiptAdminEmail(order.id");
+  });
+
+  it("sets finite SMTP timeouts for admin notification delivery", () => {
+    const source = readFileSync(join(process.cwd(), "src/lib/admin-email-notifications.ts"), "utf8");
+
+    expect(source).toContain("SMTP_CONNECTION_TIMEOUT_MS");
+    expect(source).toContain("SMTP_GREETING_TIMEOUT_MS");
+    expect(source).toContain("SMTP_SOCKET_TIMEOUT_MS");
+    expect(source).toContain("connectionTimeout:");
+    expect(source).toContain("greetingTimeout:");
+    expect(source).toContain("socketTimeout:");
+  });
+
   it("emails admin for backend refund events without manual VIP wiring", () => {
     const source = readFileSync(join(process.cwd(), "src/app/admin/actions.ts"), "utf8");
 

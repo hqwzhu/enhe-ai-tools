@@ -190,7 +190,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                         <option value="wechat">{td.wechat}</option>
                       </select>
                       <FormSubmitButton pendingLabel="生成支付二维码中...">
-                        {(isAccountService ? td.buyService : td.buyDownload).replace("{price}", Number(servicePrice).toFixed(2))}
+                        {isAccountService ? td.buyService : td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2))}
                       </FormSubmitButton>
                     </div>
                   </form>
@@ -296,7 +296,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 {tool.screenshots.map((screenshot, index) => {
                   const imageSrc = normalizeImageSrc(screenshot);
                   return (
-                    <div key={`${screenshot}-${index}`} className="tool-detail-product-image-frame overflow-hidden rounded-2xl border border-white/10 bg-white/4">
+                    <div key={`${screenshot}-${index}`} className="tool-detail-product-image-frame overflow-hidden rounded-2xl bg-transparent">
                       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-transparent">
                         {imageSrc ? (
                           <Image src={imageSrc} alt={`${tool.name} ${td.productImageAlt} ${index + 1}`} fill className="object-contain" sizes="(min-width: 1024px) 1040px, 100vw" unoptimized />
