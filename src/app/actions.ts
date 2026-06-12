@@ -23,6 +23,8 @@ import {
 import { assertValidCsrfToken } from "@/lib/csrf";
 import {
   sendAdminLoginSecurityEmail,
+  sendNewOrderAdminEmail,
+  sendOrderReceiptAdminEmail,
   sendPaymentProofSubmittedAdminEmail,
   sendPaymentReviewAdminEmail,
   sendRefundRequestAdminEmail
@@ -125,20 +127,23 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
   const requestedPriceSpecId = String(formData.get("priceSpecId") ?? "").trim() || null;
   const paymentMethod = z.enum(["alipay", "wechat"]).parse(formData.get("paymentMethod") ?? "alipay");
   const tool = await prisma.tool.findFirst({
-    where: { id: toolId, type: "software", status: "published" },
+    where: { id: toolId, type: { in: ["software", "online"] }, status: "published" },
     include: { priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } }
   });
-  if (!tool) throw new Error("软件工具不存在或未发布");
+  if (!tool) throw new Error("工具或服务不存在，或尚未发布");
   const selectedPriceSpec = resolveToolOrderPriceSpec(tool.priceSpecs, requestedPriceSpecId);
   const orderAmount = selectedPriceSpec?.price ?? tool.downloadPrice;
-  if (!tool.isDownloadPaid || Number(orderAmount) <= 0) {
-    redirect(`/api/tools/${tool.id}/download`);
+  const redirectTarget = tool.type === "online" ? `/api/tools/${tool.id}/use` : `/api/tools/${tool.id}/download`;
+  const isPaidSoftware = tool.type === "software" && tool.isDownloadPaid && Number(orderAmount) > 0;
+  const isPaidAccountService = tool.type === "online" && Number(orderAmount) > 0;
+  if (!isPaidSoftware && !isPaidAccountService) {
+    redirect(redirectTarget);
   }
 
   const existingPurchase = await prisma.toolPurchase.findUnique({
     where: { userId_toolId: { userId: user.id, toolId: tool.id } }
   });
-  if (existingPurchase) redirect(`/api/tools/${tool.id}/download`);
+  if (existingPurchase) redirect(redirectTarget);
 
   const order = await prisma.order.create({
     data: {
@@ -161,12 +166,14 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
     userId: user.id,
     metadata: {
       orderType: "software_download",
+      toolType: tool.type,
       toolId: tool.id,
       priceSpecId: selectedPriceSpec?.id ?? null,
       priceSpecName: selectedPriceSpec?.name ?? null,
       amount: orderAmount.toString()
     }
   });
+  await sendNewOrderAdminEmail(order.id);
   redirect(`/orders/${order.id}/pay`);
 }
 
@@ -277,6 +284,33 @@ export async function createRefundRequestAction(formData: FormData) {
   revalidatePath(`/orders/${order.id}`);
   revalidatePath("/user");
   redirect(`/orders/${order.id}?refund=requested`);
+}
+
+export async function submitOrderReceiptAction(formData: FormData) {
+  const user = await requireUser();
+  const orderId = z.string().min(1).parse(formData.get("orderId"));
+  const receipt = String(formData.get("receipt") ?? "");
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId: user.id },
+    select: { id: true }
+  });
+  if (!order) throw new Error("订单不存在。");
+
+  await sendOrderReceiptAdminEmail(order.id, {
+    receipt,
+    actorLabel: user.email ?? user.nickname ?? user.id
+  });
+  await trackAnalyticsEvent({
+    eventName: "order_receipt_submitted",
+    path: `/orders/${order.id}`,
+    entityType: "order",
+    entityId: order.id,
+    userId: user.id,
+    metadata: { receiptLength: receipt.length }
+  });
+
+  revalidatePath(`/orders/${order.id}`);
+  redirect(`/orders/${order.id}?receipt=sent`);
 }
 
 export async function markNotificationReadAction(formData: FormData) {

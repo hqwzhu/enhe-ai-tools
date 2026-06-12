@@ -2,13 +2,17 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { canDownloadPaidTool, DownloadRateLimitError, getDownloadRateLimitConfig, isDownloadRateLimitExceeded } from "@/lib/access-rules";
+import { canDownloadPaidTool, canUsePaidOnlineTool, DownloadRateLimitError, getDownloadRateLimitConfig, isDownloadRateLimitExceeded } from "@/lib/access-rules";
+import { getPrimaryToolPrice } from "@/lib/tool-price-specs";
 
 async function assertBaseToolAccess(toolId: string) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const tool = await prisma.tool.findUnique({ where: { id: toolId }, include: { downloadFile: true } });
+  const tool = await prisma.tool.findUnique({
+    where: { id: toolId },
+    include: { downloadFile: true, priceSpecs: { where: { status: "active" } } }
+  });
   if (!tool || tool.status !== "published") throw new Error("工具不存在或未发布");
 
   const headerStore = await headers();
@@ -54,6 +58,15 @@ export async function assertDownloadAccess(toolId: string) {
 
 export async function assertOnlineToolAccess(toolId: string) {
   const { tool, user, ip, userAgent } = await assertBaseToolAccess(toolId);
+  const servicePrice = getPrimaryToolPrice(tool.priceSpecs, tool.downloadPrice);
+  if (tool.type === "online" && servicePrice > 0) {
+    const purchase = await prisma.toolPurchase.findUnique({
+      where: { userId_toolId: { userId: user.id, toolId: tool.id } }
+    });
+    if (!canUsePaidOnlineTool({ servicePrice, hasToolPurchase: Boolean(purchase) })) {
+      redirect(`/tools/${tool.slug}?service=pay-required`);
+    }
+  }
   await prisma.toolUsageLog.create({ data: { userId: user.id, toolId: tool.id, ip, userAgent } });
   await prisma.tool.update({ where: { id: tool.id }, data: { usageCount: { increment: 1 } } });
   return tool;

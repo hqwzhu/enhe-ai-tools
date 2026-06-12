@@ -19,6 +19,8 @@ export type AdminAlertEmailConfig = {
 };
 
 type AdminOperationEmailEvent =
+  | "order_created"
+  | "order_receipt_submitted"
   | "payment_proof_submitted"
   | "payment_review_approved"
   | "payment_review_rejected"
@@ -59,6 +61,14 @@ type AdminOperationEmail = {
 type Mailer = Pick<Transporter, "sendMail">;
 
 const eventCopy: Record<AdminOperationEmailEvent, { label: string; subject: string }> = {
+  order_created: {
+    label: "新订单已创建",
+    subject: "新订单"
+  },
+  order_receipt_submitted: {
+    label: "用户提交订单回执",
+    subject: "用户回执"
+  },
   payment_proof_submitted: {
     label: "新付款凭证待审核",
     subject: "新付款审核"
@@ -171,7 +181,7 @@ export function buildAdminOperationEmail(input: AdminOperationEmailInput): Admin
 
   const html = `
     <div style="font-family:Arial,'Microsoft YaHei',sans-serif;line-height:1.7;color:#0f172a">
-      <h2 style="margin:0 0 12px">ENHE AI 审核通知</h2>
+      <h2 style="margin:0 0 12px">ENHE AI 管理通知</h2>
       <p style="margin:0 0 16px;color:#475569">${escapeHtml(copy.label)}</p>
       <table style="border-collapse:collapse;width:100%;max-width:720px">
         ${lines
@@ -210,6 +220,20 @@ export function buildAdminMailOptions(
       "Content-Language": "zh-CN"
     }
   };
+}
+
+export async function sendNewOrderAdminEmail(orderId: string) {
+  await sendOrderAdminEmail(orderId, "order_created");
+}
+
+export async function sendOrderReceiptAdminEmail(
+  orderId: string,
+  input: { receipt: string; actorLabel?: string | null }
+) {
+  await sendOrderAdminEmail(orderId, "order_receipt_submitted", {
+    actorLabel: input.actorLabel,
+    extraLines: [["用户回执", input.receipt || "（空）"]]
+  });
 }
 
 export async function sendPaymentProofSubmittedAdminEmail(orderId: string) {
@@ -339,11 +363,16 @@ async function sendOrderAdminEmail(
     });
     if (!order) return;
 
+    const extraLines = [...(input?.extraLines ?? [])];
+    if (order.toolPriceSpecName) {
+      extraLines.unshift(["购买规格", order.toolPriceSpecName]);
+    }
+
     const email = buildAdminOperationEmail({
       eventType,
       actorLabel: input?.actorLabel,
       note: input?.note,
-      extraLines: input?.extraLines,
+      extraLines,
       order: {
         id: order.id,
         orderNo: order.orderNo,

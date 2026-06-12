@@ -66,10 +66,14 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   const isAccountService = tool.type === "online";
   const activePriceSpecs = tool.priceSpecs.filter((spec) => Number(spec.price) > 0);
   const servicePrice = getPrimaryToolPrice(activePriceSpecs, tool.downloadPrice);
+  const isPurchasableAccountService = isAccountService && servicePrice > 0;
   const coverImage = normalizeImageSrc(tool.coverImage);
   const hasDownloadPurchase = user
     ? await prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }).then(Boolean)
     : false;
+  const shouldShowPurchaseForm =
+    (tool.type === "software" && tool.isDownloadPaid && !hasDownloadPurchase) ||
+    (isPurchasableAccountService && !hasDownloadPurchase);
   const downloadLinkContent = getDownloadLinkContent(tool.downloadFile);
   const hasDownloadLink = Boolean(tool.downloadFileId && tool.downloadFile && downloadLinkContent);
   const showDownloadLinkArea = canShowDownloadLinkArea({
@@ -93,6 +97,8 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   });
   const tutorialVideos = tool.tutorials.filter((tutorial) => tutorial.videoUrl);
   const supportEmail = td.supportEmailValue;
+  const introTitle = isAccountService ? td.serviceIntroTitle : td.introTitle;
+  const productImagesIntro = isAccountService ? td.serviceProductImagesIntro : td.productImagesIntro;
 
   return (
     <Container className="py-14">
@@ -150,7 +156,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 )}
               </div>
 
-              {activePriceSpecs.length && (isAccountService || hasDownloadPurchase || !tool.isDownloadPaid) ? (
+              {activePriceSpecs.length && !shouldShowPurchaseForm && (isAccountService || hasDownloadPurchase || !tool.isDownloadPaid) ? (
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {activePriceSpecs.map((spec) => (
                     <div key={spec.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
@@ -162,36 +168,34 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               ) : null}
 
               <div className="mt-7 flex flex-wrap gap-3">
-                {tool.type === "software" ? (
-                  tool.isDownloadPaid && !hasDownloadPurchase ? (
-                    <form id="download-purchase" action={createSoftwareDownloadOrderAction} className="grid w-full gap-4">
-                      <input type="hidden" name="toolId" value={tool.id} />
-                      {activePriceSpecs.length ? (
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {activePriceSpecs.map((spec, index) => (
-                            <label key={spec.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[#7DD3FC]/45">
-                              <span>
-                                <span className="block font-semibold text-[#F6FAFF]">{spec.name}</span>
-                                <span className="mt-1 block text-[#FFB86B]">¥{Number(spec.price).toFixed(2)}</span>
-                              </span>
-                              <input name="priceSpecId" type="radio" value={spec.id} defaultChecked={index === 0} />
-                            </label>
-                          ))}
-                        </div>
-                      ) : null}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <select name="paymentMethod" defaultValue="wechat" className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]">
-                          <option value="alipay">{td.alipay}</option>
-                          <option value="wechat">{td.wechat}</option>
-                        </select>
-                        <FormSubmitButton pendingLabel="生成支付二维码中...">
-                          {td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2))}
-                        </FormSubmitButton>
+                {shouldShowPurchaseForm ? (
+                  <form id={isAccountService ? "service-purchase" : "download-purchase"} action={createSoftwareDownloadOrderAction} className="grid w-full gap-4">
+                    <input type="hidden" name="toolId" value={tool.id} />
+                    {activePriceSpecs.length ? (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {activePriceSpecs.map((spec, index) => (
+                          <label key={spec.id} className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[#7DD3FC]/45 has-[:checked]:border-[#7DD3FC]/70 has-[:checked]:bg-[#7DD3FC]/10">
+                            <span>
+                              <span className="block font-semibold text-[#F6FAFF]">{spec.name}</span>
+                              <span className="mt-1 block text-[#FFB86B]">¥{Number(spec.price).toFixed(2)}</span>
+                            </span>
+                            <input name="priceSpecId" type="radio" value={spec.id} defaultChecked={index === 0} />
+                          </label>
+                        ))}
                       </div>
-                    </form>
-                  ) : (
-                    <ButtonLink href={softwareDownloadCtaHref}>{td.downloadSoftware}</ButtonLink>
-                  )
+                    ) : null}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <select name="paymentMethod" defaultValue="wechat" className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]">
+                        <option value="alipay">{td.alipay}</option>
+                        <option value="wechat">{td.wechat}</option>
+                      </select>
+                      <FormSubmitButton pendingLabel="生成支付二维码中...">
+                        {(isAccountService ? td.buyService : td.buyDownload).replace("{price}", Number(servicePrice).toFixed(2))}
+                      </FormSubmitButton>
+                    </div>
+                  </form>
+                ) : tool.type === "software" ? (
+                  <ButtonLink href={softwareDownloadCtaHref}>{td.downloadSoftware}</ButtonLink>
                 ) : (
                   <ButtonLink href={tool.onlineUrl ? `/api/tools/${tool.id}/use` : "#tool-intro"}>{td.useOnline}</ButtonLink>
                 )}
@@ -202,6 +206,12 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                   {locale === "en"
                     ? "This software is a paid download. Successful payment automatically unlocks this tool's download-link content."
                     : "该软件为收费软件，支付成功后系统会自动解锁该工具的下载链接内容。"}
+                </p>
+              ) : isPurchasableAccountService ? (
+                <p className="mt-4 text-sm leading-6 text-[#FFB86B]">
+                  {locale === "en"
+                    ? "This account service requires purchase. Successful payment automatically unlocks this service for your account."
+                    : "该账号服务为付费服务，支付成功后系统会自动解锁该服务的使用权限。"}
                 </p>
               ) : null}
             </div>
@@ -279,15 +289,15 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         </section>
 
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title={td.introTitle} intro={td.productImagesIntro} />
+          <SectionTitle title={introTitle} intro={productImagesIntro} />
           <div className="mt-6 space-y-7">
             {tool.screenshots.length ? (
               <div className="tool-detail-product-gallery grid gap-5">
                 {tool.screenshots.map((screenshot, index) => {
                   const imageSrc = normalizeImageSrc(screenshot);
                   return (
-                    <div key={`${screenshot}-${index}`} className="tool-detail-product-image-frame overflow-hidden rounded-2xl border border-white/10 bg-[#07101E] p-3">
-                      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#030A14]">
+                    <div key={`${screenshot}-${index}`} className="tool-detail-product-image-frame overflow-hidden rounded-2xl border border-white/10 bg-white/4">
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-transparent">
                         {imageSrc ? (
                           <Image src={imageSrc} alt={`${tool.name} ${td.productImageAlt} ${index + 1}`} fill className="object-contain" sizes="(min-width: 1024px) 1040px, 100vw" unoptimized />
                         ) : (

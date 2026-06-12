@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createRefundRequestAction } from "@/app/actions";
+import { createRefundRequestAction, submitOrderReceiptAction } from "@/app/actions";
 import { FormSubmitButton } from "@/components/form-submit-button";
 import { Container, SectionTitle } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
@@ -71,6 +71,11 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
           售后/退款申请已提交，等待后台处理。{reviewCompletionNotice}
         </div>
       ) : null}
+      {query.receipt === "sent" ? (
+        <div className="mb-6 rounded-2xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-5 py-4 text-sm font-semibold text-[#48F5D3]">
+          用户回执已提交，管理员会通过邮件收到你的补充信息。
+        </div>
+      ) : null}
       <div className="glass rounded-2xl p-7">
         <div className="grid gap-4 md:grid-cols-2">
           <Info label="订单号" value={order.orderNo} />
@@ -108,6 +113,24 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
             <p className="mt-2 leading-7">{order.paymentProof.reviewNote}</p>
           </div>
         ) : null}
+
+        <div className="mt-6 rounded-2xl border border-white/10 bg-white/8 p-5">
+          <h2 className="font-semibold">用户回执</h2>
+          <p className="mt-2 text-sm leading-6 text-[#8B95A7]">
+            可填写订单补充说明、授权账号、沟通记录、收货信息或任意售后备注，提交后会自动邮件通知管理员。
+          </p>
+          <form action={submitOrderReceiptAction} className="mt-5 grid gap-3">
+            <input type="hidden" name="orderId" value={order.id} />
+            <textarea
+              name="receipt"
+              placeholder="请输入你的回执内容，可自由填写，不限制格式。"
+              className="min-h-32 rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
+            />
+            <FormSubmitButton pendingLabel="提交中..." className="w-fit px-5 py-3 text-sm font-semibold">
+              提交用户回执
+            </FormSubmitButton>
+          </form>
+        </div>
 
         <div className="mt-6 rounded-2xl border border-white/10 bg-white/8 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">

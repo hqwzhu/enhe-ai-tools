@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canDownloadPaidTool,
+  canUsePaidOnlineTool,
   getDownloadRateLimitConfig,
   isDownloadRateLimitExceeded
 } from "@/lib/access-rules";
@@ -13,6 +14,12 @@ describe("access rules", () => {
   it("requires a matching purchase for paid software downloads", () => {
     expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: false })).toBe(false);
     expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: true })).toBe(true);
+  });
+
+  it("requires a matching purchase for paid online account services", () => {
+    expect(canUsePaidOnlineTool({ servicePrice: 195, hasToolPurchase: false })).toBe(false);
+    expect(canUsePaidOnlineTool({ servicePrice: 195, hasToolPurchase: true })).toBe(true);
+    expect(canUsePaidOnlineTool({ servicePrice: 0, hasToolPurchase: false })).toBe(true);
   });
 
   it("parses download rate limit settings with safe defaults", () => {

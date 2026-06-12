@@ -81,10 +81,11 @@ function isPaidOrderStatus(status: Order["orderStatus"]) {
   return status === "paid" || status === "activated" || status === "refunded";
 }
 
-function buildPaidDownloadPaymentName(tool: Pick<Tool, "name" | "englishName">) {
+function buildPaidDownloadPaymentName(tool: Pick<Tool, "name" | "englishName" | "type">) {
   const baseName = tool.englishName?.trim() || tool.name;
   const conciseName = baseName.split(/[|｜]/)[0]?.trim() || baseName;
-  return normalizeZpayItemName(`${conciseName} 下载授权`);
+  const suffix = tool.type === "online" ? "服务授权" : "下载授权";
+  return normalizeZpayItemName(`${conciseName} ${suffix}`);
 }
 
 function getRawResponseObject(transaction: PaymentTransaction) {
@@ -187,7 +188,7 @@ export async function ensureZpayPaymentForOrder(input: { orderId: string; userId
     include: { tool: true, paymentTransaction: true }
   });
   if (!order) throw new Error("订单不存在。");
-  if (!order.tool) throw new Error("订单未关联软件。");
+  if (!order.tool) throw new Error("订单未关联工具或服务。");
 
   if (order.paymentTransaction && canReusePendingZpayPayment(order.paymentTransaction)) {
     return toZpayPaymentView(order.paymentTransaction);

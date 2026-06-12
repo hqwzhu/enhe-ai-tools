@@ -17,9 +17,12 @@ describe("admin email notification wiring", () => {
   it("emails admin for user-facing review events", () => {
     const source = readFileSync(join(process.cwd(), "src/app/actions.ts"), "utf8");
 
+    expect(source).toContain("sendNewOrderAdminEmail");
     expect(source).toContain("sendPaymentProofSubmittedAdminEmail");
     expect(source).toContain("sendPaymentReviewAdminEmail");
     expect(source).toContain("sendRefundRequestAdminEmail");
+    expect(source).toContain("sendOrderReceiptAdminEmail");
+    expect(source).toContain("submitOrderReceiptAction");
   });
 
   it("emails admin for backend refund events without manual VIP wiring", () => {

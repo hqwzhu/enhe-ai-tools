@@ -2,6 +2,10 @@ export function canDownloadPaidTool(input: { isDownloadPaid: boolean; hasDownloa
   return !input.isDownloadPaid || input.hasDownloadPurchase;
 }
 
+export function canUsePaidOnlineTool(input: { servicePrice: number; hasToolPurchase: boolean }) {
+  return input.servicePrice <= 0 || input.hasToolPurchase;
+}
+
 type AccessEnv = Record<string, string | undefined>;
 
 export class DownloadRateLimitError extends Error {
