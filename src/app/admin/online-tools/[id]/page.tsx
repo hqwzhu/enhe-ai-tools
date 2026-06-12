@@ -22,8 +22,8 @@ export default async function AdminOnlineToolEditorPage({
   return (
     <ToolEditor
       title={id === "new"
-        ? (locale === "en" ? "New online tool" : "新增在线网页工具")
-        : (locale === "en" ? "Edit online tool" : "编辑在线网页工具")}
+        ? (locale === "en" ? "New AI account service" : "新增AI账号服务")
+        : (locale === "en" ? "Edit AI account service" : "编辑AI账号服务")}
       type="online"
       locale={locale}
       tool={tool ?? undefined}

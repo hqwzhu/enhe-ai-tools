@@ -12,9 +12,9 @@ import {
 
 describe("public site settings", () => {
   const currentHeroSubtitle = "驾驭 AI 智能，重塑你的人生";
-  const currentHeroIntro = "用本地应用和云端工具放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。";
+  const currentHeroIntro = "用 AI 软件应用和 AI 账号服务放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。";
   const currentHeroSubtitleEn = "Master AI intelligence and reshape your life";
-  const currentHeroIntroEn = "Use desktop apps and web tools to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation.";
+  const currentHeroIntroEn = "Use AI software apps and AI account services to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation.";
 
   it("uses explicit site settings when present", () => {
     const settings = {
@@ -59,11 +59,15 @@ describe("public site settings", () => {
   it("ignores stale localized homepage settings", () => {
     const settings = {
       home_hero_subtitle_zh: "驾驭 AI 工具，重塑你的工作与人生",
-      home_hero_subtitle_en: "Master AI tools and reshape your work, growth, and life"
+      home_hero_intro_zh: "用本地应用和云端工具放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。",
+      home_hero_subtitle_en: "Master AI tools and reshape your work, growth, and life",
+      home_hero_intro_en: "Use desktop apps and web tools to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation."
     };
 
     expect(getEffectiveLocalizedHomeHeroSubtitle(settings, "zh", currentHeroSubtitle)).toBe(currentHeroSubtitle);
+    expect(getEffectiveLocalizedHomeHeroIntro(settings, "zh", currentHeroIntro)).toBe(currentHeroIntro);
     expect(getEffectiveLocalizedHomeHeroSubtitle(settings, "en", currentHeroSubtitleEn)).toBe(currentHeroSubtitleEn);
+    expect(getEffectiveLocalizedHomeHeroIntro(settings, "en", currentHeroIntroEn)).toBe(currentHeroIntroEn);
   });
 
   it("uses explicit English homepage settings when configured", () => {

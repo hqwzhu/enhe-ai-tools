@@ -19,23 +19,23 @@ export const legalSlugs = [
 export type LegalSlug = (typeof legalSlugs)[number];
 
 const zhIntro =
-  "欢迎访问恩禾 ENHE AI工具站。为保障用户权益并规范网站服务，请您在注册、浏览、下载、使用在线工具或购买会员服务前，仔细阅读本声明及相关用户协议、隐私政策、会员服务规则。您访问、注册或使用本网站服务，即视为您已阅读、理解并同意遵守相关规则。";
+  "欢迎访问恩禾 ENHE AI工具站。为保障用户权益并规范网站服务，请您在注册、浏览、下载、使用AI账号服务或购买会员服务前，仔细阅读本声明及相关用户协议、隐私政策、会员服务规则。您访问、注册或使用本网站服务，即视为您已阅读、理解并同意遵守相关规则。";
 
 const enIntro =
-  "Welcome to ENHE AI Tools. To protect user rights and regulate the use of our services, please read this statement, the User Agreement, Privacy Policy, and membership rules carefully before registering, browsing, downloading, using online tools, or purchasing membership services. By accessing, registering for, or using this website, you are deemed to have read, understood, and agreed to follow the applicable rules.";
+  "Welcome to ENHE AI Tools. To protect user rights and regulate the use of our services, please read this statement, the User Agreement, Privacy Policy, and membership rules carefully before registering, browsing, downloading, using AI account services, or purchasing membership services. By accessing, registering for, or using this website, you are deemed to have read, understood, and agreed to follow the applicable rules.";
 
 const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
   zh: {
     "user-agreement": {
       slug: "user-agreement",
       title: "用户协议",
-      summary: "说明用户注册、浏览、下载、使用在线工具、评论和购买会员服务时需要遵守的基本规则。",
+      summary: "说明用户注册、浏览、下载、使用AI账号服务、评论和购买会员服务时需要遵守的基本规则。",
       sections: [
         {
           title: "一、网站服务说明",
           paragraphs: [
             zhIntro,
-            "本网站主要提供自研电脑软件工具展示、软件下载、在线网页工具使用、使用教程、会员服务及相关信息展示服务。",
+            "本网站主要提供自研AI软件应用展示、软件下载、AI账号服务、使用教程、会员服务及相关信息展示服务。",
             "本网站提供的工具、教程、说明文档及相关内容，仅用于合法、合规的学习、办公、效率提升、技术测试或个人使用场景。用户不得将任何工具、内容或服务用于违反法律法规、侵犯他人合法权益、破坏网络安全、传播违法信息或其他不当用途。"
           ]
         },
@@ -64,7 +64,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
         {
           title: "一、信息收集范围",
           paragraphs: [
-            "为完成注册登录、订单创建、付款凭证审核、会员开通、软件下载、在线工具使用、评论审核和安全风控，本网站可能收集账号信息、订单信息、付款截图、评论内容、下载记录、使用记录、IP、User-Agent 及用户主动提交的其他信息。",
+            "为完成注册登录、订单创建、付款凭证审核、会员开通、软件下载、AI账号服务使用、评论审核和安全风控，本网站可能收集账号信息、订单信息、付款截图、评论内容、下载记录、使用记录、IP、User-Agent 及用户主动提交的其他信息。",
             "用户应确保提交的信息真实、准确、合法，不得冒用他人身份或提交侵犯他人权益的材料。"
           ]
         },
@@ -93,7 +93,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
         {
           title: "一、网站服务说明",
           paragraphs: [
-            "本网站主要提供自研电脑软件工具展示、软件下载、在线网页工具使用、使用教程、会员服务及相关信息展示服务。",
+            "本网站主要提供自研AI软件应用展示、软件下载、AI账号服务、使用教程、会员服务及相关信息展示服务。",
             "本网站所提供的工具、教程、说明文档及相关内容，仅用于合法、合规的学习、办公、效率提升、技术测试或个人使用场景。用户不得将本网站提供的任何工具、内容或服务用于违反法律法规、侵犯他人合法权益、破坏网络安全、传播违法信息或其他不当用途。"
           ]
         },
@@ -108,9 +108,9 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
         {
           title: "三、工具使用风险提示",
           paragraphs: [
-            "本网站将尽力保障软件工具、在线工具及相关内容的可用性、安全性和稳定性，但不承诺所有工具在任何设备、系统环境、网络环境下均能完全兼容或持续无故障运行。",
+            "本网站将尽力保障AI软件应用、AI账号服务及相关内容的可用性、安全性和稳定性，但不承诺所有工具在任何设备、系统环境、网络环境下均能完全兼容或持续无故障运行。",
             "用户在下载、安装或使用软件工具前，应自行确认工具来源、系统兼容性、使用场景及数据备份情况。因用户设备环境、操作不当、第三方软件冲突、网络异常或违反使用说明造成的损失，本网站在法律允许范围内不承担责任。",
-            "对于在线工具生成或处理的结果，用户应自行判断、核验并承担使用责任。相关结果不构成法律、医疗、金融、投资、税务、专业技术等领域的最终意见或保证。"
+            "对于AI账号服务相关工具生成或处理的结果，用户应自行判断、核验并承担使用责任。相关结果不构成法律、医疗、金融、投资、税务、专业技术等领域的最终意见或保证。"
           ]
         },
         {
@@ -142,7 +142,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
           title: "七、知识产权声明",
           paragraphs: [
             "本网站自研软件、页面设计、文字说明、教程内容、图标、Logo、程序代码、产品名称及相关内容，除另有说明外，其知识产权归本网站开发者或合法权利人所有。",
-            "未经授权，任何用户不得复制、传播、改编、反向工程、破解、转售、出租、分发或以其他方式商业化使用本网站的软件、在线工具、教程、页面内容及相关资源。",
+            "未经授权，任何用户不得复制、传播、改编、反向工程、破解、转售、出租、分发或以其他方式商业化使用本网站的软件、AI账号服务、教程、页面内容及相关资源。",
             "如本网站部分素材、图片、字体、图标或示例内容来源于公开网络、第三方授权资源或用户上传内容，相关权利归原权利人所有。若权利人认为相关内容侵犯其合法权益，可通过本网站公示联系方式提交权利证明、侵权内容链接、身份信息及初步证明材料。本网站核实后将依法及时处理。"
           ]
         },
@@ -157,7 +157,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
         {
           title: "九、服务变更、中断与维护",
           paragraphs: [
-            "本网站有权根据运营、技术、安全、合规或业务调整需要，对部分功能、工具、会员权益、页面内容或服务规则进行更新、调整、暂停或终止。",
+            "本网站有权根据运营、技术、安全、合规或业务调整需要，对部分功能、工具、AI账号服务、会员权益、页面内容或服务规则进行更新、调整、暂停或终止。",
             "对涉及用户重大权益的调整，本网站将尽量通过页面公告、站内通知或其他合理方式进行提示。",
             "因系统维护、服务器故障、网络攻击、第三方服务异常、不可抗力或其他非本网站可完全控制的原因导致服务中断或异常的，本网站将尽力及时修复。"
           ]
@@ -188,7 +188,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
       title: "版权投诉指引",
       summary: "说明权利人如何提交侵权投诉、需要提供的材料以及本站处理方式。",
       sections: [
-        { title: "一、知识产权声明", paragraphs: ["本网站自研软件、页面设计、文字说明、教程内容、图标、Logo、程序代码、产品名称及相关内容，除另有说明外，其知识产权归本网站开发者或合法权利人所有。", "未经授权，任何用户不得复制、传播、改编、反向工程、破解、转售、出租、分发或以其他方式商业化使用本网站的软件、在线工具、教程、页面内容及相关资源。"] },
+        { title: "一、知识产权声明", paragraphs: ["本网站自研软件、页面设计、文字说明、教程内容、图标、Logo、程序代码、产品名称及相关内容，除另有说明外，其知识产权归本网站开发者或合法权利人所有。", "未经授权，任何用户不得复制、传播、改编、反向工程、破解、转售、出租、分发或以其他方式商业化使用本网站的软件、AI账号服务、教程、页面内容及相关资源。"] },
         { title: "二、投诉材料", paragraphs: ["若权利人认为相关内容侵犯其合法权益，可通过联系邮箱 292055066@qq.com 提交权利证明、侵权内容链接、身份信息、联系方式及初步证明材料。", "本站收到完整材料后，将根据法律法规和平台规则进行核实，并依法及时采取删除、隐藏、断开链接或其他必要处理措施。"] }
       ]
     },
@@ -206,13 +206,13 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
     "user-agreement": {
       slug: "user-agreement",
       title: "User Agreement",
-      summary: "Basic rules for registration, browsing, downloads, online tool usage, comments, and membership purchases.",
+      summary: "Basic rules for registration, browsing, downloads, AI account service usage, comments, and membership purchases.",
       sections: [
         {
           title: "1. Website Services",
           paragraphs: [
             enIntro,
-            "This website mainly provides self-developed desktop software displays, software downloads, online web tools, tutorials, membership services, and related information.",
+            "This website mainly provides self-developed AI software app displays, software downloads, AI account services, tutorials, membership services, and related information.",
             "The tools, tutorials, documentation, and content provided on this website are intended only for lawful and compliant learning, office work, productivity improvement, technical testing, or personal use. Users may not use any tool, content, or service for illegal purposes, infringement, network security damage, distribution of unlawful information, or other improper uses."
           ]
         },
@@ -241,7 +241,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
         {
           title: "1. Information We Collect",
           paragraphs: [
-            "To provide registration and login, order creation, payment proof review, membership activation, software downloads, online tool usage, comment moderation, and security risk control, we may collect account information, order information, payment screenshots, comments, download records, usage records, IP addresses, User-Agent data, and other information submitted by users.",
+            "To provide registration and login, order creation, payment proof review, membership activation, software downloads, AI account service usage, comment moderation, and security risk control, we may collect account information, order information, payment screenshots, comments, download records, usage records, IP addresses, User-Agent data, and other information submitted by users.",
             "Users should ensure that submitted information is true, accurate, lawful, and does not impersonate others or infringe the rights of others."
           ]
         },
@@ -270,7 +270,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
         {
           title: "1. Website Services",
           paragraphs: [
-            "This website mainly provides self-developed desktop software displays, software downloads, online web tools, tutorials, membership services, and related information.",
+            "This website mainly provides self-developed AI software app displays, software downloads, AI account services, tutorials, membership services, and related information.",
             "All tools, tutorials, documentation, and content are intended only for lawful and compliant learning, office work, productivity improvement, technical testing, or personal use. Users must not use the website for illegal activities, infringement, network security damage, unlawful information distribution, or other improper purposes."
           ]
         },
@@ -285,9 +285,9 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
         {
           title: "3. Tool Usage Risk Notice",
           paragraphs: [
-            "We will try to ensure the availability, security, and stability of software tools, online tools, and related content, but we do not guarantee full compatibility or uninterrupted operation under all devices, systems, or network environments.",
+            "We will try to ensure the availability, security, and stability of AI software apps, AI account services, and related content, but we do not guarantee full compatibility or uninterrupted operation under all devices, systems, or network environments.",
             "Before downloading, installing, or using software tools, users should verify the source, system compatibility, intended scenario, and data backup status. To the extent permitted by law, we are not liable for losses caused by user device environments, improper operation, third-party software conflicts, network issues, or violation of usage instructions.",
-            "Users are responsible for reviewing and verifying the results generated or processed by online tools. Such results do not constitute final legal, medical, financial, investment, tax, professional technical, or other expert advice or guarantees."
+            "Users are responsible for reviewing and verifying results generated or processed through AI account services. Such results do not constitute final legal, medical, financial, investment, tax, professional technical, or other expert advice or guarantees."
           ]
         },
         {
@@ -319,7 +319,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
           title: "7. Intellectual Property",
           paragraphs: [
             "Unless otherwise stated, the website's self-developed software, page design, written descriptions, tutorials, icons, Logo, program code, product names, and related content are owned by the website developer or lawful rights holders.",
-            "Without authorization, users may not copy, distribute, adapt, reverse engineer, crack, resell, rent, redistribute, or commercialize the website's software, online tools, tutorials, page content, or related resources.",
+            "Without authorization, users may not copy, distribute, adapt, reverse engineer, crack, resell, rent, redistribute, or commercialize the website's software, AI account services, tutorials, page content, or related resources.",
             "If any materials, images, fonts, icons, or sample content originate from public networks, third-party licensed resources, or user uploads, the rights belong to their original rights holders. Rights holders may submit proof of rights, infringing links, identity information, and preliminary evidence through the published contact information. We will handle verified complaints in a timely manner according to law."
           ]
         },
@@ -334,7 +334,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
         {
           title: "9. Service Changes, Interruptions, and Maintenance",
           paragraphs: [
-            "The website may update, adjust, suspend, or terminate certain features, tools, membership benefits, page content, or service rules due to operational, technical, security, compliance, or business needs.",
+            "The website may update, adjust, suspend, or terminate certain features, tools, AI account services, membership benefits, page content, or service rules due to operational, technical, security, compliance, or business needs.",
             "For changes involving major user rights, we will try to provide notice through page announcements, in-site notifications, or other reasonable methods.",
             "If service interruptions or abnormalities occur due to system maintenance, server failures, network attacks, third-party service issues, force majeure, or other reasons not fully controllable by the website, we will try to restore service promptly."
           ]
@@ -365,7 +365,7 @@ const legalPageMap: Record<Locale, Record<LegalSlug, LegalPage>> = {
       title: "Copyright Complaint Guide",
       summary: "How rights holders can submit infringement complaints, what materials are required, and how we process them.",
       sections: [
-        { title: "1. Intellectual Property Statement", paragraphs: ["Unless otherwise stated, the website's self-developed software, page design, written descriptions, tutorials, icons, Logo, program code, product names, and related content are owned by the website developer or lawful rights holders.", "Without authorization, users may not copy, distribute, adapt, reverse engineer, crack, resell, rent, redistribute, or commercialize the website's software, online tools, tutorials, page content, or related resources."] },
+        { title: "1. Intellectual Property Statement", paragraphs: ["Unless otherwise stated, the website's self-developed software, page design, written descriptions, tutorials, icons, Logo, program code, product names, and related content are owned by the website developer or lawful rights holders.", "Without authorization, users may not copy, distribute, adapt, reverse engineer, crack, resell, rent, redistribute, or commercialize the website's software, AI account services, tutorials, page content, or related resources."] },
         { title: "2. Complaint Materials", paragraphs: ["If a rights holder believes that content infringes their lawful rights, they may email 292055066@qq.com with proof of rights, the infringing content link, identity information, contact information, and preliminary evidence.", "After receiving complete materials, we will verify the complaint according to laws and platform rules and take necessary measures such as deletion, hiding, or link removal in a timely manner."] }
       ]
     },

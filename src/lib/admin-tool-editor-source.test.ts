@@ -71,4 +71,24 @@ describe("admin tool editor source", () => {
     expect(actionsSource).toContain("isHomeRecommended: parseBooleanField(formData.get(\"isHomeRecommended\"))");
     expect(actionsSource).toContain('revalidatePath("/")');
   });
+
+  it("uses account-service copy and hides software/download-only fields for online tools", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/admin/tool-admin-list.tsx"), "utf8");
+
+    expect(source).toContain("const isAccountService = type === \"online\"");
+    expect(source).toContain("copy.serviceName");
+    expect(source).toContain("copy.newService");
+    expect(source).toContain("copy.createService");
+    expect(source).toContain("copy.servicePrice");
+    expect(source).toContain("copy.serviceEditorIntro");
+    expect(source).toContain("{!isAccountService ? (");
+    expect(source).toContain("<Field label={copy.version}>");
+    expect(source).toContain("<Field label={copy.systemRequirement}>");
+    expect(source).toContain("<Field label={copy.downloadFile}>");
+    expect(source).not.toContain('name="onlineUrl"');
+    expect(source).toContain("<input name=\"isDownloadPaid\"");
+    expect(source).toContain("<Field label={copy.downloadFileUrl}");
+    expect(source).toContain("isAccountService ? copy.servicePrice : copy.downloadPrice");
+    expect(source).toContain("isAccountService ? copy.deleteService : copy.deleteTool");
+  });
 });

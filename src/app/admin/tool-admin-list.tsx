@@ -116,6 +116,7 @@ export function ToolAdminList({
   const statusText = locale === "en" ? statusTextEn : statusTextZh;
   const listPath = getAdminToolBasePath(type);
   const matchingCategories = categories.filter((category) => category.type === type);
+  const isAccountService = type === "online";
 
   return (
     <div>
@@ -123,11 +124,11 @@ export function ToolAdminList({
         <div>
           <h1 className="text-3xl font-semibold">{title}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
-            {copy.listIntro}
+            {isAccountService ? copy.serviceListIntro : copy.listIntro}
           </p>
         </div>
         <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
-          {copy.newTool}
+          {isAccountService ? copy.newService : copy.newTool}
         </Link>
       </div>
 
@@ -136,7 +137,7 @@ export function ToolAdminList({
       {filters && buildPageHref ? (
         <>
           <form className="glass mt-6 grid gap-3 rounded-2xl p-5 md:grid-cols-[1fr_180px_220px_auto]" action={listPath}>
-            <input name="q" defaultValue={filters.q} placeholder={copy.searchPlaceholder} className={inputClass} />
+            <input name="q" defaultValue={filters.q} placeholder={isAccountService ? copy.serviceSearchPlaceholder : copy.searchPlaceholder} className={inputClass} />
             <select name="status" defaultValue={filters.status ?? ""} className={selectClass}>
               <option value="">{copy.allStatus}</option>
               <option value="draft">{statusText.draft}</option>
@@ -176,16 +177,16 @@ export function ToolAdminList({
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
         <div className="grid min-w-[1080px] grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
-          <span>{copy.tool}</span>
+          <span>{isAccountService ? copy.service : copy.tool}</span>
           <span>{copy.category}</span>
           <span>{copy.status}</span>
-          <span>{copy.accessPrice}</span>
+          <span>{isAccountService ? copy.servicePrice : copy.accessPrice}</span>
           <span>{copy.publishCheck}</span>
           <span className="text-right">{copy.actions}</span>
         </div>
 
         {tools.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">{copy.noTools}</div>
+          <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">{isAccountService ? copy.noServices : copy.noTools}</div>
         ) : (
           <div className="min-w-[1080px] divide-y divide-white/10">
             {tools.map((tool) => {
@@ -213,7 +214,7 @@ export function ToolAdminList({
                     <Badge className={statusClass[tool.status] ?? statusClass.draft}>{statusText[tool.status] ?? tool.status}</Badge>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 self-center">
-                    {type === "software" && tool.isDownloadPaid ? (
+                    {(type === "software" && tool.isDownloadPaid) || (isAccountService && Number(tool.downloadPrice) > 0) ? (
                       <Badge className="border-[#FFB86B]/40 bg-[#FFB86B]/10 text-[#FFB86B]">{formatPrice(tool.downloadPrice)}</Badge>
                     ) : (
                       <Badge className="border-white/15 bg-white/8 text-[#C5D0E2]">{copy.free}</Badge>
@@ -269,6 +270,7 @@ export function ToolEditor({
   const listPath = getAdminToolBasePath(type);
   const matchingCategories = categories.filter((category) => category.type === type);
   const directDownloadUrl = getDirectDownloadUrl(tool);
+  const isAccountService = type === "online";
 
   return (
     <div>
@@ -276,7 +278,7 @@ export function ToolEditor({
         <div>
           <h1 className="text-3xl font-semibold">{title}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
-            {copy.editorIntro}
+            {isAccountService ? copy.serviceEditorIntro : copy.editorIntro}
           </p>
         </div>
         <Link href={listPath} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
@@ -291,7 +293,7 @@ export function ToolEditor({
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="returnTo" value={editorPath} />
 
-        <Field label={copy.toolName}>
+        <Field label={isAccountService ? copy.serviceName : copy.toolName}>
           <input name="name" required defaultValue={tool?.name ?? ""} className={inputClass} />
         </Field>
         <Field label={copy.englishName}>
@@ -330,26 +332,27 @@ export function ToolEditor({
             {copy.coverHint}
           </span>
         </Field>
-        <Field label={copy.version}>
-          <input name="version" defaultValue={tool?.version ?? ""} className={inputClass} />
-        </Field>
-        <Field label={copy.systemRequirement}>
-          <input name="systemRequirement" defaultValue={tool?.systemRequirement ?? ""} disabled={type !== "software"} className={inputClass} />
-        </Field>
-        <Field label={copy.downloadFile}>
-          <select name="downloadFileId" defaultValue={tool?.downloadFileId ?? ""} className={selectClass}>
-            <option value="">{copy.unbound}</option>
-            {files.map((file) => <option key={file.id} value={file.id}>{file.fileName}</option>)}
-          </select>
-        </Field>
-        <Field label={copy.onlineUrl}>
-          <input name="onlineUrl" defaultValue={tool?.onlineUrl ?? ""} disabled={type !== "online"} className={inputClass} />
-        </Field>
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} disabled={type !== "software"} /> {copy.paidDownload}
-        </label>
-        <Field label={copy.downloadPrice}>
-          <input name="downloadPrice" type="number" step="0.01" defaultValue={tool?.downloadPrice != null ? String(tool.downloadPrice) : "0"} disabled={type !== "software"} className={inputClass} />
+        {!isAccountService ? (
+          <>
+            <Field label={copy.version}>
+              <input name="version" defaultValue={tool?.version ?? ""} className={inputClass} />
+            </Field>
+            <Field label={copy.systemRequirement}>
+              <input name="systemRequirement" defaultValue={tool?.systemRequirement ?? ""} className={inputClass} />
+            </Field>
+            <Field label={copy.downloadFile}>
+              <select name="downloadFileId" defaultValue={tool?.downloadFileId ?? ""} className={selectClass}>
+                <option value="">{copy.unbound}</option>
+                {files.map((file) => <option key={file.id} value={file.id}>{file.fileName}</option>)}
+              </select>
+            </Field>
+            <label className="inline-flex items-center gap-2 text-sm">
+              <input name="isDownloadPaid" type="checkbox" defaultChecked={tool?.isDownloadPaid ?? false} /> {copy.paidDownload}
+            </label>
+          </>
+        ) : null}
+        <Field label={isAccountService ? copy.servicePrice : copy.downloadPrice}>
+          <input name="downloadPrice" type="number" step="0.01" defaultValue={tool?.downloadPrice != null ? String(tool.downloadPrice) : "0"} className={inputClass} />
         </Field>
         <Field label={copy.shortDescription} className="md:col-span-2">
           <textarea name="shortDescription" required defaultValue={tool?.shortDescription ?? ""} className={textareaClass} />
@@ -379,19 +382,25 @@ export function ToolEditor({
             )}
           </div>
         </div>
-        <Field label={copy.downloadFileUrl} className="md:col-span-2">
-          <textarea
-            name="downloadFileUrl"
-            defaultValue={directDownloadUrl}
-            placeholder={copy.downloadFileUrlPlaceholder}
-            className={textareaClass}
-          />
-          <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
-            {copy.downloadFileUrlHint}
-          </span>
-        </Field>
+        {!isAccountService ? (
+          <Field label={copy.downloadFileUrl} className="md:col-span-2">
+            <textarea
+              name="downloadFileUrl"
+              defaultValue={directDownloadUrl}
+              placeholder={copy.downloadFileUrlPlaceholder}
+              className={textareaClass}
+            />
+            <span className="mt-2 block text-xs leading-5 text-[#8B95A7]">
+              {copy.downloadFileUrlHint}
+            </span>
+          </Field>
+        ) : null}
         <div className="md:col-span-2">
-          <SubmitButton>{tool ? copy.saveTool : copy.createTool}</SubmitButton>
+          <SubmitButton>
+            {tool
+              ? (isAccountService ? copy.saveService : copy.saveTool)
+              : (isAccountService ? copy.createService : copy.createTool)}
+          </SubmitButton>
         </div>
       </form>
 
@@ -399,7 +408,7 @@ export function ToolEditor({
         <form action={deleteToolAction} className="mt-4">
           <input type="hidden" name="id" value={tool.id} />
           <input type="hidden" name="type" value={type} />
-          <DangerButton>{copy.deleteTool}</DangerButton>
+          <DangerButton>{isAccountService ? copy.deleteService : copy.deleteTool}</DangerButton>
         </form>
       ) : null}
     </div>
@@ -412,8 +421,11 @@ const toolAdminCopy = {
     deleted: "删除成功。",
     failed: "操作失败",
     listIntro: "以清单模式管理已保存工具，点击查看/编辑进入单独详情页后再修改、上下架或删除。",
+    serviceListIntro: "以清单模式管理 AI 账号服务，点击查看/编辑进入单独详情页后再修改服务信息、价格、上下架或删除。",
     newTool: "新增工具",
+    newService: "新增服务",
     searchPlaceholder: "搜索工具名称、Slug、简介",
+    serviceSearchPlaceholder: "搜索服务名称、Slug、简介",
     allStatus: "全部状态",
     allCategories: "全部分类",
     filter: "筛选",
@@ -421,19 +433,23 @@ const toolAdminCopy = {
     prev: "上一页",
     next: "下一页",
     tool: "工具",
+    service: "服务",
     category: "分类",
     status: "状态",
     accessPrice: "权限/价格",
     publishCheck: "上架检查",
     actions: "操作",
     noTools: "暂无工具，先新增一个工具。",
+    noServices: "暂无服务，先新增一个服务。",
     uncategorized: "未分类",
     free: "免费",
     publishable: "可上架",
     viewEdit: "查看/编辑",
-    editorIntro: "在单独详情页编辑工具基础信息、权限、封面、商品图、下载文件或在线地址。",
+    editorIntro: "在单独详情页编辑工具基础信息、权限、封面、商品图、下载文件和下载链接。",
+    serviceEditorIntro: "在单独详情页编辑 AI 账号服务的基础信息、服务价格、封面、商品图、简介和详细介绍。",
     backToList: "返回工具清单",
     toolName: "工具名称",
+    serviceName: "服务名称",
     englishName: "英文名称",
     englishNamePlaceholder: "例如：ENHE Batch Renamer",
     slugPlaceholder: "留空自动生成",
@@ -449,12 +465,12 @@ const toolAdminCopy = {
     downloadFileUrlPlaceholder: "可填写网盘链接、提取码、下载说明、中文备注等任意内容",
     downloadFileUrlHint: "填写后会自动创建或更新文件记录，并作为该工具详情页的下载链接内容；如同时选择下载文件，将优先使用这里填写的内容。",
     unbound: "不绑定",
-    onlineUrl: "在线地址",
     needVip: "需要付费",
     downloadLinkVipOnly: "下载链接需购买后可见",
     homeRecommended: "首页推荐",
     paidDownload: "下载单独付费",
     downloadPrice: "下载价格",
+    servicePrice: "服务价格",
     shortDescription: "简介",
     content: "详细介绍",
     productImages: "详细介绍商品图",
@@ -468,15 +484,21 @@ const toolAdminCopy = {
     noProductImages: "暂无商品图，上传后会在详情页展示。",
     saveTool: "保存工具",
     createTool: "新增工具",
-    deleteTool: "删除工具"
+    saveService: "保存服务",
+    createService: "新增服务",
+    deleteTool: "删除工具",
+    deleteService: "删除服务"
   },
   en: {
     saved: "Saved successfully.",
     deleted: "Deleted successfully.",
     failed: "Operation failed",
     listIntro: "Manage saved tools in list mode. Open View/Edit to update details, publish status, or delete a tool.",
+    serviceListIntro: "Manage AI account services in list mode. Open View/Edit to update service details, price, publish status, or delete a service.",
     newTool: "New tool",
+    newService: "New service",
     searchPlaceholder: "Search name, slug, or description",
+    serviceSearchPlaceholder: "Search service name, slug, or description",
     allStatus: "All statuses",
     allCategories: "All categories",
     filter: "Filter",
@@ -484,19 +506,23 @@ const toolAdminCopy = {
     prev: "Previous",
     next: "Next",
     tool: "Tool",
+    service: "Service",
     category: "Category",
     status: "Status",
     accessPrice: "Access / price",
     publishCheck: "Publish check",
     actions: "Actions",
     noTools: "No tools yet. Create one first.",
+    noServices: "No services yet. Create one first.",
     uncategorized: "Uncategorized",
     free: "Free",
     publishable: "Publishable",
     viewEdit: "View/Edit",
-    editorIntro: "Edit tool basics, permissions, cover image, product images, download file, or online URL on this detail page.",
+    editorIntro: "Edit tool basics, permissions, cover image, product images, download file, and download-link content on this detail page.",
+    serviceEditorIntro: "Edit AI account service basics, service price, cover image, product images, short description, and detailed introduction.",
     backToList: "Back to tool list",
     toolName: "Tool name",
+    serviceName: "Service name",
     englishName: "English name",
     englishNamePlaceholder: "e.g. ENHE Batch Renamer",
     slugPlaceholder: "Leave blank to auto-generate",
@@ -512,12 +538,12 @@ const toolAdminCopy = {
     downloadFileUrlPlaceholder: "Enter any download link, extraction code, instructions, notes, or plain text",
     downloadFileUrlHint: "When filled, the system will create or update a file record and show this content in the tool detail download-link area. This content takes priority over the selected file.",
     unbound: "Unbound",
-    onlineUrl: "Online URL",
     needVip: "Requires payment",
     downloadLinkVipOnly: "Download link visible after purchase",
     homeRecommended: "Homepage recommended",
     paidDownload: "Separate paid download",
     downloadPrice: "Download price",
+    servicePrice: "Service price",
     shortDescription: "Short description",
     content: "Detailed introduction",
     productImages: "Product images in detail intro",
@@ -531,7 +557,10 @@ const toolAdminCopy = {
     noProductImages: "No product images yet. Upload images to display them on the detail page.",
     saveTool: "Save tool",
     createTool: "Create tool",
-    deleteTool: "Delete tool"
+    saveService: "Save service",
+    createService: "Create service",
+    deleteTool: "Delete tool",
+    deleteService: "Delete service"
   }
 } as const;
 
@@ -541,8 +570,7 @@ const publishIssueTranslations: Record<string, string> = {
   未填写简介: "Missing short description",
   未填写详细介绍: "Missing detailed introduction",
   未绑定下载文件: "No download file bound",
-  "付费下载价格需大于 0": "Paid-download price must be greater than 0",
-  未配置在线地址: "No online URL configured"
+  "付费下载价格需大于 0": "Paid-download price must be greater than 0"
 };
 
 function localizePublishIssue(issue: string, locale: Locale) {

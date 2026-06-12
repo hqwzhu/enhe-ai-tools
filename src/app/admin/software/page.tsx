@@ -22,7 +22,7 @@ export default async function AdminSoftwarePage({ searchParams }: { searchParams
 
   return (
     <ToolAdminList
-      title={locale === "en" ? "Software tool management" : "电脑软件工具管理"}
+      title={locale === "en" ? "AI software app management" : "AI软件应用管理"}
       type="software"
       locale={locale}
       tools={tools}

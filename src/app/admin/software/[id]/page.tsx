@@ -22,8 +22,8 @@ export default async function AdminSoftwareToolEditorPage({
   return (
     <ToolEditor
       title={id === "new"
-        ? (locale === "en" ? "New software tool" : "新增电脑软件工具")
-        : (locale === "en" ? "Edit software tool" : "编辑电脑软件工具")}
+        ? (locale === "en" ? "New AI software app" : "新增AI软件应用")
+        : (locale === "en" ? "Edit AI software app" : "编辑AI软件应用")}
       type="software"
       locale={locale}
       tool={tool ?? undefined}

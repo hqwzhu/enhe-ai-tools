@@ -24,7 +24,7 @@ const copy = {
     active: "启用",
     disabled: "禁用",
     counts: "{orders} 个订单 · {comments} 条评论",
-    usageCounts: "下载 {downloads} 次 · 在线工具使用 {usages} 次",
+    usageCounts: "下载 {downloads} 次 · AI账号服务使用 {usages} 次",
     registeredAt: "注册于 {date}",
     nickname: "昵称",
     role: "角色",
@@ -33,7 +33,7 @@ const copy = {
     resetPassword: "重置密码",
     passwordPlaceholder: "至少 8 位临时密码",
     deleteTitle: "删除用户",
-    deleteIntro: "删除用户会清理该用户的订单、支付凭证、评论、下载记录、在线工具使用记录和登录会话。当前登录管理员不能删除自己，系统也会阻止删除最后一个管理员。",
+    deleteIntro: "删除用户会清理该用户的订单、支付凭证、评论、下载记录、AI账号服务使用记录和登录会话。当前登录管理员不能删除自己，系统也会阻止删除最后一个管理员。",
     confirmDelete: "我已确认该用户可以删除，并理解相关业务记录会同步清理。",
     deleteUser: "删除用户"
   },
@@ -49,7 +49,7 @@ const copy = {
     active: "Active",
     disabled: "Disabled",
     counts: "{orders} orders · {comments} comments",
-    usageCounts: "{downloads} downloads · {usages} online tool uses",
+    usageCounts: "{downloads} downloads · {usages} AI account service uses",
     registeredAt: "Registered {date}",
     nickname: "Nickname",
     role: "Role",
@@ -58,7 +58,7 @@ const copy = {
     resetPassword: "Reset password",
     passwordPlaceholder: "At least 8 temporary characters",
     deleteTitle: "Delete user",
-    deleteIntro: "Deleting a user clears orders, payment proofs, comments, download logs, online tool usage logs, and sessions. The current admin cannot delete themselves, and the system blocks deleting the last admin.",
+    deleteIntro: "Deleting a user clears orders, payment proofs, comments, download logs, AI account service usage logs, and sessions. The current admin cannot delete themselves, and the system blocks deleting the last admin.",
     confirmDelete: "I confirm this user can be deleted and understand related business records will be cleaned up.",
     deleteUser: "Delete user"
   }

@@ -31,7 +31,7 @@ const copy = {
     orderItem: "历史订单项目",
     notSubmitted: "未提交",
     entitlementTitle: "权益二次核查",
-    entitlementStats: "下载记录：{downloadCount}。在线工具使用记录：{usageCount}。",
+  entitlementStats: "下载记录：{downloadCount}。AI账号服务使用记录：{usageCount}。",
     entitlementWarning: "如果状态改为已退款，系统会撤销该订单关联的软件购买权益。",
     proofUrl: "退款凭证 URL",
     proofPlaceholder: "退款截图、转账回执或交易流水 URL",

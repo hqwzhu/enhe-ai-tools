@@ -5,8 +5,8 @@ import { getCurrentLocale } from "@/lib/i18n";
 const copy = {
   zh: {
     title: "套餐功能已停用",
-    intro: "当前项目已取消统一套餐功能，后台不再维护套餐。需要收费的软件请在本地应用或云端工具管理中设置为收费并填写金额。",
-    cta: "去管理工具"
+    intro: "当前项目已取消统一套餐功能，后台不再维护套餐。需要收费的软件请在 AI软件应用 或 AI账号服务 管理中设置价格。",
+    cta: "去管理应用"
   },
   en: {
     title: "Plans are disabled",

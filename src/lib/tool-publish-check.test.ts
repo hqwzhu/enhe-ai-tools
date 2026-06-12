@@ -23,8 +23,8 @@ describe("getToolPublishIssues", () => {
     expect(getToolPublishIssues({ ...baseTool, downloadFileId: null, downloadFileUrl: "https://example.com/app.zip" })).not.toContain("未绑定下载文件");
   });
 
-  it("requires online tool URL before publishing confidently", () => {
-    expect(getToolPublishIssues({ ...baseTool, type: "online", downloadFileId: null, onlineUrl: null })).toContain("未配置在线地址");
+  it("does not require account services to configure an online URL", () => {
+    expect(getToolPublishIssues({ ...baseTool, type: "online", downloadFileId: null, onlineUrl: null })).not.toContain("未配置在线地址");
   });
 
   it("requires positive price for paid downloads", () => {

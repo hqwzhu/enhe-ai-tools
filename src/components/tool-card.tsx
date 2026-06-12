@@ -29,6 +29,8 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
   const summary = buildValueSentence(tool.shortDescription, locale);
   const highlights = buildCardHighlights(tool, locale);
   const audience = tool.category?.name ?? t.toolCard.defaultAudience;
+  const servicePrice = Number(tool.downloadPrice ?? 0);
+  const showPrice = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0);
 
   return (
     <Link href={`/tools/${tool.slug}`} className="evidence-card group block overflow-hidden transition hover:-translate-y-1 hover:border-[#7DD3FC]/45">
@@ -53,8 +55,8 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
           <div>
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge>{tool.category?.name ?? t.toolCard.uncategorized}</Badge>
-              {tool.type === "software" && tool.isDownloadPaid ? (
-                <Badge className="border-[#FFB86B]/35 text-[#FFB86B]">{t.toolCard.paidDownload} ¥{Number(tool.downloadPrice ?? 0).toFixed(2)}</Badge>
+              {showPrice ? (
+                <Badge className="border-[#FFB86B]/35 text-[#FFB86B]">{tool.type === "online" ? t.toolCard.servicePrice : t.toolCard.paidDownload} ¥{servicePrice.toFixed(2)}</Badge>
               ) : (
                 <Badge>{t.toolCard.free}</Badge>
               )}
@@ -106,8 +108,10 @@ function buildValueSentence(description: string, locale: Locale) {
 
 function buildCardHighlights(tool: ToolCardProps["tool"], locale: Locale) {
   const t = getDictionary(locale);
-  const access = tool.type === "software" && tool.isDownloadPaid ? t.toolCard.capabilityPaidDownload : t.toolCard.capabilityFree;
+  const servicePrice = Number(tool.downloadPrice ?? 0);
+  const isPaid = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0);
+  const access = isPaid ? (tool.type === "online" ? t.toolCard.capabilityPaidService : t.toolCard.capabilityPaidDownload) : t.toolCard.capabilityFree;
   const runtime = tool.type === "software" ? t.toolCard.capabilitySoftware : t.toolCard.capabilityOnline;
-  const commerce = tool.type === "software" && tool.isDownloadPaid ? t.toolCard.capabilityPaidDownload : t.toolCard.capabilityAccess;
+  const commerce = isPaid ? (tool.type === "online" ? t.toolCard.capabilityPaidService : t.toolCard.capabilityPaidDownload) : t.toolCard.capabilityAccess;
   return [runtime, access, commerce];
 }

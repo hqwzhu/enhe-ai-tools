@@ -23,7 +23,6 @@ export function getToolPublishIssues(tool: ToolPublishCheckInput) {
   if (tool.type === "software" && tool.isDownloadPaid && Number(tool.downloadPrice) <= 0) {
     issues.push("付费下载价格需大于 0");
   }
-  if (tool.type === "online" && !tool.onlineUrl?.trim()) issues.push("未配置在线地址");
 
   return issues;
 }

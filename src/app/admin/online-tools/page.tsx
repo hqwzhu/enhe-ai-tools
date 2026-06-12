@@ -22,7 +22,7 @@ export default async function AdminOnlineToolsPage({ searchParams }: { searchPar
 
   return (
     <ToolAdminList
-      title={locale === "en" ? "Online tool management" : "在线网页工具管理"}
+      title={locale === "en" ? "AI account service management" : "AI账号服务管理"}
       type="online"
       locale={locale}
       tools={tools}

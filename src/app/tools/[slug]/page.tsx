@@ -61,6 +61,8 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   });
   if (!tool || tool.status !== "published") notFound();
 
+  const isAccountService = tool.type === "online";
+  const servicePrice = Number(tool.downloadPrice ?? 0);
   const coverImage = normalizeImageSrc(tool.coverImage);
   const hasDownloadPurchase = user
     ? await prisma.toolPurchase.findUnique({ where: { userId_toolId: { userId: user.id, toolId: tool.id } } }).then(Boolean)
@@ -108,8 +110,12 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <div className="flex flex-wrap gap-2">
                 <Badge>{tool.category?.name ?? td.uncategorized}</Badge>
                 <Badge>{tool.type === "software" ? td.software : td.online}</Badge>
-                <Badge className={tool.type === "software" && tool.isDownloadPaid ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>
-                  {tool.type === "software" && tool.isDownloadPaid ? (locale === "en" ? "Paid software" : "收费软件") : td.free}
+                <Badge className={(tool.type === "software" && tool.isDownloadPaid) || (isAccountService && servicePrice > 0) ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>
+                  {tool.type === "software" && tool.isDownloadPaid
+                    ? (locale === "en" ? "Paid software" : "收费软件")
+                    : isAccountService && servicePrice > 0
+                      ? (locale === "en" ? "Paid service" : "收费服务")
+                      : td.free}
                 </Badge>
                 {tool.tagLinks.map(({ tag }) => (
                   <Badge key={tag.id} className="text-[#7DD3FC]">
@@ -124,10 +130,21 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <p className="mt-5 max-w-3xl text-base leading-8 text-[#8F9DB2] md:text-lg">{tool.shortDescription}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Info label={td.version} value={tool.version ?? td.onlineVersion} />
-                <Info label={td.systemRequirement} value={tool.systemRequirement ?? td.browser} />
-                <Info label={td.downloadCount} value={String(tool.downloadCount)} />
-                <Info label={td.usageCount} value={String(tool.usageCount)} />
+                {isAccountService ? (
+                  <>
+                    <Info label={td.servicePrice} value={servicePrice > 0 ? `¥${servicePrice.toFixed(2)}` : td.free} />
+                    <Info label={td.serviceType} value={tool.category?.name ?? td.uncategorized} />
+                    <Info label={td.usageCount} value={String(tool.usageCount)} />
+                    <Info label={td.supportEmail} value={supportEmail} />
+                  </>
+                ) : (
+                  <>
+                    <Info label={td.version} value={tool.version ?? td.onlineVersion} />
+                    <Info label={td.systemRequirement} value={tool.systemRequirement ?? td.browser} />
+                    <Info label={td.downloadCount} value={String(tool.downloadCount)} />
+                    <Info label={td.usageCount} value={String(tool.usageCount)} />
+                  </>
+                )}
               </div>
 
               <div className="mt-7 flex flex-wrap gap-3">
@@ -147,7 +164,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                     <ButtonLink href={softwareDownloadCtaHref}>{td.downloadSoftware}</ButtonLink>
                   )
                 ) : (
-                  <ButtonLink href={`/api/tools/${tool.id}/use`}>{td.useOnline}</ButtonLink>
+                  <ButtonLink href={tool.onlineUrl ? `/api/tools/${tool.id}/use` : "#tool-intro"}>{td.useOnline}</ButtonLink>
                 )}
               </div>
 
@@ -189,7 +206,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
       </section>
 
       <div className="mt-10 space-y-10">
-        <section className="glass rounded-2xl p-7">
+        <section id="tool-intro" className="glass scroll-mt-24 rounded-2xl p-7">
           <SectionTitle title={td.trustTitle} intro={td.trustIntro} />
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <TrustItem label={td.demoVideo}>
@@ -205,9 +222,15 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                 <p className="text-sm leading-6 text-[#8F9DB2]">{td.demoVideoFallback}</p>
               )}
             </TrustItem>
-            <TrustItem label={td.systemRequirement}>
-              <p className="text-sm leading-6 text-[#C5D0E2]">{tool.systemRequirement ?? td.browser}</p>
-              <p className="mt-2 text-xs text-[#8F9DB2]">{td.version}：{tool.version ?? td.onlineVersion}</p>
+            <TrustItem label={isAccountService ? td.serviceType : td.systemRequirement}>
+              {isAccountService ? (
+                <p className="text-sm leading-6 text-[#C5D0E2]">{tool.category?.name ?? td.uncategorized}</p>
+              ) : (
+                <>
+                  <p className="text-sm leading-6 text-[#C5D0E2]">{tool.systemRequirement ?? td.browser}</p>
+                  <p className="mt-2 text-xs text-[#8F9DB2]">{td.version}：{tool.version ?? td.onlineVersion}</p>
+                </>
+              )}
             </TrustItem>
             <TrustItem label={td.updateLog}>
               <p className="text-sm leading-6 text-[#C5D0E2]">{td.changelogCount.replace("{count}", String(tool.changelogs.length))}</p>

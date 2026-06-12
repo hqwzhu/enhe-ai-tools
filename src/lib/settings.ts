@@ -13,7 +13,11 @@ const legacyHomeHeroSubtitlesEn = [
   "Master AI tools and reshape your work, growth, and life"
 ];
 const legacyHomeHeroIntros = [
+  "用本地应用和云端工具放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。",
   "下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。"
+];
+const legacyHomeHeroIntrosEn = [
+  "Use desktop apps and web tools to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation."
 ];
 const legacyTextLogo = "ENHE";
 
@@ -69,6 +73,8 @@ export function getEffectiveLocalizedHomeHeroSubtitle(settings: SettingsMap, loc
 
 export function getEffectiveLocalizedHomeHeroIntro(settings: SettingsMap, locale: Locale, fallback: string) {
   const localized = cleanSettingValue(settings[`home_hero_intro_${locale}`]);
+  if (locale === "en" && localized && legacyHomeHeroIntrosEn.includes(localized)) return fallback;
+  if (locale === "zh" && localized && legacyHomeHeroIntros.includes(localized)) return fallback;
   if (localized) return localized;
   if (locale === "en") return fallback;
   return getEffectiveHomeHeroIntro(settings, fallback);

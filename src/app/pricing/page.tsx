@@ -23,14 +23,14 @@ export default async function PricingPage() {
         intro: "ENHE AI now sells paid software downloads by individual tool. Open a software detail page, confirm the price, submit payment proof, and the download link will appear after review approval.",
         cardTitle: "Buy from the software page",
         cardText: "Each paid desktop app has its own price and unlocks only that app's download-link content.",
-        cta: "View desktop apps"
+        cta: "View AI software apps"
       }
     : {
         title: "付费下载已改为按工具购买",
         intro: "ENHE AI 现在改为按具体软件付费下载。进入软件详情页确认价格，提交付款凭证，后台审核通过后即可查看该软件的下载链接内容。",
-        cardTitle: "前往本地应用购买",
+        cardTitle: "前往AI软件应用购买",
         cardText: "每个收费软件都有独立价格，购买后只解锁该软件的下载链接内容。",
-        cta: "查看本地应用"
+        cta: "查看AI软件应用"
       };
 
   return (

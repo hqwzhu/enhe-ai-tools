@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
 export const siteName = "恩禾 ENHE AI";
 export const defaultSiteDescription =
-  "恩禾 ENHE AI 提供本地应用与云端 AI 工具，覆盖内容创作、办公效率、文件处理和自动化工作流。";
+  "恩禾 ENHE AI 提供 AI 软件应用与 AI 账号服务，覆盖内容创作、办公效率、文件处理和自动化工作流。";
 export const defaultOgImage = "/images/enhe-logo.svg";
 
 type PageMetadataInput = {
