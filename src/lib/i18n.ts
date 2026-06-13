@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+﻿import { cookies } from "next/headers";
 import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
 
 export const localeCookieName = "enhe_locale";
@@ -42,7 +42,7 @@ export const dictionaries = {
     },
     home: {
       eyebrow: "驾驭 AI 智能，重塑你的人生",
-      title: "ENHE AI Tools",
+      title: "ENHE AI",
       intro: "我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。\n让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。",
       softwareButton: "AI软件应用",
       onlineButton: "AI账号服务",
@@ -281,8 +281,8 @@ export const dictionaries = {
       relatedTitle: "相关推荐工具"
     },
     footer: {
-      siteName: "恩禾 ENHE AI工具站",
-      copyright: "© 2026 ENHE AI Tools HQW.",
+      siteName: "恩禾 ENHE AI",
+      copyright: "© 2026 ENHE AI HQW.",
       legal: {
         "user-agreement": "用户协议",
         "privacy-policy": "隐私政策",
@@ -316,8 +316,8 @@ export const dictionaries = {
     },
     home: {
       eyebrow: "Master AI intelligence and reshape your life",
-      title: "ENHE AI Tools",
-      intro: "Use AI software apps and AI account services to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation.",
+      title: "ENHE AI",
+      intro: "We all want to be better \u2014 but repetitive tasks, tedious processes, and daily challenges take up all our time.\nLet AI be your smart assistant, helping you reduce friction and boost efficiency, so you can put more energy into growth, creation, and the things that truly matter.",
       softwareButton: "AI Software Apps",
       onlineButton: "AI Account Services",
       featuredSoftwareEyebrow: "AI Software Apps",
@@ -555,8 +555,8 @@ export const dictionaries = {
       relatedTitle: "Related tools"
     },
     footer: {
-      siteName: "ENHE AI Tools",
-      copyright: "© 2026 ENHE AI Tools HQW.",
+      siteName: "ENHE AI",
+      copyright: "© 2026 ENHE AI HQW.",
       legal: {
         "user-agreement": "User Agreement",
         "privacy-policy": "Privacy Policy",

@@ -19,6 +19,8 @@ const legacyHomeHeroIntros = [
   "下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。"
 ];
 const legacyHomeHeroIntrosEn = [
+  "We all want to be better \u2014 but repetitive tasks, tedious processes, and daily challenges take up all our time.\nLet AI be your smart assistant, helping you reduce friction and boost efficiency, so you can put more energy into growth, creation, and the things that truly matter.",
+  "Use AI software apps and AI account services to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation.",
   "Use desktop apps and web tools to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation."
 ];
 const legacyTextLogo = "ENHE";

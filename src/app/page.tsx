@@ -38,7 +38,7 @@ export default async function HomePage() {
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
   const heroSubtitle = getEffectiveLocalizedHomeHeroSubtitle(settings, locale, t.home.eyebrow);
   const heroIntro = getEffectiveLocalizedHomeHeroIntro(settings, locale, t.home.intro);
-  const heroTitleParts = heroTitle === "ENHE AI Tools" ? ["ENHE AI", "Tools"] : [heroTitle, null];
+  const heroTitleParts = [heroTitle, null];
 
   return (
     <>
