@@ -12,7 +12,7 @@ export function FlatEnheLogoSvg({
   return (
     <svg
       className={className}
-      viewBox="0 0 560 360"
+      viewBox="0 -5 560 360"
       role={decorative ? undefined : "img"}
       aria-hidden={decorative ? "true" : undefined}
       aria-label={decorative ? undefined : label}
