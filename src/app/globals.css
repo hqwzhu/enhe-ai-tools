@@ -387,7 +387,7 @@ select option:disabled {
 .home-hero-copy {
   align-self: center;
   max-width: 54rem;
-  padding-top: clamp(2rem, 8vh, 6rem);
+  padding-top: clamp(0.5rem, 3vh, 3rem);
   opacity: 0;
   transform: translateY(18px);
   animation: hero-copy-arrive 0.86s cubic-bezier(0.16, 1, 0.3, 1) 0.22s forwards;
