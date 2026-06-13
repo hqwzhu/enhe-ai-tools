@@ -387,7 +387,8 @@ select option:disabled {
 .home-hero-copy {
   align-self: center;
   max-width: 54rem;
-  padding-top: clamp(0.5rem, 3vh, 3rem);
+  position: relative;
+  top: clamp(-3rem, -5vh, -1rem);
   opacity: 0;
   transform: translateY(18px);
   animation: hero-copy-arrive 0.86s cubic-bezier(0.16, 1, 0.3, 1) 0.22s forwards;
@@ -785,6 +786,9 @@ select option:disabled {
   .enhe-circuit-line {
     opacity: 0.44;
   }
+  .home-hero-copy {
+    top: 0;
+  }
 }
 
 @media (max-width: 640px) {
@@ -808,8 +812,9 @@ select option:disabled {
     padding-inline: 1.25rem;
   }
 
-  .home-hero-copy {
+ .home-hero-copy {
     padding-top: 0;
+    top: 0;
   }
 
   .home-hero-copy h1 {
