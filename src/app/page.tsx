@@ -52,7 +52,7 @@ export default async function HomePage() {
               {heroTitleParts[0]}
               {heroTitleParts[1] ? <span className="home-hero-title-accent"> {heroTitleParts[1]}</span> : null}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8F9DB2]">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#8F9DB2] whitespace-pre-line">
               {heroIntro}
             </p>
             <div className="mt-10 flex flex-wrap gap-3">

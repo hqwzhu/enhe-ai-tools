@@ -13,7 +13,7 @@ const legacyHomeHeroSubtitlesEn = [
   "Master AI tools and reshape your work, growth, and life"
 ];
 const legacyHomeHeroIntros = [
-  "用本地应用和云端工具放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。",
+  "我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。\n让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。",
   "下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。"
 ];
 const legacyHomeHeroIntrosEn = [

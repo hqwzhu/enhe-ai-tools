@@ -12,7 +12,7 @@ import {
 
 describe("public site settings", () => {
   const currentHeroSubtitle = "驾驭 AI 智能，重塑你的人生";
-  const currentHeroIntro = "用 AI 软件应用和 AI 账号服务放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。";
+  const currentHeroIntro = "我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。\n让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。";
   const currentHeroSubtitleEn = "Master AI intelligence and reshape your life";
   const currentHeroIntroEn = "Use AI software apps and AI account services to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation.";
 
@@ -59,7 +59,7 @@ describe("public site settings", () => {
   it("ignores stale localized homepage settings", () => {
     const settings = {
       home_hero_subtitle_zh: "驾驭 AI 工具，重塑你的工作与人生",
-      home_hero_intro_zh: "用本地应用和云端工具放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。",
+      home_hero_intro_zh: "我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。\n让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。",
       home_hero_subtitle_en: "Master AI tools and reshape your work, growth, and life",
       home_hero_intro_en: "Use desktop apps and web tools to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation."
     };

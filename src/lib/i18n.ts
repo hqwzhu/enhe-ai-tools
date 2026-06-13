@@ -43,7 +43,7 @@ export const dictionaries = {
     home: {
       eyebrow: "驾驭 AI 智能，重塑你的人生",
       title: "ENHE AI Tools",
-      intro: "用 AI 软件应用和 AI 账号服务放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。",
+      intro: "我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。\n让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。",
       softwareButton: "AI软件应用",
       onlineButton: "AI账号服务",
       featuredSoftwareEyebrow: "AI Software Apps",
