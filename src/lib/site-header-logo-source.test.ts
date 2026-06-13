@@ -15,6 +15,8 @@ describe("site header logo source", () => {
     expect(css).toContain(".site-header-transparent");
     expect(css).toContain(".site-brand-wordmark");
     expect(css).toContain("letter-spacing: 0;");
+    expect(css).toContain("transform: translateY(0.16rem);");
+    expect(css).toContain("line-height: 1.08;");
     expect(component).not.toContain("next/image");
   });
 });

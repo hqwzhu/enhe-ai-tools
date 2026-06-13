@@ -173,7 +173,7 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
       amount: orderAmount.toString()
     }
   });
-  void sendNewOrderAdminEmail(order.id);
+  await sendUserFlowAdminEmail(() => sendNewOrderAdminEmail(order.id), "order_created");
   redirect(`/orders/${order.id}/pay`);
 }
 
@@ -296,10 +296,10 @@ export async function submitOrderReceiptAction(formData: FormData) {
   });
   if (!order) throw new Error("订单不存在。");
 
-  void sendOrderReceiptAdminEmail(order.id, {
+  await sendUserFlowAdminEmail(() => sendOrderReceiptAdminEmail(order.id, {
     receipt,
     actorLabel: user.email ?? user.nickname ?? user.id
-  });
+  }), "order_receipt_submitted");
   await trackAnalyticsEvent({
     eventName: "order_receipt_submitted",
     path: `/orders/${order.id}`,
@@ -433,4 +433,25 @@ async function getRequestSecurityInfo() {
     ip: headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
     userAgent: headerStore.get("user-agent")
   };
+}
+
+async function sendUserFlowAdminEmail(send: () => Promise<void>, eventLabel: string) {
+  const waitMs = parsePositiveInteger(process.env.ADMIN_EMAIL_ACTION_WAIT_MS, 1500);
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const sendPromise = send().catch((error) => {
+    console.error(`[admin-email] ${eventLabel} failed during user flow`, error);
+  });
+  const timeoutPromise = new Promise<"timeout">((resolve) => {
+    timeout = setTimeout(() => resolve("timeout"), waitMs);
+  });
+  const result = await Promise.race([sendPromise.then(() => "sent" as const), timeoutPromise]);
+  if (timeout) clearTimeout(timeout);
+  if (result === "timeout") {
+    console.warn(`[admin-email] ${eventLabel} did not finish within ${waitMs}ms; continuing user flow`);
+  }
+}
+
+function parsePositiveInteger(value: string | undefined, fallback: number) {
+  const number = Number(value);
+  return Number.isInteger(number) && number > 0 ? number : fallback;
 }
