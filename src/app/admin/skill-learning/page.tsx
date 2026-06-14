@@ -10,7 +10,7 @@
    const [tools, total, categories] = await Promise.all([
      prisma.tool.findMany({
        where,
-       include: { category: true, downloadFile: true, priceSpecs: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
+       include: { category: true, downloadFile: true, tutorials: { where: { status: "active" } }, priceSpecs: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
        skip: filters.skip,
        take: filters.take

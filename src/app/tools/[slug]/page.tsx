@@ -64,6 +64,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   if (!tool || tool.status !== "published") notFound();
 
   const isAccountService = tool.type === "online";
+  const isSkillLearning = tool.type === "skill_learning";
   const activePriceSpecs = tool.priceSpecs.filter((spec) => Number(spec.price) > 0);
   const servicePrice = getPrimaryToolPrice(activePriceSpecs, tool.downloadPrice);
   const isPurchasableAccountService = isAccountService && servicePrice > 0;
@@ -73,7 +74,8 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
     : false;
   const shouldShowPurchaseForm =
     (tool.type === "software" && tool.isDownloadPaid && !hasDownloadPurchase) ||
-    (isPurchasableAccountService && !hasDownloadPurchase);
+    (isPurchasableAccountService && !hasDownloadPurchase) ||
+    (tool.type === "skill_learning" && !hasDownloadPurchase);
   const downloadLinkContent = getDownloadLinkContent(tool.downloadFile);
   const hasDownloadLink = Boolean(tool.downloadFileId && tool.downloadFile && downloadLinkContent);
   const showDownloadLinkArea = canShowDownloadLinkArea({
@@ -316,11 +318,11 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
         </section>
 
         <section className="glass rounded-2xl p-7">
-          <SectionTitle title={td.tutorialsTitle} intro={td.tutorialsIntro} />
+          <SectionTitle title={isSkillLearning ? td.courseContentTitle : td.tutorialsTitle} intro={td.tutorialsIntro} />
           <div className="space-y-4">
             {tool.tutorials.map((tutorial, index) => (
               <div key={tutorial.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
-                <p className="text-sm text-[#7DD3FC]">{td.step.replace("{index}", String(index + 1))}</p>
+                
                 <h3 className="mt-2 text-xl font-semibold">{tutorial.title}</h3>
                 <p className="mt-3 leading-7 text-[#8F9DB2]">{tutorial.content}</p>
                 {tutorial.notes ? (
