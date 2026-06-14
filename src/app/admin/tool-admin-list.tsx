@@ -324,9 +324,6 @@ export function ToolEditor({
 
       <NoticeBar notice={notice} locale={locale} />
 
-      <div style={{background:"#ff0000",color:"#fff",padding:"16px 24px",borderRadius:12,marginBottom:16,fontSize:18,fontWeight:"bold",textAlign:"center"}}>
-        DEBUG: isSkillLearning={'{' + String(isSkillLearning) + '}'} | type={'{' + type + '}'} | tool.id={'{' + (tool?.id ?? 'none') + '}'}
-      </div>
       <form action={upsertToolAction} className="mt-8 grid gap-6">
         {tool ? <input type="hidden" name="id" value={tool.id} /> : null}
         <input type="hidden" name="type" value={type} />
@@ -445,7 +442,7 @@ export function ToolEditor({
               </div>
             </div>
             {isSkillLearning ? (
-              <div className="rounded-2xl border border-[#7DD3FC]/25 bg-[#7DD3FC]/6 p-5">
+              <div className="rounded-2xl border-2 border-[#48F5D3] bg-[#48F5D3]/15 p-5">
                 <p className="text-sm font-semibold text-[#F6FAFF]">{copy.courseContentSectionTitle}</p>
                 <p className="mt-2 text-sm leading-6 text-[#8B95A7]">{copy.courseContentSectionIntro}</p>
                 {tool?.id ? (
