@@ -812,7 +812,7 @@ export async function upsertCategoryAction(formData: FormData) {
   const id = parseOptionalString(formData.get("id"));
   const data = {
     name: z.string().min(1).parse(formData.get("name")),
-    type: z.enum(["software", "online"]).parse(formData.get("type")),
+    type: z.enum(["software", "online", "skill_learning"]).parse(formData.get("type")),
     description: parseOptionalString(formData.get("description")),
     sortOrder: parseNumberField(formData.get("sortOrder"), 0),
     status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active")
@@ -1003,7 +1003,7 @@ export async function deleteFileAdminAction(formData: FormData) {
 
 export async function upsertToolAction(formData: FormData) {
   const admin = await requireAdmin();
-  const type = z.enum(["software", "online"]).parse(formData.get("type"));
+  const type = z.enum(["software", "online", "skill_learning"]).parse(formData.get("type"));
   const adminPath = getAdminToolBasePath(type);
   let savedToolId = parseOptionalString(formData.get("id"));
 
@@ -1155,7 +1155,7 @@ export async function updateToolTagsAction(formData: FormData) {
 export async function deleteToolAction(formData: FormData) {
   const admin = await requireAdmin();
   const id = idSchema.parse(formData.get("id"));
-  const type = z.enum(["software", "online"]).parse(formData.get("type"));
+  const type = z.enum(["software", "online", "skill_learning"]).parse(formData.get("type"));
   const adminPath = getAdminToolBasePath(type);
   const existingTool = await prisma.tool.findUnique({ where: { id } });
   if (!existingTool) {
