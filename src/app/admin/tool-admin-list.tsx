@@ -324,6 +324,9 @@ export function ToolEditor({
 
       <NoticeBar notice={notice} locale={locale} />
 
+      <div style="background:#ff0000;color:#fff;padding:16px 24px;border-radius:12px;margin-bottom:16px;font-size:18px;font-weight:bold;text-align:center">
+        DEBUG: isSkillLearning={String(isSkillLearning)} | type="{type}" | tool.id={tool?.id ?? "none"}
+      </div>
       <form action={upsertToolAction} className="mt-8 grid gap-6">
         {tool ? <input type="hidden" name="id" value={tool.id} /> : null}
         <input type="hidden" name="type" value={type} />
@@ -441,7 +444,20 @@ export function ToolEditor({
                 )}
               </div>
             </div>
-            {!isAccountService && !isSkillLearning ? (
+            {isSkillLearning ? (
+              <div className="rounded-2xl border border-[#7DD3FC]/25 bg-[#7DD3FC]/6 p-5">
+                <p className="text-sm font-semibold text-[#F6FAFF]">{copy.courseContentSectionTitle}</p>
+                <p className="mt-2 text-sm leading-6 text-[#8B95A7]">{copy.courseContentSectionIntro}</p>
+                {tool?.id ? (
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <a href={`/admin/tutorials?toolId=${tool.id}`} className="inline-block rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">{copy.manageTutorials}</a>
+                    <a href={`/admin/faqs?toolId=${tool.id}`} className="inline-block rounded-full border border-[#7DD3FC]/35 px-5 py-3 text-sm font-semibold text-[#7DD3FC]">{copy.manageFaq}</a>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-[#FFB86B]">{copy.saveBeforeContent}</p>
+                )}
+              </div>
+            ) : !isAccountService ? (
               <Field label={copy.downloadFileUrl}>
                 <textarea
                   name="downloadFileUrl"
