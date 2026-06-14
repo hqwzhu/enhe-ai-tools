@@ -12,6 +12,7 @@ export default async function AdminCategoriesPage() {
           <select name="type" className={selectClass}>
             <option value="software">AI软件应用</option>
             <option value="online">AI账号服务</option>
+            <option value="skill_learning">AI技能学习</option>
           </select>
         </Field>
         <Field label="排序"><input name="sortOrder" type="number" defaultValue={0} className={inputClass} /></Field>
@@ -34,6 +35,7 @@ export default async function AdminCategoriesPage() {
                 <select name="type" defaultValue={category.type} className={selectClass}>
                   <option value="software">AI软件应用</option>
                   <option value="online">AI账号服务</option>
+            <option value="skill_learning">AI技能学习</option>
                 </select>
               </Field>
               <Field label="状态">
