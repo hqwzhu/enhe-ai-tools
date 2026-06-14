@@ -194,7 +194,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                         <option value="wechat">{td.wechat}</option>
                       </select>
                       <FormSubmitButton pendingLabel="生成支付二维码中...">
-                        {isAccountService ? td.buyService : td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2))}
+                        {isAccountService ? td.buyService : isSkillLearning ? (locale === "en" ? "Purchase now" : "点击购买") : td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2))}
                       </FormSubmitButton>
                     </div>
                   </form>

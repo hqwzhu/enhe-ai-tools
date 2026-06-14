@@ -133,11 +133,11 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
   if (!tool) throw new Error("工具或服务不存在，或尚未发布");
   const selectedPriceSpec = resolveToolOrderPriceSpec(tool.priceSpecs, requestedPriceSpecId);
   const orderAmount = selectedPriceSpec?.price ?? tool.downloadPrice;
-  const redirectTarget = tool.type === "online" ? `/api/tools/${tool.id}/use` : tool.type === "skill_learning" ? `/tools/${tool.slug}` : `/api/tools/${tool.id}/download`;
+  const redirectTarget = `/api/tools/${tool.id}/download`;
   const isPaidSoftware = tool.type === "software" && tool.isDownloadPaid && Number(orderAmount) > 0;
   const isPaidAccountService = tool.type === "online" && Number(orderAmount) > 0;
   const isPaidCourse = tool.type === "skill_learning" && Number(orderAmount) > 0;
-  if (!isPaidSoftware && !isPaidAccountService) {
+  if (!isPaidSoftware && !isPaidAccountService && !isPaidCourse) {
     redirect(redirectTarget);
   }
 
