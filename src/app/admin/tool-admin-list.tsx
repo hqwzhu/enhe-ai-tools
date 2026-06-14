@@ -324,8 +324,8 @@ export function ToolEditor({
 
       <NoticeBar notice={notice} locale={locale} />
 
-      <div style="background:#ff0000;color:#fff;padding:16px 24px;border-radius:12px;margin-bottom:16px;font-size:18px;font-weight:bold;text-align:center">
-        DEBUG: isSkillLearning={String(isSkillLearning)} | type="{type}" | tool.id={tool?.id ?? "none"}
+      <div style={{background:"#ff0000",color:"#fff",padding:"16px 24px",borderRadius:12,marginBottom:16,fontSize:18,fontWeight:"bold",textAlign:"center"}}>
+        DEBUG: isSkillLearning={'{' + String(isSkillLearning) + '}'} | type={'{' + type + '}'} | tool.id={'{' + (tool?.id ?? 'none') + '}'}
       </div>
       <form action={upsertToolAction} className="mt-8 grid gap-6">
         {tool ? <input type="hidden" name="id" value={tool.id} /> : null}
