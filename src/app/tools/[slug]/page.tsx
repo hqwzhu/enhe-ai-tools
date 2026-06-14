@@ -120,13 +120,15 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
             <div>
               <div className="flex flex-wrap gap-2">
                 <Badge>{tool.category?.name ?? td.uncategorized}</Badge>
-                <Badge>{tool.type === "software" ? td.software : td.online}</Badge>
-                <Badge className={(tool.type === "software" && tool.isDownloadPaid) || (isAccountService && servicePrice > 0) ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>
-                  {tool.type === "software" && tool.isDownloadPaid
-                    ? (locale === "en" ? "Paid software" : "收费软件")
-                    : isAccountService && servicePrice > 0
-                      ? (locale === "en" ? "Paid service" : "收费服务")
-                      : td.free}
+                <Badge>{tool.type === "software" ? td.software : tool.type === "skill_learning" ? td.skillLearning : td.online}</Badge>
+                <Badge className={(isSkillLearning && !hasDownloadPurchase) || (tool.type === "software" && tool.isDownloadPaid) || (isAccountService && servicePrice > 0) ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>
+                  {isSkillLearning
+                    ? (locale === "en" ? "Paid course" : "收费服务")
+                    : tool.type === "software" && tool.isDownloadPaid
+                      ? (locale === "en" ? "Paid software" : "收费软件")
+                      : isAccountService && servicePrice > 0
+                        ? (locale === "en" ? "Paid service" : "收费服务")
+                        : td.free}
                 </Badge>
                 {tool.tagLinks.map(({ tag }) => (
                   <Badge key={tag.id} className="text-[#7DD3FC]">
@@ -312,7 +314,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               </div>
             ) : null}
             <div className="tool-detail-copy-card rounded-2xl border border-white/10 bg-white/8 p-5">
-              <p className="whitespace-pre-line text-base leading-8 text-[#C5D0E2]">{tool.content}</p>
+              <div style={{whiteSpace:"pre-line"}} className="text-base leading-8 text-[#C5D0E2]">{tool.content}</div>
             </div>
           </div>
         </section>
@@ -324,7 +326,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               <div key={tutorial.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
                 
                 <h3 className="mt-2 text-xl font-semibold">{tutorial.title}</h3>
-                <p className="mt-3 leading-7 text-[#8F9DB2]">{tutorial.content}</p>
+                <div style={{whiteSpace:"pre-line"}} className="mt-3 leading-7 text-[#8F9DB2]">{tutorial.content}</div>
                 {tutorial.notes ? (
                   <div className="mt-4 rounded-xl border border-[#5EF1C7]/20 bg-[#5EF1C7]/8 p-4">
                     <p className="text-sm font-semibold text-[#5EF1C7]">{td.notes}</p>
