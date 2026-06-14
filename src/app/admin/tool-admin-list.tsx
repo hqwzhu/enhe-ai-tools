@@ -587,7 +587,12 @@ const toolAdminCopy = {
     createCourse: "新增课程",
     deleteCourse: "删除课程",
     courseName: "课程名称",
-    basicCourseIntro: "维护 AI 技能学习课程名称、分类、状态和排序。"
+    basicCourseIntro: "维护 AI 技能学习课程名称、分类、状态和排序。",
+    courseContentSectionTitle: "课程内容管理",
+    courseContentSectionIntro: "付费课程内容通过「教程管理」添加。购买后用户可查看所有已发布的教程内容。也可以通过「FAQ 管理」添加常见问题。",
+    manageTutorials: "管理教程内容",
+    manageFaq: "管理常见问题",
+    saveBeforeContent: "请先保存课程，然后再添加教程内容。"
   },
   en: {
     saved: "Saved successfully.",
@@ -686,7 +691,12 @@ const toolAdminCopy = {
     createCourse: "Create course",
     deleteCourse: "Delete course",
     courseName: "Course name",
-    basicCourseIntro: "Maintain AI skill-learning course name, category, status, and display order."
+    basicCourseIntro: "Maintain AI skill-learning course name, category, status, and display order.",
+    courseContentSectionTitle: "Course content",
+    courseContentSectionIntro: "Paid course content is added through Tutorial Management. After purchase, users can view all published tutorials. You can also add FAQs through FAQ Management.",
+    manageTutorials: "Manage tutorials",
+    manageFaq: "Manage FAQ",
+    saveBeforeContent: "Save the course first, then add tutorial content."
   }
 } as const;
 
