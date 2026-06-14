@@ -58,7 +58,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge>{tool.category?.name ?? t.toolCard.uncategorized}</Badge>
               {showPrice ? (
-                <Badge className="border-[#FFB86B]/35 text-[#FFB86B]">{tool.type === "online" ? t.toolCard.servicePrice : tool.type === "skill_learning" ? t.toolCard.paidDownload : t.toolCard.paidDownload} ¥{servicePrice.toFixed(2)}</Badge>
+                <Badge className="border-[#FFB86B]/35 text-[#FFB86B]">{tool.type === "online" ? t.toolCard.servicePrice : tool.type === "skill_learning" ? t.toolCard.capabilityPaidCourse : t.toolCard.paidDownload} ¥{servicePrice.toFixed(2)}</Badge>
               ) : (
                 <Badge>{t.toolCard.free}</Badge>
               )}

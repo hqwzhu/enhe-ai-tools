@@ -1095,7 +1095,7 @@ export async function upsertToolAction(formData: FormData) {
     revalidatePath(adminPath);
     revalidatePath("/admin/files");
     revalidatePath("/");
-    revalidatePath(type === "software" ? "/software" : "/online-tools");
+    revalidatePath(type === "skill_learning" ? "/skill-learning" : type === "software" ? "/software" : "/online-tools");
     revalidatePath(`/tools/${data.slug}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存失败，请检查表单内容。";

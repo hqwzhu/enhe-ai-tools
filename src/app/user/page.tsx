@@ -236,6 +236,15 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
             </div>
           </Panel>
 
+          <Panel title={t.userCenter.purchasedCourses}>
+            <ToolAccessList
+              tools={entitlementSummary.purchasedCourses}
+              emptyText={t.userCenter.noPurchasedCourses}
+              locale={locale}
+              action="details"
+            />
+          </Panel>
+
           <Panel title={t.userCenter.purchasedSoftware}>
             <ToolAccessList
               tools={entitlementSummary.purchasedSoftware}

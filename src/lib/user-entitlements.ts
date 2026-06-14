@@ -24,7 +24,8 @@ export function buildUserToolEntitlements<TTool extends UserEntitlementTool>({
   return {
     downloadableSoftware: software.filter((tool) => canDownloadToolFromUserCenter(tool, purchased)),
     purchasedSoftware: software.filter((tool) => purchased.has(tool.id)),
-    availableOnlineTools: tools.filter((tool) => tool.type === "online" && canUseOnlineToolFromUserCenter(tool))
+    availableOnlineTools: tools.filter((tool) => tool.type === "online" && canUseOnlineToolFromUserCenter(tool)),
+    purchasedCourses: tools.filter((tool) => tool.type === "skill_learning" && purchased.has(tool.id))
   };
 }
 
