@@ -321,6 +321,11 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
 
         <section className="glass rounded-2xl p-7">
           <SectionTitle title={isSkillLearning ? td.courseContentTitle : td.tutorialsTitle} intro={td.tutorialsIntro} />
+          {isSkillLearning && !hasDownloadPurchase ? (
+            <div className="rounded-2xl border border-[#FFB86B]/25 bg-[#FFB86B]/8 p-6 text-center">
+              <p className="text-sm font-semibold text-[#FFB86B]">{locale === "en" ? "Please purchase this course to view the content" : "请先购买课程后查看课程内容"}</p>
+            </div>
+          ) : (
           <div className="space-y-4">
             {tool.tutorials.map((tutorial, index) => (
               <div key={tutorial.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
@@ -343,6 +348,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               </div>
             ))}
           </div>
+          )}
         </section>
 
         <section className="glass rounded-2xl p-7">
