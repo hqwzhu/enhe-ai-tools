@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChevronRight, Cloud, MonitorDown } from "lucide-react";
+import { BookOpen, ChevronRight, Cloud, MonitorDown } from "lucide-react";
 import { ButtonLink, Container } from "@/components/ui";
 import { HeroLogoMark } from "@/components/hero-logo-mark";
 import { ToolCard } from "@/components/tool-card";
@@ -58,6 +58,7 @@ export default async function HomePage() {
             <div className="mt-10 flex flex-wrap gap-3">
               <ButtonLink href="/software" className="home-hero-cta"><MonitorDown size={23} />{t.home.softwareButton}<ChevronRight size={18} /></ButtonLink>
               <ButtonLink href="/online-tools" variant="ghost" className="home-hero-cta"><Cloud size={24} />{t.home.onlineButton}<ChevronRight size={18} /></ButtonLink>
+              <ButtonLink href="/skill-learning" variant="ghost" className="home-hero-cta"><BookOpen size={22} />{t.home.skillLearningButton}<ChevronRight size={18} /></ButtonLink>
             </div>
           </div>
           <div className="enhe-hero-mark relative mx-auto flex min-h-[520px] w-full max-w-[860px] items-center justify-center">

@@ -17,6 +17,7 @@ export async function SiteHeader() {
     [t.nav.home, "/"],
     [t.nav.software, "/software"],
     [t.nav.onlineTools, "/online-tools"],
+    [t.nav.skillLearning, "/skill-learning"],
     [t.nav.user, "/user"]
   ] as const;
 

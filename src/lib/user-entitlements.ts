@@ -2,7 +2,7 @@ export type UserEntitlementTool = {
   id: string;
   name: string;
   slug: string;
-  type: "software" | "online";
+  type: "software" | "online" | "skill_learning";
   isVipRequired: boolean;
   isDownloadPaid: boolean;
   downloadFileId: string | null;

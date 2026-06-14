@@ -10,7 +10,7 @@ import { normalizeImageSrc } from "@/lib/media";
 import { getPrimaryToolPrice, type ToolPriceSpecStatus } from "@/lib/tool-price-specs";
 import { getToolPublishIssues } from "@/lib/tool-publish-check";
 
-type AdminToolType = "software" | "online";
+type AdminToolType = "software" | "online" | "skill_learning";
 
 type ToolItem = {
   id: string;
@@ -151,6 +151,7 @@ export function ToolAdminList({
   const listPath = getAdminToolBasePath(type);
   const matchingCategories = categories.filter((category) => category.type === type);
   const isAccountService = type === "online";
+  const isSkillLearning = type === "skill_learning";
 
   return (
     <div>
@@ -158,11 +159,11 @@ export function ToolAdminList({
         <div>
           <h1 className="text-3xl font-semibold">{title}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
-            {isAccountService ? copy.serviceListIntro : copy.listIntro}
+            {isSkillLearning ? copy.courseListIntro : isAccountService ? copy.serviceListIntro : copy.listIntro}
           </p>
         </div>
         <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
-          {isAccountService ? copy.newService : copy.newTool}
+          {isSkillLearning ? copy.newCourse : isAccountService ? copy.newService : copy.newTool}
         </Link>
       </div>
 
@@ -171,7 +172,7 @@ export function ToolAdminList({
       {filters && buildPageHref ? (
         <>
           <form className="glass mt-6 grid gap-3 rounded-2xl p-5 md:grid-cols-[1fr_180px_220px_auto]" action={listPath}>
-            <input name="q" defaultValue={filters.q} placeholder={isAccountService ? copy.serviceSearchPlaceholder : copy.searchPlaceholder} className={inputClass} />
+            <input name="q" defaultValue={filters.q} placeholder={isSkillLearning ? copy.courseSearchPlaceholder : isAccountService ? copy.serviceSearchPlaceholder : copy.searchPlaceholder} className={inputClass} />
             <select name="status" defaultValue={filters.status ?? ""} className={selectClass}>
               <option value="">{copy.allStatus}</option>
               <option value="draft">{statusText.draft}</option>
@@ -211,16 +212,16 @@ export function ToolAdminList({
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-white/12 bg-white/6">
         <div className="grid min-w-[1080px] grid-cols-[1.4fr_0.8fr_0.6fr_0.8fr_1.1fr_0.6fr] gap-4 border-b border-white/10 px-5 py-3 text-xs uppercase tracking-wide text-[#8B95A7]">
-          <span>{isAccountService ? copy.service : copy.tool}</span>
+          <span>{isSkillLearning ? copy.course : isAccountService ? copy.service : copy.tool}</span>
           <span>{copy.category}</span>
           <span>{copy.status}</span>
-          <span>{isAccountService ? copy.servicePrice : copy.accessPrice}</span>
+          <span>{isSkillLearning ? copy.coursePrice : isAccountService ? copy.servicePrice : copy.accessPrice}</span>
           <span>{copy.publishCheck}</span>
           <span className="text-right">{copy.actions}</span>
         </div>
 
         {tools.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">{isAccountService ? copy.noServices : copy.noTools}</div>
+          <div className="px-5 py-10 text-center text-sm text-[#8B95A7]">{isSkillLearning ? copy.noCourses : isAccountService ? copy.noServices : copy.noTools}</div>
         ) : (
           <div className="min-w-[1080px] divide-y divide-white/10">
             {tools.map((tool) => {
@@ -304,6 +305,7 @@ export function ToolEditor({
   const matchingCategories = categories.filter((category) => category.type === type);
   const directDownloadUrl = getDirectDownloadUrl(tool);
   const isAccountService = type === "online";
+  const isSkillLearning = type === "skill_learning";
   const priceSpecRows = buildEditorPriceSpecRows(tool);
 
   return (
@@ -312,7 +314,7 @@ export function ToolEditor({
         <div>
           <h1 className="text-3xl font-semibold">{title}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
-            {isAccountService ? copy.serviceEditorIntro : copy.editorIntro}
+            {isSkillLearning ? copy.courseEditorIntro : isAccountService ? copy.serviceEditorIntro : copy.editorIntro}
           </p>
         </div>
         <Link href={listPath} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
@@ -330,9 +332,9 @@ export function ToolEditor({
         <input type="hidden" name="downloadFileId" value={tool?.downloadFileId ?? ""} />
         <input type="hidden" name="downloadPrice" value="0" />
 
-        <EditorSection title={copy.basicSection} intro={isAccountService ? copy.basicServiceIntro : copy.basicToolIntro}>
+        <EditorSection title={copy.basicSection} intro={isAccountService ? copy.basicServiceIntro : isSkillLearning ? copy.basicCourseIntro : copy.basicToolIntro}>
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label={isAccountService ? copy.serviceName : copy.toolName}>
+            <Field label={isSkillLearning ? copy.courseName : isAccountService ? copy.serviceName : copy.toolName}>
               <input name="name" required defaultValue={tool?.name ?? ""} className={inputClass} />
             </Field>
             <Field label={copy.englishName}>
@@ -373,7 +375,7 @@ export function ToolEditor({
                 {copy.coverHint}
               </span>
             </Field>
-            {!isAccountService ? (
+            {!isAccountService && !isSkillLearning ? (
               <>
                 <Field label={copy.version}>
                   <input name="version" defaultValue={tool?.version ?? ""} className={inputClass} />
@@ -439,7 +441,7 @@ export function ToolEditor({
                 )}
               </div>
             </div>
-            {!isAccountService ? (
+            {!isAccountService && !isSkillLearning ? (
               <Field label={copy.downloadFileUrl}>
                 <textarea
                   name="downloadFileUrl"
@@ -458,8 +460,8 @@ export function ToolEditor({
         <div>
           <SubmitButton>
             {tool
-              ? (isAccountService ? copy.saveService : copy.saveTool)
-              : (isAccountService ? copy.createService : copy.createTool)}
+              ? (isSkillLearning ? copy.saveCourse : isAccountService ? copy.saveService : copy.saveTool)
+              : (isSkillLearning ? copy.createCourse : isAccountService ? copy.createService : copy.createTool)}
           </SubmitButton>
         </div>
       </form>
@@ -468,7 +470,7 @@ export function ToolEditor({
         <form action={deleteToolAction} className="mt-4">
           <input type="hidden" name="id" value={tool.id} />
           <input type="hidden" name="type" value={type} />
-          <DangerButton>{isAccountService ? copy.deleteService : copy.deleteTool}</DangerButton>
+          <DangerButton>{isSkillLearning ? copy.deleteCourse : isAccountService ? copy.deleteService : copy.deleteTool}</DangerButton>
         </form>
       ) : null}
     </div>
@@ -573,7 +575,19 @@ const toolAdminCopy = {
     saveService: "保存服务",
     createService: "新增服务",
     deleteTool: "删除工具",
-    deleteService: "删除服务"
+    deleteService: "删除服务",
+    courseListIntro: "以清单模式管理 AI 技能学习课程，点击查看/编辑进入课程详情页后修改课程信息、价格和教程内容。",
+    newCourse: "新增课程",
+    courseSearchPlaceholder: "搜索课程名称、Slug、简介",
+    course: "课程",
+    noCourses: "暂无课程，请先新增一个课程。",
+    courseEditorIntro: "在详情页编辑课程基础信息、价格、封面图和教程内容。",
+    coursePrice: "课程价格",
+    saveCourse: "保存课程",
+    createCourse: "新增课程",
+    deleteCourse: "删除课程",
+    courseName: "课程名称",
+    basicCourseIntro: "维护 AI 技能学习课程名称、分类、状态和排序。"
   },
   en: {
     saved: "Saved successfully.",
@@ -660,7 +674,19 @@ const toolAdminCopy = {
     saveService: "Save service",
     createService: "Create service",
     deleteTool: "Delete tool",
-    deleteService: "Delete service"
+    deleteService: "Delete service",
+    courseListIntro: "Manage AI skill-learning courses. Open View/Edit to update course details, price, and tutorial content.",
+    newCourse: "New course",
+    courseSearchPlaceholder: "Search course name, slug, or description",
+    course: "Course",
+    noCourses: "No courses yet. Create one first.",
+    courseEditorIntro: "Edit course basics, price, cover image, and tutorial content on this detail page.",
+    coursePrice: "Course price",
+    saveCourse: "Save course",
+    createCourse: "Create course",
+    deleteCourse: "Delete course",
+    courseName: "Course name",
+    basicCourseIntro: "Maintain AI skill-learning course name, category, status, and display order."
   }
 } as const;
 

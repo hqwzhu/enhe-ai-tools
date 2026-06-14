@@ -16,6 +16,7 @@ const adminNav = [
   ["refunds", "/admin/refunds"],
   ["software", "/admin/software"],
   ["onlineTools", "/admin/online-tools"],
+  ["skillLearning", "/admin/skill-learning"],
   ["categories", "/admin/categories"],
   ["tags", "/admin/tags"],
   ["tutorials", "/admin/tutorials"],

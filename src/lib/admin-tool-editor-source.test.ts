@@ -81,7 +81,7 @@ describe("admin tool editor source", () => {
     expect(source).toContain("copy.createService");
     expect(source).toContain("copy.servicePrice");
     expect(source).toContain("copy.serviceEditorIntro");
-    expect(source).toContain("{!isAccountService ? (");
+    expect(source).toContain("{!isAccountService && !isSkillLearning ? (");
     expect(source).toContain("<Field label={copy.version}>");
     expect(source).toContain("<Field label={copy.systemRequirement}>");
     expect(source).not.toContain('name="onlineUrl"');
