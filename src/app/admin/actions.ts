@@ -1013,7 +1013,22 @@ export async function upsertToolAction(formData: FormData) {
     const englishName = parseOptionalString(formData.get("englishName"));
     const slugInput = parseOptionalString(formData.get("slug"));
     const generatedFallbackSeed = id ?? Date.now().toString(36);
-    const resolvedSlug = resolveToolSlug({ name, slugInput, fallbackSeed: generatedFallbackSeed });
+    let resolvedSlug = resolveToolSlug({ name, slugInput, fallbackSeed: generatedFallbackSeed });
+    // Ensure slug uniqueness - resolveToolSlug does not check the database
+    if (!id) {
+      let collision = await prisma.tool.findFirst({ where: { slug: resolvedSlug } });
+      if (collision) {
+        const baseSlug = resolvedSlug;
+        let retry = 0;
+        const suffix = () => Math.random().toString(36).slice(2, 8);
+        while (collision) {
+          resolvedSlug = `${baseSlug}-${suffix()}`;
+          retry += 1;
+          collision = await prisma.tool.findFirst({ where: { slug: resolvedSlug } });
+          if (retry > 10) break;
+        }
+      }
+    }
     const safeToolKey = resolvedSlug;
     const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `tool-cover-${safeToolKey}`);
     const downloadFileUrl = parseDownloadFileUrl(formData.get("downloadFileUrl"));
