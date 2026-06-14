@@ -11,4 +11,9 @@ describe("admin tool routes", () => {
     expect(getAdminToolEditPath("online", "tool-1")).toBe("/admin/online-tools/tool-1");
     expect(getAdminToolNewPath("online")).toBe("/admin/online-tools/new");
   });
+
+  it("builds skill_learning course edit and new paths", () => {
+    expect(getAdminToolEditPath("skill_learning", "course-1")).toBe("/admin/skill-learning/course-1");
+    expect(getAdminToolNewPath("skill_learning")).toBe("/admin/skill-learning/new");
+  });
 });
