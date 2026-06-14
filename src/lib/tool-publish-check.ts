@@ -1,5 +1,5 @@
 export type ToolPublishCheckInput = {
-  type: "software" | "online";
+  type: "software" | "online" | "skill_learning";
   categoryId: string | null;
   shortDescription: string | null;
   content: string | null;
@@ -10,6 +10,7 @@ export type ToolPublishCheckInput = {
   onlineUrl: string | null;
   isDownloadPaid: boolean;
   downloadPrice: unknown;
+  tutorials?: { id: string; title: string }[];
 };
 
 export function getToolPublishIssues(tool: ToolPublishCheckInput) {
@@ -21,6 +22,11 @@ export function getToolPublishIssues(tool: ToolPublishCheckInput) {
   if (!tool.content?.trim()) issues.push("未填写详细介绍");
 
   const directDownloadContent = tool.downloadFile?.fileUrl || tool.downloadFile?.filePath || "";
+  if (tool.type === "skill_learning") {
+    const hasTutorials = Array.isArray(tool.tutorials) && tool.tutorials.length > 0;
+    if (!hasTutorials) issues.push("缺少教程内容");
+    return issues;
+  }
   if (tool.type === "software" && !directDownloadContent.trim() && !tool.downloadFileUrl?.trim()) issues.push("未填写下载链接");
   if (tool.type === "software" && tool.isDownloadPaid && Number(tool.downloadPrice) <= 0) {
     issues.push("付费下载价格需大于 0");

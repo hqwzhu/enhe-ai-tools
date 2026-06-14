@@ -35,4 +35,34 @@ describe("getToolPublishIssues", () => {
   it("returns no issues for a complete software tool", () => {
     expect(getToolPublishIssues(baseTool)).toEqual([]);
   });
+
+  const baseCourse = {
+    type: "skill_learning" as const,
+    categoryId: "cat-1",
+    shortDescription: "A course on AI prompting",
+    content: "Full course content here",
+    coverImage: "/cover.jpg",
+    downloadFileId: null,
+    downloadFile: null,
+    downloadFileUrl: null,
+    onlineUrl: null,
+    isDownloadPaid: false,
+    downloadPrice: 0,
+    tutorials: [] as { id: string; title: string }[]
+  };
+
+  it("skill_learning course without tutorials has publish issue", () => {
+    const issues = getToolPublishIssues(baseCourse);
+    expect(issues).toContain("缺少教程内容");
+  });
+
+  it("skill_learning course with tutorials is publishable", () => {
+    const issues = getToolPublishIssues({ ...baseCourse, tutorials: [{ id: "t1", title: "Getting Started" }] });
+    expect(issues).toEqual([]);
+  });
+
+  it("skill_learning does not require download link", () => {
+    const issues = getToolPublishIssues(baseCourse);
+    expect(issues).not.toContain("未填写下载链接");
+  });
 });
