@@ -86,7 +86,9 @@ export async function getCurrentUser() {
     avatar: session.user.avatar,
     role: session.user.role,
     status: session.user.status,
-    createdAt: session.user.createdAt
+    createdAt: session.user.createdAt,
+    newsletterEmail: session.user.newsletterEmail,
+    acceptEmailUpdates: session.user.acceptEmailUpdates
   };
 }
 

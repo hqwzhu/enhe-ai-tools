@@ -6,6 +6,11 @@ import {
   markAllNotificationsReadAction,
   markNotificationReadAction
 } from "@/app/actions";
+import {
+  createCommentAction,
+  createSoftwareDownloadOrderAction,
+  updateNewsletterSettingsAction,
+} from "@/app/actions";
 import { FormSubmitButton } from "@/components/form-submit-button";
 import { PasswordInput } from "@/components/password-input";
 import { Container, SectionTitle } from "@/components/ui";
@@ -63,7 +68,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
     prisma.tool.findMany({
       where: {
         status: "published",
-        OR: [{ type: "software" }, { type: "online" }]
+        OR: [{ type: "software" }, { type: "online" }, { type: "skill_learning" }]
       },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
     })
