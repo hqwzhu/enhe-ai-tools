@@ -102,25 +102,25 @@
      return "";
    }
  
-   let html = `<div style="max-width:680px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0A1020;color:#C5D0E2;padding:24px;border-radius:16px">
- <h1 style="color:#F6FAFF;font-size:24px;margin:0 0 8px">ENHE AI \u6708\u5ea6\u4ea7\u54c1\u7b80\u62a5 \u2014 ${monthLabel}</h1>
+   let html = `<div style="max-width:800px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0A1020;color:#C5D0E2;padding:24px;border-radius:16px">
+ <h1 style="color:#F6FAFF;font-size:24px;margin:0 0 8px">ENHE AI \u5de5\u4f5c\u5ba4 \u6700\u65b0\u4ea7\u54c1\u63a8\u8350 \u2014 ${monthLabel}</h1>
  <p style="color:#8B95A7;font-size:14px;margin:0 0 24px">\u60a8\u597d\uff0cENHE AI \u4e3a\u60a8\u6574\u7406\u4e86\u672c\u6708\u5168\u90e8\u4ea7\u54c1\u7684\u6982\u89c8\uff1a</p>`;
  
    if (software.length) {
      html += `<h2 style="color:#7DD3FC;font-size:18px;margin:24px 0 12px">\ud83d\udda5\ufe0f AI\u8f6f\u4ef6\u5e94\u7528\uff08${software.length} \u6b3e\uff09</h2>
- <table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden">${tableHeader}
+ <table style="width:100%;table-layout:fixed;border-collapse:collapse;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden">${tableHeader}
  ${software.map(buildToolCard).join("")}</table>`;
    }
  
    if (online.length) {
      html += `<h2 style="color:#7DD3FC;font-size:18px;margin:24px 0 12px">\ud83c\udf10 AI\u8d26\u53f7\u670d\u52a1\uff08${online.length} \u6b3e\uff09</h2>
- <table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden">${tableHeader}
+ <table style="width:100%;table-layout:fixed;border-collapse:collapse;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden">${tableHeader}
  ${online.map(buildToolCard).join("")}</table>`;
    }
  
    if (courses.length) {
      html += `<h2 style="color:#7DD3FC;font-size:18px;margin:24px 0 12px">\ud83d\udcda AI\u6280\u80fd\u5b66\u4e60\uff08${courses.length} \u6b3e\uff09</h2>
- <table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden">${tableHeader}
+ <table style="width:100%;table-layout:fixed;border-collapse:collapse;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden">${tableHeader}
  ${courses.map(buildToolCard).join("")}</table>`;
    }
  
@@ -160,7 +160,7 @@
        await transporter.sendMail({
          from: process.env.SMTP_FROM,
          to: email,
-         subject: `ENHE AI \u6708\u5ea6\u4ea7\u54c1\u7b80\u62a5 \u2014 ${monthLabel}`,
+         subject: `ENHE AI \u5de5\u4f5c\u5ba4 \u6700\u65b0\u4ea7\u54c1\u63a8\u8350 \u2014 ${monthLabel}`,
          html
        });
        sent++;

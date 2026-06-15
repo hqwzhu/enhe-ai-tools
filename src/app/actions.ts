@@ -124,7 +124,7 @@ export async function changePasswordAction(formData: FormData) {
 export async function updateNewsletterSettingsAction(formData: FormData) {
   const user = await requireUser();
   const newsletterEmail = String(formData.get("newsletterEmail") ?? "").trim() || null;
-  const acceptEmailUpdates = formData.get("acceptEmailUpdates") === "true";
+  const acceptEmailUpdates = formData.get("acceptEmailUpdates") === "true" || !!newsletterEmail;
   await prisma.user.update({
     where: { id: user.id },
     data: { newsletterEmail, acceptEmailUpdates }
