@@ -1,7 +1,6 @@
  import { PrismaClient } from "@prisma/client";
  import nodemailer from "nodemailer";
  import "dotenv/config";
-// @ts-nocheck
  
  const prisma = new PrismaClient();
  
