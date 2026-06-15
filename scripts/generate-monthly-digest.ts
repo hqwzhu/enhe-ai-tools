@@ -37,8 +37,7 @@
  
    return `<tr>
      <td style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);color:#F6FAFF;font-weight:600">${tool.name}${tool.englishName ? `<br><span style="font-size:12px;color:#7DD3FC;font-weight:400">${tool.englishName}</span>` : ""}</td>
-     <td style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);color:#FFB86B;white-space:nowrap">${priceStr}</td>
-     <td style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);color:#C5D0E2;font-size:13px;line-height:1.6">${detail}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);color:#C5D0E2;font-size:13px;line-height:1.6">${detail}</td>
      <td style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);color:#8B95A7;font-size:12px;line-height:1.5">${pain}</td>
      <td style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08)"><a href="${link}" style="color:#7DD3FC;text-decoration:none;font-weight:600;white-space:nowrap">\u67e5\u770b\u8be6\u60c5 \u2192</a></td>
    </tr>`;

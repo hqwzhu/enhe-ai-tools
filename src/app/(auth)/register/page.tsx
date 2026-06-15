@@ -31,7 +31,7 @@ export default async function RegisterPage() {
           className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]"
         />
                 <label className="mt-5 block text-sm">{locale === "en" ? "Email" : "邮箱"}</label>
-        <input name="newsletterEmail" type="email" autoComplete="email" placeholder={locale === "en" ? "Receive ENHE AI latest product recommendations" : "用于接收 ENHE AI 工作室 最新产品推荐"} className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
+        <input name="newsletterEmail" type="email" autoComplete="email" className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
 
         <FormSubmitButton className="mt-8 w-full bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel="创建中...">{t.auth.createAccount}</FormSubmitButton>
         <p className="mt-5 text-center text-sm text-[#8B95A7]">

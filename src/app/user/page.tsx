@@ -152,8 +152,6 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
 
           <Panel title={locale === "en" ? "Email notification settings" : "邮件推送设置"}>
             <form action={updateNewsletterSettingsAction} className="grid gap-4">
-              <label className="block text-sm">{locale === "en" ? "Newsletter email" : "推送邮箱"}</label>
-              <input name="newsletterEmail" type="email" defaultValue={user?.newsletterEmail ?? ""} placeholder={locale === "en" ? "Receive monthly product digest" : "用于接收网站资讯"} className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
               <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#F6FAFF]">
                 <input type="hidden" name="acceptEmailUpdates" value="false" />
                 <input name="acceptEmailUpdates" type="checkbox" defaultChecked={user?.acceptEmailUpdates ?? true} value="true" className="h-4 w-4 accent-[#7AA7FF]" />
