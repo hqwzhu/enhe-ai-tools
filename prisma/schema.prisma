@@ -144,8 +144,10 @@ model User {
   refundRecords     OrderRefundRecord[] @relation("RefundAdmin")
   refundRequests    OrderRefundRecord[] @relation("RefundRequester")
   adminAuditLogs    AdminAuditLog[] @relation("AdminAuditLogs")
-  sessions         Session[]
-  notifications    Notification[]
+    sessions         Session[]
+    notifications    Notification[]
+    newsletterEmail     String?   @map("newsletter_email")
+    acceptEmailUpdates  Boolean   @default(true) @map("accept_email_updates")
 
   @@map("users")
 }

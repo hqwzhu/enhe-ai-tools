@@ -121,6 +121,18 @@ export async function changePasswordAction(formData: FormData) {
   redirect("/user?password=changed");
 }
 
+export async function updateNewsletterSettingsAction(formData: FormData) {
+  const user = await requireUser();
+  const newsletterEmail = String(formData.get("newsletterEmail") ?? "").trim() || null;
+  const acceptEmailUpdates = formData.get("acceptEmailUpdates") === "true";
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { newsletterEmail, acceptEmailUpdates }
+  });
+  revalidatePath("/user");
+  redirect("/user?settings=saved");
+}
+
 export async function createSoftwareDownloadOrderAction(formData: FormData) {
   const user = await requireUser();
   const toolId = z.string().min(1).parse(formData.get("toolId"));

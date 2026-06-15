@@ -145,6 +145,19 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
             )}
           </Panel>
 
+          <Panel title={locale === "en" ? "Email notification settings" : "邮件推送设置"}>
+            <form action={updateNewsletterSettingsAction} className="grid gap-4">
+              <label className="block text-sm">{locale === "en" ? "Newsletter email" : "推送邮箱"}</label>
+              <input name="newsletterEmail" type="email" defaultValue={user?.newsletterEmail ?? ""} placeholder={locale === "en" ? "Receive monthly product digest" : "用于接收网站资讯"} className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
+              <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#F6FAFF]">
+                <input type="hidden" name="acceptEmailUpdates" value="false" />
+                <input name="acceptEmailUpdates" type="checkbox" defaultChecked={user?.acceptEmailUpdates ?? true} value="true" className="h-4 w-4 accent-[#7AA7FF]" />
+                {locale === "en" ? "I want to receive ENHE AI monthly product digest" : "我愿意接收 ENHE AI 月度产品简报和更新资讯"}
+              </label>
+              <FormSubmitButton className="bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel={locale === "en" ? "Saving..." : "保存中..."}>{locale === "en" ? "Save settings" : "保存设置"}</FormSubmitButton>
+            </form>
+          </Panel>
+
           <Panel title={t.userCenter.accountSettings}>
             <p className="text-[#E8EEF8]">{user.email ?? user.phone}</p>
             <p className="mt-2 text-sm text-[#8B95A7]">
