@@ -1,4 +1,4 @@
- import { PrismaClient } from "@prisma/client";
+﻿ import { PrismaClient } from "@prisma/client";
  import nodemailer from "nodemailer";
  import "dotenv/config";
  
@@ -29,8 +29,6 @@
    priceSpecs: { price: unknown; status: string }[];
    downloadPrice: unknown;
  }) {
-   const price = getPrimaryPrice(tool.priceSpecs, tool.downloadPrice);
-   const priceStr = formatPrice(price);
    const detail = truncate(tool.shortDescription, 80);
    const pain = truncate(tool.content.replace(/<[^>]+>/g, ""), 120);
    const link = `https://www.enhe-tech.com.cn/tools/${tool.slug}`;
@@ -45,7 +43,6 @@
  
  const tableHeader = `<tr style="background:rgba(125,211,252,0.06)">
    <th style="padding:10px 14px;text-align:left;color:#7DD3FC;font-size:12px;text-transform:uppercase">\u4ea7\u54c1\u540d\u79f0</th>
-   <th style="padding:10px 14px;text-align:left;color:#7DD3FC;font-size:12px;text-transform:uppercase">\u4ef7\u683c</th>
    <th style="padding:10px 14px;text-align:left;color:#7DD3FC;font-size:12px;text-transform:uppercase">\u6838\u5fc3\u529f\u80fd</th>
    <th style="padding:10px 14px;text-align:left;color:#7DD3FC;font-size:12px;text-transform:uppercase">\u89e3\u51b3\u7684\u95ee\u9898</th>
    <th style="padding:10px 14px;text-align:left;color:#7DD3FC;font-size:12px;text-transform:uppercase">\u8be6\u60c5</th>
@@ -103,7 +100,7 @@
  
    let html = `<div style="max-width:800px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0A1020;color:#C5D0E2;padding:24px;border-radius:16px">
  <h1 style="color:#F6FAFF;font-size:24px;margin:0 0 8px">ENHE AI \u5de5\u4f5c\u5ba4 \u6700\u65b0\u4ea7\u54c1\u63a8\u8350 \u2014 ${monthLabel}</h1>
- <p style="color:#8B95A7;font-size:14px;margin:0 0 24px">\u60a8\u597d\uff0cENHE AI \u4e3a\u60a8\u6574\u7406\u4e86\u672c\u6708\u5168\u90e8\u4ea7\u54c1\u7684\u6982\u89c8\uff1a</p>`;
+ <p style="color:#8B95A7;font-size:14px;margin:0 0 24px">\u60a8\u597d\uff0cENHE AI \u4e3a\u60a8\u63a8\u8350\u672c\u6708\u6700\u65b0\u4ea7\u54c1\uff1a</p>`;
  
    if (software.length) {
      html += `<h2 style="color:#7DD3FC;font-size:18px;margin:24px 0 12px">\ud83d\udda5\ufe0f AI\u8f6f\u4ef6\u5e94\u7528\uff08${software.length} \u6b3e\uff09</h2>
