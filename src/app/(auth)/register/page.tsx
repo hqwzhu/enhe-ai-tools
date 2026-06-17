@@ -30,10 +30,10 @@ export default async function RegisterPage() {
           wrapperClassName="mt-2"
           className="form-control-dark"
         />
-        <label className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{locale === "en" ? "Email" : "邮箱"}</label>
+        <label className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.newsletterEmailLabel}</label>
         <input name="newsletterEmail" type="email" autoComplete="email" className="form-control-dark mt-2" />
 
-        <FormSubmitButton className="mt-8 w-full text-base" pendingLabel="创建中...">{t.auth.createAccount}</FormSubmitButton>
+        <FormSubmitButton className="mt-8 w-full text-base" pendingLabel={t.auth.creatingAccount}>{t.auth.createAccount}</FormSubmitButton>
         <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
           {t.auth.hasAccount}<Link className="font-semibold text-[var(--marketing-accent)]" href="/login">{t.auth.goLogin}</Link>
         </p>

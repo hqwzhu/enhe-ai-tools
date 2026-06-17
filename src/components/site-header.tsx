@@ -5,24 +5,21 @@ import { setLocaleAction } from "@/app/language-actions";
 import { getCurrentUser } from "@/lib/auth";
 import { MobileNavMenu } from "@/components/mobile-nav-menu";
 import { Container } from "@/components/ui";
-import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
+import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
-
-const primaryNavItems = [
-  ["AI软件应用", "/software"],
-  ["AI账号服务", "/online-tools"],
-  ["AI技能学习", "/skill-learning"],
-  ["更新日志", "/#updates"]
-] as const;
-
-const userCenterItem = ["用户中心", "/user"] as const;
 
 export async function SiteHeader() {
   const [user, locale, settings] = await Promise.all([getCurrentUser(), getCurrentLocale(), getSettingsMap()]);
   const t = getDictionary(locale);
   const brand = getEffectiveSiteName(settings, t.brand);
   const brandWordmark = brand.includes("ENHE") ? "ENHE AI" : brand;
-  const navItems = primaryNavItems;
+  const navItems = [
+    { label: t.nav.home, href: "/" },
+    { label: t.nav.software, href: "/software" },
+    { label: t.nav.onlineTools, href: "/online-tools" },
+    { label: t.nav.skillLearning, href: "/skill-learning" },
+    { label: t.nav.updates, href: "/#updates" }
+  ] as const;
 
   return (
     <header className="site-header-transparent sticky top-0 z-50">
@@ -43,7 +40,7 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="site-primary-nav hidden items-center lg:flex" aria-label="Primary navigation">
-          {primaryNavItems.map(([label, href]) => (
+          {navItems.map(({ label, href }) => (
             <Link key={href} href={href} className="site-nav-link">
               {label}
             </Link>
@@ -58,24 +55,24 @@ export async function SiteHeader() {
             </Link>
           ) : null}
           {user ? (
-            <Link href={userCenterItem[1]} className="site-user-chip hidden sm:inline-flex">
+            <Link href="/user" className="site-user-chip hidden sm:inline-flex">
               <UserRound size={16} />
               <span className="truncate">{user.nickname ?? user.email ?? t.nav.userFallback}</span>
             </Link>
           ) : (
             <Link href="/login" className="site-login-link hidden sm:inline-flex">
-              登录
+              {t.nav.login}
             </Link>
           )}
-          <Link href={userCenterItem[1]} className="site-user-center-cta">
-            {userCenterItem[0]}
+          <Link href="/user" className="site-user-center-cta">
+            {t.nav.user}
           </Link>
           <LanguageSwitcher locale={locale} labels={t.language} />
           <MobileNavMenu
             labels={{ menu: t.nav.menu, admin: t.nav.admin }}
             navItems={navItems}
             showAdmin={user?.role === "admin"}
-            userCenterItem={userCenterItem}
+            userCenterItem={[t.nav.user, "/user"]}
           />
         </div>
       </Container>
@@ -87,7 +84,7 @@ function LanguageSwitcher({
   locale,
   labels
 }: {
-  locale: Locale;
+  locale: "zh" | "en";
   labels: { label: string; zh: string; en: string };
 }) {
   return (

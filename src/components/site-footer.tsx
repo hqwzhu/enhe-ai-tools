@@ -21,7 +21,7 @@ export async function SiteFooter() {
           </div>
           <nav className="flex flex-wrap gap-x-5 gap-y-3">
             <Link href="/legal/user-agreement" className="transition hover:text-[var(--marketing-accent)]">
-              帮助支持
+              {t.footer.helpSupport}
             </Link>
             {legalPages.map((page) => (
               <Link key={page.slug} href={`/legal/${page.slug}`} className="transition hover:text-[var(--marketing-accent)]">

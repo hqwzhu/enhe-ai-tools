@@ -6,7 +6,7 @@ type MobileNavMenuProps = {
     menu: string;
     admin: string;
   };
-  navItems: ReadonlyArray<readonly [string, string]>;
+  navItems: ReadonlyArray<{ label: string; href: string }>;
   showAdmin: boolean;
   userCenterItem?: readonly [string, string];
 };
@@ -18,7 +18,7 @@ export function MobileNavMenu({ labels, navItems, showAdmin, userCenterItem = ["
         <Menu size={18} />
       </summary>
       <div className="mobile-nav-panel absolute right-0 top-12 z-50 w-64 overflow-hidden p-2">
-        {navItems.map(([label, href]) => (
+        {navItems.map(({ label, href }) => (
           <Link key={href} href={href} className="mobile-nav-link">
             {label}
           </Link>

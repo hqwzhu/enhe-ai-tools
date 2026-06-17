@@ -11,10 +11,10 @@ import {
 } from "@/lib/settings";
 
 describe("public site settings", () => {
-  const currentHeroSubtitle = "驾驭 AI 智能，重塑你的人生";
-  const currentHeroIntro = "我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。\n让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。";
-  const currentHeroSubtitleEn = "Master AI intelligence and reshape your life";
-  const currentHeroIntroEn = "We all want to be better \u2014 but repetitive tasks, tedious processes, and daily challenges take up all our time.\nLet AI be your smart assistant, helping you reduce friction and boost efficiency, so you can put more energy into growth, creation, and the things that truly matter.";
+  const currentHeroSubtitle = "Symbiosis · Awakening · Creation";
+  const currentHeroIntro = "与 AI 共生，在时代中觉醒，用创造定义未来。";
+  const currentHeroSubtitleEn = "Symbiosis · Awakening · Creation";
+  const currentHeroIntroEn = "Live in symbiosis with AI, awaken in this era, and define the future through creation.";
 
   it("uses explicit site settings when present", () => {
     const settings = {
@@ -35,12 +35,12 @@ describe("public site settings", () => {
   it("ignores stale seed defaults that would revert the current branding", () => {
     const settings = {
       site_logo: "ENHE",
-      home_hero_title: "恩禾 ENHE AI工具站",
-      home_hero_subtitle: "自研电脑软件与在线网页工具会员平台"
+      home_hero_title: "ENHE AI Tools",
+      home_hero_subtitle: "驾驭 AI 智能，重塑你的人生"
     };
 
     expect(getEffectiveSiteLogo(settings, "/images/enhe-logo.svg")).toBe("/images/enhe-logo.svg");
-    expect(getEffectiveHomeHeroTitle(settings, "ENHE AI Tools")).toBe("ENHE AI Tools");
+    expect(getEffectiveHomeHeroTitle(settings, "ENHE AI")).toBe("ENHE AI");
     expect(getEffectiveHomeHeroSubtitle(settings, currentHeroSubtitle)).toBe(currentHeroSubtitle);
   });
 

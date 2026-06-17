@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
-export const siteName = "恩禾 ENHE AI";
+export const siteName = "ENHE AI";
 export const defaultSiteDescription =
-  "恩禾 ENHE AI 提供 AI 软件应用与 AI 账号服务，覆盖内容创作、办公效率、文件处理和自动化工作流。";
+  "ENHE AI provides AI software apps, AI account services, tutorials, and practical workflow resources.";
 export const defaultOgImage = "/images/enhe-logo.svg";
 
 type PageMetadataInput = {
@@ -11,19 +11,118 @@ type PageMetadataInput = {
   description?: string | null;
   path?: string;
   image?: string | null;
+  locale?: "zh_CN" | "en_US";
+  type?: "website" | "article";
 };
+
+type BuildTitleInput = {
+  name: string;
+  englishName?: string | null;
+  brand?: string;
+  maxLength?: number;
+};
+
+type OrganizationSchemaInput = {
+  name: string;
+  logo?: string | null;
+  url?: string;
+  schemaType?: "Organization";
+};
+
+type WebSiteSchemaInput = {
+  name: string;
+  description?: string | null;
+  url?: string;
+  inLanguage?: string;
+  schemaType?: "WebSite";
+};
+
+export type BreadcrumbItem = {
+  name: string;
+  path: string;
+};
+
+type BreadcrumbSchemaInput = {
+  items: BreadcrumbItem[];
+  schemaType?: "BreadcrumbList";
+};
+
+type ToolStructuredDataInput = {
+  schemaType: "SoftwareApplication" | "Service" | "Course";
+  name: string;
+  description?: string | null;
+  url: string;
+  image?: string | null;
+  brand?: string;
+  category?: string | null;
+  operatingSystem?: string | null;
+  locale?: string;
+  price?: number | null;
+  currency?: string;
+};
+
+export function getSiteBaseUrl() {
+  return (process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? fallbackSiteBaseUrl).replace(/\/+$/, "");
+}
 
 export function absoluteUrl(path = "/") {
   if (/^https?:\/\//i.test(path)) return path;
   return `${getSiteBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-export function getSiteBaseUrl() {
-  return (process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? fallbackSiteBaseUrl).replace(/\/+$/, "");
+export function normalizeWhitespace(value: string) {
+  return value.replace(/\s+/g, " ").trim();
 }
 
-export function buildPageMetadata({ title, description, path = "/", image }: PageMetadataInput): Metadata {
-  const finalDescription = truncateDescription(description ?? defaultSiteDescription);
+export function truncateText(value: string, maxLength: number) {
+  const normalized = normalizeWhitespace(value);
+  if (normalized.length <= maxLength) return normalized;
+  if (maxLength <= 3) return ".".repeat(Math.max(1, maxLength));
+  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
+export function truncateDescription(value: string, maxLength = 160) {
+  return truncateText(value, maxLength);
+}
+
+export function buildMetaDescription(value: string | null | undefined, fallback = defaultSiteDescription, maxLength = 160) {
+  const preferred = normalizeWhitespace(value ?? "");
+  const fallbackValue = normalizeWhitespace(fallback);
+  return truncateDescription(preferred || fallbackValue, maxLength);
+}
+
+export function buildToolMetadataTitle({ name, englishName, brand = siteName, maxLength = 68 }: BuildTitleInput) {
+  const normalizedName = normalizeWhitespace(name);
+  const normalizedEnglishName = normalizeWhitespace(englishName ?? "");
+  const titleParts = [normalizedName];
+
+  if (
+    normalizedEnglishName &&
+    normalizedEnglishName.toLowerCase() !== normalizedName.toLowerCase() &&
+    !normalizedName.toLowerCase().includes(normalizedEnglishName.toLowerCase())
+  ) {
+    titleParts.push(normalizedEnglishName);
+  }
+
+  const fullTitle = `${titleParts.join(" · ")} | ${brand}`;
+  if (fullTitle.length <= maxLength) return fullTitle;
+
+  const compactTitle = `${normalizedName} | ${brand}`;
+  if (compactTitle.length <= maxLength) return compactTitle;
+
+  const reservedLength = ` | ${brand}`.length;
+  return `${truncateText(normalizedName, Math.max(12, maxLength - reservedLength))} | ${brand}`;
+}
+
+export function buildPageMetadata({
+  title,
+  description,
+  path = "/",
+  image,
+  locale = "zh_CN",
+  type = "website"
+}: PageMetadataInput): Metadata {
+  const finalDescription = buildMetaDescription(description);
   const canonical = absoluteUrl(path);
   const imageUrl = absoluteUrl(image ?? defaultOgImage);
 
@@ -44,8 +143,8 @@ export function buildPageMetadata({ title, description, path = "/", image }: Pag
           alt: title
         }
       ],
-      locale: "zh_CN",
-      type: "website"
+      locale,
+      type
     },
     twitter: {
       card: "summary_large_image",
@@ -56,8 +155,128 @@ export function buildPageMetadata({ title, description, path = "/", image }: Pag
   };
 }
 
-export function truncateDescription(value: string, maxLength = 150) {
-  const normalized = value.replace(/\s+/g, " ").trim();
-  if (normalized.length <= maxLength) return normalized;
-  return `${normalized.slice(0, maxLength - 1)}…`;
+export function buildOrganizationSchema({
+  name,
+  logo,
+  url = absoluteUrl("/"),
+  schemaType = "Organization"
+}: OrganizationSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    name,
+    url,
+    ...(logo ? { logo: absoluteUrl(logo) } : {})
+  };
+}
+
+export function buildWebsiteSchema({
+  name,
+  description,
+  url = absoluteUrl("/"),
+  inLanguage = "zh-CN",
+  schemaType = "WebSite"
+}: WebSiteSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    name,
+    url,
+    description: buildMetaDescription(description),
+    inLanguage,
+    publisher: {
+      "@type": "Organization",
+      name
+    }
+  };
+}
+
+export function buildBreadcrumbSchema({ items, schemaType = "BreadcrumbList" }: BreadcrumbSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: absoluteUrl(item.path)
+    }))
+  };
+}
+
+export function buildToolStructuredData({
+  schemaType,
+  name,
+  description,
+  url,
+  image,
+  brand = siteName,
+  category,
+  operatingSystem,
+  locale = "zh-CN",
+  price,
+  currency = "CNY"
+}: ToolStructuredDataInput) {
+  const baseSchema = {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    name,
+    description: buildMetaDescription(description),
+    url: absoluteUrl(url),
+    inLanguage: locale,
+    ...(image ? { image: absoluteUrl(image) } : {})
+  };
+
+  const offer =
+    typeof price === "number"
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: price.toFixed(2),
+            priceCurrency: currency,
+            availability: "https://schema.org/InStock",
+            url: absoluteUrl(url)
+          }
+        }
+      : {};
+
+  if (schemaType === "SoftwareApplication") {
+    return {
+      ...baseSchema,
+      applicationCategory: category ?? "BusinessApplication",
+      operatingSystem: operatingSystem ?? "Web",
+      brand: {
+        "@type": "Brand",
+        name: brand
+      },
+      ...offer
+    };
+  }
+
+  if (schemaType === "Service") {
+    return {
+      ...baseSchema,
+      serviceType: category ?? "AI account service",
+      provider: {
+        "@type": "Organization",
+        name: brand
+      },
+      areaServed: "CN",
+      ...offer
+    };
+  }
+
+  return {
+    ...baseSchema,
+    provider: {
+      "@type": "Organization",
+      name: brand
+    },
+    educationalLevel: category ?? "Professional",
+    ...offer
+  };
+}
+
+export function stringifyStructuredData(data: Record<string, unknown>) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }

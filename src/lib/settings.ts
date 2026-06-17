@@ -1,16 +1,19 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { Locale } from "@/lib/i18n";
 
 export type SettingsMap = Record<string, string | undefined>;
 
-const legacyHomeHeroTitle = "恩禾 ENHE AI工具站";
+const legacyHomeHeroTitles = ["恩禾 ENHE AI工具站", "ENHE AI Tools"];
 const legacyHomeHeroSubtitles = [
   "自研电脑软件与在线网页工具会员平台",
   "自研电脑软件与在线网页工具分享共研平台",
-  "驾驭 AI 工具，重塑你的工作与人生"
+  "驾驭 AI 工具，重塑你的工作与人生",
+  "驾驭 AI 智能，重塑你的人生"
 ];
 const legacyHomeHeroSubtitlesEn = [
-  "Master AI tools and reshape your work, growth, and life"
+  "Master AI tools and reshape your work, growth, and life",
+  "Master AI intelligence and reshape your life"
 ];
 const legacyHomeHeroIntros = [
   "我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。\n让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。",
@@ -25,9 +28,17 @@ const legacyHomeHeroIntrosEn = [
 ];
 const legacyTextLogo = "ENHE";
 
+const getCachedSettingsMap = unstable_cache(
+  async () => {
+    const settings = await prisma.siteSetting.findMany();
+    return Object.fromEntries(settings.map((setting) => [setting.key, setting.value]));
+  },
+  ["site-settings"],
+  { revalidate: 300, tags: ["site-settings"] }
+);
+
 export async function getSettingsMap() {
-  const settings = await prisma.siteSetting.findMany();
-  return Object.fromEntries(settings.map((setting) => [setting.key, setting.value]));
+  return getCachedSettingsMap();
 }
 
 function cleanSettingValue(value: string | undefined) {
@@ -50,7 +61,7 @@ export function getEffectiveSiteLogo(settings: SettingsMap, fallback: string) {
 
 export function getEffectiveHomeHeroTitle(settings: SettingsMap, fallback: string) {
   const value = cleanSettingValue(settings.home_hero_title);
-  if (!value || value === legacyHomeHeroTitle) return fallback;
+  if (!value || legacyHomeHeroTitles.includes(value)) return fallback;
   return value;
 }
 

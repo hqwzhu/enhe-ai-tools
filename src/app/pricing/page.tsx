@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, PackageOpen } from "lucide-react";
+import { StructuredData } from "@/components/structured-data";
 import { Container, SectionTitle } from "@/components/ui";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getCurrentLocale();
@@ -17,6 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PricingPage() {
   const locale = await getCurrentLocale();
+  const t = getDictionary(locale);
   const copy = locale === "en"
     ? {
         title: "Paid downloads are now purchased per tool",
@@ -32,10 +34,18 @@ export default async function PricingPage() {
         cardText: "每个收费软件都有独立价格，购买后只解锁该软件的下载链接内容。",
         cta: "查看AI软件应用"
       };
+  const breadcrumbSchema = buildBreadcrumbSchema({
+    schemaType: "BreadcrumbList",
+    items: [
+      { name: t.nav.home, path: "/" },
+      { name: copy.title, path: "/pricing" }
+    ]
+  });
 
   return (
     <Container className="py-14">
-      <SectionTitle title={copy.title} intro={copy.intro} />
+      <StructuredData data={breadcrumbSchema} />
+      <SectionTitle as="h1" title={copy.title} intro={copy.intro} />
       <section className="surface-panel mt-8 p-7">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { StructuredData } from "@/components/structured-data";
 import { Container, EmptyState, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
-import { buildPageMetadata } from "@/lib/seo";
+import { getPublicToolListing } from "@/lib/public-content";
+import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getCurrentLocale();
@@ -11,7 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata({
     title: `${t.listing.onlineTitle} - ${t.brand}`,
     description: t.listing.onlineIntro,
-    path: "/online-tools"
+    path: "/online-tools",
+    locale: locale === "en" ? "en_US" : "zh_CN"
   });
 }
 
@@ -22,23 +25,21 @@ export default async function OnlineToolsPage({ searchParams }: { searchParams: 
   const sort = params.sort;
   const locale = await getCurrentLocale();
   const t = getDictionary(locale);
+  const breadcrumbSchema = buildBreadcrumbSchema({
+    items: [
+      { name: t.nav.home, path: "/" },
+      { name: t.listing.onlineTitle, path: "/online-tools" }
+    ]
+  });
   const [categories, tools] = await Promise.all([
     prisma.toolCategory.findMany({ where: { type: "online", status: "active" }, orderBy: { sortOrder: "asc" } }),
-    prisma.tool.findMany({
-      where: {
-        type: "online",
-        status: "published",
-        ...(categoryId ? { categoryId } : {}),
-        ...(keyword ? { OR: [{ name: { contains: keyword, mode: "insensitive" } }, { englishName: { contains: keyword, mode: "insensitive" } }, { shortDescription: { contains: keyword, mode: "insensitive" } }] } : {})
-      },
-      include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
-      orderBy: sort === "hot" ? { usageCount: "desc" } : { createdAt: "desc" }
-    })
+    getPublicToolListing("online", categoryId, keyword, undefined, sort)
   ]);
 
   return (
     <Container className="py-14">
-      <SectionTitle title={t.listing.onlineTitle} intro={t.listing.onlineIntro} />
+      <StructuredData data={breadcrumbSchema} />
+      <SectionTitle as="h1" title={t.listing.onlineTitle} intro={t.listing.onlineIntro} />
       <FilterBar categories={categories} locale={locale} />
       {tools.length ? (
         <div className="mt-8 grid gap-5 md:grid-cols-3">{tools.map((tool) => <ToolCard key={tool.id} tool={tool} locale={locale} />)}</div>

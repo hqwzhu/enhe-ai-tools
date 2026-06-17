@@ -33,7 +33,7 @@ export default async function LoginPage({
         <p className="mt-3 text-sm font-medium text-[var(--marketing-muted)]">{t.auth.loginIntro}</p>
         {paymentSuccess && (
           <div className="status-success mt-4">
-            购买成功，请返回网页或者手机登入账号查看下载链接。
+            {t.auth.loginSuccessPayment}
           </div>
         )}
         {errorMessage && (
@@ -53,7 +53,7 @@ export default async function LoginPage({
           wrapperClassName="mt-2"
           className="form-control-dark"
         />
-        <FormSubmitButton className="mt-8 w-full text-base" pendingLabel="登录中...">{t.auth.loginButton}</FormSubmitButton>
+        <FormSubmitButton className="mt-8 w-full text-base" pendingLabel={t.auth.loggingIn}>{t.auth.loginButton}</FormSubmitButton>
         <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
           {t.auth.noAccount}<Link className="font-semibold text-[var(--marketing-accent)]" href="/register">{t.auth.registerNow}</Link>
         </p>

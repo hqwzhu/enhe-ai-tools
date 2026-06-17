@@ -58,7 +58,9 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge>{tool.category?.name ?? t.toolCard.uncategorized}</Badge>
               {showPrice ? (
-                <Badge className="border-[var(--marketing-accent)]/35 text-[var(--marketing-accent)]">{tool.type === "online" ? t.toolCard.servicePrice : tool.type === "skill_learning" ? t.toolCard.capabilityPaidCourse : t.toolCard.paidDownload} ¥{servicePrice.toFixed(2)}</Badge>
+                <Badge className="border-[var(--marketing-accent)]/35 text-[var(--marketing-accent)]">
+                  {tool.type === "online" ? t.toolCard.servicePrice : tool.type === "skill_learning" ? t.toolCard.capabilityPaidCourse : t.toolCard.paidDownload} ¥{servicePrice.toFixed(2)}
+                </Badge>
               ) : (
                 <Badge>{t.toolCard.free}</Badge>
               )}
@@ -82,7 +84,9 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
         </div>
         <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs text-[var(--marketing-muted)]">
           <UserRound size={14} className="shrink-0 text-[var(--marketing-accent)]" />
-          <span>{t.toolCard.audienceLabel}: {audience}</span>
+          <span>
+            {t.toolCard.audienceLabel}: {audience}
+          </span>
         </div>
         <div className="mt-6 flex items-center justify-between gap-4 text-xs text-[var(--marketing-muted)]">
           <span className="inline-flex items-center gap-3">

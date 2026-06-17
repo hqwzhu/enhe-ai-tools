@@ -4,13 +4,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createCommentAction, createSoftwareDownloadOrderAction } from "@/app/actions";
 import { FormSubmitButton } from "@/components/form-submit-button";
+import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildPageMetadata, buildToolMetadataTitle, buildToolStructuredData } from "@/lib/seo";
 import { getPrimaryToolPrice } from "@/lib/tool-price-specs";
 import {
   canOpenProtectedDownloadEntry,
@@ -36,10 +37,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return buildPageMetadata({
-    title: `${tool.name}${tool.englishName ? ` ${tool.englishName}` : ""} - ${t.brand}`,
+    title: buildToolMetadataTitle({
+      name: tool.name,
+      englishName: tool.englishName,
+      brand: t.brand
+    }),
     description: tool.shortDescription,
     path: canonical,
-    image: normalizeImageSrc(tool.coverImage)
+    image: normalizeImageSrc(tool.coverImage),
+    locale: locale === "en" ? "en_US" : "zh_CN"
   });
 }
 
@@ -101,9 +107,33 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   const supportEmail = td.supportEmailValue;
   const introTitle = isAccountService ? td.serviceIntroTitle : td.introTitle;
   const productImagesIntro = isAccountService ? td.serviceProductImagesIntro : td.productImagesIntro;
+  const schemaType = tool.type === "software" ? "SoftwareApplication" : tool.type === "online" ? "Service" : "Course";
+  const breadcrumbSchema = buildBreadcrumbSchema({
+    schemaType: "BreadcrumbList",
+    items: [
+      { name: t.nav.home, path: "/" },
+      {
+        name: tool.type === "software" ? t.listing.softwareTitle : tool.type === "online" ? t.listing.onlineTitle : t.listing.skillLearningTitle,
+        path: tool.type === "software" ? "/software" : tool.type === "online" ? "/online-tools" : "/skill-learning"
+      },
+      { name: tool.name, path: `/tools/${tool.slug}` }
+    ]
+  });
+  const toolStructuredData = buildToolStructuredData({
+    schemaType,
+    name: tool.name,
+    description: tool.shortDescription,
+    url: `/tools/${tool.slug}`,
+    image: coverImage,
+    category: tool.category?.name ?? null,
+    operatingSystem: tool.systemRequirement ?? null,
+    locale: locale === "en" ? "en-US" : "zh-CN",
+    price: servicePrice > 0 ? servicePrice : null
+  });
 
   return (
     <Container className="py-14">
+      <StructuredData data={[breadcrumbSchema, toolStructuredData]} />
       <section className="glass overflow-hidden rounded-[2rem] p-4 md:p-6 lg:p-8">
         <div className="tool-detail-hero-stack flex flex-col gap-8">
           <div className="tool-detail-cover-frame relative overflow-hidden rounded-[1.75rem] border border-[rgba(210,230,255,0.16)] bg-[#07101E]">
