@@ -1,4 +1,5 @@
 import { generateHomePageMetadata, HomePageShell } from "@/app/page-shell";
+import { PublicSiteChrome } from "@/components/public-site-chrome";
 
 export const revalidate = 300;
 
@@ -7,5 +8,9 @@ export async function generateMetadata() {
 }
 
 export default async function EnglishHomePage() {
-  return <HomePageShell forceLocale="en" />;
+  return (
+    <PublicSiteChrome forceLocale="en">
+      <HomePageShell forceLocale="en" />
+    </PublicSiteChrome>
+  );
 }

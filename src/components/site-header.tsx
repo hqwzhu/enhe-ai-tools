@@ -9,8 +9,6 @@ import { getCurrentLocale } from "@/lib/i18n";
 import { buildLocalePath } from "@/lib/seo";
 import { getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
-export const dynamic = "force-dynamic";
-
 export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
   const [locale, settings] = await Promise.all([forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(), getSettingsMap()]);
   const t = getDictionary(locale);
@@ -51,8 +49,14 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
         </nav>
 
         <div className="site-header-actions flex items-center gap-2">
-          <HeaderAccountControls labels={{ admin: t.nav.admin, login: t.nav.login, userFallback: t.nav.userFallback }} />
-          <Link href="/user" className="site-user-center-cta">
+          <HeaderAccountControls
+            labels={{ admin: t.nav.admin, login: t.nav.login, userFallback: t.nav.userFallback }}
+            locale={locale}
+          />
+          <Link href={buildLocalePath("/login", locale)} className="sr-only">
+            {t.nav.login}
+          </Link>
+          <Link href={buildLocalePath("/user", locale)} className="site-user-center-cta">
             {t.nav.user}
           </Link>
           <LanguageSwitcher locale={locale} labels={t.language} />
@@ -60,8 +64,8 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
             labels={{ menu: t.nav.menu, admin: t.nav.admin }}
             navItems={navItems}
             showAdmin={false}
-            loginItem={[t.nav.login, "/login"]}
-            userCenterItem={[t.nav.user, "/user"]}
+            loginItem={[t.nav.login, buildLocalePath("/login", locale)]}
+            userCenterItem={[t.nav.user, buildLocalePath("/user", locale)]}
           />
         </div>
       </Container>

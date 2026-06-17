@@ -37,16 +37,19 @@ import {
 import { createUserNotification } from "@/lib/notifications";
 import { canUserCancelOrder, canUserRequestRefundForOrder, normalizeRefundRecordAmount } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
+import { getCurrentLocale } from "@/lib/i18n";
+import { buildLocalePath } from "@/lib/seo";
 import { resolveToolOrderPriceSpec } from "@/lib/tool-price-specs";
 
 export async function registerAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   await assertValidCsrfToken(formData.get("csrfToken"));
   const input = parseAccountCredentials({
     identifier: formData.get("email"),
     password: formData.get("password")
   });
   const exists = await prisma.user.findUnique({ where: { email: input.identifier } });
-  if (exists) redirect("/login?message=account-exists");
+  if (exists) redirect(`${buildLocalePath("/login", locale)}?message=account-exists`);
 
   const user = await prisma.user.create({
     data: {
@@ -56,10 +59,11 @@ export async function registerAction(formData: FormData) {
     }
   });
   await signInUser(user.id);
-  redirect("/user");
+  redirect(buildLocalePath("/user", locale));
 }
 
 export async function loginAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   await assertValidCsrfToken(formData.get("csrfToken"));
   const input = parseAccountCredentials({
     identifier: formData.get("email"),
@@ -69,14 +73,14 @@ export async function loginAction(formData: FormData) {
     await assertLoginNotLimited(input.identifier);
   } catch (e) {
     if (e instanceof Error && e.message === "LOGIN_LIMITED") {
-      redirect("/login?message=login-limited");
+      redirect(`${buildLocalePath("/login", locale)}?message=login-limited`);
     }
     throw e;
   }
   const user = await prisma.user.findUnique({ where: { email: input.identifier } });
   if (!user || user.status !== "active" || !(await verifyPassword(input.password, user.passwordHash))) {
     await recordLoginAttempt(input.identifier, false);
-    redirect("/login?message=invalid");
+    redirect(`${buildLocalePath("/login", locale)}?message=invalid`);
   }
   await recordLoginAttempt(input.identifier, true);
   await signInUser(user.id);
@@ -89,15 +93,17 @@ export async function loginAction(formData: FormData) {
       userAgent: requestInfo.userAgent
     });
   }
-  redirect(user.role === "admin" ? "/admin" : "/user");
+  redirect(user.role === "admin" ? "/admin" : buildLocalePath("/user", locale));
 }
 
 export async function logoutAction() {
+  const locale = await getCurrentLocale();
   await signOutUser();
-  redirect("/");
+  redirect(buildLocalePath("/", locale));
 }
 
 export async function changePasswordAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const currentPassword = String(formData.get("currentPassword") ?? "");
   const newPassword = String(formData.get("newPassword") ?? "");
@@ -105,12 +111,12 @@ export async function changePasswordAction(formData: FormData) {
   const validation = validatePasswordChangeInput(currentPassword, newPassword, confirmPassword);
 
   if (!validation.ok) {
-    redirect(`/user?password=${encodeURIComponent(validation.message)}`);
+    redirect(`${buildLocalePath("/user", locale)}?password=${encodeURIComponent(validation.message)}`);
   }
 
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
   if (!dbUser || !(await verifyPassword(currentPassword, dbUser.passwordHash))) {
-    redirect(`/user?password=${encodeURIComponent("当前密码不正确")}`);
+    redirect(`${buildLocalePath("/user", locale)}?password=${encodeURIComponent("当前密码不正确")}`);
   }
 
   await prisma.user.update({
@@ -118,10 +124,11 @@ export async function changePasswordAction(formData: FormData) {
     data: { passwordHash: await hashPassword(newPassword) }
   });
 
-  redirect("/user?password=changed");
+  redirect(`${buildLocalePath("/user", locale)}?password=changed`);
 }
 
 export async function updateNewsletterSettingsAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const newsletterEmail = String(formData.get("newsletterEmail") ?? "").trim() || null;
   const acceptEmailUpdates = formData.get("acceptEmailUpdates") === "true" || !!newsletterEmail;
@@ -129,11 +136,12 @@ export async function updateNewsletterSettingsAction(formData: FormData) {
     where: { id: user.id },
     data: { newsletterEmail, acceptEmailUpdates }
   });
-  revalidatePath("/user");
-  redirect("/user?settings=saved");
+  revalidatePath(buildLocalePath("/user", locale));
+  redirect(`${buildLocalePath("/user", locale)}?settings=saved`);
 }
 
 export async function createSoftwareDownloadOrderAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const toolId = z.string().min(1).parse(formData.get("toolId"));
   const requestedPriceSpecId = String(formData.get("priceSpecId") ?? "").trim() || null;
@@ -191,6 +199,7 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
 }
 
 export async function submitPaymentProofAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const orderId = z.string().min(1).parse(formData.get("orderId"));
   const paymentMethod = z.enum(["alipay", "wechat"]).parse(formData.get("paymentMethod"));
@@ -215,10 +224,11 @@ export async function submitPaymentProofAction(formData: FormData) {
     metadata: { paymentMethod }
   });
   await sendPaymentProofSubmittedAdminEmail(orderId);
-  redirect("/user?tab=orders");
+  redirect(`${buildLocalePath("/user", locale)}?tab=orders`);
 }
 
 export async function cancelOrderAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const orderId = z.string().min(1).parse(formData.get("orderId"));
   const order = await prisma.order.findFirst({ where: { id: orderId, userId: user.id } });
@@ -232,11 +242,12 @@ export async function cancelOrderAction(formData: FormData) {
     data: { orderStatus: "cancelled" }
   });
 
-  revalidatePath("/user");
-  redirect("/user?order=cancelled");
+  revalidatePath(buildLocalePath("/user", locale));
+  redirect(`${buildLocalePath("/user", locale)}?order=cancelled`);
 }
 
 export async function createRefundRequestAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const orderId = z.string().min(1).parse(formData.get("orderId"));
   const reason = z.string().min(2, "请填写售后/退款原因").max(500).parse(formData.get("reason"));
@@ -295,11 +306,12 @@ export async function createRefundRequestAction(formData: FormData) {
   await sendRefundRequestAdminEmail(order.id, { reason, note });
 
   revalidatePath(`/orders/${order.id}`);
-  revalidatePath("/user");
+  revalidatePath(buildLocalePath("/user", locale));
   redirect(`/orders/${order.id}?refund=requested`);
 }
 
 export async function submitOrderReceiptAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const orderId = z.string().min(1).parse(formData.get("orderId"));
   const receipt = String(formData.get("receipt") ?? "");
@@ -327,30 +339,33 @@ export async function submitOrderReceiptAction(formData: FormData) {
 }
 
 export async function markNotificationReadAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const id = z.string().min(1).parse(formData.get("id"));
   await prisma.notification.updateMany({
     where: { id, userId: user.id, readAt: null },
     data: { readAt: new Date() }
   });
-  revalidatePath("/user");
+  revalidatePath(buildLocalePath("/user", locale));
 }
 
 export async function markAllNotificationsReadAction(_formData?: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   await prisma.notification.updateMany({
     where: { userId: user.id, readAt: null },
     data: { readAt: new Date() }
   });
-  revalidatePath("/user");
+  revalidatePath(buildLocalePath("/user", locale));
 }
 
 export async function createCommentAction(formData: FormData) {
+  const locale = await getCurrentLocale();
   const user = await requireUser();
   const toolId = z.string().min(1).parse(formData.get("toolId"));
   const content = z.string().min(2).max(1000).parse(formData.get("content"));
   await prisma.comment.create({ data: { userId: user.id, toolId, content, status: "pending" } });
-  revalidatePath(`/tools/${formData.get("slug")}`);
+  revalidatePath(buildLocalePath(`/tools/${formData.get("slug")}`, locale));
 }
 
 export async function reviewPaymentProofAction(formData: FormData) {

@@ -4,8 +4,9 @@ import type { Locale } from "@/lib/dictionaries";
 export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
 export const siteName = "ENHE AI";
 export const defaultSiteDescription =
-  "ENHE AI provides AI software apps, AI account services, tutorials, and practical workflow resources.";
-export const defaultOgImage = "/images/enhe-logo.svg";
+  "Live in symbiosis with AI, awaken in this era, and define the future through creation.";
+export const defaultBrandIcon = "/images/brand/enhe-icon-gradient-white-bg-cropped.png";
+export const defaultOgImage = "/images/brand/enhe-icon-gradient-transparent-cropped.png";
 
 type PageMetadataInput = {
   title: string;
@@ -36,6 +37,7 @@ type WebSiteSchemaInput = {
   description?: string | null;
   url?: string;
   inLanguage?: string;
+  searchPathTemplate?: string | null;
   schemaType?: "WebSite";
 };
 
@@ -47,6 +49,19 @@ export type BreadcrumbItem = {
 type BreadcrumbSchemaInput = {
   items: BreadcrumbItem[];
   schemaType?: "BreadcrumbList";
+};
+
+type FaqSchemaInput = {
+  items: Array<{
+    question: string;
+    answer: string;
+  }>;
+  schemaType?: "FAQPage";
+};
+
+type OfferSpecInput = {
+  name: string;
+  price: number;
 };
 
 type ToolStructuredDataInput = {
@@ -61,6 +76,14 @@ type ToolStructuredDataInput = {
   locale?: string;
   price?: number | null;
   currency?: string;
+  softwareVersion?: string | null;
+  priceSpecs?: OfferSpecInput[];
+  aggregateRating?:
+    | {
+        ratingValue: number;
+        reviewCount: number;
+      }
+    | null;
 };
 
 export function getSiteBaseUrl() {
@@ -89,8 +112,8 @@ export function buildLocalePath(path: string, locale: Locale) {
 export function buildLanguageAlternates(path = "/") {
   return {
     "x-default": absoluteUrl(stripLocalePrefix(path)),
-    zh: absoluteUrl(buildLocalePath(path, "zh")),
-    en: absoluteUrl(buildLocalePath(path, "en"))
+    "zh-CN": absoluteUrl(buildLocalePath(path, "zh")),
+    "en-US": absoluteUrl(buildLocalePath(path, "en"))
   } as const;
 }
 
@@ -155,6 +178,9 @@ export function buildPageMetadata({
   return {
     title,
     description: finalDescription,
+    other: {
+      "content-language": locale === "en_US" ? "en-US" : "zh-CN"
+    },
     alternates: {
       canonical,
       languages: buildLanguageAlternates(path)
@@ -202,6 +228,7 @@ export function buildWebsiteSchema({
   description,
   url = absoluteUrl("/"),
   inLanguage = "zh-CN",
+  searchPathTemplate = null,
   schemaType = "WebSite"
 }: WebSiteSchemaInput) {
   return {
@@ -214,7 +241,16 @@ export function buildWebsiteSchema({
     publisher: {
       "@type": "Organization",
       name
-    }
+    },
+    ...(searchPathTemplate
+      ? {
+          potentialAction: {
+            "@type": "SearchAction",
+            target: absoluteUrl(searchPathTemplate),
+            "query-input": "required name=search_term_string"
+          }
+        }
+      : {})
   };
 }
 
@@ -231,6 +267,59 @@ export function buildBreadcrumbSchema({ items, schemaType = "BreadcrumbList" }: 
   };
 }
 
+export function buildFaqSchema({ items, schemaType = "FAQPage" }: FaqSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      }
+    }))
+  };
+}
+
+function buildOfferData(url: string, currency: string, priceSpecs: OfferSpecInput[]) {
+  const normalizedSpecs = priceSpecs
+    .map((spec) => ({
+      ...spec,
+      price: Number(spec.price)
+    }))
+    .filter((spec) => Number.isFinite(spec.price) && spec.price > 0);
+
+  if (!normalizedSpecs.length) return {};
+
+  if (normalizedSpecs.length === 1) {
+    return {
+      offers: {
+        "@type": "Offer",
+        name: normalizedSpecs[0].name,
+        price: normalizedSpecs[0].price.toFixed(2),
+        priceCurrency: currency,
+        availability: "https://schema.org/InStock",
+        url: absoluteUrl(url)
+      }
+    };
+  }
+
+  const prices = normalizedSpecs.map((spec) => spec.price);
+
+  return {
+    offers: {
+      "@type": "AggregateOffer",
+      lowPrice: Math.min(...prices).toFixed(2),
+      highPrice: Math.max(...prices).toFixed(2),
+      offerCount: String(normalizedSpecs.length),
+      priceCurrency: currency,
+      availability: "https://schema.org/InStock",
+      url: absoluteUrl(url)
+    }
+  };
+}
+
 export function buildToolStructuredData({
   schemaType,
   name,
@@ -242,8 +331,17 @@ export function buildToolStructuredData({
   operatingSystem,
   locale = "zh-CN",
   price,
-  currency = "CNY"
+  currency = "CNY",
+  softwareVersion,
+  priceSpecs = [],
+  aggregateRating = null
 }: ToolStructuredDataInput) {
+  const normalizedPriceSpecs = priceSpecs
+    .map((spec) => ({
+      name: normalizeWhitespace(spec.name),
+      price: Number(spec.price)
+    }))
+    .filter((spec) => spec.name && Number.isFinite(spec.price) && spec.price > 0);
   const baseSchema = {
     "@context": "https://schema.org",
     "@type": schemaType,
@@ -251,7 +349,19 @@ export function buildToolStructuredData({
     description: buildMetaDescription(description),
     url: absoluteUrl(url),
     inLanguage: locale,
-    ...(image ? { image: absoluteUrl(image) } : {})
+    ...(image ? { image: absoluteUrl(image) } : {}),
+    ...(aggregateRating &&
+    Number.isFinite(aggregateRating.ratingValue) &&
+    Number.isFinite(aggregateRating.reviewCount) &&
+    aggregateRating.reviewCount > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: aggregateRating.ratingValue.toFixed(1),
+            reviewCount: String(aggregateRating.reviewCount)
+          }
+        }
+      : {})
   };
 
   const offer =
@@ -266,17 +376,19 @@ export function buildToolStructuredData({
           }
         }
       : {};
+  const structuredOffers = normalizedPriceSpecs.length ? buildOfferData(url, currency, normalizedPriceSpecs) : offer;
 
   if (schemaType === "SoftwareApplication") {
     return {
       ...baseSchema,
       applicationCategory: category ?? "BusinessApplication",
       operatingSystem: operatingSystem ?? "Web",
+      ...(softwareVersion ? { softwareVersion } : {}),
       brand: {
         "@type": "Brand",
         name: brand
       },
-      ...offer
+      ...structuredOffers
     };
   }
 
@@ -289,7 +401,23 @@ export function buildToolStructuredData({
         name: brand
       },
       areaServed: "CN",
-      ...offer
+      ...(normalizedPriceSpecs.length
+        ? {
+            hasOfferCatalog: {
+              "@type": "OfferCatalog",
+              name: `${name} offers`,
+              itemListElement: normalizedPriceSpecs.map((spec) => ({
+                "@type": "Offer",
+                name: spec.name,
+                price: spec.price.toFixed(2),
+                priceCurrency: currency,
+                availability: "https://schema.org/InStock",
+                url: absoluteUrl(url)
+              }))
+            }
+          }
+        : {}),
+      ...structuredOffers
     };
   }
 
@@ -300,7 +428,14 @@ export function buildToolStructuredData({
       name: brand
     },
     educationalLevel: category ?? "Professional",
-    ...offer
+    courseMode: "online",
+    hasCourseInstance: {
+      "@type": "CourseInstance",
+      courseMode: "online",
+      inLanguage: locale,
+      ...structuredOffers
+    },
+    ...structuredOffers
   };
 }
 

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { Locale } from "@/lib/i18n";
+import { defaultBrandIcon } from "@/lib/seo";
 
 export type SettingsMap = Record<string, string | undefined>;
 
@@ -70,11 +71,13 @@ export function getEffectiveSiteName(settings: SettingsMap, fallback: string) {
 
 export function getEffectiveSiteLogo(settings: SettingsMap, fallback: string) {
   const value = cleanSettingValue(settings.site_logo);
-  if (!value || value === legacyTextLogo) return fallback;
+  if (!value || value === legacyTextLogo || value === "/images/enhe-logo.svg" || value === "/images/enhe-logo-mark.svg") {
+    return fallback || defaultBrandIcon;
+  }
   if (/^https?:\/\//i.test(value) || value.startsWith("/") || /\.(svg|png|jpe?g|webp|gif)$/i.test(value)) {
     return value;
   }
-  return fallback;
+  return fallback || defaultBrandIcon;
 }
 
 export function getEffectiveHomeHeroTitle(settings: SettingsMap, fallback: string) {

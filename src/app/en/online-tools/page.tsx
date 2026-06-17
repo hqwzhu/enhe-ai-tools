@@ -1,4 +1,5 @@
 import { generateOnlineToolsPageMetadata, OnlineToolsPageShell } from "@/app/online-tools/page-shell";
+import { PublicSiteChrome } from "@/components/public-site-chrome";
 
 export const revalidate = 300;
 
@@ -7,5 +8,9 @@ export async function generateMetadata() {
 }
 
 export default async function EnglishOnlineToolsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  return <OnlineToolsPageShell searchParams={searchParams} forceLocale="en" />;
+  return (
+    <PublicSiteChrome forceLocale="en">
+      <OnlineToolsPageShell searchParams={searchParams} forceLocale="en" />
+    </PublicSiteChrome>
+  );
 }

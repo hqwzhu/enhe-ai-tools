@@ -5,6 +5,7 @@ import { PasswordInput } from "@/components/password-input";
 import { Container } from "@/components/ui";
 import { getOrCreateCsrfToken } from "@/lib/csrf";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
+import { buildLocalePath } from "@/lib/seo";
 
 export default async function LoginPage({
   searchParams
@@ -55,7 +56,10 @@ export default async function LoginPage({
         />
         <FormSubmitButton className="mt-8 w-full text-base" pendingLabel={t.auth.loggingIn}>{t.auth.loginButton}</FormSubmitButton>
         <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
-          {t.auth.noAccount}<Link className="font-semibold text-[var(--marketing-accent)]" href="/register">{t.auth.registerNow}</Link>
+          {t.auth.noAccount}
+          <Link className="font-semibold text-[var(--marketing-accent)]" href={buildLocalePath("/register", locale)}>
+            {t.auth.registerNow}
+          </Link>
         </p>
       </form>
     </Container>

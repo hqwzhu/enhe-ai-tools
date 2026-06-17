@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LayoutDashboard, UserRound } from "lucide-react";
+import type { Locale } from "@/lib/dictionaries";
+import { buildLocalePath } from "@/lib/seo";
 
 type SessionUser = {
   email: string | null;
@@ -11,16 +13,20 @@ type SessionUser = {
 };
 
 export function HeaderAccountControls({
-  labels
+  labels,
+  locale
 }: {
   labels: {
     admin: string;
     login: string;
     userFallback: string;
   };
+  locale: Locale;
 }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const loginPath = buildLocalePath("/login", locale);
+  const userPath = buildLocalePath("/user", locale);
 
   useEffect(() => {
     let isMounted = true;
@@ -48,7 +54,7 @@ export function HeaderAccountControls({
 
   if (!loaded || !user) {
     return (
-      <Link href="/login" className="site-login-link hidden sm:inline-flex">
+      <Link href={loginPath} className="site-login-link hidden sm:inline-flex">
         {labels.login}
       </Link>
     );
@@ -62,7 +68,7 @@ export function HeaderAccountControls({
           {labels.admin}
         </Link>
       ) : null}
-      <Link href="/user" className="site-user-chip hidden sm:inline-flex">
+      <Link href={userPath} className="site-user-chip hidden sm:inline-flex">
         <UserRound size={16} />
         <span className="truncate">{user.nickname ?? user.email ?? labels.userFallback}</span>
       </Link>

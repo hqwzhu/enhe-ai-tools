@@ -5,6 +5,7 @@ import { PasswordInput } from "@/components/password-input";
 import { Container } from "@/components/ui";
 import { getOrCreateCsrfToken } from "@/lib/csrf";
 import { getCurrentLocale, getDictionary } from "@/lib/i18n";
+import { buildLocalePath } from "@/lib/seo";
 
 export default async function RegisterPage() {
   const locale = await getCurrentLocale();
@@ -35,7 +36,10 @@ export default async function RegisterPage() {
 
         <FormSubmitButton className="mt-8 w-full text-base" pendingLabel={t.auth.creatingAccount}>{t.auth.createAccount}</FormSubmitButton>
         <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
-          {t.auth.hasAccount}<Link className="font-semibold text-[var(--marketing-accent)]" href="/login">{t.auth.goLogin}</Link>
+          {t.auth.hasAccount}
+          <Link className="font-semibold text-[var(--marketing-accent)]" href={buildLocalePath("/login", locale)}>
+            {t.auth.goLogin}
+          </Link>
         </p>
       </form>
     </Container>

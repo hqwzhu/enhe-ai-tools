@@ -1,4 +1,5 @@
 import { generateTutorialsPageMetadata, TutorialsPageShell } from "@/app/tutorials/page-shell";
+import { PublicSiteChrome } from "@/components/public-site-chrome";
 
 export const revalidate = 300;
 
@@ -7,5 +8,9 @@ export async function generateMetadata() {
 }
 
 export default async function EnglishTutorialsPage() {
-  return <TutorialsPageShell forceLocale="en" />;
+  return (
+    <PublicSiteChrome forceLocale="en">
+      <TutorialsPageShell forceLocale="en" />
+    </PublicSiteChrome>
+  );
 }

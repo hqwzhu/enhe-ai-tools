@@ -12,7 +12,8 @@ describe("technical seo phase one source", () => {
   it("defines locale-aware public routing, alternates, and sitemap language entries", () => {
     const seo = read("src/lib/seo.ts");
     const sitemap = read("src/app/sitemap.ts");
-    const layout = read("src/app/layout.tsx");
+    const sharedLayout = read("src/app/root-layout-shared.tsx");
+    const zhLayout = read("src/app/(zh-public)/layout.tsx");
 
     expect(seo).toContain("buildLocalePath");
     expect(seo).toContain("buildLanguageAlternates");
@@ -20,9 +21,10 @@ describe("technical seo phase one source", () => {
     expect(seo).toContain("languages:");
     expect(seo).toContain('x-default');
 
-    expect(layout).toContain("buildLanguageAlternates");
-    expect(layout).toContain("icons:");
-    expect(layout).not.toContain('export const dynamic = "force-dynamic"');
+    expect(sharedLayout).toContain("sharedRootMetadata");
+    expect(sharedLayout).toContain("icons:");
+    expect(sharedLayout).not.toContain('export const dynamic = "force-dynamic"');
+    expect(zhLayout).toContain('lang="zh-CN"');
 
     expect(sitemap).toContain("alternates:");
     expect(sitemap).toContain("languages:");
@@ -46,7 +48,8 @@ describe("technical seo phase one source", () => {
     const footer = read("src/components/site-footer.tsx");
     const toolCard = read("src/components/tool-card.tsx");
 
-    expect(enLayout).toContain('forceLocale="en"');
+    expect(enLayout).toContain("RootDocument");
+    expect(enLayout).toContain('lang="en-US"');
     expect(enHome).toContain('forceLocale="en"');
     expect(enSoftware).toContain('forceLocale="en"');
     expect(enOnline).toContain('forceLocale="en"');
@@ -63,21 +66,28 @@ describe("technical seo phase one source", () => {
   });
 
   it("splits public caching from user-specific surfaces and adds favicon metadata coverage", () => {
-    const home = read("src/app/page.tsx");
+    const home = read("src/app/(zh-public)/page.tsx");
     const siteHeader = read("src/components/site-header.tsx");
     const siteFooter = read("src/components/site-footer.tsx");
+    const publicChrome = read("src/components/public-site-chrome.tsx");
     const publicContent = read("src/lib/public-content.ts");
-    const layout = read("src/app/layout.tsx");
+    const sharedLayout = read("src/app/root-layout-shared.tsx");
     const nextConfig = read("next.config.ts");
+    const seo = read("src/lib/seo.ts");
 
     expect(home).toContain('export const revalidate = 300');
-    expect(siteHeader).toContain('export const dynamic = "force-dynamic"');
-    expect(siteFooter).toContain('export const dynamic = "force-dynamic"');
+    expect(siteHeader).not.toContain('export const dynamic = "force-dynamic"');
+    expect(siteFooter).not.toContain('export const dynamic = "force-dynamic"');
+    expect(publicChrome).toContain("StructuredData");
+    expect(publicChrome).toContain("buildWebsiteSchema");
+    expect(publicChrome).toContain("buildOrganizationSchema");
+    expect(publicChrome).toContain('forceLocale === "en" ? "en-US" : "zh-CN"');
     expect(publicContent).toContain("publicContentRevalidate = 300");
-    expect(layout).not.toContain("SiteHeader");
-    expect(layout).not.toContain("SiteFooter");
-    expect(layout).toContain("icons:");
-    expect(layout).toContain("shortcut");
+    expect(sharedLayout).not.toContain("buildWebsiteSchema");
+    expect(sharedLayout).not.toContain("buildOrganizationSchema");
+    expect(sharedLayout).toContain("icons:");
+    expect(sharedLayout).toContain("shortcut");
+    expect(seo).toContain('"/images/brand/enhe-icon-gradient-white-bg-cropped.png"');
 
     expect(nextConfig).toContain("headers()");
     expect(nextConfig).toContain("Cache-Control");

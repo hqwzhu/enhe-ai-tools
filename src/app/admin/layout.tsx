@@ -1,3 +1,5 @@
+import "../globals.css";
+import { RootDocument, sharedRootMetadata } from "@/app/root-layout-shared";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { SiteFooter } from "@/components/site-footer";
@@ -31,12 +33,14 @@ const adminNav = [
   ["settings", "/admin/settings"]
 ] as const;
 
+export const metadata = sharedRootMetadata;
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const [, locale] = await Promise.all([requireAdmin(), getCurrentLocale()]);
   const t = getAdminDictionary(locale);
 
   return (
-    <>
+    <RootDocument lang={locale === "en" ? "en-US" : "zh-CN"}>
       <SiteHeader />
       <div className="fade-in">
         <Container className="grid gap-6 py-10 lg:grid-cols-[260px_1fr]">
@@ -54,6 +58,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </Container>
       </div>
       <SiteFooter />
-    </>
+    </RootDocument>
   );
 }

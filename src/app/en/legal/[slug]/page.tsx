@@ -1,4 +1,5 @@
 import { generateLegalPageMetadata, generateLegalStaticParams, LegalPageShell } from "@/app/legal/[slug]/page-shell";
+import { PublicSiteChrome } from "@/components/public-site-chrome";
 
 export const revalidate = 300;
 
@@ -11,5 +12,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function EnglishLegalPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return <LegalPageShell slug={slug} forceLocale="en" />;
+  return (
+    <PublicSiteChrome forceLocale="en">
+      <LegalPageShell slug={slug} forceLocale="en" />
+    </PublicSiteChrome>
+  );
 }

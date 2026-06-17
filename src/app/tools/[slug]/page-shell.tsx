@@ -12,7 +12,14 @@ import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { normalizeImageSrc } from "@/lib/media";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildBreadcrumbSchema, buildLocalePath, buildPageMetadata, buildToolMetadataTitle, buildToolStructuredData } from "@/lib/seo";
+import {
+  buildBreadcrumbSchema,
+  buildFaqSchema,
+  buildLocalePath,
+  buildPageMetadata,
+  buildToolMetadataTitle,
+  buildToolStructuredData
+} from "@/lib/seo";
 import { getPrimaryToolPrice } from "@/lib/tool-price-specs";
 import {
   canOpenProtectedDownloadEntry,
@@ -135,6 +142,15 @@ export async function ToolDetailPageShell({
       { name: tool.name, path: buildLocalePath(`/tools/${tool.slug}`, forceLocale) }
     ]
   });
+  const aggregateRating = null;
+  const schemaContent = {
+    faq: tool.faqs.map((item) => ({
+      question: item.question,
+      answer: item.answer
+    })),
+    aggregateRating
+  };
+  const faqSchema = schemaContent.faq.length ? buildFaqSchema({ items: schemaContent.faq }) : null;
   const toolStructuredData = buildToolStructuredData({
     schemaType,
     name: tool.name,
@@ -144,12 +160,19 @@ export async function ToolDetailPageShell({
     category: tool.category?.name ?? null,
     operatingSystem: tool.systemRequirement ?? null,
     locale: forceLocale === "en" ? "en-US" : "zh-CN",
-    price: servicePrice > 0 ? servicePrice : null
+    price: servicePrice > 0 ? servicePrice : null,
+    softwareVersion: tool.version ?? null,
+    priceSpecs: activePriceSpecs.map((spec) => ({
+      name: spec.name,
+      price: Number(spec.price)
+    })),
+    aggregateRating: schemaContent.aggregateRating
   });
+  // Service schemas can emit hasOfferCatalog, and course schemas can emit CourseInstance when the tool data supports them.
 
   return (
     <Container className="py-14">
-      <StructuredData data={[breadcrumbSchema, toolStructuredData]} />
+      <StructuredData data={[breadcrumbSchema, toolStructuredData, ...(faqSchema ? [faqSchema] : [])]} />
       <section className="glass overflow-hidden rounded-[2rem] p-4 md:p-6 lg:p-8">
         <div className="tool-detail-hero-stack flex flex-col gap-8">
           <div className="tool-detail-cover-frame relative overflow-hidden rounded-[1.75rem] border border-[rgba(210,230,255,0.16)] bg-[#07101E]">

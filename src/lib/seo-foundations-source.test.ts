@@ -38,19 +38,25 @@ describe("SEO foundations source contract", () => {
   });
 
   it("adds site-wide and detail-page JSON-LD contracts", () => {
-    const layout = read("src/app/layout.tsx");
+    const publicChrome = read("src/components/public-site-chrome.tsx");
     const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
     const software = read("src/app/software/page-shell.tsx");
 
-    expect(layout).toContain("StructuredData");
-    expect(layout).toContain("WebSite");
-    expect(layout).toContain("Organization");
+    expect(publicChrome).toContain("StructuredData");
+    expect(publicChrome).toContain("WebSite");
+    expect(publicChrome).toContain("Organization");
+    expect(publicChrome).toContain("SearchAction");
+    expect(publicChrome).toContain("buildLocalePath");
 
     expect(software).toContain("BreadcrumbList");
     expect(toolDetail).toContain("BreadcrumbList");
     expect(toolDetail).toContain("SoftwareApplication");
     expect(toolDetail).toContain("Service");
     expect(toolDetail).toContain("Course");
+    expect(toolDetail).toContain("faq: ");
+    expect(toolDetail).toContain("aggregateRating");
+    expect(toolDetail).toContain("hasOfferCatalog");
+    expect(toolDetail).toContain("CourseInstance");
   });
 
   it("uses stable sitemap timestamps and cached public settings", () => {

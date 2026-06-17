@@ -10,13 +10,13 @@ const routeFiles = [
   "../app/en/software/page.tsx",
   "../app/en/tools/[slug]/page.tsx",
   "../app/en/tutorials/page.tsx",
-  "../app/legal/[slug]/page.tsx",
-  "../app/online-tools/page.tsx",
-  "../app/pricing/page.tsx",
-  "../app/skill-learning/page.tsx",
-  "../app/software/page.tsx",
-  "../app/tools/[slug]/page.tsx",
-  "../app/tutorials/page.tsx"
+  "../app/(zh-public)/legal/[slug]/page.tsx",
+  "../app/(zh-public)/online-tools/page.tsx",
+  "../app/(zh-public)/pricing/page.tsx",
+  "../app/(zh-public)/skill-learning/page.tsx",
+  "../app/(zh-public)/software/page.tsx",
+  "../app/(zh-public)/tools/[slug]/page.tsx",
+  "../app/(zh-public)/tutorials/page.tsx"
 ];
 
 describe("route revalidate source contract", () => {

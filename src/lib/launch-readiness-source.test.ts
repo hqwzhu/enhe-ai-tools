@@ -15,15 +15,15 @@ describe("launch readiness source coverage", () => {
     expect(read("src/app/sitemap.ts")).toContain("export const revalidate");
     expect(read("src/app/sitemap.ts")).toContain("buildLanguageAlternates");
 
-    const layout = read("src/app/layout.tsx");
+    const layout = read("src/app/root-layout-shared.tsx");
     expect(layout).toContain("metadataBase");
-    expect(layout).toContain("buildLanguageAlternates");
+    expect(layout).toContain("sharedRootMetadata");
 
     const seo = read("src/lib/seo.ts");
     expect(seo).toContain("openGraph");
     expect(seo).toContain("twitter");
 
-    const toolDetail = read("src/app/tools/[slug]/page.tsx");
+    const toolDetail = read("src/app/(zh-public)/tools/[slug]/page.tsx");
     expect(toolDetail).toContain("generateMetadata");
     expect(toolDetail).toContain("generateToolDetailPageMetadata");
   });

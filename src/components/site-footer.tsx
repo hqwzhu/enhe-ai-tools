@@ -7,8 +7,6 @@ import { legalPages } from "@/lib/legal";
 import { buildLocalePath } from "@/lib/seo";
 import { getEffectiveFooterCopyright, getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
-export const dynamic = "force-dynamic";
-
 export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
   const [locale, settings] = await Promise.all([forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(), getSettingsMap()]);
   const t = getDictionary(locale);
