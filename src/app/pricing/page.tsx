@@ -12,7 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata({
     title: `${locale === "en" ? "Paid downloads" : "软件付费下载"} - ${t.brand}`,
     description: locale === "en" ? "Paid software can be purchased from each tool detail page." : "收费软件请在具体工具详情页购买。",
-    path: "/pricing"
+    path: "/pricing",
+    locale: locale === "en" ? "en_US" : "zh_CN"
   });
 }
 

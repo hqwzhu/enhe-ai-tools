@@ -10,6 +10,7 @@ function read(path: string) {
 
 describe("SEO foundations source contract", () => {
   it("gives public pages explicit metadata and h1 headings", () => {
+    const home = read("src/app/page.tsx");
     const ui = read("src/components/ui.tsx");
     const software = read("src/app/software/page.tsx");
     const onlineTools = read("src/app/online-tools/page.tsx");
@@ -20,6 +21,7 @@ describe("SEO foundations source contract", () => {
 
     expect(ui).toContain('as?: "h1" | "h2"');
     expect(ui).toContain("const TitleTag");
+    expect(home).toContain('locale: locale === "en" ? "en_US" : "zh_CN"');
 
     for (const page of [software, onlineTools, skillLearning, pricing, tutorials]) {
       expect(page).toContain('as="h1"');
@@ -27,6 +29,7 @@ describe("SEO foundations source contract", () => {
 
     expect(pricing).toContain("generateMetadata");
     expect(pricing).toContain('path: "/pricing"');
+    expect(pricing).toContain('locale: locale === "en" ? "en_US" : "zh_CN"');
     expect(tutorials).toContain("generateMetadata");
     expect(tutorials).toContain('path: "/tutorials"');
     expect(legal).toContain("generateMetadata");

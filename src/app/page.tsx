@@ -12,7 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata({
     title: `${getEffectiveHomeHeroTitle(settings, t.home.title)} - ${t.brand}`,
     description: getEffectiveLocalizedHomeHeroIntro(settings, locale, t.home.intro),
-    path: "/"
+    path: "/",
+    locale: locale === "en" ? "en_US" : "zh_CN"
   });
 }
 
