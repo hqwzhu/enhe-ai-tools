@@ -13,11 +13,11 @@ describe("launch readiness source coverage", () => {
     expect(existsSync(join(root, "src/app/robots.ts"))).toBe(true);
     expect(existsSync(join(root, "src/app/sitemap.ts"))).toBe(true);
     expect(read("src/app/sitemap.ts")).toContain("export const revalidate");
-    expect(read("src/app/sitemap.ts")).toContain('export const dynamic = "force-dynamic"');
+    expect(read("src/app/sitemap.ts")).toContain("buildLanguageAlternates");
 
     const layout = read("src/app/layout.tsx");
     expect(layout).toContain("metadataBase");
-    expect(layout).toContain("buildPageMetadata");
+    expect(layout).toContain("buildLanguageAlternates");
 
     const seo = read("src/lib/seo.ts");
     expect(seo).toContain("openGraph");
@@ -25,13 +25,13 @@ describe("launch readiness source coverage", () => {
 
     const toolDetail = read("src/app/tools/[slug]/page.tsx");
     expect(toolDetail).toContain("generateMetadata");
-    expect(toolDetail).toContain("canonical");
+    expect(toolDetail).toContain("generateToolDetailPageMetadata");
   });
 
   it("makes paid downloads, home cards, mobile nav, and tool detail more conversion-ready", () => {
-    const pricing = read("src/app/pricing/page.tsx");
+    const pricing = read("src/app/pricing/page-shell.tsx");
     expect(pricing).toContain("Paid downloads");
-    expect(pricing).toContain('href="/software"');
+    expect(pricing).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
     expect(pricing).not.toContain("createOrderAction");
 
     const toolCard = read("src/components/tool-card.tsx");
@@ -45,7 +45,7 @@ describe("launch readiness source coverage", () => {
     expect(mobileNav).toContain("details");
     expect(mobileNav).toContain("menu");
 
-    const toolDetail = read("src/app/tools/[slug]/page.tsx");
+    const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
     expect(toolDetail).toContain("faqs");
     expect(toolDetail).toContain("trustTitle");
     expect(toolDetail).toContain("supportEmail");

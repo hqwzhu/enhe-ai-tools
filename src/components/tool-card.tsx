@@ -4,6 +4,8 @@ import { ArrowUpRight, Check, Download, MousePointer2, UserRound } from "lucide-
 import { Badge } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
+import { buildLocalePath } from "@/lib/seo";
+import { buildToolCardHighlights } from "@/lib/tool-card-highlights";
 import { getPrimaryToolPrice, type ToolPriceSpecStatus } from "@/lib/tool-price-specs";
 
 type ToolCardProps = {
@@ -35,7 +37,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
   const showPrice = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0) || tool.type === "skill_learning";
 
   return (
-    <Link href={`/tools/${tool.slug}`} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
+    <Link href={buildLocalePath(`/tools/${tool.slug}`, locale)} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
       <div className="relative aspect-[16/9] overflow-hidden border-b border-white/14 bg-[#202229]">
         {coverImage ? (
           <Image
@@ -113,11 +115,5 @@ function buildValueSentence(description: string, locale: Locale) {
 }
 
 function buildCardHighlights(tool: ToolCardProps["tool"], locale: Locale) {
-  const t = getDictionary(locale);
-  const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], tool.downloadPrice);
-  const isPaid = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0);
-  const access = isPaid ? (tool.type === "online" ? t.toolCard.capabilityPaidService : t.toolCard.capabilityPaidDownload) : t.toolCard.capabilityFree;
-  const runtime = tool.type === "software" ? t.toolCard.capabilitySoftware : tool.type === "skill_learning" ? t.toolCard.capabilityCourse : t.toolCard.capabilityOnline;
-  const commerce = isPaid ? (tool.type === "online" ? t.toolCard.capabilityPaidService : t.toolCard.capabilityPaidDownload) : t.toolCard.capabilityAccess;
-  return [runtime, access, commerce];
+  return buildToolCardHighlights(tool, locale);
 }

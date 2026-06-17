@@ -11,7 +11,7 @@ function read(path: string) {
 describe("paid download without VIP source boundaries", () => {
   it("removes VIP sales from the primary header and pricing page", () => {
     const header = read("src/components/site-header.tsx");
-    const pricing = read("src/app/pricing/page.tsx");
+    const pricing = read("src/app/pricing/page-shell.tsx");
 
     expect(header).not.toContain("t.nav.pricing");
     expect(header).not.toContain('"/pricing"');
@@ -21,7 +21,7 @@ describe("paid download without VIP source boundaries", () => {
     expect(pricing).not.toContain("createOrderAction");
     expect(pricing).not.toContain("vipPlan");
     expect(pricing).not.toContain("primaryCta");
-    expect(pricing).toContain('href="/software"');
+    expect(pricing).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
   });
 
   it("removes VIP admin operations from active admin surfaces", () => {
@@ -41,7 +41,7 @@ describe("paid download without VIP source boundaries", () => {
   });
 
   it("uses per-tool paid download access on the tool detail and user center pages", () => {
-    const toolDetail = read("src/app/tools/[slug]/page.tsx");
+    const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
     const userCenter = read("src/app/user/page.tsx");
 
     expect(toolDetail).not.toContain("userHasVip");

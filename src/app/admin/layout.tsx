@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { Container } from "@/components/ui";
 import { getAdminDictionary } from "@/lib/admin-i18n";
 import { getCurrentLocale } from "@/lib/i18n";
@@ -34,18 +36,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const t = getAdminDictionary(locale);
 
   return (
-    <Container className="grid gap-6 py-10 lg:grid-cols-[260px_1fr]">
-      <aside className="admin-shell-card h-fit p-4">
-        <h1 className="px-3 py-2 text-lg font-black text-[var(--marketing-text)]">{t.layout.title}</h1>
-        <nav className="mt-3 grid gap-1">
-          {adminNav.map(([key, href]) => (
-            <Link key={href} href={href} className="admin-nav-link">
-              {t.nav[key]}
-            </Link>
-          ))}
-        </nav>
-      </aside>
-      <div>{children}</div>
-    </Container>
+    <>
+      <SiteHeader />
+      <div className="fade-in">
+        <Container className="grid gap-6 py-10 lg:grid-cols-[260px_1fr]">
+          <aside className="admin-shell-card h-fit p-4">
+            <h1 className="px-3 py-2 text-lg font-black text-[var(--marketing-text)]">{t.layout.title}</h1>
+            <nav className="mt-3 grid gap-1">
+              {adminNav.map(([key, href]) => (
+                <Link key={href} href={href} className="admin-nav-link">
+                  {t.nav[key]}
+                </Link>
+              ))}
+            </nav>
+          </aside>
+          <div>{children}</div>
+        </Container>
+      </div>
+      <SiteFooter />
+    </>
   );
 }

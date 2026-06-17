@@ -6,7 +6,7 @@ const root = resolve(__dirname, "../..");
 
 describe("tool detail layout source", () => {
   it("stacks media above text and preserves full image visibility", () => {
-    const source = readFileSync(resolve(root, "src/app/tools/[slug]/page.tsx"), "utf8");
+    const source = readFileSync(resolve(root, "src/app/tools/[slug]/page-shell.tsx"), "utf8");
 
     expect(source).toContain("tool-detail-hero-stack");
     expect(source).toContain("tool-detail-cover-frame");
@@ -24,7 +24,7 @@ describe("tool detail layout source", () => {
   });
 
   it("does not show review-promise or VIP-only download-link notices on the public tool page", () => {
-    const pageSource = readFileSync(resolve(root, "src/app/tools/[slug]/page.tsx"), "utf8");
+    const pageSource = readFileSync(resolve(root, "src/app/tools/[slug]/page-shell.tsx"), "utf8");
     const i18nSource = readFileSync(resolve(root, "src/lib/i18n.ts"), "utf8");
 
     expect(pageSource).not.toContain("reviewCompletionNotice");

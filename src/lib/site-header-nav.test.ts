@@ -12,6 +12,6 @@ describe("site header navigation", () => {
     expect(source).toContain("t.nav.login");
     expect(source).not.toContain('"/tutorials"');
     expect(source).not.toContain("t.nav.tutorials");
-    expect(source).toContain('href: "/#updates"');
+    expect(source).toContain('href: buildLocalePath("/#updates", locale)');
   });
 });

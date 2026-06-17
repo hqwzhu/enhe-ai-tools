@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { Locale } from "@/lib/dictionaries";
 
 export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
 export const siteName = "ENHE AI";
@@ -13,6 +14,7 @@ type PageMetadataInput = {
   image?: string | null;
   locale?: "zh_CN" | "en_US";
   type?: "website" | "article";
+  localeKey?: Locale;
 };
 
 type BuildTitleInput = {
@@ -70,6 +72,28 @@ export function absoluteUrl(path = "/") {
   return `${getSiteBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+export function stripLocalePrefix(path: string) {
+  if (!path || path === "/") return "/";
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return normalized === "/en" ? "/" : normalized.replace(/^\/en(?=\/|$)/, "") || "/";
+}
+
+export function buildLocalePath(path: string, locale: Locale) {
+  const normalized = stripLocalePrefix(path);
+  if (locale === "en") {
+    return normalized === "/" ? "/en" : `/en${normalized}`;
+  }
+  return normalized;
+}
+
+export function buildLanguageAlternates(path = "/") {
+  return {
+    "x-default": absoluteUrl(stripLocalePrefix(path)),
+    zh: absoluteUrl(buildLocalePath(path, "zh")),
+    en: absoluteUrl(buildLocalePath(path, "en"))
+  } as const;
+}
+
 export function normalizeWhitespace(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -120,17 +144,20 @@ export function buildPageMetadata({
   path = "/",
   image,
   locale = "zh_CN",
-  type = "website"
+  type = "website",
+  localeKey = locale === "en_US" ? "en" : "zh"
 }: PageMetadataInput): Metadata {
   const finalDescription = buildMetaDescription(description);
-  const canonical = absoluteUrl(path);
+  const canonicalPath = buildLocalePath(path, localeKey);
+  const canonical = absoluteUrl(canonicalPath);
   const imageUrl = absoluteUrl(image ?? defaultOgImage);
 
   return {
     title,
     description: finalDescription,
     alternates: {
-      canonical
+      canonical,
+      languages: buildLanguageAlternates(path)
     },
     openGraph: {
       title,

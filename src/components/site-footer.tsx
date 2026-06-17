@@ -1,12 +1,16 @@
-import Link from "next/link";
 import Image from "next/image";
-import { legalPages } from "@/lib/legal";
+import Link from "next/link";
 import { Container } from "@/components/ui";
-import { getCurrentLocale, getDictionary } from "@/lib/i18n";
+import { getDictionary, type Locale } from "@/lib/dictionaries";
+import { getCurrentLocale } from "@/lib/i18n";
+import { legalPages } from "@/lib/legal";
+import { buildLocalePath } from "@/lib/seo";
 import { getEffectiveFooterCopyright, getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
-export async function SiteFooter() {
-  const [locale, settings] = await Promise.all([getCurrentLocale(), getSettingsMap()]);
+export const dynamic = "force-dynamic";
+
+export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
+  const [locale, settings] = await Promise.all([forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(), getSettingsMap()]);
   const t = getDictionary(locale);
   const siteName = getEffectiveSiteName(settings, t.footer.siteName);
   const copyright = getEffectiveFooterCopyright(settings, t.footer.copyright);
@@ -20,11 +24,15 @@ export async function SiteFooter() {
             <p className="mt-2">{copyright}</p>
           </div>
           <nav className="flex flex-wrap gap-x-5 gap-y-3">
-            <Link href="/legal/user-agreement" className="transition hover:text-[var(--marketing-accent)]">
+            <Link href={buildLocalePath("/legal/user-agreement", locale)} className="transition hover:text-[var(--marketing-accent)]">
               {t.footer.helpSupport}
             </Link>
             {legalPages.map((page) => (
-              <Link key={page.slug} href={`/legal/${page.slug}`} className="transition hover:text-[var(--marketing-accent)]">
+              <Link
+                key={page.slug}
+                href={buildLocalePath(`/legal/${page.slug}`, locale)}
+                className="transition hover:text-[var(--marketing-accent)]"
+              >
                 {t.footer.legal[page.slug as keyof typeof t.footer.legal]}
               </Link>
             ))}
@@ -37,8 +45,8 @@ export async function SiteFooter() {
             rel="noreferrer"
             className="inline-flex items-center gap-2 transition hover:text-[var(--marketing-accent)]"
           >
-            <Image src="/images/beian-icon.png" alt="备案编号图标" width={18} height={20} unoptimized />
-            <span>闽公网安备35030302900035号</span>
+            <Image src="/images/beian-icon.png" alt="备案图标" width={18} height={20} unoptimized />
+            <span>闽公网安备 35030302900035号</span>
           </a>
           <a
             href="https://beian.miit.gov.cn/"

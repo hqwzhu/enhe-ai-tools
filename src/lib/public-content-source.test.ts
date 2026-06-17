@@ -4,11 +4,11 @@ import { describe, expect, it } from "vitest";
 describe("public content cache contract", () => {
   it("caches homepage, listing pages, and tutorials through shared unstable_cache helpers", () => {
     const source = readFileSync(new URL("./public-content.ts", import.meta.url), "utf8");
-    const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
-    const software = readFileSync(new URL("../app/software/page.tsx", import.meta.url), "utf8");
-    const onlineTools = readFileSync(new URL("../app/online-tools/page.tsx", import.meta.url), "utf8");
-    const skillLearning = readFileSync(new URL("../app/skill-learning/page.tsx", import.meta.url), "utf8");
-    const tutorials = readFileSync(new URL("../app/tutorials/page.tsx", import.meta.url), "utf8");
+    const home = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+    const software = readFileSync(new URL("../app/software/page-shell.tsx", import.meta.url), "utf8");
+    const onlineTools = readFileSync(new URL("../app/online-tools/page-shell.tsx", import.meta.url), "utf8");
+    const skillLearning = readFileSync(new URL("../app/skill-learning/page-shell.tsx", import.meta.url), "utf8");
+    const tutorials = readFileSync(new URL("../app/tutorials/page-shell.tsx", import.meta.url), "utf8");
 
     expect(source).toContain("unstable_cache");
     expect(source).toContain("getHomeRecommendedTools");

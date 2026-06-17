@@ -8,13 +8,23 @@ type MobileNavMenuProps = {
   };
   navItems: ReadonlyArray<{ label: string; href: string }>;
   showAdmin: boolean;
+  loginItem?: readonly [string, string];
   userCenterItem?: readonly [string, string];
 };
 
-export function MobileNavMenu({ labels, navItems, showAdmin, userCenterItem = ["用户中心", "/user"] }: MobileNavMenuProps) {
+export function MobileNavMenu({
+  labels,
+  navItems,
+  showAdmin,
+  loginItem,
+  userCenterItem = ["User Center", "/user"]
+}: MobileNavMenuProps) {
   return (
     <details className="mobile-nav group relative lg:hidden">
-      <summary className="mobile-nav-trigger inline-flex cursor-pointer list-none items-center justify-center [&::-webkit-details-marker]:hidden" aria-label={labels.menu}>
+      <summary
+        className="mobile-nav-trigger inline-flex cursor-pointer list-none items-center justify-center [&::-webkit-details-marker]:hidden"
+        aria-label={labels.menu}
+      >
         <Menu size={18} />
       </summary>
       <div className="mobile-nav-panel absolute right-0 top-12 z-50 w-64 overflow-hidden p-2">
@@ -23,6 +33,11 @@ export function MobileNavMenu({ labels, navItems, showAdmin, userCenterItem = ["
             {label}
           </Link>
         ))}
+        {loginItem ? (
+          <Link href={loginItem[1]} className="mobile-nav-link">
+            {loginItem[0]}
+          </Link>
+        ) : null}
         <Link href={userCenterItem[1]} className="mobile-nav-link mobile-nav-user-center">
           {userCenterItem[0]}
         </Link>

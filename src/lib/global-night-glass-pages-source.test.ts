@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 describe("global night glass page adoption source contract", () => {
   it("uses shared filter and form classes on public listing pages", () => {
-    for (const pagePath of ["../app/software/page.tsx", "../app/online-tools/page.tsx", "../app/skill-learning/page.tsx"]) {
+    for (const pagePath of ["../app/software/page-shell.tsx", "../app/online-tools/page-shell.tsx", "../app/skill-learning/page-shell.tsx"]) {
       const page = readFileSync(new URL(pagePath, import.meta.url), "utf8");
       expect(page).toContain("filter-surface");
       expect(page).toContain("form-control-dark");
