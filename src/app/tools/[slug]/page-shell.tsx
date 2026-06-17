@@ -17,6 +17,7 @@ import {
   buildFaqSchema,
   buildLocalePath,
   buildPageMetadata,
+  buildToolMetaDescription,
   buildToolMetadataTitle,
   buildToolStructuredData
 } from "@/lib/seo";
@@ -34,7 +35,7 @@ export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: 
   const t = getDictionary(forceLocale);
   const tool = await prisma.tool.findUnique({
     where: { slug },
-    select: { name: true, englishName: true, shortDescription: true, coverImage: true, status: true }
+    select: { name: true, englishName: true, shortDescription: true, coverImage: true, status: true, type: true }
   });
   const canonical = `/tools/${slug}`;
   if (!tool || tool.status !== "published") {
@@ -51,9 +52,17 @@ export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: 
     title: buildToolMetadataTitle({
       name: tool.name,
       englishName: tool.englishName,
-      brand: t.brand
+      brand: t.brand,
+      locale: forceLocale
     }),
-    description: tool.shortDescription,
+    description: buildToolMetaDescription({
+      name: tool.name,
+      englishName: tool.englishName,
+      description: tool.shortDescription,
+      brand: t.brand,
+      locale: forceLocale,
+      type: tool.type === "online" ? "online" : tool.type === "skill_learning" ? "skill_learning" : "software"
+    }),
     path: canonical,
     image: normalizeImageSrc(tool.coverImage),
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
@@ -154,7 +163,14 @@ export async function ToolDetailPageShell({
   const toolStructuredData = buildToolStructuredData({
     schemaType,
     name: tool.name,
-    description: tool.shortDescription,
+    description: buildToolMetaDescription({
+      name: tool.name,
+      englishName: tool.englishName,
+      description: tool.shortDescription,
+      locale: forceLocale,
+      brand: t.brand,
+      type: tool.type === "online" ? "online" : tool.type === "skill_learning" ? "skill_learning" : "software"
+    }),
     url: buildLocalePath(`/tools/${tool.slug}`, forceLocale),
     image: coverImage,
     category: tool.category?.name ?? null,

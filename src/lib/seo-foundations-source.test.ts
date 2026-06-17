@@ -22,9 +22,11 @@ describe("SEO foundations source contract", () => {
     expect(ui).toContain('as?: "h1" | "h2"');
     expect(ui).toContain("const TitleTag");
     expect(homeShell).toContain('locale: forceLocale === "en" ? "en_US" : "zh_CN"');
+    expect(homeShell).toContain("buildMetadataTitle");
 
     for (const page of [software, onlineTools, skillLearning, pricing, tutorials]) {
       expect(page).toContain('as="h1"');
+      expect(page).toContain("buildMetadataTitle");
     }
 
     expect(pricing).toContain("generatePricingPageMetadata");
@@ -34,6 +36,7 @@ describe("SEO foundations source contract", () => {
     expect(tutorials).toContain('path: "/tutorials"');
     expect(legal).toContain("generateLegalPageMetadata");
     expect(legal).toContain("buildPageMetadata");
+    expect(legal).toContain("buildMetadataTitle");
     expect(legal).toContain("path: `/legal/${slug}`");
   });
 

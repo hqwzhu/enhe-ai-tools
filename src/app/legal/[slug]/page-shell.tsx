@@ -6,7 +6,7 @@ import { legalPages } from "@/lib/legal";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getPublicLegalPage } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 export const legalPageRevalidate = publicPageCacheSeconds;
 
@@ -20,7 +20,7 @@ export async function generateLegalPageMetadata(forceLocale: Locale, slug: strin
 
   if (!page) {
     return buildPageMetadata({
-      title: `${t.footer.helpSupport} - ${t.brand}`,
+      title: buildMetadataTitle({ pageTitle: t.footer.helpSupport, brand: t.brand }),
       description: t.listing.emptyText,
       path: `/legal/${slug}`,
       locale: forceLocale === "en" ? "en_US" : "zh_CN",
@@ -29,7 +29,7 @@ export async function generateLegalPageMetadata(forceLocale: Locale, slug: strin
   }
 
   return buildPageMetadata({
-    title: `${page.title} | ${t.brand}`,
+    title: buildMetadataTitle({ pageTitle: page.title, brand: t.brand }),
     description: page.summary,
     path: `/legal/${slug}`,
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

@@ -5,14 +5,14 @@ import { Container, SectionTitle } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getPublicTutorials } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildBreadcrumbSchema, buildLocalePath, buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildLocalePath, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 export const tutorialsPageRevalidate = publicPageCacheSeconds;
 
 export async function generateTutorialsPageMetadata(forceLocale: Locale): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: `${t.tutorials.title} - ${t.brand}`,
+    title: buildMetadataTitle({ pageTitle: t.tutorials.title, brand: t.brand }),
     description: t.tutorials.intro,
     path: "/tutorials",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

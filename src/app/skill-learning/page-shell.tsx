@@ -5,14 +5,14 @@ import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getPublicToolCategories, getPublicToolListing } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 export const skillLearningPageRevalidate = publicPageCacheSeconds;
 
 export async function generateSkillLearningPageMetadata(forceLocale: Locale): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: `${t.listing.skillLearningTitle} - ${t.brand}`,
+    title: buildMetadataTitle({ pageTitle: t.listing.skillLearningTitle, brand: t.brand }),
     description: t.listing.skillLearningIntro,
     path: "/skill-learning",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

@@ -5,14 +5,14 @@ import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getPublicToolCategories, getPublicToolListing } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 export const softwarePageRevalidate = publicPageCacheSeconds;
 
 export async function generateSoftwarePageMetadata(forceLocale: Locale): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: `${t.listing.softwareTitle} - ${t.brand}`,
+    title: buildMetadataTitle({ pageTitle: t.listing.softwareTitle, brand: t.brand }),
     description: t.listing.softwareIntro,
     path: "/software",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

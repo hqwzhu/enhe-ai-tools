@@ -18,10 +18,27 @@ type PageMetadataInput = {
   localeKey?: Locale;
 };
 
+type MetadataTitleInput = {
+  pageTitle: string;
+  brand?: string;
+  maxLength?: number;
+};
+
 type BuildTitleInput = {
   name: string;
   englishName?: string | null;
   brand?: string;
+  maxLength?: number;
+  locale?: Locale;
+};
+
+type ToolMetaDescriptionInput = {
+  name: string;
+  englishName?: string | null;
+  description?: string | null;
+  brand?: string;
+  locale?: Locale;
+  type?: "software" | "online" | "skill_learning";
   maxLength?: number;
 };
 
@@ -162,27 +179,108 @@ export function buildMetaDescription(value: string | null | undefined, fallback 
   return truncateDescription(preferred || fallbackValue, maxLength);
 }
 
-export function buildToolMetadataTitle({ name, englishName, brand = siteName, maxLength = 68 }: BuildTitleInput) {
-  const normalizedName = normalizeWhitespace(name);
-  const normalizedEnglishName = normalizeWhitespace(englishName ?? "");
-  const titleParts = [normalizedName];
+export function buildMetadataTitle({ pageTitle, brand = siteName, maxLength = 68 }: MetadataTitleInput) {
+  const normalizedPageTitle = normalizeWhitespace(pageTitle);
+  const normalizedBrand = normalizeWhitespace(brand);
 
-  if (
-    normalizedEnglishName &&
-    normalizedEnglishName.toLowerCase() !== normalizedName.toLowerCase() &&
-    !normalizedName.toLowerCase().includes(normalizedEnglishName.toLowerCase())
-  ) {
-    titleParts.push(normalizedEnglishName);
+  if (!normalizedPageTitle) return normalizedBrand;
+  if (normalizedPageTitle.toLowerCase() === normalizedBrand.toLowerCase()) return normalizedBrand;
+
+  for (const separator of [" | ", " - ", " — ", " – "]) {
+    const brandSuffix = `${separator}${normalizedBrand}`.toLowerCase();
+    if (normalizedPageTitle.toLowerCase().endsWith(brandSuffix)) {
+      const baseTitle = normalizedPageTitle.slice(0, normalizedPageTitle.length - separator.length - normalizedBrand.length).trim();
+      return baseTitle ? `${baseTitle} | ${normalizedBrand}` : normalizedBrand;
+    }
   }
 
-  const fullTitle = `${titleParts.join(" · ")} | ${brand}`;
+  if (normalizedPageTitle.toLowerCase().includes(normalizedBrand.toLowerCase())) {
+    return normalizedPageTitle;
+  }
+
+  const fullTitle = `${normalizedPageTitle} | ${normalizedBrand}`;
   if (fullTitle.length <= maxLength) return fullTitle;
 
-  const compactTitle = `${normalizedName} | ${brand}`;
+  const reservedLength = ` | ${normalizedBrand}`.length;
+  return `${truncateText(normalizedPageTitle, Math.max(12, maxLength - reservedLength))} | ${normalizedBrand}`;
+}
+
+function resolveToolTitleNames(name: string, englishName: string | null | undefined, locale: Locale) {
+  const normalizedName = normalizeWhitespace(name);
+  const normalizedEnglishName = normalizeWhitespace(englishName ?? "");
+  const hasDistinctEnglishName =
+    normalizedEnglishName &&
+    normalizedEnglishName.toLowerCase() !== normalizedName.toLowerCase() &&
+    !normalizedName.toLowerCase().includes(normalizedEnglishName.toLowerCase()) &&
+    !normalizedEnglishName.toLowerCase().includes(normalizedName.toLowerCase());
+
+  if (locale === "en") {
+    return {
+      primaryName: normalizedEnglishName || normalizedName,
+      secondaryName: hasDistinctEnglishName ? normalizedName : ""
+    };
+  }
+
+  return {
+    primaryName: normalizedName || normalizedEnglishName,
+    secondaryName: hasDistinctEnglishName ? normalizedEnglishName : ""
+  };
+}
+
+function resolveToolTypeLabel(type: ToolMetaDescriptionInput["type"], locale: Locale) {
+  if (locale === "en") {
+    if (type === "online") return "AI account service";
+    if (type === "skill_learning") return "AI skill course";
+    return "AI software app";
+  }
+
+  if (type === "online") return "AI账号服务";
+  if (type === "skill_learning") return "AI技能课程";
+  return "AI软件应用";
+}
+
+export function buildToolMetadataTitle({ name, englishName, brand = siteName, maxLength = 68, locale = "zh" }: BuildTitleInput) {
+  const { primaryName, secondaryName } = resolveToolTitleNames(name, englishName, locale);
+  const preferredTitle = secondaryName ? `${primaryName} (${secondaryName})` : primaryName;
+  const fullTitle = buildMetadataTitle({ pageTitle: preferredTitle, brand, maxLength });
+  if (fullTitle.length <= maxLength) return fullTitle;
+
+  const compactTitle = buildMetadataTitle({ pageTitle: primaryName, brand, maxLength });
   if (compactTitle.length <= maxLength) return compactTitle;
 
   const reservedLength = ` | ${brand}`.length;
-  return `${truncateText(normalizedName, Math.max(12, maxLength - reservedLength))} | ${brand}`;
+  return `${truncateText(primaryName, Math.max(12, maxLength - reservedLength))} | ${brand}`;
+}
+
+export function buildToolMetaDescription({
+  name,
+  englishName,
+  description,
+  brand = siteName,
+  locale = "zh",
+  type = "software",
+  maxLength = 160
+}: ToolMetaDescriptionInput) {
+  const normalizedDescription = normalizeWhitespace(description ?? "");
+  const { primaryName } = resolveToolTitleNames(name, englishName, locale);
+  const typeLabel = resolveToolTypeLabel(type, locale);
+
+  if (locale === "en") {
+    return buildMetaDescription(
+      `${primaryName} is available on ${brand}. Explore features, pricing, tutorials, and access guidance for this ${typeLabel}.`,
+      defaultSiteDescription,
+      maxLength
+    );
+  }
+
+  const preferredDescription =
+    normalizedDescription || `在${brand}查看${primaryName}的功能亮点、价格、教程与使用方式，快速了解这款${typeLabel}。`;
+
+  return buildMetaDescription(
+    `${preferredDescription} 在${brand}查看功能亮点、价格、教程与使用方式。`,
+    defaultSiteDescription,
+    maxLength
+  );
 }
 
 export function buildPageMetadata({
