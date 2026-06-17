@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { absoluteUrl } from "@/lib/seo";
 import { legalSlugs } from "@/lib/legal";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 const staticRoutes = [
@@ -36,10 +37,12 @@ const staticRouteLastModified = {
 } as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const tools = await prisma.tool.findMany({
-    where: { status: "published" },
-    select: { slug: true, updatedAt: true, type: true }
-  });
+  const tools = await prisma.tool
+    .findMany({
+      where: { status: "published" },
+      select: { slug: true, updatedAt: true, type: true }
+    })
+    .catch(() => []);
 
   return [
     ...staticRoutes.map((path) => ({

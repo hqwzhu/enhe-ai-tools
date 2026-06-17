@@ -55,6 +55,7 @@ describe("SEO foundations source contract", () => {
     const settings = read("src/lib/settings.ts");
 
     expect(sitemap).toContain("export const revalidate");
+    expect(sitemap).toContain('export const dynamic = "force-dynamic"');
     expect(sitemap).toContain("staticRouteLastModified");
     expect(sitemap).toContain('"/skill-learning"');
     expect(sitemap).toContain('"/legal/copyright-complaint"');
