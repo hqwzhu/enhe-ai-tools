@@ -109,6 +109,30 @@ export function buildLocalePath(path: string, locale: Locale) {
   return normalized;
 }
 
+const localizedPublicRoutePatterns = [
+  /^\/$/,
+  /^\/software$/,
+  /^\/online-tools$/,
+  /^\/skill-learning$/,
+  /^\/pricing$/,
+  /^\/tutorials$/,
+  /^\/tools\/.+$/,
+  /^\/legal\/.+$/
+] as const;
+
+export function isLocalizedPublicPath(path: string) {
+  const normalized = stripLocalePrefix(path);
+  return localizedPublicRoutePatterns.some((pattern) => pattern.test(normalized));
+}
+
+export function buildLanguageSwitcherHref(path: string, locale: Locale) {
+  if (!isLocalizedPublicPath(path)) {
+    return buildLocalePath("/", locale);
+  }
+
+  return buildLocalePath(path, locale);
+}
+
 export function buildLanguageAlternates(path = "/") {
   return {
     "x-default": absoluteUrl(stripLocalePrefix(path)),
