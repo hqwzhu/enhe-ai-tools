@@ -28,10 +28,28 @@ const legacyHomeHeroIntrosEn = [
 ];
 const legacyTextLogo = "ENHE";
 
+function isRecoverableSettingsReadError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+
+  const errorWithCode = error as Error & { code?: unknown };
+  const code = typeof errorWithCode.code === "string" ? errorWithCode.code : "";
+  const message = error.message;
+
+  return code === "P1001" || /Can't reach database server/i.test(message) || /ECONNREFUSED/i.test(message);
+}
+
 const getCachedSettingsMap = unstable_cache(
   async () => {
-    const settings = await prisma.siteSetting.findMany();
-    return Object.fromEntries(settings.map((setting) => [setting.key, setting.value]));
+    try {
+      const settings = await prisma.siteSetting.findMany();
+      return Object.fromEntries(settings.map((setting) => [setting.key, setting.value]));
+    } catch (error) {
+      if (isRecoverableSettingsReadError(error)) {
+        return {};
+      }
+
+      throw error;
+    }
   },
   ["site-settings"],
   { revalidate: 300, tags: ["site-settings"] }
