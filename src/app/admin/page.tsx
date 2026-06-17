@@ -95,7 +95,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold">{t.title}</h1>
+      <h1 className="text-3xl font-black text-[var(--marketing-text)]">{t.title}</h1>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-[#8B95A7]">
         {t.intro}
       </p>
@@ -113,7 +113,7 @@ export default async function AdminDashboardPage() {
         <Stat label={t.stats.publishedTools} value={`${publishedTools} / ${tools}`} />
       </div>
 
-      <section className="glass mt-8 rounded-2xl p-6">
+      <section className="surface-panel mt-8 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">{t.funnelTitle}</h2>
           <span className="text-xs text-[#8B95A7]">{t.funnelNote}</span>
@@ -122,9 +122,9 @@ export default async function AdminDashboardPage() {
           {analyticsFunnel.map((row) => (
             <div key={row.eventName} className="rounded-2xl border border-white/10 bg-white/6 p-4">
               <p className="text-sm font-semibold text-[#E8EEF8]">{t.funnelLabels[row.eventName]}</p>
-              <p className="mt-3 text-3xl font-semibold text-[#7DD3FC]">{row.count}</p>
+              <p className="mt-3 text-3xl font-semibold text-[var(--marketing-accent)]">{row.count}</p>
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-[#48F5D3]" style={{ width: `${Math.max(4, (row.count / maxFunnelCount) * 100)}%` }} />
+                <div className="h-full rounded-full bg-[var(--marketing-accent)]" style={{ width: `${Math.max(4, (row.count / maxFunnelCount) * 100)}%` }} />
               </div>
               <p className="mt-3 text-xs text-[#8B95A7]">{t.funnelConversion.replace("{rate}", String(row.conversionRate))}</p>
             </div>
@@ -133,7 +133,7 @@ export default async function AdminDashboardPage() {
       </section>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]">
-        <section className="glass rounded-2xl p-6">
+        <section className="surface-panel p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-semibold">{t.trendTitle}</h2>
             <span className="text-xs text-[#8B95A7]">{t.trendNote}</span>
@@ -143,7 +143,7 @@ export default async function AdminDashboardPage() {
               <div key={bucket.date} className="flex h-full flex-col justify-end gap-2">
                 <div className="text-center text-[11px] text-[#8B95A7]">{formatDashboardAmount(bucket.amount)}</div>
                 <div
-                  className="rounded-t-xl bg-gradient-to-t from-[#48F5D3] to-[#7AA7FF]"
+                  className="rounded-t-xl bg-gradient-to-t from-[var(--marketing-accent)] to-[#ff8a6a]"
                   style={{ height: `${Math.max(8, (bucket.amount / maxTrendAmount) * 150)}px` }}
                 />
                 <div className="text-center text-[11px] text-[#8B95A7]">{bucket.date.slice(5)}</div>
@@ -152,7 +152,7 @@ export default async function AdminDashboardPage() {
           </div>
         </section>
 
-        <section className="glass rounded-2xl p-6">
+        <section className="surface-panel p-6">
           <h2 className="text-xl font-semibold">{t.remindersTitle}</h2>
           <div className="mt-5 grid gap-3 text-sm">
             <QuickItem label={t.stats.paymentReviews} value={pendingProofs} href="/admin/payments" />
@@ -164,7 +164,7 @@ export default async function AdminDashboardPage() {
         </section>
       </div>
 
-      <section className="glass mt-8 rounded-2xl p-6">
+      <section className="surface-panel mt-8 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">{t.popularTools}</h2>
           <span className="text-xs text-[#8B95A7]">{t.popularToolsNote}</span>
@@ -175,7 +175,7 @@ export default async function AdminDashboardPage() {
               <Link
                 key={tool.id}
                 href={tool.type === "software" ? `/admin/software/${tool.id}` : `/admin/online-tools/${tool.id}`}
-                className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition hover:border-[#48F5D3]/40 hover:bg-[#48F5D3]/8"
+                className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition hover:border-[var(--marketing-accent)]/40 hover:bg-[var(--marketing-accent)]/8"
               >
                 <span className="text-sm font-semibold text-[#E8EEF8]">
                   {index + 1}. {tool.name}
@@ -213,24 +213,24 @@ function Stat({
   const content = (
     <>
       <p className="text-sm text-[#8B95A7]">{label}</p>
-      <p className={`mt-3 text-3xl font-semibold ${warn ? "text-[#FFB86B]" : accent ? "text-[#48F5D3]" : "text-[#E8EEF8]"}`}>{value}</p>
+      <p className={`mt-3 text-3xl font-semibold ${warn ? "text-[#FFB86B]" : accent ? "text-[var(--marketing-accent)]" : "text-[#E8EEF8]"}`}>{value}</p>
     </>
   );
 
   if (href) {
     return (
-      <Link href={href} className="glass rounded-2xl p-6 transition hover:border-[#48F5D3]/40 hover:bg-[#48F5D3]/8">
+      <Link href={href} className="surface-panel block p-6 transition hover:border-[var(--marketing-accent)]/40 hover:bg-[var(--marketing-accent)]/8">
         {content}
       </Link>
     );
   }
 
-  return <div className="glass rounded-2xl p-6">{content}</div>;
+  return <div className="surface-panel p-6">{content}</div>;
 }
 
 function QuickItem({ label, value, href }: { label: string; value: number; href: string }) {
   return (
-    <Link href={href} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition hover:border-[#7AA7FF]/40">
+    <Link href={href} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition hover:border-[var(--marketing-accent)]/40">
       <span className="text-[#8B95A7]">{label}</span>
       <span className="font-semibold text-[#E8EEF8]">{value}</span>
     </Link>

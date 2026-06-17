@@ -53,7 +53,7 @@ export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatus
   }, [orderId, router, toolSlug]);
 
   return (
-    <div className="mt-6 rounded-2xl border border-[#48F5D3]/25 bg-[#48F5D3]/10 px-4 py-3 text-sm leading-6 text-[#BDFBEF]" aria-live="polite">
+    <div className="status-success mt-6" aria-live="polite">
       {message}
     </div>
   );

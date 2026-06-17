@@ -31,7 +31,7 @@ export function PasswordInput({
         aria-label={buttonLabel}
         aria-pressed={visible}
         onClick={() => setVisible((current) => !current)}
-        className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full p-1 text-[#8B95A7] transition hover:bg-white/10 hover:text-[#E8EEF8] focus:outline-none focus:ring-2 focus:ring-[#7AA7FF]/70"
+        className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full p-1 text-[var(--marketing-muted)] transition hover:bg-white/10 hover:text-[var(--marketing-text)] focus:outline-none focus:ring-2 focus:ring-[var(--marketing-accent)]/70"
       >
         {visible ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>

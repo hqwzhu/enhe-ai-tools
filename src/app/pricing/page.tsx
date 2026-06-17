@@ -36,16 +36,16 @@ export default async function PricingPage() {
   return (
     <Container className="py-14">
       <SectionTitle title={copy.title} intro={copy.intro} />
-      <section className="glass mt-8 rounded-2xl p-7">
+      <section className="surface-panel mt-8 p-7">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
-            <PackageOpen className="mt-1 text-[#7DD3FC]" size={28} />
+            <PackageOpen className="mt-1 text-[var(--marketing-accent)]" size={28} />
             <div>
-              <h2 className="text-2xl font-semibold text-[#F6FAFF]">{copy.cardTitle}</h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#8B95A7]">{copy.cardText}</p>
+              <h2 className="text-2xl font-bold text-[var(--marketing-text)]">{copy.cardTitle}</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--marketing-muted)]">{copy.cardText}</p>
             </div>
           </div>
-          <Link href="/software" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
+          <Link href="/software" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#050505] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#161616]">
             {copy.cta}
             <ArrowRight size={16} />
           </Link>

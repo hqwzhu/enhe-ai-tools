@@ -16,7 +16,7 @@ export default async function LegalPage({ params }: { params: Promise<{ slug: st
   return (
     <Container className="py-14">
       <article className="mx-auto max-w-4xl">
-        <p className="mb-4 text-sm font-semibold text-[#48F5D3]">ENHE Compliance</p>
+        <p className="mb-4 text-sm font-semibold text-[var(--marketing-accent)]">ENHE Compliance</p>
         <h1 className="text-4xl font-semibold text-white">{page.title}</h1>
         <p className="mt-5 leading-8 text-[#8B95A7]">{page.summary}</p>
         <div className="mt-10 space-y-8">

@@ -58,17 +58,17 @@ const statusTextEn: Record<string, string> = {
 
 const statusClass: Record<string, string> = {
   draft: "border-white/15 bg-white/8 text-[#8B95A7]",
-  published: "border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#48F5D3]",
+  published: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]",
   offline: "border-amber-300/30 bg-amber-300/10 text-amber-100"
 };
 
 function NoticeBar({ notice, locale }: { notice?: Notice; locale: Locale }) {
   const copy = toolAdminCopy[locale];
   if (notice?.saved) {
-    return <p className="mt-4 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">{copy.saved}</p>;
+    return <p className="status-success mt-4">{copy.saved}</p>;
   }
   if (notice?.deleted) {
-    return <p className="mt-4 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">{copy.deleted}</p>;
+    return <p className="status-success mt-4">{copy.deleted}</p>;
   }
   if (notice?.error) {
     return <p className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">{copy.failed}: {notice.error}</p>;
@@ -162,7 +162,7 @@ export function ToolAdminList({
             {isSkillLearning ? copy.courseListIntro : isAccountService ? copy.serviceListIntro : copy.listIntro}
           </p>
         </div>
-        <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
+        <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ff6844]">
           {isSkillLearning ? copy.newCourse : isAccountService ? copy.newService : copy.newTool}
         </Link>
       </div>
@@ -171,7 +171,7 @@ export function ToolAdminList({
 
       {filters && buildPageHref ? (
         <>
-          <form className="glass mt-6 grid gap-3 rounded-2xl p-5 md:grid-cols-[1fr_180px_220px_auto]" action={listPath}>
+          <form className="filter-surface mt-6 grid gap-3 md:grid-cols-[1fr_180px_220px_auto]" action={listPath}>
             <input name="q" defaultValue={filters.q} placeholder={isSkillLearning ? copy.courseSearchPlaceholder : isAccountService ? copy.serviceSearchPlaceholder : copy.searchPlaceholder} className={inputClass} />
             <select name="status" defaultValue={filters.status ?? ""} className={selectClass}>
               <option value="">{copy.allStatus}</option>
@@ -236,12 +236,12 @@ export function ToolAdminList({
                       {coverImage ? (
                         <Image src={coverImage} alt={tool.name} fill className="object-cover" sizes="96px" unoptimized />
                       ) : (
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_30%,rgba(72,245,211,0.22),transparent_38%),linear-gradient(135deg,rgba(122,167,255,0.16),transparent)]" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_30%,rgba(240,90,53,0.22),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.12),transparent)]" />
                       )}
                     </div>
                     <div>
                       <p className="font-semibold text-[#E8EEF8]">{tool.name}</p>
-                      {tool.englishName ? <p className="mt-1 text-xs font-medium text-[#7DD3FC]">{tool.englishName}</p> : null}
+                      {tool.englishName ? <p className="mt-1 text-xs font-medium text-[var(--marketing-accent)]">{tool.englishName}</p> : null}
                       <p className="mt-1 text-xs text-[#8B95A7]">{tool.slug}</p>
                     </div>
                   </div>
@@ -265,11 +265,11 @@ export function ToolAdminList({
                         {publishIssues.length > 3 ? <Badge className="border-white/15 bg-white/8 text-[#8B95A7]">+{publishIssues.length - 3}</Badge> : null}
                       </>
                     ) : (
-                      <Badge className="border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#48F5D3]">{copy.publishable}</Badge>
+                      <Badge className="border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]">{copy.publishable}</Badge>
                     )}
                   </div>
                   <div className="text-right">
-                    <Link href={getAdminToolEditPath(type, tool.id)} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+                    <Link href={getAdminToolEditPath(type, tool.id)} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-[#E8EEF8] transition hover:border-[var(--marketing-accent)]/50 hover:text-[var(--marketing-accent)]">
                       {copy.viewEdit}
                     </Link>
                   </div>
@@ -317,7 +317,7 @@ export function ToolEditor({
             {isSkillLearning ? copy.courseEditorIntro : isAccountService ? copy.serviceEditorIntro : copy.editorIntro}
           </p>
         </div>
-        <Link href={listPath} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-[#E8EEF8] transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+        <Link href={listPath} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-[#E8EEF8] transition hover:border-[var(--marketing-accent)]/50 hover:text-[var(--marketing-accent)]">
           {copy.backToList}
         </Link>
       </div>
@@ -442,13 +442,13 @@ export function ToolEditor({
               </div>
             </div>
             {isSkillLearning ? (
-              <div className="rounded-2xl border-2 border-[#48F5D3] bg-[#48F5D3]/15 p-5">
+              <div className="surface-panel-soft p-5">
                 <p className="text-sm font-semibold text-[#F6FAFF]">{copy.courseContentSectionTitle}</p>
                 <p className="mt-2 text-sm leading-6 text-[#8B95A7]">{copy.courseContentSectionIntro}</p>
                 {tool?.id ? (
                   <div className="mt-4 flex flex-wrap gap-3">
-                    <a href={`/admin/tutorials?toolId=${tool.id}`} className="inline-block rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">{copy.manageTutorials}</a>
-                    <a href={`/admin/faqs?toolId=${tool.id}`} className="inline-block rounded-full border border-[#7DD3FC]/35 px-5 py-3 text-sm font-semibold text-[#7DD3FC]">{copy.manageFaq}</a>
+                    <a href={`/admin/tutorials?toolId=${tool.id}`} className="inline-block rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ff6844]">{copy.manageTutorials}</a>
+                    <a href={`/admin/faqs?toolId=${tool.id}`} className="inline-block rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-[#E8EEF8] transition hover:border-[var(--marketing-accent)]/50 hover:text-[var(--marketing-accent)]">{copy.manageFaq}</a>
                   </div>
                 ) : (
                   <p className="mt-3 text-sm text-[#FFB86B]">{copy.saveBeforeContent}</p>
@@ -492,7 +492,7 @@ export function ToolEditor({
 
 function EditorSection({ title, intro, children }: React.PropsWithChildren<{ title: string; intro: string }>) {
   return (
-    <section className="glass rounded-2xl p-6">
+    <section className="surface-panel p-6">
       <div className="mb-5">
         <h2 className="text-xl font-semibold text-[#F6FAFF]">{title}</h2>
         <p className="mt-2 text-sm leading-6 text-[#8B95A7]">{intro}</p>

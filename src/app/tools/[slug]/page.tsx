@@ -111,7 +111,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               {coverImage ? (
                 <Image src={coverImage} alt={tool.name} fill className="object-contain" sizes="(min-width: 1024px) 1120px, 100vw" unoptimized />
               ) : (
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(125,211,252,0.2),transparent_32%),radial-gradient(circle_at_72%_70%,rgba(142,167,255,0.18),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(240,90,53,0.2),transparent_32%),radial-gradient(circle_at_72%_70%,rgba(255,184,107,0.16),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
               )}
             </div>
           </div>
@@ -131,15 +131,15 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                         : td.free}
                 </Badge>
                 {tool.tagLinks.map(({ tag }) => (
-                  <Badge key={tag.id} className="text-[#7DD3FC]">
+                  <Badge key={tag.id} className="text-[var(--marketing-accent)]">
                     {tag.name}
                   </Badge>
                 ))}
               </div>
 
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-[#7DD3FC]">{td.coverLabel}</p>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--marketing-accent)]">{td.coverLabel}</p>
               <h1 className="mt-5 text-4xl font-semibold leading-tight text-[#F6FAFF] md:text-5xl">{tool.name}</h1>
-              {tool.englishName ? <p className="mt-3 text-lg font-medium tracking-wide text-[#7DD3FC] md:text-xl">{tool.englishName}</p> : null}
+              {tool.englishName ? <p className="mt-3 text-lg font-medium tracking-wide text-[var(--marketing-accent)] md:text-xl">{tool.englishName}</p> : null}
               <p className="mt-5 max-w-3xl text-base leading-8 text-[#8F9DB2] md:text-lg">{tool.shortDescription}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -178,7 +178,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                     {activePriceSpecs.length ? (
                       <div className="grid gap-3 sm:grid-cols-2">
                         {activePriceSpecs.map((spec, index) => (
-                          <label key={spec.id} className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[#7DD3FC]/45 has-[:checked]:border-[#7DD3FC]/70 has-[:checked]:bg-[#7DD3FC]/10">
+                          <label key={spec.id} className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12">
                             <span>
                               <span className="block font-semibold text-[#F6FAFF]">{spec.name}</span>
                               <span className="mt-1 block text-[#FFB86B]">¥{Number(spec.price).toFixed(2)}</span>
@@ -232,7 +232,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
                   tool.changelogs.slice(0, 3).map((item) => (
                     <div key={item.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold text-[#7DD3FC]">{item.version}</p>
+                        <p className="text-sm font-semibold text-[var(--marketing-accent)]">{item.version}</p>
                         {item.releaseDate ? <p className="text-xs text-[#8F9DB2]">{item.releaseDate.toLocaleDateString(locale === "en" ? "en-US" : "zh-CN")}</p> : null}
                       </div>
                       <h3 className="mt-2 font-semibold text-[#F6FAFF]">{item.title}</h3>
@@ -256,7 +256,7 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
               {tutorialVideos.length ? (
                 <div className="space-y-2">
                   {tutorialVideos.slice(0, 2).map((tutorial) => (
-                    <a key={tutorial.id} href={tutorial.videoUrl ?? "#"} target="_blank" rel="noreferrer" className="block break-all text-sm leading-6 text-[#7DD3FC] hover:text-[#BFE9FF]">
+                    <a key={tutorial.id} href={tutorial.videoUrl ?? "#"} target="_blank" rel="noreferrer" className="block break-all text-sm leading-6 text-[var(--marketing-accent)] hover:text-[#ffb09b]">
                       {tutorial.title}
                     </a>
                   ))}
@@ -277,12 +277,12 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
             </TrustItem>
             <TrustItem label={td.updateLog}>
               <p className="text-sm leading-6 text-[#C5D0E2]">{td.changelogCount.replace("{count}", String(tool.changelogs.length))}</p>
-              <Link href="#tool-changelog" className="mt-2 inline-flex text-sm font-semibold text-[#7DD3FC] hover:text-[#BFE9FF]">
+              <Link href="#tool-changelog" className="mt-2 inline-flex text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]">
                 {td.changelogTitle}
               </Link>
             </TrustItem>
             <TrustItem label={td.supportEmail}>
-              <a href={`mailto:${supportEmail}`} className="break-all text-sm font-semibold text-[#7DD3FC] hover:text-[#BFE9FF]">
+              <a href={`mailto:${supportEmail}`} className="break-all text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]">
                 {supportEmail}
               </a>
               <Link href="/legal/membership-refund" className="mt-2 block text-sm leading-6 text-[#FFB86B] hover:text-[#FFD29B]">

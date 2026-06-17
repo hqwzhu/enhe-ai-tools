@@ -13,13 +13,13 @@ export default async function RegisterPage() {
 
   return (
     <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
-      <form action={registerAction} className="glass w-full max-w-md rounded-2xl p-8">
+      <form action={registerAction} className="surface-panel w-full max-w-md p-8">
         <input type="hidden" name="csrfToken" value={csrfToken} />
-        <h1 className="text-3xl font-semibold">{t.auth.registerTitle}</h1>
-        <p className="mt-3 text-sm text-[#8B95A7]">{t.auth.registerIntro}</p>
-        <label className="mt-8 block text-sm">{t.auth.email}</label>
-        <input name="email" type="text" required autoComplete="username" className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
-        <label className="mt-5 block text-sm">{t.auth.password}</label>
+        <h1 className="text-3xl font-black text-[var(--marketing-text)]">{t.auth.registerTitle}</h1>
+        <p className="mt-3 text-sm font-medium text-[var(--marketing-muted)]">{t.auth.registerIntro}</p>
+        <label className="mt-8 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.email}</label>
+        <input name="email" type="text" required autoComplete="username" className="form-control-dark mt-2" />
+        <label className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.password}</label>
         <PasswordInput
           name="password"
           minLength={6}
@@ -28,14 +28,14 @@ export default async function RegisterPage() {
           showLabel={t.auth.showPassword}
           hideLabel={t.auth.hidePassword}
           wrapperClassName="mt-2"
-          className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]"
+          className="form-control-dark"
         />
-                <label className="mt-5 block text-sm">{locale === "en" ? "Email" : "邮箱"}</label>
-        <input name="newsletterEmail" type="email" autoComplete="email" className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
+        <label className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{locale === "en" ? "Email" : "邮箱"}</label>
+        <input name="newsletterEmail" type="email" autoComplete="email" className="form-control-dark mt-2" />
 
-        <FormSubmitButton className="mt-8 w-full bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel="创建中...">{t.auth.createAccount}</FormSubmitButton>
-        <p className="mt-5 text-center text-sm text-[#8B95A7]">
-          {t.auth.hasAccount}<Link className="text-[#48F5D3]" href="/login">{t.auth.goLogin}</Link>
+        <FormSubmitButton className="mt-8 w-full text-base" pendingLabel="创建中...">{t.auth.createAccount}</FormSubmitButton>
+        <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
+          {t.auth.hasAccount}<Link className="font-semibold text-[var(--marketing-accent)]" href="/login">{t.auth.goLogin}</Link>
         </p>
       </form>
     </Container>

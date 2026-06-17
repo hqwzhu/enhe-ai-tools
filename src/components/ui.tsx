@@ -7,7 +7,7 @@ export function Container({ className, children }: React.PropsWithChildren<{ cla
 
 export function Badge({ children, className }: React.PropsWithChildren<{ className?: string }>) {
   return (
-    <span className={cn("rounded-full border border-[rgba(210,230,255,0.16)] bg-[rgba(238,246,255,0.08)] px-3 py-1 text-xs font-semibold text-[#C8D6EA]", className)}>
+    <span className={cn("rounded-full border border-white/14 bg-white/7 px-3 py-1 text-xs font-semibold text-[var(--marketing-muted)]", className)}>
       {children}
     </span>
   );
@@ -22,11 +22,10 @@ export function ButtonLink({
   return (
     <Link
       className={cn(
-        "group relative inline-flex items-center justify-center overflow-hidden rounded-full border border-[rgba(210,230,255,0.18)] bg-[rgba(238,246,255,0.06)] px-5 py-3 text-sm font-semibold text-[#F6FAFF] transition duration-300 hover:-translate-y-0.5 hover:border-[#7DD3FC]/55 hover:text-white hover:shadow-[0_0_32px_rgba(125,211,252,0.16)]",
-        "before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-[#7DD3FC]/18 before:to-transparent before:transition before:duration-500 hover:before:translate-x-full",
+        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-bold transition duration-200 hover:-translate-y-0.5",
         variant === "primary"
-          ? ""
-          : "",
+          ? "border border-[#050505] bg-[#050505] text-white shadow-[0_14px_34px_rgba(0,0,0,0.22)] hover:bg-[#161616]"
+          : "surface-panel-soft border-white/14 text-[var(--marketing-text)] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]",
         className
       )}
       href={href}
@@ -39,18 +38,18 @@ export function ButtonLink({
 export function SectionTitle({ eyebrow, title, intro }: { eyebrow?: string; title: string; intro?: string }) {
   return (
     <div className="mb-8 max-w-3xl">
-      {eyebrow ? <p className="mb-3 text-sm font-semibold tracking-[0.12em] text-[#7DD3FC] uppercase">{eyebrow}</p> : null}
-      <h2 className="text-3xl font-semibold tracking-normal text-[#F6FAFF] md:text-4xl">{title}</h2>
-      {intro ? <p className="mt-4 text-base leading-7 text-[#8F9DB2]">{intro}</p> : null}
+      {eyebrow ? <p className="mb-3 text-sm font-bold tracking-[0.08em] text-[var(--marketing-accent)]">{eyebrow}</p> : null}
+      <h2 className="text-3xl font-black tracking-normal text-[var(--marketing-text)] md:text-4xl">{title}</h2>
+      {intro ? <p className="mt-4 text-base font-medium leading-7 text-[var(--marketing-muted)]">{intro}</p> : null}
     </div>
   );
 }
 
 export function EmptyState({ title, text }: { title: string; text: string }) {
   return (
-    <div className="dossier-card p-10 text-center">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="mt-2 text-sm text-[#8F9DB2]">{text}</p>
+    <div className="surface-panel p-10 text-center">
+      <h3 className="text-lg font-bold text-[var(--marketing-text)]">{title}</h3>
+      <p className="mt-2 text-sm text-[var(--marketing-muted)]">{text}</p>
     </div>
   );
 }

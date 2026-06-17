@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentLocale, type Locale } from "@/lib/i18n";
 import { getStatusLabel, proofStatusLabels } from "@/lib/status-labels";

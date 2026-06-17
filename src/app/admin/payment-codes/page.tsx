@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import { updatePaymentQrCodesAction } from "@/app/admin/actions";
 import { AdminSection, Field, inputClass, SubmitButton } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";

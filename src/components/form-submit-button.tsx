@@ -15,13 +15,13 @@ const baseClass =
 
 const variantClass = {
   primary:
-    "bg-[#7DD3FC] px-5 py-3 text-sm text-[#030611] hover:shadow-[0_0_26px_rgba(125,211,252,0.18)]",
+    "bg-[#050505] px-5 py-3 text-sm text-white shadow-[0_14px_34px_rgba(0,0,0,0.22)] hover:bg-[#161616]",
   success:
-    "bg-[#48F5D3] px-5 py-3 text-sm text-[#05110e] hover:shadow-[0_0_26px_rgba(72,245,211,0.18)]",
+    "bg-[var(--marketing-accent)] px-5 py-3 text-sm text-white hover:bg-[#ff6844]",
   secondary:
-    "border border-white/12 px-5 py-3 text-sm text-[#E8EEF8] hover:border-[#7DD3FC]/50 hover:text-[#7DD3FC]",
+    "border border-white/14 bg-white/7 px-5 py-3 text-sm text-[var(--marketing-text)] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]",
   danger:
-    "border border-red-400/40 px-4 py-2 text-sm text-red-200 hover:border-red-300 hover:bg-red-400/10"
+    "border border-red-400/35 bg-red-400/10 px-4 py-2 text-sm text-red-100 hover:border-red-300 hover:bg-red-400/15"
 } as const;
 
 export function FormSubmitButton({
@@ -89,7 +89,7 @@ export function FormSubmitButton({
         <span
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-full border border-[#7DD3FC]/35 bg-[#08111f]/95 px-4 py-2 text-sm font-semibold text-[#E8EEF8] shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
+          className="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-full border border-[var(--marketing-accent)]/35 bg-[#202229]/95 px-4 py-2 text-sm font-semibold text-[var(--marketing-text)] shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
         >
           {duplicateSubmitLabel}
         </span>

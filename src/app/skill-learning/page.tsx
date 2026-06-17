@@ -53,17 +53,17 @@
    const t = getDictionary(locale);
  
    return (
-     <form className="glass grid gap-3 rounded-2xl p-4 md:grid-cols-[1fr_180px_140px]">
-       <input name="q" placeholder={t.listing.searchPlaceholder} className="rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none" />
-       <select name="category" className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">
+     <form className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_140px]">
+       <input name="q" placeholder={t.listing.searchPlaceholder} className="form-control-dark" />
+       <select name="category" className="form-select-dark">
          <option value="">{t.listing.allCategories}</option>
          {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
        </select>
-       <select name="sort" className="rounded-xl border border-white/12 bg-[#111827] px-4 py-3">
+       <select name="sort" className="form-select-dark">
          <option value="latest">{t.listing.latest}</option>
          <option value="hot">{t.listing.hot}</option>
        </select>
-       <button className="rounded-full bg-[#7AA7FF] px-5 py-3 font-semibold text-[#07101f] md:col-span-3">{t.listing.filter}</button>
+       <button className="rounded-full bg-[#050505] px-5 py-3 font-bold text-white transition hover:bg-[#161616] md:col-span-3">{t.listing.filter}</button>
      </form>
    );
  }

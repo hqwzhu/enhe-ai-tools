@@ -12,12 +12,12 @@ export const statusMeta: Record<DevelopmentItemStatus, { label: string; weight: 
   completed: {
     label: "已完成",
     weight: 1,
-    className: "border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#48F5D3]"
+    className: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]"
   },
   partial: {
     label: "部分完成",
     weight: 0.5,
-    className: "border-[#7AA7FF]/30 bg-[#7AA7FF]/10 text-[#9BBCFF]"
+    className: "border-[#FFB86B]/30 bg-[#FFB86B]/10 text-[#FFB86B]"
   },
   not_started: {
     label: "未开始",

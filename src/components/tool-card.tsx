@@ -35,8 +35,8 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
   const showPrice = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0) || tool.type === "skill_learning";
 
   return (
-    <Link href={`/tools/${tool.slug}`} className="evidence-card group block overflow-hidden transition hover:-translate-y-1 hover:border-[#7DD3FC]/45">
-      <div className="relative aspect-[16/9] overflow-hidden border-b border-[rgba(210,230,255,0.16)] bg-[#07101E]">
+    <Link href={`/tools/${tool.slug}`} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
+      <div className="relative aspect-[16/9] overflow-hidden border-b border-white/14 bg-[#202229]">
         {coverImage ? (
           <Image
             src={coverImage}
@@ -47,9 +47,9 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
             unoptimized
           />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(125,211,252,0.18),transparent_34%),radial-gradient(circle_at_72%_72%,rgba(142,167,255,0.18),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(240,90,53,0.16),transparent_34%),radial-gradient(circle_at_72%_72%,rgba(255,255,255,0.1),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#030611]/88 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#202229]/90 via-transparent to-transparent" />
       </div>
 
       <div className="p-5">
@@ -58,33 +58,33 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge>{tool.category?.name ?? t.toolCard.uncategorized}</Badge>
               {showPrice ? (
-                <Badge className="border-[#FFB86B]/35 text-[#FFB86B]">{tool.type === "online" ? t.toolCard.servicePrice : tool.type === "skill_learning" ? t.toolCard.capabilityPaidCourse : t.toolCard.paidDownload} ¥{servicePrice.toFixed(2)}</Badge>
+                <Badge className="border-[var(--marketing-accent)]/35 text-[var(--marketing-accent)]">{tool.type === "online" ? t.toolCard.servicePrice : tool.type === "skill_learning" ? t.toolCard.capabilityPaidCourse : t.toolCard.paidDownload} ¥{servicePrice.toFixed(2)}</Badge>
               ) : (
                 <Badge>{t.toolCard.free}</Badge>
               )}
             </div>
-            <h3 className="text-xl font-semibold text-[#F6FAFF]">{tool.name}</h3>
-            {tool.englishName ? <p className="mt-1 text-sm font-medium text-[#7DD3FC]">{tool.englishName}</p> : null}
+            <h3 className="text-xl font-bold text-[var(--marketing-text)]">{tool.name}</h3>
+            {tool.englishName ? <p className="mt-1 text-sm font-medium text-[var(--marketing-accent)]">{tool.englishName}</p> : null}
           </div>
-          <ArrowUpRight className="text-[#8F9DB2] transition group-hover:text-[#7DD3FC]" />
+          <ArrowUpRight className="text-[var(--marketing-muted)] transition group-hover:text-[var(--marketing-accent)]" />
         </div>
-        <p className="min-h-14 text-sm leading-6 text-[#C5D0E2]">
-          <span className="font-semibold text-[#7DD3FC]">{t.toolCard.valuePrefix}:</span>
+        <p className="min-h-14 text-sm leading-6 text-[var(--marketing-soft-text)]">
+          <span className="font-semibold text-[var(--marketing-accent)]">{t.toolCard.valuePrefix}:</span>
           {summary}
         </p>
         <div className="mt-5 grid gap-2">
           {highlights.map((item) => (
-            <span key={item} className="inline-flex items-center gap-2 text-sm text-[#8F9DB2]">
-              <Check size={14} className="shrink-0 text-[#5EF1C7]" />
+            <span key={item} className="inline-flex items-center gap-2 text-sm text-[var(--marketing-muted)]">
+              <Check size={14} className="shrink-0 text-[var(--marketing-accent)]" />
               {item}
             </span>
           ))}
         </div>
-        <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs text-[#8F9DB2]">
-          <UserRound size={14} className="shrink-0 text-[#7DD3FC]" />
+        <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs text-[var(--marketing-muted)]">
+          <UserRound size={14} className="shrink-0 text-[var(--marketing-accent)]" />
           <span>{t.toolCard.audienceLabel}: {audience}</span>
         </div>
-        <div className="mt-6 flex items-center justify-between gap-4 text-xs text-[#8F9DB2]">
+        <div className="mt-6 flex items-center justify-between gap-4 text-xs text-[var(--marketing-muted)]">
           <span className="inline-flex items-center gap-3">
             <span className="inline-flex items-center gap-1">
               <Download size={14} />
@@ -95,7 +95,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
               {tool.usageCount}
             </span>
           </span>
-          <span className="font-semibold text-[#7DD3FC]">{t.toolCard.viewDetails}</span>
+          <span className="font-semibold text-[var(--marketing-accent)]">{t.toolCard.viewDetails}</span>
         </div>
       </div>
     </Link>

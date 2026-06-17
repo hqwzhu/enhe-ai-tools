@@ -1,59 +1,75 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-describe("homepage redesign source", () => {
-  it("keeps the accepted minimalist hero structure and flat brand treatment", () => {
+describe("homepage SaaS redesign source", () => {
+  it("implements the accepted night-only minimalist homepage direction", () => {
     const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
-    const logo = readFileSync(new URL("../components/hero-logo-mark.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
     expect(page).toContain("home-hero-shell");
-    expect(page).toContain("home-hero-reference-frame");
-    expect(page).toContain("min-h-[calc(100dvh-4rem)]");
-    expect(page).toContain("heroSubtitle");
-    expect(page).toContain("home-feature-sections");
-    expect(page).toContain("home-recommended-tool-grid");
+    expect(page).toContain("home-hero-centered");
+    expect(page).toContain("Symbiosis · Awakening · Creation");
+    expect(page).not.toContain("ENHE AI Tools");
+    expect(page).toContain('const defaultHeroTitle = "ENHE AI";');
+    expect(page).toContain('const defaultHeroTitleSecondLine = "重塑你的人生";');
+    expect(page).toContain("与 AI 共生，在时代中觉醒，用创造定义未来。");
+    expect(page).not.toContain("我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。");
+    expect(page).not.toContain("让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。");
+    expect(page).not.toContain("AI工具");
+    expect(page).not.toContain("即刻可用");
+    expect(page).not.toContain("用精选软件、账号服务和技能课程，把重复工作交给 AI 自动化");
+    expect(page).toContain("const heroLines = [defaultHeroTitle, defaultHeroTitleSecondLine];");
+    expect(page).not.toContain("configuredHeroTitle");
+    expect(page).toContain("30+");
+    expect(page).toContain("精选工具与课程");
+    expect(page).toContain("灵感落地");
+    expect(page).toContain("把想法变成看得见的成果");
+    expect(page).not.toContain("自动解锁");
+    expect(page).not.toContain("支付后开通权益");
+    expect(page).toContain('href="/software"');
+    expect(page).toContain('href="/skill-learning"');
+    expect(page).toContain("home-product-preview backdrop-blur-xl backdrop-saturate-150");
     expect(page).toContain("recommendedTools");
     expect(page).toContain("isHomeRecommended: true");
     expect(page).toContain("take: 40");
-    expect(page).not.toContain("SectionTitle");
-    expect(page).not.toContain("featuredSoftwareTitle");
-    expect(page).not.toContain("onlineToolsTitle");
-    expect(page).toContain("enhe-orbital-system");
-    expect(page).toContain("enhe-circuit-line");
+    expect(page).not.toContain("HeroLogoMark");
+    expect(page).not.toContain("enhe-orbital-system");
+    expect(page).not.toContain("enhe-circuit-line");
+    expect(page).not.toContain("enhe-signal");
+    expect(page).not.toContain("home-hero-scroll-cue");
 
-    expect(header).toContain("site-header-transparent");
-    expect(header).toContain("site-header-inner");
-    expect(header).not.toContain("border-b border-[rgba(210,230,255,0.14)]");
-    expect(header).not.toContain("bg-[#070A12]/78");
-    expect(header).not.toContain("backdrop-blur-2xl");
+    expect(header).toContain("用户中心");
+    expect(header).not.toContain("查看工具");
+    expect(header).not.toContain("帮助支持");
 
-    expect(logo).toContain("referenceHeroLogoCyan");
-    expect(logo).toContain("enhe-reference-logo-slat-top");
-    expect(logo).not.toContain("heroLogoDepthFill");
-    expect(logo).not.toContain("enhe-logo-depth");
-
-    expect(css).toContain(".home-hero-shell");
-    expect(css).toContain(".home-hero-reference-frame");
-    expect(css).toContain(".home-feature-sections");
-    expect(css).toContain(".enhe-orbital-system");
-    expect(css).toContain(".enhe-circuit-line");
-    expect(css).toContain(".enhe-reference-logo-slat-top");
-    expect(css).toContain("font-size: clamp(3.4rem, 5.5vw, 6rem);");
-    expect(css).toContain("padding-inline: clamp(1.25rem, 5vw, 6rem);");
-    expect(css).toContain("min-height: clamp(340px, 48vh, 520px);");
-    expect(css).toContain("max-width: 72vw;");
-    expect(css).not.toContain("padding-top: 9rem;");
-    expect(css).not.toContain("transform: translateY(-3.85rem)");
-    expect(css).toContain("aspect-ratio: 1;");
-    expect(css).not.toContain("orbit-drift");
-    expect(css).toContain("radial-gradient(circle at var(--mouse-x) var(--mouse-y)");
-    expect(css).not.toContain("linear-gradient(115deg");
-    expect(css).not.toContain("linear-gradient(105deg");
-    expect(css).not.toContain("linear-gradient(72deg");
-    expect(css).not.toContain("linear-gradient(74deg");
-    expect(css).not.toContain("perspective: 980px");
-    expect(css).not.toContain("rotateX(6deg) rotateY(4deg)");
+    expect(css).toContain("color-scheme: dark");
+    expect(css).toContain("--marketing-bg: #22242a");
+    expect(css).not.toContain("color-scheme: light");
+    expect(css).not.toContain("--marketing-bg: #ffffff");
+    expect(css).not.toContain(".site-brand-logo-light");
+    expect(css).toContain("--marketing-bg: #22242a");
+    expect(css).toContain("--marketing-accent: #f05a35");
+    expect(css).toContain("Microsoft YaHei UI");
+    expect(css).toContain("MiSans");
+    expect(css).toContain("HarmonyOS Sans SC");
+    expect(css).toContain(".home-hero-centered");
+    expect(css).toContain(".home-hero-metrics");
+    expect(css).toMatch(
+      /\.site-user-center-cta \{[\s\S]*min-width: 0;[\s\S]*min-height: 32px;[\s\S]*font-size: 12px;[\s\S]*padding: 0 13px;/
+    );
+    expect(css).toMatch(
+      /\.home-hero-metrics strong \{[\s\S]*font-size: clamp\(1\.4rem, 2\.8vw, 2\.2rem\);/
+    );
+    expect(css).toContain("white-space: pre-line");
+    expect(css).toContain(".home-product-preview");
+    expect(css).toContain("backdrop-filter: blur(28px) saturate(160%)");
+    expect(css).toContain("-webkit-backdrop-filter: blur(28px) saturate(160%)");
+    expect(css).toContain("background-color: rgba(35, 38, 47, 0.54)");
+    expect(css).toContain("background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.095), rgba(255, 255, 255, 0.035))");
+    expect(css).toContain("radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.075), transparent 34%)");
+    expect(css).toContain("linear-gradient(90deg, rgba(255, 255, 255, 0.035), transparent 48%)");
+    expect(css).not.toContain(".enhe-orbital-system");
+    expect(css).not.toContain(".home-hero-scroll-cue");
   });
 });

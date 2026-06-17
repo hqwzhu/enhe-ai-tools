@@ -57,9 +57,9 @@ export default async function PayPage({ params }: PayPageProps) {
       />
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="glass rounded-2xl p-7">
+        <div className="surface-panel p-7">
           <p className="text-sm text-[#8B95A7]">订单号</p>
-          <h1 className="mt-2 break-all text-2xl font-semibold text-[#48F5D3]">{order.orderNo}</h1>
+          <h1 className="mt-2 break-all text-2xl font-black text-[var(--marketing-accent)]">{order.orderNo}</h1>
 
           <div className="mt-7 grid gap-4">
             <Info label="项目" value={order.tool?.name ?? order.plan?.name ?? "订单项目"} />
@@ -71,16 +71,16 @@ export default async function PayPage({ params }: PayPageProps) {
           </div>
         </div>
 
-        <div className="glass rounded-2xl p-7">
+        <div className="surface-panel p-7">
           {isUnlocked ? (
             <div>
-              <h2 className="text-xl font-semibold text-[#48F5D3]">已解锁下载链接</h2>
+              <h2 className="text-xl font-bold text-[var(--marketing-accent)]">已解锁下载链接</h2>
               <p className="mt-3 text-sm leading-6 text-[#8B95A7]">
                 该订单已经完成支付并开通权益。你可以返回工具详情页查看下载链接内容。
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 {order.tool ? (
-                  <Link href={`/tools/${order.tool.slug}#download-links`} className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
+                  <Link href={`/tools/${order.tool.slug}#download-links`} className="rounded-full bg-[#050505] px-5 py-3 text-sm font-semibold text-white">
                     查看下载链接
                   </Link>
                 ) : null}
@@ -91,8 +91,8 @@ export default async function PayPage({ params }: PayPageProps) {
             </div>
           ) : zpayError ? (
             <div>
-              <h2 className="text-xl font-semibold text-[#FFB86B]">支付订单创建失败</h2>
-              <p className="mt-3 rounded-xl border border-[#FFB86B]/30 bg-[#FFB86B]/10 px-4 py-3 text-sm leading-6 text-[#FFD6A5]">
+              <h2 className="text-xl font-bold text-[var(--marketing-accent)]">支付订单创建失败</h2>
+              <p className="status-warning mt-3">
                 {zpayError}
               </p>
               <p className="mt-4 text-sm leading-6 text-[#8B95A7]">
@@ -147,7 +147,7 @@ export default async function PayPage({ params }: PayPageProps) {
                         href={zpayPayment.payUrl ?? zpayPayment.qrcodeUrl ?? zpayPayment.displayUrl ?? "#"}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]"
+                        className="rounded-full bg-[#050505] px-5 py-3 text-sm font-semibold text-white"
                       >
                         打开收银台
                       </a>
@@ -163,7 +163,7 @@ export default async function PayPage({ params }: PayPageProps) {
             </div>
           ) : (
             <div>
-              <h2 className="text-xl font-semibold text-[#FFB86B]">当前订单暂不可支付</h2>
+              <h2 className="text-xl font-bold text-[var(--marketing-accent)]">当前订单暂不可支付</h2>
               <p className="mt-3 text-sm leading-6 text-[#8B95A7]">
                 该订单状态为 {order.orderStatus}，请返回订单详情查看。
               </p>

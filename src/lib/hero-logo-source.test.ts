@@ -21,8 +21,8 @@ describe("hero logo source", () => {
     expect(component).not.toContain("enhe-logo-depth");
     expect(css).toContain(".enhe-reference-logo-slat-top");
     expect(css).toContain("flat-logo-assemble");
-    expect(css).toContain("aspect-ratio: 1;");
-    expect(css).toContain("left: 50%;");
+    expect(css).toContain("aspect-ratio: 1.56;");
+    expect(css).toContain("max-width: 72vw;");
     expect(css).not.toContain("left: 56%;");
     expect(css).not.toContain("orbit-drift");
     expect(css).not.toContain("rotate(5deg)");

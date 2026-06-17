@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { AdminSection } from "@/app/admin/admin-ui";
 import { getCurrentLocale } from "@/lib/i18n";
 

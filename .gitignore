@@ -10,6 +10,7 @@ coverage
 public/uploads
 test-results
 playwright-report
+output/
 *.log
 *.tsbuildinfo
 .codex-logs/

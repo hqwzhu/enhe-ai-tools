@@ -27,23 +27,23 @@ export default async function LoginPage({
 
   return (
     <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
-      <form action={loginAction} className="glass w-full max-w-md rounded-2xl p-8">
+      <form action={loginAction} className="surface-panel w-full max-w-md p-8">
         <input type="hidden" name="csrfToken" value={csrfToken} />
-        <h1 className="text-3xl font-semibold">{t.auth.loginTitle}</h1>
-        <p className="mt-3 text-sm text-[#8B95A7]">{t.auth.loginIntro}</p>
+        <h1 className="text-3xl font-black text-[var(--marketing-text)]">{t.auth.loginTitle}</h1>
+        <p className="mt-3 text-sm font-medium text-[var(--marketing-muted)]">{t.auth.loginIntro}</p>
         {paymentSuccess && (
-          <div className="mt-4 rounded-lg border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm leading-6 text-[#DFFCF7]">
+          <div className="status-success mt-4">
             购买成功，请返回网页或者手机登入账号查看下载链接。
           </div>
         )}
         {errorMessage && (
-          <div className="mt-4 rounded-lg bg-red-500/20 border border-red-500/30 px-4 py-3 text-sm text-red-400">
+          <div className="status-danger mt-4">
             {errorMessage}
           </div>
         )}
-        <label className="mt-6 block text-sm">{t.auth.email}</label>
-        <input name="email" type="text" required autoComplete="username" className="mt-2 w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]" />
-        <label className="mt-5 block text-sm">{t.auth.password}</label>
+        <label className="mt-6 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.email}</label>
+        <input name="email" type="text" required autoComplete="username" className="form-control-dark mt-2" />
+        <label className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.password}</label>
         <PasswordInput
           name="password"
           required
@@ -51,11 +51,11 @@ export default async function LoginPage({
           showLabel={t.auth.showPassword}
           hideLabel={t.auth.hidePassword}
           wrapperClassName="mt-2"
-          className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 outline-none focus:border-[#7AA7FF]"
+          className="form-control-dark"
         />
-        <FormSubmitButton className="mt-8 w-full bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel="登录中...">{t.auth.loginButton}</FormSubmitButton>
-        <p className="mt-5 text-center text-sm text-[#8B95A7]">
-          {t.auth.noAccount}<Link className="text-[#48F5D3]" href="/register">{t.auth.registerNow}</Link>
+        <FormSubmitButton className="mt-8 w-full text-base" pendingLabel="登录中...">{t.auth.loginButton}</FormSubmitButton>
+        <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
+          {t.auth.noAccount}<Link className="font-semibold text-[var(--marketing-accent)]" href="/register">{t.auth.registerNow}</Link>
         </p>
       </form>
     </Container>

@@ -94,7 +94,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
         </form>
       </div>
       {orderMessage ? (
-        <p className="mb-6 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">
+        <p className="status-success mb-6">
           {orderMessage}
         </p>
       ) : null}
@@ -117,8 +117,8 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                       key={notification.id}
                       className={`rounded-xl border p-3 text-sm ${
                         notification.readAt
-                          ? "border-white/10 bg-white/5 text-[#8B95A7]"
-                          : "border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#E8EEF8]"
+                          ? "border-white/10 bg-white/5 text-[var(--marketing-muted)]"
+                          : "border-[var(--marketing-accent)]/30 bg-[var(--marketing-accent)]/10 text-[var(--marketing-text)]"
                       }`}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -137,7 +137,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                         ) : null}
                       </div>
                       {notification.linkUrl ? (
-                        <Link href={notification.linkUrl} className="mt-3 inline-flex text-xs text-[#48F5D3]">
+                        <Link href={notification.linkUrl} className="mt-3 inline-flex text-xs font-semibold text-[var(--marketing-accent)]">
                           {t.notifications.viewDetails}
                         </Link>
                       ) : null}
@@ -154,10 +154,10 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
             <form action={updateNewsletterSettingsAction} className="grid gap-4">
               <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#F6FAFF]">
                 <input type="hidden" name="acceptEmailUpdates" value="false" />
-                <input name="acceptEmailUpdates" type="checkbox" defaultChecked={user?.acceptEmailUpdates ?? true} value="true" className="h-4 w-4 accent-[#7AA7FF]" />
+                <input name="acceptEmailUpdates" type="checkbox" defaultChecked={user?.acceptEmailUpdates ?? true} value="true" className="h-4 w-4 accent-[var(--marketing-accent)]" />
                 {locale === "en" ? "I want to receive ENHE AI monthly product digest" : "我愿意接收 ENHE AI 月度产品简报和更新资讯"}
               </label>
-              <FormSubmitButton className="bg-[#7AA7FF] text-base text-[#07101f]" pendingLabel={locale === "en" ? "Saving..." : "保存中..."}>{locale === "en" ? "Save settings" : "保存设置"}</FormSubmitButton>
+              <FormSubmitButton className="text-base" pendingLabel={locale === "en" ? "Saving..." : "保存中..."}>{locale === "en" ? "Save settings" : "保存设置"}</FormSubmitButton>
             </form>
           </Panel>
 
@@ -167,7 +167,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
               {t.userCenter.role.replace("{role}", user.role === "admin" ? t.userCenter.admin : t.userCenter.user)}
             </p>
             {passwordMessage ? (
-              <p className={`mt-4 rounded-xl border px-4 py-3 text-sm ${passwordMessage.type === "success" ? "border-[#48F5D3]/30 bg-[#48F5D3]/10 text-[#48F5D3]" : "border-red-400/30 bg-red-400/10 text-red-100"}`}>
+              <p className={`mt-4 ${passwordMessage.type === "success" ? "status-success" : "status-danger"}`}>
                 {passwordMessage.text}
               </p>
             ) : null}
@@ -179,7 +179,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                 placeholder={t.userCenter.currentPassword}
                 showLabel={t.auth.showPassword}
                 hideLabel={t.auth.hidePassword}
-                className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
+                className="form-control-dark text-sm"
               />
               <PasswordInput
                 name="newPassword"
@@ -189,7 +189,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                 placeholder={t.userCenter.newPassword}
                 showLabel={t.auth.showPassword}
                 hideLabel={t.auth.hidePassword}
-                className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
+                className="form-control-dark text-sm"
               />
               <PasswordInput
                 name="confirmPassword"
@@ -199,9 +199,9 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                 placeholder={t.userCenter.confirmPassword}
                 showLabel={t.auth.showPassword}
                 hideLabel={t.auth.hidePassword}
-                className="w-full rounded-xl border border-white/12 bg-white/8 px-4 py-3 text-sm outline-none focus:border-[#7AA7FF]"
+                className="form-control-dark text-sm"
               />
-              <FormSubmitButton className="bg-[#7AA7FF] text-[#07101f]" pendingLabel={locale === "en" ? "Saving..." : "保存中..."}>
+              <FormSubmitButton pendingLabel={locale === "en" ? "Saving..." : "保存中..."}>
                 {t.userCenter.changePassword}
               </FormSubmitButton>
             </form>
@@ -231,7 +231,7 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
                         {t.userCenter.details}
                       </Link>
                       {["pending_payment", "rejected"].includes(order.orderStatus) ? (
-                        <Link href={`/orders/${order.id}/pay`} className="rounded-full bg-[#7AA7FF] px-3 py-1 text-xs font-semibold text-[#07101f]">
+                        <Link href={`/orders/${order.id}/pay`} className="rounded-full bg-[#050505] px-3 py-1 text-xs font-semibold text-white">
                           {t.userCenter.payNow}
                         </Link>
                       ) : null}
@@ -323,8 +323,8 @@ export default async function UserCenterPage({ searchParams }: { searchParams: U
 
 function Panel({ title, children }: React.PropsWithChildren<{ title: string }>) {
   return (
-    <section className="glass rounded-2xl p-6">
-      <h2 className="mb-4 text-xl font-semibold">{title}</h2>
+    <section className="surface-panel p-6">
+      <h2 className="mb-4 text-xl font-bold text-[var(--marketing-text)]">{title}</h2>
       {children}
     </section>
   );
@@ -353,7 +353,7 @@ function ToolAccessList({
       {tools.map((tool) => (
         <div key={tool.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
           <div>
-            <Link href={`/tools/${tool.slug}`} className="font-semibold text-[#E8EEF8] transition hover:text-[#48F5D3]">
+            <Link href={`/tools/${tool.slug}`} className="font-semibold text-[var(--marketing-text)] transition hover:text-[var(--marketing-accent)]">
               {tool.name}
             </Link>
             <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#8B95A7]">
@@ -379,7 +379,7 @@ function ToolAccessAction({
   locale: Locale;
 }) {
   const t = getDictionary(locale);
-  const className = "rounded-full border border-white/12 px-4 py-2 text-xs font-semibold transition hover:border-[#48F5D3]/60 hover:text-[#48F5D3]";
+  const className = "surface-panel-soft rounded-full border border-white/12 px-4 py-2 text-xs font-semibold transition hover:border-[var(--marketing-accent)]/60 hover:text-[var(--marketing-accent)]";
 
   if (action === "download") {
     return <a href={`/api/tools/${tool.id}/download`} className={className}>{t.userCenter.downloadNow}</a>;

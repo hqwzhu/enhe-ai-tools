@@ -60,4 +60,13 @@ describe("development progress helpers", () => {
     expect(statusMeta.not_started.label).toBe("未开始");
     expect(statusMeta.recommended.label).toBe("建议补强");
   });
+
+  it("uses the approved night glass accent classes for status chips", () => {
+    const classNames = Object.values(statusMeta).map((meta) => meta.className).join(" ");
+
+    expect(classNames).toContain("var(--marketing-accent)");
+    expect(classNames).not.toContain("#48F5D3");
+    expect(classNames).not.toContain("#7AA7FF");
+    expect(classNames).not.toContain("#7DD3FC");
+  });
 });

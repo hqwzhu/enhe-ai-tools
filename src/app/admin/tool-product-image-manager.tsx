@@ -90,7 +90,7 @@ export function ToolProductImageManager({
                   title={copy.productImageMoveUp}
                   disabled={index === 0}
                   onClick={() => moveImage(index, -1)}
-                  className="grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-black/55 text-white shadow-sm backdrop-blur transition hover:border-[#48F5D3]/60 hover:text-[#48F5D3] disabled:pointer-events-none disabled:opacity-35"
+                  className="grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-black/55 text-white shadow-sm backdrop-blur transition hover:border-[var(--marketing-accent)]/60 hover:text-[var(--marketing-accent)] disabled:pointer-events-none disabled:opacity-35"
                 >
                   <ArrowUp size={15} aria-hidden="true" />
                 </button>
@@ -100,7 +100,7 @@ export function ToolProductImageManager({
                   title={copy.productImageMoveDown}
                   disabled={index === images.length - 1}
                   onClick={() => moveImage(index, 1)}
-                  className="grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-black/55 text-white shadow-sm backdrop-blur transition hover:border-[#48F5D3]/60 hover:text-[#48F5D3] disabled:pointer-events-none disabled:opacity-35"
+                  className="grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-black/55 text-white shadow-sm backdrop-blur transition hover:border-[var(--marketing-accent)]/60 hover:text-[var(--marketing-accent)] disabled:pointer-events-none disabled:opacity-35"
                 >
                   <ArrowDown size={15} aria-hidden="true" />
                 </button>

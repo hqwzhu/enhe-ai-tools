@@ -89,7 +89,7 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
             <button
               type="button"
               onClick={() => setMachineId(serverMachineId)}
-              className="rounded-full border border-[rgba(210,230,255,0.16)] px-4 py-3 text-sm font-semibold text-[#F6FAFF] transition hover:border-[#7DD3FC] hover:text-[#7DD3FC]"
+              className="rounded-full border border-[rgba(210,230,255,0.16)] px-4 py-3 text-sm font-semibold text-[#F6FAFF] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
             >
               {labels.serverMachineId}
             </button>
@@ -113,7 +113,7 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
 
         <button
           disabled={pending}
-          className="rounded-full bg-[#7DD3FC] px-5 py-3 text-sm font-semibold text-[#030611] transition hover:shadow-[0_0_26px_rgba(125,211,252,0.18)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:shadow-[0_0_26px_rgba(240,90,53,0.22)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "..." : labels.generate}
         </button>
@@ -128,7 +128,7 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
           <button
             type="button"
             onClick={copyCode}
-            className="rounded-full border border-[rgba(210,230,255,0.16)] px-4 py-2 text-sm font-semibold text-[#F6FAFF] transition hover:border-[#7DD3FC] hover:text-[#7DD3FC]"
+            className="rounded-full border border-[rgba(210,230,255,0.16)] px-4 py-2 text-sm font-semibold text-[#F6FAFF] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
           >
             {labels.copy}
           </button>
