@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { StructuredData } from "@/components/structured-data";
 import { Container, EmptyState, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
-import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
-import { getPublicToolListing } from "@/lib/public-content";
+import { getPublicToolCategories, getPublicToolListing } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo";
 
@@ -40,7 +39,7 @@ export async function SkillLearningPageShell({
     ]
   });
   const [categories, tools] = await Promise.all([
-    prisma.toolCategory.findMany({ where: { type: "skill_learning", status: "active" }, orderBy: { sortOrder: "asc" } }),
+    getPublicToolCategories("skill_learning"),
     getPublicToolListing("skill_learning", categoryId, keyword, undefined, sort)
   ]);
 

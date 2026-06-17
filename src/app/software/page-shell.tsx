@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { StructuredData } from "@/components/structured-data";
 import { Container, EmptyState, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
-import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
-import { getPublicToolListing } from "@/lib/public-content";
+import { getPublicToolCategories, getPublicToolListing } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo";
 
@@ -42,7 +41,7 @@ export async function SoftwarePageShell({
     ]
   });
   const [categories, tools] = await Promise.all([
-    prisma.toolCategory.findMany({ where: { type: "software", status: "active" }, orderBy: { sortOrder: "asc" } }),
+    getPublicToolCategories("software"),
     getPublicToolListing("software", categoryId, keyword, paid, sort)
   ]);
 
