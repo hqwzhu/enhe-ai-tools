@@ -18,7 +18,7 @@ describe("home AI news label contracts", () => {
     expect(page.indexOf("{t.home.aiNewsButton}")).toBeLessThan(page.indexOf("{t.home.softwareButton}"));
     expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"} className="home-hero-cta home-hero-cta-primary"');
     expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"} className="home-hero-cta home-hero-cta-accent"');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"} className="home-hero-cta home-hero-cta-primary"');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"} className="home-hero-cta home-hero-cta-primary"');
     expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"} className="home-hero-cta home-hero-cta-accent"');
   });
 });

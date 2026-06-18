@@ -53,6 +53,8 @@ import { buildCanonicalToolPath } from "@/lib/public-slugs";
 import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
 import { refundZpayTransactionForOrder } from "@/lib/zpay-orders";
+import { generateAiNewsEnglishDraft } from "@/lib/ai-news-translation";
+import type { AiNewsTranslationActionState } from "@/app/admin/ai-news-translation-panel";
 
 const idSchema = z.string().min(1);
 const maxCoverImageBytes = 8 * 1024 * 1024;
@@ -840,7 +842,7 @@ export async function upsertCategoryAction(formData: FormData) {
   });
   revalidatePath("/admin/categories");
   revalidatePath("/software");
-  revalidatePath("/online-tools");
+  revalidatePath("/account-services");
 }
 
 export async function deleteCategoryAction(formData: FormData) {
@@ -1100,13 +1102,14 @@ export async function upsertToolAction(formData: FormData) {
     revalidatePath(adminPath);
     revalidatePath("/admin/files");
     revalidatePath("/");
-    revalidatePath(type === "skill_learning" ? "/skill-learning" : type === "software" ? "/software" : "/online-tools");
+    revalidatePath(type === "skill_learning" ? "/skill-learning" : type === "software" ? "/software" : "/account-services");
     revalidatePath(
       buildCanonicalToolPath(
         {
           slug: data.slug,
           name,
-          englishName
+          englishName,
+          type
         },
         "zh"
       )
@@ -1405,7 +1408,7 @@ export async function updateSiteSettingAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/pricing");
   revalidatePath("/software");
-  revalidatePath("/online-tools");
+  revalidatePath("/account-services");
 }
 
 export async function updatePaymentQrCodesAction(formData: FormData) {
@@ -1466,6 +1469,39 @@ function parseMultilineItems(value: FormDataEntryValue | null) {
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+export async function generateAiNewsEnglishDraftAction(
+  _prevState: AiNewsTranslationActionState | null,
+  formData: FormData
+): Promise<AiNewsTranslationActionState> {
+  await requireAdmin();
+
+  try {
+    const draft = await generateAiNewsEnglishDraft({
+      title: z.string().min(1).parse(formData.get("title")),
+      subtitle: parseOptionalString(formData.get("subtitle")) ?? "",
+      summary: z.string().min(1).parse(formData.get("summary")),
+      content: z.string().min(1).parse(formData.get("content")),
+      keyTakeaways: parseMultilineItems(formData.get("keyTakeaways")),
+      impactNotes: parseOptionalString(formData.get("impactNotes")) ?? "",
+      conclusion: parseOptionalString(formData.get("conclusion")) ?? "",
+      seoTitle: parseOptionalString(formData.get("seoTitle")) ?? "",
+      seoDescription: parseOptionalString(formData.get("seoDescription")) ?? "",
+      keywords: parseOptionalString(formData.get("keywords")) ?? ""
+    });
+
+    return {
+      ok: true,
+      message: "English content generated successfully.",
+      data: draft
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Failed to generate English content."
+    };
+  }
 }
 
 function parseExternalSources(value: FormDataEntryValue | null) {

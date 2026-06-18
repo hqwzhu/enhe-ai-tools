@@ -67,7 +67,7 @@ export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: 
       })
     : null;
   const canonicalSlug = slugMatch?.canonicalSlug ?? slug;
-  const canonical = `/tools/${canonicalSlug}`;
+  const canonical = tool?.type === "online" ? `/account-services/${canonicalSlug}` : `/tools/${canonicalSlug}`;
   if (!tool || tool.status !== "published") {
     return buildPageMetadata({
       title: `${t.toolDetail.introTitle} - ${t.brand}`,
@@ -224,7 +224,7 @@ export async function ToolDetailPageShell({
     tool.type === "software"
       ? buildLocalePath("/software", forceLocale)
       : tool.type === "online"
-        ? buildLocalePath("/online-tools", forceLocale)
+        ? buildLocalePath("/account-services", forceLocale)
         : buildLocalePath("/skill-learning", forceLocale);
   const breadcrumbSchema = buildBreadcrumbSchema({
     schemaType: "BreadcrumbList",

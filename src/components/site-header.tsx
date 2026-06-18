@@ -18,7 +18,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
     { label: t.nav.home, href: buildLocalePath("/", locale) },
     { label: t.nav.aiNews, href: buildLocalePath("/ai-news", locale) },
     { label: t.nav.software, href: buildLocalePath("/software", locale) },
-    { label: t.nav.onlineTools, href: buildLocalePath("/online-tools", locale) },
+    { label: t.nav.onlineTools, href: buildLocalePath("/account-services", locale) },
     { label: t.nav.skillLearning, href: buildLocalePath("/skill-learning", locale) }
   ] as const;
 

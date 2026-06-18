@@ -31,8 +31,8 @@ const nextConfig: NextConfig = {
       { source: "/en", headers: enPublicCacheHeaders },
       { source: "/software", headers: zhPublicCacheHeaders },
       { source: "/en/software", headers: enPublicCacheHeaders },
-      { source: "/online-tools", headers: zhPublicCacheHeaders },
-      { source: "/en/online-tools", headers: enPublicCacheHeaders },
+      { source: "/account-services", headers: zhPublicCacheHeaders },
+      { source: "/en/account-services", headers: enPublicCacheHeaders },
       { source: "/skill-learning", headers: zhPublicCacheHeaders },
       { source: "/en/skill-learning", headers: enPublicCacheHeaders },
       { source: "/pricing", headers: zhPublicCacheHeaders },
@@ -45,6 +45,8 @@ const nextConfig: NextConfig = {
       { source: "/en/ai-news/:slug*", headers: enPublicCacheHeaders },
       { source: "/legal/:slug*", headers: zhPublicCacheHeaders },
       { source: "/en/legal/:slug*", headers: enPublicCacheHeaders },
+      { source: "/account-services/:slug*", headers: zhPublicCacheHeaders },
+      { source: "/en/account-services/:slug*", headers: enPublicCacheHeaders },
       { source: "/tools/:slug*", headers: zhPublicCacheHeaders },
       { source: "/en/tools/:slug*", headers: enPublicCacheHeaders }
     ];

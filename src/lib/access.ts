@@ -65,7 +65,7 @@ export async function assertOnlineToolAccess(toolId: string) {
       where: { userId_toolId: { userId: user.id, toolId: tool.id } }
     });
     if (!canUsePaidOnlineTool({ servicePrice, hasToolPurchase: Boolean(purchase) })) {
-      redirect(`/tools/${getCanonicalToolSlug(tool)}?service=pay-required`);
+      redirect(`/account-services/${getCanonicalToolSlug(tool)}?service=pay-required`);
     }
   }
   await prisma.toolUsageLog.create({ data: { userId: user.id, toolId: tool.id, ip, userAgent } });

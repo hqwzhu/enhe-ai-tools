@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { archiveNewsArticleAction, upsertNewsArticleAction, upsertNewsCategoryAction } from "@/app/admin/actions";
+import { AiNewsEnglishFields } from "@/app/admin/ai-news-english-fields";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 
 type NewsArticleWithRelations = Prisma.NewsArticleGetPayload<{
@@ -58,7 +59,13 @@ export function NewsArticleEditor({ article, categories, relatedArticles, tools,
           <textarea name="summary" required defaultValue={article?.summary ?? ""} className={textareaClass} />
         </Field>
         <Field label="正文内容" className="md:col-span-2">
-          <textarea name="content" required defaultValue={article?.content ?? ""} className={`${textareaClass} min-h-[360px]`} placeholder="支持 ## H2、### H3、列表、引用和代码块。" />
+          <textarea
+            name="content"
+            required
+            defaultValue={article?.content ?? ""}
+            className={`${textareaClass} min-h-[360px]`}
+            placeholder="支持 ## H2、### H3、列表、引用和代码块。"
+          />
         </Field>
         <Field label="核心要点，每行一条" className="md:col-span-2">
           <textarea name="keyTakeaways" defaultValue={article?.keyTakeaways.join("\n") ?? ""} className={textareaClass} />
@@ -137,38 +144,7 @@ export function NewsArticleEditor({ article, categories, relatedArticles, tools,
         <input type="hidden" name="seoKeywords" value={article?.seoKeywords ?? ""} />
 
         <SectionHeading title="英文内容" />
-        <Field label="English title" className="md:col-span-2">
-          <input name="englishTitle" defaultValue={article?.englishTitle ?? ""} className={inputClass} />
-        </Field>
-        <Field label="English subtitle" className="md:col-span-2">
-          <input name="englishSubtitle" defaultValue={article?.englishSubtitle ?? ""} className={inputClass} />
-        </Field>
-        <Field label="English summary" className="md:col-span-2">
-          <textarea name="englishSummary" defaultValue={article?.englishSummary ?? ""} className={textareaClass} />
-        </Field>
-        <Field label="English content" className="md:col-span-2">
-          <textarea name="englishContent" defaultValue={article?.englishContent ?? ""} className={`${textareaClass} min-h-[260px]`} />
-        </Field>
-        <Field label="English takeaways" className="md:col-span-2">
-          <textarea name="englishKeyTakeaways" defaultValue={article?.englishKeyTakeaways.join("\n") ?? ""} className={textareaClass} />
-        </Field>
-        <Field label="English impact notes" className="md:col-span-2">
-          <textarea name="englishImpactNotes" defaultValue={article?.englishImpactNotes ?? ""} className={textareaClass} />
-        </Field>
-        <Field label="English conclusion" className="md:col-span-2">
-          <textarea name="englishConclusion" defaultValue={article?.englishConclusion ?? ""} className={textareaClass} />
-        </Field>
-        <Field label="English SEO title">
-          <input name="englishSeoTitle" defaultValue={article?.englishSeoTitle ?? ""} className={inputClass} />
-        </Field>
-        <Field label="English keywords">
-          <input name="englishKeywords" defaultValue={article?.englishKeywords ?? ""} className={inputClass} />
-        </Field>
-        <Field label="English SEO description" className="md:col-span-2">
-          <textarea name="englishSeoDescription" defaultValue={article?.englishSeoDescription ?? article?.englishDescription ?? ""} className={textareaClass} />
-        </Field>
-        <input type="hidden" name="englishDescription" value={article?.englishDescription ?? ""} />
-        <input type="hidden" name="englishSeoKeywords" value={article?.englishSeoKeywords ?? ""} />
+        <AiNewsEnglishFields article={article} />
 
         <SectionHeading title="标签、内链与来源" />
         <Field label="标签，逗号或换行分隔" className="md:col-span-2">
@@ -228,7 +204,11 @@ export function NewsArticleEditor({ article, categories, relatedArticles, tools,
 }
 
 function SectionHeading({ title }: { title: string }) {
-  return <h2 className="md:col-span-2 border-t border-white/10 pt-5 text-xl font-black text-[var(--marketing-text)] first:border-t-0 first:pt-0">{title}</h2>;
+  return (
+    <h2 className="md:col-span-2 border-t border-white/10 pt-5 text-xl font-black text-[var(--marketing-text)] first:border-t-0 first:pt-0">
+      {title}
+    </h2>
+  );
 }
 
 function ReferencePanel({ title, items }: { title: string; items: string[] }) {

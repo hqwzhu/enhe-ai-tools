@@ -24,7 +24,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("t.home.onlineButton");
     expect(page).toContain("t.home.aiNewsButton");
     expect(page).toContain("t.home.skillLearningButton");
-    expect(page).toContain('href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"}');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
     expect(page).toContain("t.home.featuredContentTitle");
@@ -32,9 +32,9 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("take: 40");
     expect(page).not.toContain("recommendedTools.slice(previewTools.length)");
     expect(page).toContain("getHomeRecommendedTools");
-    expect(page).not.toContain('href="/online-tools" variant="ghost" className="home-preview-link"');
+    expect(page).not.toContain('href="/account-services" variant="ghost" className="home-preview-link"');
     expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"}');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
     expect(page).toContain("home-product-preview backdrop-blur-xl backdrop-saturate-150");

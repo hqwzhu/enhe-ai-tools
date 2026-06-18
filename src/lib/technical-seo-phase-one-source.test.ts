@@ -30,7 +30,8 @@ describe("technical seo phase one source", () => {
     expect(sitemap).toContain("languages:");
     expect(sitemap).toContain('"/en"');
     expect(sitemap).toContain('"/en/software"');
-    expect(sitemap).toContain('"/en/online-tools"');
+    expect(sitemap).toContain('"/en/account-services"');
+    expect(sitemap).not.toContain('"/en/online-tools"');
     expect(sitemap).toContain('"/en/skill-learning"');
   });
 
@@ -39,15 +40,15 @@ describe("technical seo phase one source", () => {
 
     expect(sitemap).toContain('export const dynamic = "force-dynamic";');
     expect(sitemap).toContain("prisma.tool");
-    expect(sitemap).toContain('"/tools"');
-    expect(sitemap).toContain('"/en/tools"');
+    expect(sitemap).toContain('const toolDetailBasePath = "/tools";');
+    expect(sitemap).toContain('`/en${toolDetailBasePath}/${canonicalSlug}`');
   });
 
   it("adds an indexable english route tree and locale-aware public navigation", () => {
     const enLayout = read("src/app/en/layout.tsx");
     const enHome = read("src/app/en/page.tsx");
     const enSoftware = read("src/app/en/software/page.tsx");
-    const enOnline = read("src/app/en/online-tools/page.tsx");
+    const enOnline = read("src/app/en/account-services/page.tsx");
     const enSkillLearning = read("src/app/en/skill-learning/page.tsx");
     const enPricing = read("src/app/en/pricing/page.tsx");
     const enTutorials = read("src/app/en/tutorials/page.tsx");

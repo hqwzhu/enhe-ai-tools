@@ -8,21 +8,20 @@ import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import { buildBreadcrumbSchema, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
-export const onlineToolsPageRevalidate = publicPageCacheSeconds;
-const accountServicesBasePath = "/account-services";
+export const accountServicesPageRevalidate = publicPageCacheSeconds;
 
-export async function generateOnlineToolsPageMetadata(forceLocale: Locale): Promise<Metadata> {
+export async function generateAccountServicesPageMetadata(forceLocale: Locale): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: t.listing.onlineTitle, brand: t.brand }),
     description: t.listing.onlineIntro,
-    path: accountServicesBasePath,
+    path: "/account-services",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale
   });
 }
 
-export async function OnlineToolsPageShell({
+export async function AccountServicesPageShell({
   searchParams,
   forceLocale
 }: {
@@ -37,7 +36,7 @@ export async function OnlineToolsPageShell({
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [
       { name: t.nav.home, path: forceLocale === "en" ? "/en" : "/" },
-      { name: t.listing.onlineTitle, path: forceLocale === "en" ? `/en${accountServicesBasePath}` : accountServicesBasePath }
+      { name: t.listing.onlineTitle, path: forceLocale === "en" ? "/en/account-services" : "/account-services" }
     ]
   });
   const [categories, tools] = await Promise.all([

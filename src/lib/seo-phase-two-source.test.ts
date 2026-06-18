@@ -26,7 +26,8 @@ describe("seo phase two source contracts", () => {
 
     expect(sitemap).toContain('"/en"');
     expect(sitemap).toContain('"/en/software"');
-    expect(sitemap).toContain('"/en/online-tools"');
+    expect(sitemap).toContain('"/en/account-services"');
+    expect(sitemap).not.toContain('"/en/online-tools"');
     expect(sitemap).toContain('"/en/skill-learning"');
     expect(sitemap).toContain('"/en/pricing"');
     expect(sitemap).toContain('"/en/tutorials"');

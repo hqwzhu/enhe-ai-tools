@@ -6,14 +6,15 @@ import { absoluteUrl, buildLanguageAlternates } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
+const toolDetailBasePath = "/tools";
 
 const staticRoutes = [
   "/",
   "/en",
   "/software",
   "/en/software",
-  "/online-tools",
-  "/en/online-tools",
+  "/account-services",
+  "/en/account-services",
   "/skill-learning",
   "/en/skill-learning",
   "/pricing",
@@ -41,8 +42,8 @@ const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
   "/en": new Date("2026-06-17T00:00:00.000Z"),
   "/software": new Date("2026-06-17T00:00:00.000Z"),
   "/en/software": new Date("2026-06-17T00:00:00.000Z"),
-  "/online-tools": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/online-tools": new Date("2026-06-17T00:00:00.000Z"),
+  "/account-services": new Date("2026-06-17T00:00:00.000Z"),
+  "/en/account-services": new Date("2026-06-17T00:00:00.000Z"),
   "/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
   "/en/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
   "/pricing": new Date("2026-06-17T00:00:00.000Z"),
@@ -99,20 +100,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: path === "/" || path === "/en" ? ("daily" as const) : ("weekly" as const),
       priority: getPriority(path)
     })),
-    ...tools.flatMap((tool) =>
-      (["/tools", "/en/tools"] as const).map((basePath) => {
-        const canonicalSlug = getCanonicalToolSlug(tool);
-        return {
-        url: absoluteUrl(`${basePath}/${canonicalSlug}`),
+    ...tools.flatMap((tool) => {
+      const canonicalSlug = getCanonicalToolSlug(tool);
+      const canonicalPath = tool.type === "online" ? `/account-services/${canonicalSlug}` : `${toolDetailBasePath}/${canonicalSlug}`;
+      const localizedRoutes =
+        tool.type === "online"
+          ? [`/account-services/${canonicalSlug}`, `/en/account-services/${canonicalSlug}`]
+          : [`${toolDetailBasePath}/${canonicalSlug}`, `/en${toolDetailBasePath}/${canonicalSlug}`];
+
+      return localizedRoutes.map((path) => ({
+        url: absoluteUrl(path),
         lastModified: tool.updatedAt,
         alternates: {
-          languages: buildLanguageAlternates(`/tools/${canonicalSlug}`)
+          languages: buildLanguageAlternates(canonicalPath)
         },
         changeFrequency: "weekly" as const,
         priority: tool.type === "software" ? 0.85 : 0.8
-      };
-      })
-    ),
+      }));
+    }),
     ...newsArticles.flatMap((newsArticle) => {
       const canonicalSlug = getCanonicalAiNewsSlug(newsArticle);
       const routes = [

@@ -182,7 +182,7 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
   });
   await trackAnalyticsEvent({
     eventName: "create_order",
-    path: `/tools/${getCanonicalToolSlug(tool)}`,
+    path: tool.type === "online" ? `/account-services/${getCanonicalToolSlug(tool)}` : `/tools/${getCanonicalToolSlug(tool)}`,
     entityType: "order",
     entityId: order.id,
     userId: user.id,
@@ -368,7 +368,7 @@ export async function createCommentAction(formData: FormData) {
   await prisma.comment.create({ data: { userId: user.id, toolId, content, status: "pending" } });
   const tool = await prisma.tool.findUnique({
     where: { id: toolId },
-    select: { slug: true, name: true, englishName: true }
+    select: { slug: true, name: true, englishName: true, type: true }
   });
   if (tool) {
     revalidatePath(buildCanonicalToolPath(tool, locale));
@@ -454,7 +454,7 @@ export async function updateCommentPinAction(formData: FormData) {
     metadata: { isPinned, toolId: comment.toolId }
   });
   revalidatePath("/admin/comments");
-  revalidatePath(`/tools/${getCanonicalToolSlug(comment.tool)}`);
+  revalidatePath(buildCanonicalToolPath(comment.tool, "zh"));
 }
 
 export async function getSessionSnapshot() {

@@ -20,9 +20,14 @@ export function buildCanonicalToolPath(
     slug: string;
     name: string;
     englishName?: string | null;
+    type?: "software" | "online" | "skill_learning";
   },
   locale: Locale
 ) {
+  if (tool.type === "online") {
+    return buildLocalePath(`/account-services/${getCanonicalToolSlug(tool)}`, locale);
+  }
+
   return buildLocalePath(`/tools/${getCanonicalToolSlug(tool)}`, locale);
 }
 
