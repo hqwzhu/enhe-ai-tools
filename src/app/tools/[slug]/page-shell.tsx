@@ -21,6 +21,20 @@ import {
   buildToolMetadataTitle,
   buildToolStructuredData
 } from "@/lib/seo";
+import {
+  buildLocalizedToolFaqItems,
+  buildLocalizedToolLongContent,
+  buildLocalizedToolMetaDescription,
+  buildLocalizedToolMetaHeading,
+  buildLocalizedToolOfferName,
+  buildLocalizedToolSummary,
+  buildLocalizedToolTagItems,
+  buildLocalizedToolTutorialItems,
+  isVisibleInEnglishContent,
+  resolveLocalizedToolCategoryName,
+  resolveLocalizedToolIdentity,
+  shouldIndexEnglishToolPage
+} from "@/lib/tool-localization";
 import { getPrimaryToolPrice } from "@/lib/tool-price-specs";
 import {
   canOpenProtectedDownloadEntry,
@@ -35,7 +49,7 @@ export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: 
   const t = getDictionary(forceLocale);
   const tool = await prisma.tool.findUnique({
     where: { slug },
-    select: { name: true, englishName: true, shortDescription: true, coverImage: true, status: true, type: true }
+    select: { slug: true, name: true, englishName: true, shortDescription: true, content: true, coverImage: true, status: true, type: true }
   });
   const canonical = `/tools/${slug}`;
   if (!tool || tool.status !== "published") {
@@ -48,17 +62,17 @@ export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: 
     });
   }
 
-  return buildPageMetadata({
+  const metadata = buildPageMetadata({
     title: buildToolMetadataTitle({
-      name: tool.name,
-      englishName: tool.englishName,
+      name: buildLocalizedToolMetaHeading(tool, forceLocale),
+      englishName: forceLocale === "en" ? null : tool.englishName,
       brand: t.brand,
       locale: forceLocale
     }),
     description: buildToolMetaDescription({
-      name: tool.name,
-      englishName: tool.englishName,
-      description: tool.shortDescription,
+      name: buildLocalizedToolMetaHeading(tool, forceLocale),
+      englishName: forceLocale === "en" ? null : tool.englishName,
+      description: buildLocalizedToolMetaDescription(tool, forceLocale),
       brand: t.brand,
       locale: forceLocale,
       type: tool.type === "online" ? "online" : tool.type === "skill_learning" ? "skill_learning" : "software"
@@ -68,6 +82,15 @@ export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: 
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale
   });
+
+  if (forceLocale === "en" && !shouldIndexEnglishToolPage(tool)) {
+    metadata.robots = {
+      index: false,
+      follow: true
+    };
+  }
+
+  return metadata;
 }
 
 export async function ToolDetailPageShell({
@@ -95,9 +118,46 @@ export async function ToolDetailPageShell({
   });
   if (!tool || tool.status !== "published") notFound();
 
+  const localizedTool = resolveLocalizedToolIdentity(tool, forceLocale);
+  const localizedCategoryName = resolveLocalizedToolCategoryName(tool.category?.name, tool.type, forceLocale);
+  const shouldShowSecondaryName = forceLocale === "zh" && Boolean(localizedTool.secondaryName);
+  const toolLocalizationInput = {
+    slug: tool.slug,
+    name: tool.name,
+    englishName: tool.englishName,
+    shortDescription: tool.shortDescription,
+    content: tool.content,
+    type: tool.type,
+    categoryName: tool.category?.name
+  };
+  const localizedSummary = buildLocalizedToolSummary(
+    toolLocalizationInput,
+    forceLocale
+  );
+  const localizedLongContent = buildLocalizedToolLongContent(
+    toolLocalizationInput,
+    forceLocale
+  );
+  const visibleTutorials = buildLocalizedToolTutorialItems(tool.tutorials, toolLocalizationInput, forceLocale);
+  const visibleFaqs = buildLocalizedToolFaqItems(tool.faqs, toolLocalizationInput, forceLocale);
+  const visibleChangelogs =
+    forceLocale === "en"
+      ? tool.changelogs.filter(
+          (item) => isVisibleInEnglishContent(item.title, 2) || isVisibleInEnglishContent(item.content, 5)
+        )
+      : tool.changelogs;
+  const visibleComments =
+    forceLocale === "en"
+      ? tool.comments.filter((comment) => isVisibleInEnglishContent(comment.content, 3))
+      : tool.comments;
   const isAccountService = tool.type === "online";
   const isSkillLearning = tool.type === "skill_learning";
   const activePriceSpecs = tool.priceSpecs.filter((spec) => Number(spec.price) > 0);
+  const localizedPriceSpecs = activePriceSpecs.map((spec, index) => ({
+    ...spec,
+    localizedName: buildLocalizedToolOfferName(spec.name, tool.type, forceLocale, index)
+  }));
+  const localizedTagItems = buildLocalizedToolTagItems(tool.tagLinks, forceLocale);
   const servicePrice = getPrimaryToolPrice(activePriceSpecs, tool.downloadPrice);
   const isPurchasableAccountService = isAccountService && servicePrice > 0;
   const coverImage = normalizeImageSrc(tool.coverImage);
@@ -129,7 +189,7 @@ export async function ToolDetailPageShell({
     include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
     take: 3
   });
-  const tutorialVideos = tool.tutorials.filter((tutorial) => tutorial.videoUrl);
+  const tutorialVideos = visibleTutorials.filter((tutorial) => tutorial.videoUrl);
   const supportEmail = td.supportEmailValue;
   const introTitle = isAccountService ? td.serviceIntroTitle : td.introTitle;
   const productImagesIntro = isAccountService ? td.serviceProductImagesIntro : td.productImagesIntro;
@@ -148,12 +208,12 @@ export async function ToolDetailPageShell({
         name: tool.type === "software" ? t.listing.softwareTitle : tool.type === "online" ? t.listing.onlineTitle : t.listing.skillLearningTitle,
         path: baseListingPath
       },
-      { name: tool.name, path: buildLocalePath(`/tools/${tool.slug}`, forceLocale) }
+      { name: localizedTool.primaryName, path: buildLocalePath(`/tools/${tool.slug}`, forceLocale) }
     ]
   });
   const aggregateRating = null;
   const schemaContent = {
-    faq: tool.faqs.map((item) => ({
+    faq: visibleFaqs.map((item) => ({
       question: item.question,
       answer: item.answer
     })),
@@ -162,24 +222,24 @@ export async function ToolDetailPageShell({
   const faqSchema = schemaContent.faq.length ? buildFaqSchema({ items: schemaContent.faq }) : null;
   const toolStructuredData = buildToolStructuredData({
     schemaType,
-    name: tool.name,
+    name: localizedTool.primaryName,
     description: buildToolMetaDescription({
-      name: tool.name,
-      englishName: tool.englishName,
-      description: tool.shortDescription,
+      name: localizedTool.primaryName,
+      englishName: forceLocale === "en" ? null : tool.englishName,
+      description: localizedSummary,
       locale: forceLocale,
       brand: t.brand,
       type: tool.type === "online" ? "online" : tool.type === "skill_learning" ? "skill_learning" : "software"
     }),
     url: buildLocalePath(`/tools/${tool.slug}`, forceLocale),
     image: coverImage,
-    category: tool.category?.name ?? null,
+    category: localizedCategoryName,
     operatingSystem: tool.systemRequirement ?? null,
     locale: forceLocale === "en" ? "en-US" : "zh-CN",
     price: servicePrice > 0 ? servicePrice : null,
     softwareVersion: tool.version ?? null,
-    priceSpecs: activePriceSpecs.map((spec) => ({
-      name: spec.name,
+    priceSpecs: localizedPriceSpecs.map((spec) => ({
+      name: spec.localizedName,
       price: Number(spec.price)
     })),
     aggregateRating: schemaContent.aggregateRating
@@ -204,7 +264,7 @@ export async function ToolDetailPageShell({
           <div className="flex min-w-0 flex-col gap-7">
             <div>
               <div className="flex flex-wrap gap-2">
-                <Badge>{tool.category?.name ?? td.uncategorized}</Badge>
+                <Badge>{localizedCategoryName ?? td.uncategorized}</Badge>
                 <Badge>{tool.type === "software" ? td.software : tool.type === "skill_learning" ? td.skillLearning : td.online}</Badge>
                 <Badge className={(isSkillLearning && !hasDownloadPurchase) || (tool.type === "software" && tool.isDownloadPaid) || (isAccountService && servicePrice > 0) ? "text-[#FFB86B]" : "text-[#5EF1C7]"}>
                   {isSkillLearning
@@ -215,7 +275,7 @@ export async function ToolDetailPageShell({
                         ? (forceLocale === "en" ? "Paid service" : "收费服务")
                         : td.free}
                 </Badge>
-                {tool.tagLinks.map(({ tag }) => (
+                {localizedTagItems.map((tag) => (
                   <Badge key={tag.id} className="text-[var(--marketing-accent)]">
                     {tag.name}
                   </Badge>
@@ -223,15 +283,15 @@ export async function ToolDetailPageShell({
               </div>
 
               <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--marketing-accent)]">{td.coverLabel}</p>
-              <h1 className="mt-5 text-4xl font-semibold leading-tight text-[#F6FAFF] md:text-5xl">{tool.name}</h1>
-              {tool.englishName ? <p className="mt-3 text-lg font-medium tracking-wide text-[var(--marketing-accent)] md:text-xl">{tool.englishName}</p> : null}
-              <p className="mt-5 max-w-3xl text-base leading-8 text-[#8F9DB2] md:text-lg">{tool.shortDescription}</p>
+              <h1 className="mt-5 text-4xl font-semibold leading-tight text-[#F6FAFF] md:text-5xl">{localizedTool.primaryName}</h1>
+              {shouldShowSecondaryName ? <p className="mt-3 text-lg font-medium tracking-wide text-[var(--marketing-accent)] md:text-xl">{localizedTool.secondaryName}</p> : null}
+              <p className="mt-5 max-w-3xl text-base leading-8 text-[#8F9DB2] md:text-lg">{localizedSummary}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {isAccountService ? (
                   <>
                     <Info label={td.servicePrice} value={servicePrice > 0 ? `¥${servicePrice.toFixed(2)}` : td.free} />
-                    <Info label={td.serviceType} value={tool.category?.name ?? td.uncategorized} />
+                    <Info label={td.serviceType} value={localizedCategoryName ?? td.uncategorized} />
                     <Info label={td.usageCount} value={String(tool.usageCount)} />
                     <Info label={td.supportEmail} value={supportEmail} />
                   </>
@@ -245,11 +305,11 @@ export async function ToolDetailPageShell({
                 )}
               </div>
 
-              {activePriceSpecs.length && !shouldShowPurchaseForm && (isAccountService || hasDownloadPurchase || !tool.isDownloadPaid) ? (
+              {localizedPriceSpecs.length && !shouldShowPurchaseForm && (isAccountService || hasDownloadPurchase || !tool.isDownloadPaid) ? (
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  {activePriceSpecs.map((spec) => (
+                  {localizedPriceSpecs.map((spec) => (
                     <div key={spec.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
-                      <p className="text-sm font-semibold text-[#F6FAFF]">{spec.name}</p>
+                      <p className="text-sm font-semibold text-[#F6FAFF]">{spec.localizedName}</p>
                       <p className="mt-2 text-xl font-semibold text-[#FFB86B]">¥{Number(spec.price).toFixed(2)}</p>
                     </div>
                   ))}
@@ -260,12 +320,12 @@ export async function ToolDetailPageShell({
                 {shouldShowPurchaseForm ? (
                   <form id={isAccountService ? "service-purchase" : "download-purchase"} action={createSoftwareDownloadOrderAction} className="grid w-full gap-4">
                     <input type="hidden" name="toolId" value={tool.id} />
-                    {activePriceSpecs.length ? (
+                    {localizedPriceSpecs.length ? (
                       <div className="grid gap-3 sm:grid-cols-2">
-                        {activePriceSpecs.map((spec, index) => (
+                        {localizedPriceSpecs.map((spec, index) => (
                           <label key={spec.id} className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12">
                             <span>
-                              <span className="block font-semibold text-[#F6FAFF]">{spec.name}</span>
+                              <span className="block font-semibold text-[#F6FAFF]">{spec.localizedName}</span>
                               <span className="mt-1 block text-[#FFB86B]">¥{Number(spec.price).toFixed(2)}</span>
                             </span>
                             <input name="priceSpecId" type="radio" value={spec.id} defaultChecked={index === 0} />
@@ -309,12 +369,12 @@ export async function ToolDetailPageShell({
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-xl font-semibold text-[#F6FAFF]">{td.changelogTitle}</h2>
                 <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8F9DB2]">
-                  {td.changelogCount.replace("{count}", String(tool.changelogs.length))}
+                  {td.changelogCount.replace("{count}", String(visibleChangelogs.length))}
                 </span>
               </div>
               <div className="mt-4 grid gap-3">
-                {tool.changelogs.length ? (
-                  tool.changelogs.slice(0, 3).map((item) => (
+                {visibleChangelogs.length ? (
+                  visibleChangelogs.slice(0, 3).map((item) => (
                     <div key={item.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-semibold text-[var(--marketing-accent)]">{item.version}</p>
@@ -352,7 +412,7 @@ export async function ToolDetailPageShell({
             </TrustItem>
             <TrustItem label={isAccountService ? td.serviceType : td.systemRequirement}>
               {isAccountService ? (
-                <p className="text-sm leading-6 text-[#C5D0E2]">{tool.category?.name ?? td.uncategorized}</p>
+                <p className="text-sm leading-6 text-[#C5D0E2]">{localizedCategoryName ?? td.uncategorized}</p>
               ) : (
                 <>
                   <p className="text-sm leading-6 text-[#C5D0E2]">{tool.systemRequirement ?? td.browser}</p>
@@ -361,7 +421,7 @@ export async function ToolDetailPageShell({
               )}
             </TrustItem>
             <TrustItem label={td.updateLog}>
-              <p className="text-sm leading-6 text-[#C5D0E2]">{td.changelogCount.replace("{count}", String(tool.changelogs.length))}</p>
+              <p className="text-sm leading-6 text-[#C5D0E2]">{td.changelogCount.replace("{count}", String(visibleChangelogs.length))}</p>
               <Link href="#tool-changelog" className="mt-2 inline-flex text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]">
                 {td.changelogTitle}
               </Link>
@@ -399,7 +459,7 @@ export async function ToolDetailPageShell({
               </div>
             ) : null}
             <div className="tool-detail-copy-card rounded-2xl border border-white/10 bg-white/8 p-5">
-              <div style={{ whiteSpace: "pre-line" }} className="text-base leading-8 text-[#C5D0E2]">{tool.content}</div>
+              <div style={{ whiteSpace: "pre-line" }} className="text-base leading-8 text-[#C5D0E2]">{localizedLongContent}</div>
             </div>
           </div>
         </section>
@@ -412,7 +472,7 @@ export async function ToolDetailPageShell({
             </div>
           ) : (
             <div className="space-y-4">
-              {tool.tutorials.map((tutorial) => (
+              {visibleTutorials.map((tutorial) => (
                 <div key={tutorial.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
                   <h3 className="mt-2 text-xl font-semibold">{tutorial.title}</h3>
                   <div style={{ whiteSpace: "pre-line" }} className="mt-3 leading-7 text-[#8F9DB2]">{tutorial.content}</div>
@@ -438,8 +498,8 @@ export async function ToolDetailPageShell({
         <section className="glass rounded-2xl p-7">
           <SectionTitle title={td.faqTitle} />
           <div className="mt-5 grid gap-3">
-            {tool.faqs.length ? (
-              tool.faqs.map((faq) => (
+            {visibleFaqs.length ? (
+              visibleFaqs.map((faq) => (
                 <details key={faq.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
                   <summary className="cursor-pointer list-none font-semibold text-[#F6FAFF] [&::-webkit-details-marker]:hidden">
                     {faq.question}
@@ -466,7 +526,7 @@ export async function ToolDetailPageShell({
             <p className="mb-6 text-sm text-[#8F9DB2]">{td.loginToComment}</p>
           )}
           <div className="space-y-3">
-            {tool.comments.map((comment) => (
+            {visibleComments.map((comment) => (
               <div key={comment.id} className="rounded-2xl border border-white/10 bg-white/8 p-4">
                 <p className="text-sm text-[#8F9DB2]">
                   {comment.user.nickname ?? comment.user.email} {comment.isPinned ? <span className="text-[#FFB86B]">· {td.pinned}</span> : null}

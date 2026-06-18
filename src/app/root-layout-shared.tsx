@@ -17,10 +17,16 @@ export const sharedRootMetadata: Metadata = {
     index: true,
     follow: true
   },
+  manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/images/brand/enhe-icon-gradient-white-bg-cropped.png", type: "image/png" }],
-    shortcut: "/images/brand/enhe-icon-gradient-white-bg-cropped.png",
-    apple: [{ url: "/images/brand/enhe-icon-gradient-white-bg-cropped.png", type: "image/png" }]
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon", sizes: "any" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+      { url: "/images/brand/enhe-icon-gradient-white-bg-cropped.png", type: "image/png" }
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }]
   }
 };
 

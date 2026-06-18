@@ -208,6 +208,11 @@ export function buildMetadataTitle({ pageTitle, brand = siteName, maxLength = 68
   return `${truncateText(normalizedPageTitle, Math.max(12, maxLength - reservedLength))} | ${normalizedBrand}`;
 }
 
+export function buildHomeMetadataTitle(locale: Locale, brand = siteName) {
+  const scope = locale === "en" ? "AI Software, Account Services & Skill Learning" : "AI软件、账号服务与技能学习";
+  return buildMetadataTitle({ pageTitle: brand, brand: scope, maxLength: locale === "en" ? 72 : 64 });
+}
+
 function resolveToolTitleNames(name: string, englishName: string | null | undefined, locale: Locale) {
   const normalizedName = normalizeWhitespace(name);
   const normalizedEnglishName = normalizeWhitespace(englishName ?? "");
@@ -230,6 +235,23 @@ function resolveToolTitleNames(name: string, englishName: string | null | undefi
   };
 }
 
+function splitToolTypeFromName(name: string) {
+  const normalized = normalizeWhitespace(name);
+  const separatorMatch = normalized.match(/^(.+?)\s[-|]\s(AI (?:Software App|Account Service|Skill Course))$/i);
+
+  if (!separatorMatch) {
+    return {
+      toolName: normalized,
+      typeName: ""
+    };
+  }
+
+  return {
+    toolName: normalizeWhitespace(separatorMatch[1]),
+    typeName: normalizeWhitespace(separatorMatch[2])
+  };
+}
+
 function resolveToolTypeLabel(type: ToolMetaDescriptionInput["type"], locale: Locale) {
   if (locale === "en") {
     if (type === "online") return "AI account service";
@@ -244,6 +266,17 @@ function resolveToolTypeLabel(type: ToolMetaDescriptionInput["type"], locale: Lo
 
 export function buildToolMetadataTitle({ name, englishName, brand = siteName, maxLength = 68, locale = "zh" }: BuildTitleInput) {
   const { primaryName, secondaryName } = resolveToolTitleNames(name, englishName, locale);
+  const splitTitle = locale === "en" ? splitToolTypeFromName(primaryName) : { toolName: primaryName, typeName: "" };
+
+  if (locale === "en" && splitTitle.typeName) {
+    const titleWithType = buildMetadataTitle({
+      pageTitle: `${splitTitle.toolName} | ${splitTitle.typeName}`,
+      brand,
+      maxLength
+    });
+    if (titleWithType.length <= maxLength) return titleWithType;
+  }
+
   const preferredTitle = secondaryName ? `${primaryName} (${secondaryName})` : primaryName;
   const compactTitle = buildMetadataTitle({ pageTitle: primaryName, brand, maxLength });
   const fullTitle = buildMetadataTitle({ pageTitle: preferredTitle, brand, maxLength });
@@ -273,11 +306,9 @@ export function buildToolMetaDescription({
   const typeLabel = resolveToolTypeLabel(type, locale);
 
   if (locale === "en") {
-    return buildMetaDescription(
-      `${primaryName} is available on ${brand}. Explore features, pricing, tutorials, and access guidance for this ${typeLabel}.`,
-      defaultSiteDescription,
-      maxLength
-    );
+    if (normalizedDescription) return buildMetaDescription(normalizedDescription, defaultSiteDescription, Math.min(maxLength, 140));
+
+    return buildMetaDescription(`${primaryName}: ${typeLabel} on ${brand}. Review features, pricing, tutorials, and access.`, defaultSiteDescription, Math.min(maxLength, 140));
   }
 
   const preferredDescription =

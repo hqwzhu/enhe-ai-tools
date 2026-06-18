@@ -5,6 +5,7 @@ import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getPublicToolCategories, getPublicToolListing } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
+import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import { buildBreadcrumbSchema, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 export const softwarePageRevalidate = publicPageCacheSeconds;
@@ -67,7 +68,11 @@ function FilterBar({ categories, locale }: { categories: { id: string; name: str
       <input name="q" placeholder={t.listing.searchPlaceholder} className="form-control-dark" />
       <select name="category" className="form-select-dark">
         <option value="">{t.listing.allCategories}</option>
-        {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {resolveLocalizedToolCategoryName(category.name, "software", locale)}
+          </option>
+        ))}
       </select>
       <select name="paid" className="form-select-dark">
         <option value="">{t.listing.allAccess}</option>

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildMetaDescription, buildMetadataTitle, buildToolMetaDescription, buildToolMetadataTitle } from "@/lib/seo";
+import {
+  buildHomeMetadataTitle,
+  buildMetaDescription,
+  buildMetadataTitle,
+  buildToolMetaDescription,
+  buildToolMetadataTitle
+} from "@/lib/seo";
 
 describe("seo helpers", () => {
   it("normalizes and truncates metadata descriptions", () => {
@@ -21,8 +27,8 @@ describe("seo helpers", () => {
     expect(buildToolMetadataTitle({ name: "即梦AI", englishName: "Dreamina", brand: "ENHE AI", locale: "zh" })).toBe(
       "即梦AI (Dreamina) | ENHE AI"
     );
-    expect(buildToolMetadataTitle({ name: "即梦AI", englishName: "Dreamina", brand: "ENHE AI", locale: "en" })).toBe(
-      "Dreamina (即梦AI) | ENHE AI"
+    expect(buildToolMetadataTitle({ name: "Dreamina - AI Software App", englishName: null, brand: "ENHE AI", locale: "en" })).toBe(
+      "Dreamina | AI Software App | ENHE AI"
     );
 
     const longTitle = buildToolMetadataTitle({
@@ -52,17 +58,18 @@ describe("seo helpers", () => {
 
   it("builds locale-aware tool descriptions for detail pages", () => {
     const englishDescription = buildToolMetaDescription({
-      name: "即梦AI",
-      englishName: "Dreamina",
-      description: "一款用于生成图片和视频的 AI 创作工具。",
+      name: "Dreamina",
+      englishName: null,
+      description: "Dreamina is an AI software app for image and video creation. Review pricing, tutorials, and access guidance on ENHE AI.",
       brand: "ENHE AI",
       locale: "en",
       type: "software"
     });
 
     expect(englishDescription).toBe(
-      "Dreamina is available on ENHE AI. Explore features, pricing, tutorials, and access guidance for this AI software app."
+      "Dreamina is an AI software app for image and video creation. Review pricing, tutorials, and access guidance on ENHE AI."
     );
+    expect(englishDescription.length).toBeLessThanOrEqual(140);
 
     const chineseDescription = buildToolMetaDescription({
       name: "即梦AI",
@@ -76,5 +83,10 @@ describe("seo helpers", () => {
     expect(chineseDescription.startsWith("一款用于生成图片和视频的 AI 创作工具。")).toBe(true);
     expect(chineseDescription).toContain("ENHE AI");
     expect(chineseDescription.length).toBeLessThanOrEqual(160);
+  });
+
+  it("builds homepage titles as brand plus business scope", () => {
+    expect(buildHomeMetadataTitle("en", "ENHE AI")).toBe("ENHE AI | AI Software, Account Services & Skill Learning");
+    expect(buildHomeMetadataTitle("zh", "恩禾 ENHE AI")).toBe("恩禾 ENHE AI | AI软件、账号服务与技能学习");
   });
 });

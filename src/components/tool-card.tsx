@@ -6,6 +6,11 @@ import { getDictionary, type Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
 import { buildLocalePath } from "@/lib/seo";
 import { buildToolCardHighlights } from "@/lib/tool-card-highlights";
+import {
+  buildLocalizedToolPreviewText,
+  resolveLocalizedToolCategoryName,
+  resolveLocalizedToolIdentity
+} from "@/lib/tool-localization";
 import { getPrimaryToolPrice, type ToolPriceSpecStatus } from "@/lib/tool-price-specs";
 
 type ToolCardProps = {
@@ -30,9 +35,25 @@ type ToolCardProps = {
 export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
   const t = getDictionary(locale);
   const coverImage = normalizeImageSrc(tool.coverImage);
-  const summary = buildValueSentence(tool.shortDescription, locale);
+  const localizedTool = resolveLocalizedToolIdentity(tool, locale);
+  const localizedCategory = resolveLocalizedToolCategoryName(tool.category?.name, tool.type, locale);
+  const shouldShowSecondaryName = locale === "zh" && Boolean(localizedTool.secondaryName);
+  const summary = buildValueSentence(
+    buildLocalizedToolPreviewText(
+      {
+        slug: tool.slug,
+        name: tool.name,
+        englishName: tool.englishName,
+        shortDescription: tool.shortDescription,
+        type: tool.type,
+        categoryName: tool.category?.name
+      },
+      locale
+    ),
+    locale
+  );
   const highlights = buildCardHighlights(tool, locale);
-  const audience = tool.category?.name ?? t.toolCard.defaultAudience;
+  const audience = localizedCategory || t.toolCard.defaultAudience;
   const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], tool.downloadPrice);
   const showPrice = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0) || tool.type === "skill_learning";
 
@@ -58,7 +79,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <div className="mb-3 flex flex-wrap gap-2">
-              <Badge>{tool.category?.name ?? t.toolCard.uncategorized}</Badge>
+              <Badge>{localizedCategory || t.toolCard.uncategorized}</Badge>
               {showPrice ? (
                 <Badge className="border-[var(--marketing-accent)]/35 text-[var(--marketing-accent)]">
                   {tool.type === "online" ? t.toolCard.servicePrice : tool.type === "skill_learning" ? t.toolCard.capabilityPaidCourse : t.toolCard.paidDownload} ¥{servicePrice.toFixed(2)}
@@ -67,8 +88,8 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
                 <Badge>{t.toolCard.free}</Badge>
               )}
             </div>
-            <h3 className="text-xl font-bold text-[var(--marketing-text)]">{tool.name}</h3>
-            {tool.englishName ? <p className="mt-1 text-sm font-medium text-[var(--marketing-accent)]">{tool.englishName}</p> : null}
+            <h3 className="text-xl font-bold text-[var(--marketing-text)]">{localizedTool.primaryName}</h3>
+            {shouldShowSecondaryName ? <p className="mt-1 text-sm font-medium text-[var(--marketing-accent)]">{localizedTool.secondaryName}</p> : null}
           </div>
           <ArrowUpRight className="text-[var(--marketing-muted)] transition group-hover:text-[var(--marketing-accent)]" />
         </div>
