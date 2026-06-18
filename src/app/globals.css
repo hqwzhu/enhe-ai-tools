@@ -552,6 +552,10 @@ select option:disabled {
 }
 
 .site-user-chip {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 0;
+  min-height: 32px;
   max-width: 148px;
   align-items: center;
   gap: 8px;
@@ -560,10 +564,18 @@ select option:disabled {
   border-radius: 999px;
   background: var(--marketing-card-soft);
   color: var(--marketing-text);
-  font-size: 14px;
-  font-weight: 650;
+  font-size: 12px;
+  font-weight: 800;
   line-height: 1;
-  padding: 10px 13px;
+  padding: 0 13px;
+  white-space: nowrap;
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.site-user-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 32px rgba(5, 5, 5, 0.12);
+  transform: translateY(-1px);
 }
 
 .site-user-center-cta {

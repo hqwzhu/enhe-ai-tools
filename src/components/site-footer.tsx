@@ -25,6 +25,9 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
             <Link href={buildLocalePath("/legal/user-agreement", locale)} className="transition hover:text-[var(--marketing-accent)]">
               {t.footer.helpSupport}
             </Link>
+            <Link href={buildLocalePath("/#updates", locale)} className="transition hover:text-[var(--marketing-accent)]">
+              {t.nav.updates}
+            </Link>
             {legalPages.map((page) => (
               <Link
                 key={page.slug}

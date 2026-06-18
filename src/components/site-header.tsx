@@ -20,7 +20,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
     { label: t.nav.software, href: buildLocalePath("/software", locale) },
     { label: t.nav.onlineTools, href: buildLocalePath("/online-tools", locale) },
     { label: t.nav.skillLearning, href: buildLocalePath("/skill-learning", locale) },
-    { label: t.nav.updates, href: buildLocalePath("/#updates", locale) }
+    { label: t.nav.admin, href: buildLocalePath("/admin", locale) }
   ] as const;
 
   return (
@@ -64,7 +64,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
           <MobileNavMenu
             labels={{ menu: t.nav.menu, admin: t.nav.admin }}
             navItems={navItems}
-            showAdmin={false}
+            showAdmin={true}
             loginItem={[t.nav.login, buildLocalePath("/login", locale)]}
             userCenterItem={[t.nav.user, buildLocalePath("/user", locale)]}
           />
