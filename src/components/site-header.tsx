@@ -19,8 +19,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
     { label: t.nav.aiNews, href: buildLocalePath("/ai-news", locale) },
     { label: t.nav.software, href: buildLocalePath("/software", locale) },
     { label: t.nav.onlineTools, href: buildLocalePath("/online-tools", locale) },
-    { label: t.nav.skillLearning, href: buildLocalePath("/skill-learning", locale) },
-    { label: t.nav.admin, href: buildLocalePath("/admin", locale) }
+    { label: t.nav.skillLearning, href: buildLocalePath("/skill-learning", locale) }
   ] as const;
 
   return (
@@ -62,7 +61,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
           </Link>
           <LanguageSwitcher locale={locale} labels={t.language} />
           <MobileNavMenu
-            labels={{ menu: t.nav.menu, admin: t.nav.admin }}
+            labels={{ menu: t.nav.menu }}
             navItems={navItems}
             showAdmin={false}
             loginItem={[t.nav.login, buildLocalePath("/login", locale)]}

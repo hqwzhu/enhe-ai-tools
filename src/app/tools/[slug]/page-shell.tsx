@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createCommentAction, createSoftwareDownloadOrderAction } from "@/app/actions";
 import { FormSubmitButton } from "@/components/form-submit-button";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
+import { buildSeoFriendlySlug } from "@/lib/admin-form";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { normalizeImageSrc } from "@/lib/media";
+import { buildCanonicalToolPath, getCanonicalToolSlug } from "@/lib/public-slugs";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
+import { resolvePublicToolSlug } from "@/lib/public-content";
 import {
   buildBreadcrumbSchema,
   buildFaqSchema,
@@ -47,11 +50,24 @@ export const toolDetailPageRevalidate = publicPageCacheSeconds;
 
 export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: string): Promise<Metadata> {
   const t = getDictionary(forceLocale);
-  const tool = await prisma.tool.findUnique({
-    where: { slug },
-    select: { slug: true, name: true, englishName: true, shortDescription: true, content: true, coverImage: true, status: true, type: true }
-  });
-  const canonical = `/tools/${slug}`;
+  const slugMatch = await resolvePublicToolSlug(slug);
+  const tool = slugMatch
+    ? await prisma.tool.findUnique({
+        where: { id: slugMatch.id },
+        select: {
+          slug: true,
+          name: true,
+          englishName: true,
+          shortDescription: true,
+          content: true,
+          coverImage: true,
+          status: true,
+          type: true
+        }
+      })
+    : null;
+  const canonicalSlug = slugMatch?.canonicalSlug ?? slug;
+  const canonical = `/tools/${canonicalSlug}`;
   if (!tool || tool.status !== "published") {
     return buildPageMetadata({
       title: `${t.toolDetail.introTitle} - ${t.brand}`,
@@ -100,11 +116,12 @@ export async function ToolDetailPageShell({
   slug: string;
   forceLocale: Locale;
 }) {
-  const [user] = await Promise.all([getCurrentUser()]);
+  const [user, slugMatch] = await Promise.all([getCurrentUser(), resolvePublicToolSlug(slug)]);
+  if (!slugMatch) notFound();
   const t = getDictionary(forceLocale);
   const td = t.toolDetail;
   const tool = await prisma.tool.findUnique({
-    where: { slug },
+    where: { id: slugMatch.id },
     include: {
       category: true,
       downloadFile: true,
@@ -117,6 +134,15 @@ export async function ToolDetailPageShell({
     }
   });
   if (!tool || tool.status !== "published") notFound();
+
+  const canonicalSlug = buildSeoFriendlySlug({
+    currentSlug: tool.slug,
+    name: tool.name,
+    englishName: tool.englishName
+  });
+  if (slug !== canonicalSlug) {
+    redirect(buildCanonicalToolPath(tool, forceLocale));
+  }
 
   const localizedTool = resolveLocalizedToolIdentity(tool, forceLocale);
   const localizedCategoryName = resolveLocalizedToolCategoryName(tool.category?.name, tool.type, forceLocale);
@@ -208,7 +234,7 @@ export async function ToolDetailPageShell({
         name: tool.type === "software" ? t.listing.softwareTitle : tool.type === "online" ? t.listing.onlineTitle : t.listing.skillLearningTitle,
         path: baseListingPath
       },
-      { name: localizedTool.primaryName, path: buildLocalePath(`/tools/${tool.slug}`, forceLocale) }
+      { name: localizedTool.primaryName, path: buildCanonicalToolPath(tool, forceLocale) }
     ]
   });
   const aggregateRating = null;
@@ -231,7 +257,7 @@ export async function ToolDetailPageShell({
       brand: t.brand,
       type: tool.type === "online" ? "online" : tool.type === "skill_learning" ? "skill_learning" : "software"
     }),
-    url: buildLocalePath(`/tools/${tool.slug}`, forceLocale),
+    url: buildCanonicalToolPath(tool, forceLocale),
     image: coverImage,
     category: localizedCategoryName,
     operatingSystem: tool.systemRequirement ?? null,
@@ -254,7 +280,7 @@ export async function ToolDetailPageShell({
           <div className="tool-detail-cover-frame relative overflow-hidden rounded-[1.75rem] border border-[rgba(210,230,255,0.16)] bg-[#07101E]">
             <div className="relative aspect-[16/9]">
               {coverImage ? (
-                <Image src={coverImage} alt={tool.name} fill className="object-contain" sizes="(min-width: 1024px) 1120px, 100vw" unoptimized />
+                <Image src={coverImage} alt={localizedTool.primaryName} fill className="object-contain" sizes="(min-width: 1024px) 1120px, 100vw" unoptimized />
               ) : (
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(240,90,53,0.2),transparent_32%),radial-gradient(circle_at_72%_70%,rgba(255,184,107,0.16),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
               )}
@@ -448,7 +474,7 @@ export async function ToolDetailPageShell({
                     <div key={`${screenshot}-${index}`} className="tool-detail-product-image-frame overflow-hidden rounded-2xl bg-transparent">
                       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-transparent">
                         {imageSrc ? (
-                          <Image src={imageSrc} alt={`${tool.name} ${td.productImageAlt} ${index + 1}`} fill className="object-contain" sizes="(min-width: 1024px) 1040px, 100vw" unoptimized />
+                          <Image src={imageSrc} alt={`${localizedTool.primaryName} ${td.productImageAlt} ${index + 1}`} fill className="object-contain" sizes="(min-width: 1024px) 1040px, 100vw" unoptimized />
                         ) : (
                           <div className="absolute inset-0 bg-white/6" />
                         )}

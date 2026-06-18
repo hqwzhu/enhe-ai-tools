@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import { prisma } from "@/lib/db";
+import { getCanonicalAiNewsSlug, getCanonicalToolSlug } from "@/lib/public-slugs";
 import { absoluteUrl, buildLanguageAlternates } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -78,13 +79,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const tools = await prisma.tool
     .findMany({
       where: { status: "published" },
-      select: { slug: true, updatedAt: true, type: true }
+      select: { slug: true, name: true, englishName: true, updatedAt: true, type: true }
     })
     .catch(() => []);
   const newsArticles = await prisma.newsArticle
     .findMany({
       where: { status: "published" },
-      select: { slug: true, updatedAt: true, englishTitle: true, englishSummary: true, englishContent: true }
+      select: { slug: true, title: true, englishTitle: true, updatedAt: true, englishSummary: true, englishContent: true }
     })
     .catch(() => []);
 
@@ -99,27 +100,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: getPriority(path)
     })),
     ...tools.flatMap((tool) =>
-      (["/tools", "/en/tools"] as const).map((basePath) => ({
-        url: absoluteUrl(`${basePath}/${tool.slug}`),
+      (["/tools", "/en/tools"] as const).map((basePath) => {
+        const canonicalSlug = getCanonicalToolSlug(tool);
+        return {
+        url: absoluteUrl(`${basePath}/${canonicalSlug}`),
         lastModified: tool.updatedAt,
         alternates: {
-          languages: buildLanguageAlternates(`/tools/${tool.slug}`)
+          languages: buildLanguageAlternates(`/tools/${canonicalSlug}`)
         },
         changeFrequency: "weekly" as const,
         priority: tool.type === "software" ? 0.85 : 0.8
-      }))
+      };
+      })
     ),
     ...newsArticles.flatMap((newsArticle) => {
+      const canonicalSlug = getCanonicalAiNewsSlug(newsArticle);
       const routes = [
-        { path: `/ai-news/${newsArticle.slug}`, priority: 0.78 },
-        ...(isEnglishNewsArticleIndexable(newsArticle) ? [{ path: `/en/ai-news/${newsArticle.slug}`, priority: 0.72 }] : [])
+        { path: `/ai-news/${canonicalSlug}`, priority: 0.78 },
+        ...(isEnglishNewsArticleIndexable(newsArticle) ? [{ path: `/en/ai-news/${canonicalSlug}`, priority: 0.72 }] : [])
       ];
 
       return routes.map((route) => ({
         url: absoluteUrl(route.path),
         lastModified: newsArticle.updatedAt,
         alternates: {
-          languages: buildLanguageAlternates(`/ai-news/${newsArticle.slug}`)
+          languages: buildLanguageAlternates(`/ai-news/${canonicalSlug}`)
         },
         changeFrequency: "weekly" as const,
         priority: route.priority

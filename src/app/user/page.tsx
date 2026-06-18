@@ -19,6 +19,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentLocale, getDictionary, type Locale } from "@/lib/i18n";
 import { getNotificationDisplay } from "@/lib/notification-display";
 import { canUserCancelOrder } from "@/lib/order-rules";
+import { buildCanonicalToolPath } from "@/lib/public-slugs";
 import { reviewCompletionNotice, reviewCompletionNoticeEn } from "@/lib/review-copy";
 import { buildUserToolEntitlements, type UserEntitlementTool } from "@/lib/user-entitlements";
 import { formatCurrency } from "@/lib/utils";
@@ -353,7 +354,7 @@ function ToolAccessList({
       {tools.map((tool) => (
         <div key={tool.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
           <div>
-            <Link href={`/tools/${tool.slug}`} className="font-semibold text-[var(--marketing-text)] transition hover:text-[var(--marketing-accent)]">
+            <Link href={buildCanonicalToolPath(tool, locale)} className="font-semibold text-[var(--marketing-text)] transition hover:text-[var(--marketing-accent)]">
               {tool.name}
             </Link>
             <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#8B95A7]">
@@ -389,7 +390,7 @@ function ToolAccessAction({
     return <a href={`/api/tools/${tool.id}/use`} className={className}>{t.userCenter.useNow}</a>;
   }
 
-  return <Link href={`/tools/${tool.slug}`} className={className}>{t.userCenter.viewTool}</Link>;
+  return <Link href={buildCanonicalToolPath(tool, locale)} className={className}>{t.userCenter.viewTool}</Link>;
 }
 
 function getPasswordMessage(value: string | undefined, locale: Locale) {

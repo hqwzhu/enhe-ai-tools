@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AiNewsInteractions } from "@/components/ai-news-interactions";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
@@ -13,10 +13,20 @@ import {
   toNewsIsoDate,
   type NewsContentBlock
 } from "@/lib/ai-news";
+import {
+  buildLocalizedNewsKeywordList,
+  buildLocalizedNewsSummary,
+  buildLocalizedNewsTitle,
+  buildLocalizedTutorialPreviewTitle,
+  buildLocalizedTutorialPreviewToolName,
+  resolveLocalizedNewsCategoryName,
+  resolveLocalizedNewsTagName
+} from "@/lib/ai-news-localization";
 import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { normalizeImageSrc } from "@/lib/media";
-import { getPublicNewsArticleBySlug } from "@/lib/public-content";
+import { getPublicNewsArticleBySlug, resolvePublicNewsArticleSlug } from "@/lib/public-content";
+import { buildCanonicalAiNewsPath, getCanonicalAiNewsSlug } from "@/lib/public-slugs";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import {
   absoluteUrl,
@@ -34,12 +44,14 @@ export const aiNewsDetailPageRevalidate = publicPageCacheSeconds;
 
 export async function generateAiNewsDetailPageMetadata(forceLocale: Locale, slug: string): Promise<Metadata> {
   const t = getDictionary(forceLocale);
-  const article = await getPublicNewsArticleBySlug(slug);
+  const slugMatch = await resolvePublicNewsArticleSlug(slug);
+  const article = slugMatch ? await getPublicNewsArticleBySlug(slugMatch.slug) : null;
+  const canonicalSlug = slugMatch?.canonicalSlug ?? slug;
   if (!article) {
     return buildPageMetadata({
       title: buildMetadataTitle({ pageTitle: t.aiNews.title, brand: t.brand }),
       description: t.aiNews.intro,
-      path: `/ai-news/${slug}`,
+      path: `/ai-news/${canonicalSlug}`,
       locale: forceLocale === "en" ? "en_US" : "zh_CN",
       localeKey: forceLocale
     });
@@ -49,7 +61,7 @@ export async function generateAiNewsDetailPageMetadata(forceLocale: Locale, slug
   const metadata = buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: localized.title, brand: t.brand }),
     description: localized.description || localized.summary,
-    path: `/ai-news/${article.slug}`,
+    path: `/ai-news/${canonicalSlug}`,
     image: normalizeImageSrc(article.coverImage),
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,
@@ -67,8 +79,16 @@ export async function generateAiNewsDetailPageMetadata(forceLocale: Locale, slug
 }
 
 export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: string; forceLocale: Locale }) {
-  const article = await getPublicNewsArticleBySlug(slug);
+  const slugMatch = await resolvePublicNewsArticleSlug(slug);
+  if (!slugMatch) notFound();
+
+  const article = await getPublicNewsArticleBySlug(slugMatch.slug);
   if (!article) notFound();
+
+  const canonicalSlug = getCanonicalAiNewsSlug(article);
+  if (slug !== canonicalSlug) {
+    redirect(buildCanonicalAiNewsPath(article, forceLocale));
+  }
 
   const t = getDictionary(forceLocale);
   const localized = localizeArticle(article, forceLocale);
@@ -84,7 +104,7 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
     items: [
       { name: t.nav.home, path: buildLocalePath("/", forceLocale) },
       { name: t.aiNews.title, path: buildLocalePath("/ai-news", forceLocale) },
-      { name: localized.title, path: buildLocalePath(`/ai-news/${article.slug}`, forceLocale) }
+      { name: localized.title, path: buildCanonicalAiNewsPath(article, forceLocale) }
     ]
   });
   const newsArticleSchema = buildNewsArticleSchema(article, localized, forceLocale, coverImage);
@@ -100,10 +120,10 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
       <article>
         <section className="glass overflow-hidden rounded-[2rem] p-5 md:p-8">
           <div className="flex flex-wrap gap-2">
-            {article.category ? <Badge>{article.category.name}</Badge> : null}
+            {article.category ? <Badge>{resolveLocalizedNewsCategoryName(article.category.name, forceLocale)}</Badge> : null}
             {article.isPinned || article.isFeatured ? <Badge className="text-[var(--marketing-accent)]">{t.aiNews.featured}</Badge> : null}
             {article.tagLinks.map(({ tag }) => (
-              <Badge key={tag.id}>{tag.name}</Badge>
+              <Badge key={tag.id}>{resolveLocalizedNewsTagName(tag.name, forceLocale) || tag.name}</Badge>
             ))}
           </div>
           <h1 className="mt-6 max-w-5xl text-4xl font-black leading-tight text-[var(--marketing-text)] md:text-6xl">{localized.title}</h1>
@@ -165,8 +185,12 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
                 <div className="mt-5 grid gap-3">
                   {relatedTutorials.map((tutorial) => (
                     <Link key={tutorial.id} href={buildLocalePath("/tutorials", forceLocale)} className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45">
-                      <p className="font-semibold text-[var(--marketing-text)]">{tutorial.title}</p>
-                      <p className="mt-2 text-sm text-[var(--marketing-muted)]">{tutorial.tool.name}</p>
+                      <p className="font-semibold text-[var(--marketing-text)]">
+                        {buildLocalizedTutorialPreviewTitle(tutorial.title, tutorial.tool, forceLocale)}
+                      </p>
+                      <p className="mt-2 text-sm text-[var(--marketing-muted)]">
+                        {buildLocalizedTutorialPreviewToolName(tutorial.tool, forceLocale)}
+                      </p>
                     </Link>
                   ))}
                 </div>
@@ -178,9 +202,35 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
                 <h2 className="text-2xl font-black text-[var(--marketing-text)]">{t.aiNews.relatedNews}</h2>
                 <div className="mt-5 grid gap-3">
                   {relatedArticles.map((item) => (
-                    <Link key={item.id} href={buildLocalePath(`/ai-news/${item.slug}`, forceLocale)} className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45">
-                      <p className="font-semibold text-[var(--marketing-text)]">{forceLocale === "en" && item.englishTitle ? item.englishTitle : item.title}</p>
-                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--marketing-muted)]">{forceLocale === "en" && item.englishSummary ? item.englishSummary : item.summary}</p>
+                    <Link key={item.id} href={buildCanonicalAiNewsPath(item, forceLocale)} className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45">
+                      <p className="font-semibold text-[var(--marketing-text)]">
+                        {forceLocale === "en"
+                          ? buildLocalizedNewsTitle(
+                              {
+                                title: item.title,
+                                englishTitle: item.englishTitle,
+                                categoryName: item.category?.name
+                              },
+                              forceLocale
+                            )
+                          : item.title}
+                      </p>
+                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--marketing-muted)]">
+                        {forceLocale === "en"
+                          ? buildLocalizedNewsSummary(
+                              {
+                                title: item.title,
+                                englishTitle: item.englishTitle,
+                                summary: item.summary,
+                                englishSummary: item.englishSummary,
+                                description: item.description,
+                                englishDescription: item.englishDescription,
+                                categoryName: item.category?.name
+                              },
+                              forceLocale
+                            )
+                          : item.summary}
+                      </p>
                     </Link>
                   ))}
                 </div>
@@ -209,7 +259,7 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
             ) : null}
 
             <AiNewsInteractions
-              slug={article.slug}
+              slug={canonicalSlug}
               labels={{
                 like: t.aiNews.like,
                 favorite: t.aiNews.favorite,
@@ -249,10 +299,30 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
 function localizeArticle(article: NewsArticle, locale: Locale) {
   if (locale === "en") {
     return {
-      title: article.englishTitle || article.title,
+      title: buildLocalizedNewsTitle(
+        {
+          title: article.title,
+          englishTitle: article.englishTitle,
+          categoryName: article.category?.name
+        },
+        "en"
+      ),
       subtitle: article.englishSubtitle || article.subtitle,
       description: article.englishSeoDescription || article.englishDescription || article.seoDescription || article.description,
-      summary: article.englishSummary || article.summary,
+      summary:
+        article.englishSummary ||
+        buildLocalizedNewsSummary(
+          {
+            title: article.title,
+            englishTitle: article.englishTitle,
+            summary: article.summary,
+            englishSummary: article.englishSummary,
+            description: article.description,
+            englishDescription: article.englishDescription,
+            categoryName: article.category?.name
+          },
+          "en"
+        ),
       content: article.englishContent || article.content,
       keyTakeaways: article.englishKeyTakeaways.length ? article.englishKeyTakeaways : article.keyTakeaways,
       impactNotes: article.englishImpactNotes || article.impactNotes,
@@ -377,7 +447,7 @@ async function getRelatedNewsArticles(article: NewsArticle) {
 }
 
 function buildNewsArticleSchema(article: NewsArticle, localized: ReturnType<typeof localizeArticle>, locale: Locale, coverImage: string | null) {
-  const url = absoluteUrl(buildLocalePath(`/ai-news/${article.slug}`, locale));
+  const url = absoluteUrl(buildCanonicalAiNewsPath(article, locale));
   return {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -396,7 +466,18 @@ function buildNewsArticleSchema(article: NewsArticle, localized: ReturnType<type
       name: siteName
     },
     ...(coverImage ? { image: [absoluteUrl(coverImage)] } : {}),
-    keywords: article.keywords || undefined
+    keywords:
+      buildLocalizedNewsKeywordList(
+        {
+          keywords: article.keywords,
+          seoKeywords: article.seoKeywords,
+          englishKeywords: article.englishKeywords,
+          englishSeoKeywords: article.englishSeoKeywords,
+          categoryName: article.category?.name,
+          tagNames: article.tagLinks.map(({ tag }) => tag.name)
+        },
+        locale
+      ).join(", ") || undefined
   };
 }
 

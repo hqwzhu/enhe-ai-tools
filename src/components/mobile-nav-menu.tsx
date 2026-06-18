@@ -4,7 +4,7 @@ import { LayoutDashboard, Menu } from "lucide-react";
 type MobileNavMenuProps = {
   labels: {
     menu: string;
-    admin: string;
+    admin?: string;
   };
   navItems: ReadonlyArray<{ label: string; href: string }>;
   showAdmin: boolean;
@@ -44,7 +44,7 @@ export function MobileNavMenu({
         {showAdmin ? (
           <Link href="/admin" className="mobile-nav-link mobile-nav-admin">
             <LayoutDashboard size={16} />
-            {labels.admin}
+            {labels.admin ?? "Admin"}
           </Link>
         ) : null}
       </div>

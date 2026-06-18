@@ -4,8 +4,15 @@ import Link from "next/link";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, EmptyState, SectionTitle } from "@/components/ui";
 import { parseNewsSearchParams } from "@/lib/ai-news";
+import {
+  buildLocalizedNewsSummary,
+  buildLocalizedNewsTitle,
+  resolveLocalizedNewsCategoryName,
+  resolveLocalizedNewsTagName
+} from "@/lib/ai-news-localization";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { normalizeImageSrc } from "@/lib/media";
+import { buildCanonicalAiNewsPath } from "@/lib/public-slugs";
 import {
   getPublicAiNewsDiscovery,
   getPublicNewsCategories,
@@ -160,7 +167,7 @@ function FilterBar({
         <option value="">{t.aiNews.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
-            {category.name}
+            {resolveLocalizedNewsCategoryName(category.name, locale)}
           </option>
         ))}
       </select>
@@ -168,7 +175,7 @@ function FilterBar({
         <option value="">{t.aiNews.allTags}</option>
         {tags.map((tag) => (
           <option key={tag.slug} value={tag.slug}>
-            {tag.name}
+            {resolveLocalizedNewsTagName(tag.name, locale) || tag.name}
           </option>
         ))}
       </select>
@@ -186,10 +193,33 @@ function FilterBar({
 
 function NewsCard({ article, locale, featured = false }: { article: NewsCardArticle; locale: Locale; featured?: boolean }) {
   const t = getDictionary(locale);
-  const title = locale === "en" && article.englishTitle ? article.englishTitle : article.title;
-  const summary = locale === "en" && article.englishSummary ? article.englishSummary : article.summary;
+  const title =
+    locale === "en"
+      ? buildLocalizedNewsTitle(
+          {
+            title: article.title,
+            englishTitle: article.englishTitle,
+            categoryName: article.category?.name
+          },
+          locale
+        )
+      : article.title;
+  const summary =
+    locale === "en"
+      ? buildLocalizedNewsSummary(
+          {
+            title: article.title,
+            englishTitle: article.englishTitle,
+            summary: article.summary,
+            englishSummary: article.englishSummary,
+            description: article.description,
+            englishDescription: article.englishDescription
+          },
+          locale
+        )
+      : article.summary;
   const coverImage = normalizeImageSrc(article.coverImage);
-  const href = buildLocalePath(`/ai-news/${article.slug}`, locale);
+  const href = buildCanonicalAiNewsPath(article, locale);
 
   return (
     <article className={`glass group overflow-hidden rounded-2xl transition duration-200 hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45 ${featured ? "lg:col-span-1" : ""}`}>
@@ -203,7 +233,7 @@ function NewsCard({ article, locale, featured = false }: { article: NewsCardArti
         </div>
         <div className="p-5">
           <div className="flex flex-wrap gap-2">
-            {article.category ? <Badge>{article.category.name}</Badge> : null}
+            {article.category ? <Badge>{resolveLocalizedNewsCategoryName(article.category.name, locale)}</Badge> : null}
             {article.isPinned ? <Badge className="text-[var(--marketing-accent)]">{t.aiNews.featured}</Badge> : null}
           </div>
           <h2 className="mt-4 text-xl font-black leading-snug text-[var(--marketing-text)]">{title}</h2>
@@ -216,7 +246,7 @@ function NewsCard({ article, locale, featured = false }: { article: NewsCardArti
           <div className="mt-5 flex flex-wrap gap-2">
             {article.tagLinks.slice(0, 3).map(({ tag }) => (
               <Badge key={tag.id} className="text-[var(--marketing-accent)]">
-                {tag.name}
+                {resolveLocalizedNewsTagName(tag.name, locale) || tag.name}
               </Badge>
             ))}
           </div>
@@ -236,10 +266,19 @@ function TrendPanel({ articles, locale }: { articles: NewsCardArticle[]; locale:
       <div className="mt-4 space-y-3">
         {articles.length ? (
           articles.map((article, index) => (
-            <Link key={article.id} href={buildLocalePath(`/ai-news/${article.slug}`, locale)} className="block rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45">
+            <Link key={article.id} href={buildCanonicalAiNewsPath(article, locale)} className="block rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45">
               <span className="text-xs font-bold text-[var(--marketing-accent)]">#{index + 1}</span>
               <p className="mt-2 text-sm font-semibold leading-6 text-[var(--marketing-text)]">
-                {locale === "en" && article.englishTitle ? article.englishTitle : article.title}
+                {locale === "en"
+                  ? buildLocalizedNewsTitle(
+                      {
+                        title: article.title,
+                        englishTitle: article.englishTitle,
+                        categoryName: article.category?.name
+                      },
+                      locale
+                    )
+                  : article.title}
               </p>
             </Link>
           ))

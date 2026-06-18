@@ -71,7 +71,7 @@ describe("technical seo phase one source", () => {
     expect(header).toContain("buildLocalePath");
     expect(header).toContain('href={buildLocalePath("/", locale)}');
     expect(footer).toContain("buildLocalePath");
-    expect(toolCard).toContain("buildLocalePath");
+    expect(toolCard).toContain("buildCanonicalToolPath");
   });
 
   it("splits public caching from user-specific surfaces and adds favicon metadata coverage", () => {
@@ -83,6 +83,7 @@ describe("technical seo phase one source", () => {
     const sharedLayout = read("src/app/root-layout-shared.tsx");
     const nextConfig = read("next.config.ts");
     const seo = read("src/lib/seo.ts");
+    const robots = read("src/app/robots.ts");
 
     expect(home).toContain('export const revalidate = 300');
     expect(siteHeader).not.toContain('export const dynamic = "force-dynamic"');
@@ -97,9 +98,12 @@ describe("technical seo phase one source", () => {
     expect(sharedLayout).toContain("icons:");
     expect(sharedLayout).toContain("shortcut");
     expect(seo).toContain('"/images/brand/enhe-icon-gradient-white-bg-cropped.png"');
+    expect(robots).toContain("/api/uploads/");
 
     expect(nextConfig).toContain("headers()");
     expect(nextConfig).toContain("Cache-Control");
     expect(nextConfig).toContain("s-maxage=300");
+    expect(nextConfig).toContain('source: "/ai-news/:slug*"');
+    expect(nextConfig).toContain('source: "/en/ai-news/:slug*"');
   });
 });

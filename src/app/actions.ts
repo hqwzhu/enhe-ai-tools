@@ -38,6 +38,7 @@ import { createUserNotification } from "@/lib/notifications";
 import { canUserCancelOrder, canUserRequestRefundForOrder, normalizeRefundRecordAmount } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
 import { getCurrentLocale } from "@/lib/i18n";
+import { buildCanonicalToolPath, getCanonicalToolSlug } from "@/lib/public-slugs";
 import { buildLocalePath } from "@/lib/seo";
 import { resolveToolOrderPriceSpec } from "@/lib/tool-price-specs";
 
@@ -181,7 +182,7 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
   });
   await trackAnalyticsEvent({
     eventName: "create_order",
-    path: `/tools/${tool.slug}`,
+    path: `/tools/${getCanonicalToolSlug(tool)}`,
     entityType: "order",
     entityId: order.id,
     userId: user.id,
@@ -365,7 +366,13 @@ export async function createCommentAction(formData: FormData) {
   const toolId = z.string().min(1).parse(formData.get("toolId"));
   const content = z.string().min(2).max(1000).parse(formData.get("content"));
   await prisma.comment.create({ data: { userId: user.id, toolId, content, status: "pending" } });
-  revalidatePath(buildLocalePath(`/tools/${formData.get("slug")}`, locale));
+  const tool = await prisma.tool.findUnique({
+    where: { id: toolId },
+    select: { slug: true, name: true, englishName: true }
+  });
+  if (tool) {
+    revalidatePath(buildCanonicalToolPath(tool, locale));
+  }
 }
 
 export async function reviewPaymentProofAction(formData: FormData) {
@@ -447,7 +454,7 @@ export async function updateCommentPinAction(formData: FormData) {
     metadata: { isPinned, toolId: comment.toolId }
   });
   revalidatePath("/admin/comments");
-  revalidatePath(`/tools/${comment.tool.slug}`);
+  revalidatePath(`/tools/${getCanonicalToolSlug(comment.tool)}`);
 }
 
 export async function getSessionSnapshot() {

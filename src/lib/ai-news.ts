@@ -1,4 +1,4 @@
-import { slugify } from "@/lib/admin-form";
+import { isWeakSeoSlug, slugify } from "@/lib/admin-form";
 
 export type NewsSort = "latest" | "hot" | "featured";
 
@@ -43,6 +43,33 @@ export function resolveNewsSlug({
   if (titleSlug) return titleSlug;
 
   return `news-${slugify(fallbackSeed) || "item"}`;
+}
+
+export function resolveAiNewsCanonicalSlug({
+  slug,
+  title,
+  englishTitle
+}: {
+  slug: string;
+  title: string;
+  englishTitle?: string | null;
+}) {
+  const normalizedSlug = slugify(slug);
+  if (!isWeakSeoSlug(normalizedSlug)) {
+    return normalizedSlug;
+  }
+
+  const englishSlug = slugify(englishTitle ?? "");
+  if (englishSlug && englishSlug !== normalizedSlug) {
+    return englishSlug;
+  }
+
+  const titleSlug = slugify(title);
+  if (titleSlug && titleSlug !== normalizedSlug) {
+    return titleSlug;
+  }
+
+  return normalizedSlug;
 }
 
 function normalizeStringParam(value: string | undefined) {

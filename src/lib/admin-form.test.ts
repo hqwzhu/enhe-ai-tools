@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { buildPublicUploadUrl, parseBooleanField, parseNumberField, parseScreenshotsField, resolveToolSlug, slugify } from "@/lib/admin-form";
+import {
+  buildPublicUploadUrl,
+  buildSeoFriendlySlug,
+  parseBooleanField,
+  parseNumberField,
+  parseScreenshotsField,
+  resolveToolSlug,
+  slugify
+} from "@/lib/admin-form";
 
 describe("admin form helpers", () => {
   it("creates stable lowercase slugs from names", () => {
@@ -13,6 +21,24 @@ describe("admin form helpers", () => {
 
   it("normalizes manual tool slugs before saving", () => {
     expect(resolveToolSlug({ name: "测试", slugInput: " My Tool 01 ", fallbackSeed: "seed" })).toBe("my-tool-01");
+  });
+
+  it("builds SEO-friendly slugs from english names before falling back to weak legacy slugs", () => {
+    expect(
+      buildSeoFriendlySlug({
+        currentSlug: "ai-ai",
+        name: "AI语音生成",
+        englishName: "AI Voice Generator - Flexible Edition"
+      })
+    ).toBe("ai-voice-generator-flexible-edition");
+
+    expect(
+      buildSeoFriendlySlug({
+        currentSlug: "tool-mq12l5w6",
+        name: "测试工具",
+        englishName: null
+      })
+    ).toBe("tool-mq12l5w6");
   });
 
   it("parses checkbox-style boolean fields", () => {

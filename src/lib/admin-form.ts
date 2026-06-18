@@ -6,6 +6,55 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+const genericSlugTokens = new Set(["ai", "tool", "tools", "news", "app", "service", "course"]);
+
+export function isWeakSeoSlug(value: string) {
+  const normalized = slugify(value);
+  if (!normalized) return true;
+  if (/^(tool|news|ai-news)-[a-z0-9-]{2,}$/i.test(normalized)) return true;
+  if (/^(ai|app|tool|news)-[a-z0-9]{5,10}$/i.test(normalized)) return true;
+
+  const tokens = normalized.split("-").filter(Boolean);
+  if (!tokens.length) return true;
+
+  const uniqueTokens = new Set(tokens);
+  const genericTokenCount = tokens.filter((token) => genericSlugTokens.has(token)).length;
+
+  if (uniqueTokens.size === 1 && tokens.length > 1) return true;
+  if (genericTokenCount === tokens.length) return true;
+  if (tokens.length >= 4 && uniqueTokens.size <= Math.ceil(tokens.length / 2)) return true;
+
+  return false;
+}
+
+export function buildSeoFriendlySlug({
+  currentSlug,
+  name,
+  englishName
+}: {
+  currentSlug: string;
+  name: string;
+  englishName?: string | null;
+}) {
+  const normalizedCurrentSlug = slugify(currentSlug);
+  const englishSlug = slugify(englishName ?? "");
+  const nameSlug = slugify(name);
+
+  if (!isWeakSeoSlug(normalizedCurrentSlug)) {
+    return normalizedCurrentSlug;
+  }
+
+  if (englishSlug && englishSlug !== normalizedCurrentSlug) {
+    return englishSlug;
+  }
+
+  if (nameSlug && nameSlug !== normalizedCurrentSlug) {
+    return nameSlug;
+  }
+
+  return normalizedCurrentSlug;
+}
+
 export function resolveToolSlug({
   name,
   slugInput,

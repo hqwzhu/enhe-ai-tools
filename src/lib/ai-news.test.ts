@@ -5,6 +5,7 @@ import {
   parseNewsRelationIds,
   parseNewsSearchParams,
   renderNewsContentBlocks,
+  resolveAiNewsCanonicalSlug,
   resolveNewsSlug,
   toNewsIsoDate
 } from "@/lib/ai-news";
@@ -14,6 +15,24 @@ describe("AI news helpers", () => {
     expect(resolveNewsSlug({ title: "OpenAI Agent Update", slugInput: "", fallbackSeed: "abc" })).toBe("openai-agent-update");
     expect(resolveNewsSlug({ title: "中文标题", slugInput: "", fallbackSeed: "abc" })).toBe("news-abc");
     expect(resolveNewsSlug({ title: "Ignored", slugInput: "AI 视频 2026", fallbackSeed: "abc" })).toBe("ai-2026");
+  });
+
+  it("builds canonical AI news slugs from english titles before keeping weak legacy slugs", () => {
+    expect(
+      resolveAiNewsCanonicalSlug({
+        slug: "ai-news-trend-insights-launch",
+        title: "中文标题",
+        englishTitle: "OpenAI Agent Workflow Update"
+      })
+    ).toBe("openai-agent-workflow-update");
+
+    expect(
+      resolveAiNewsCanonicalSlug({
+        slug: "news-abc",
+        title: "中文标题",
+        englishTitle: null
+      })
+    ).toBe("news-abc");
   });
 
   it("parses search params with safe defaults", () => {

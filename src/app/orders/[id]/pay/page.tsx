@@ -6,6 +6,7 @@ import { Container, SectionTitle } from "@/components/ui";
 import { ZpayPaymentStatusPoller } from "@/components/zpay-payment-status-poller";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { buildCanonicalToolPath } from "@/lib/public-slugs";
 import { formatCurrency } from "@/lib/utils";
 import { ensureZpayPaymentForOrder, type ZpayPaymentView } from "@/lib/zpay-orders";
 
@@ -80,7 +81,7 @@ export default async function PayPage({ params }: PayPageProps) {
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 {order.tool ? (
-                  <Link href={`/tools/${order.tool.slug}#download-links`} className="rounded-full bg-[#050505] px-5 py-3 text-sm font-semibold text-white">
+                  <Link href={`${buildCanonicalToolPath(order.tool, "zh")}#download-links`} className="rounded-full bg-[#050505] px-5 py-3 text-sm font-semibold text-white">
                     查看下载链接
                   </Link>
                 ) : null}
@@ -159,7 +160,10 @@ export default async function PayPage({ params }: PayPageProps) {
                 </div>
               </div>
 
-              <ZpayPaymentStatusPoller orderId={order.id} toolSlug={order.tool?.slug ?? null} />
+              <ZpayPaymentStatusPoller
+                orderId={order.id}
+                toolHref={order.tool ? `${buildCanonicalToolPath(order.tool, "zh")}#download-links` : null}
+              />
             </div>
           ) : (
             <div>

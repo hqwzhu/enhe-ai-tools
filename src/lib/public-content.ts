@@ -9,6 +9,7 @@ import {
   type AiNewsKeywordInterventionRule
 } from "@/lib/ai-news-discovery";
 import { prisma } from "@/lib/db";
+import { getCanonicalAiNewsSlug, getCanonicalToolSlug } from "@/lib/public-slugs";
 
 const publicContentRevalidate = 300;
 
@@ -21,6 +22,12 @@ export type PublicNewsListingFilters = {
   sort?: "latest" | "hot" | "featured";
   skip?: number;
   take?: number;
+};
+
+type PublicSlugMatch = {
+  id: string;
+  slug: string;
+  canonicalSlug: string;
 };
 
 function isRecoverablePublicReadError(error: unknown) {
@@ -247,6 +254,54 @@ const getCachedPublicNewsArticleBySlug = unstable_cache(
   ["public-news-article-by-slug"],
   { revalidate: publicContentRevalidate, tags: ["public-news"] }
 );
+
+const getCachedPublicToolSlugIndex = unstable_cache(
+  async () => {
+    try {
+      const tools = await prisma.tool.findMany({
+        where: { status: "published" },
+        select: { id: true, slug: true, name: true, englishName: true }
+      });
+
+      return tools.map((tool) => ({
+        id: tool.id,
+        slug: tool.slug,
+        canonicalSlug: getCanonicalToolSlug(tool)
+      }));
+    } catch (error) {
+      if (isRecoverablePublicReadError(error)) return [];
+      throw error;
+    }
+  },
+  ["public-tool-slug-index"],
+  { revalidate: publicContentRevalidate, tags: ["public-tools"] }
+);
+
+const getCachedPublicNewsSlugIndex = unstable_cache(
+  async () => {
+    try {
+      const articles = await prisma.newsArticle.findMany({
+        where: { status: "published" },
+        select: { id: true, slug: true, title: true, englishTitle: true }
+      });
+
+      return articles.map((article) => ({
+        id: article.id,
+        slug: article.slug,
+        canonicalSlug: getCanonicalAiNewsSlug(article)
+      }));
+    } catch (error) {
+      if (isRecoverablePublicReadError(error)) return [];
+      throw error;
+    }
+  },
+  ["public-news-slug-index"],
+  { revalidate: publicContentRevalidate, tags: ["public-news"] }
+);
+
+function findSlugMatch(items: PublicSlugMatch[], requestedSlug: string) {
+  return items.find((item) => item.slug === requestedSlug || item.canonicalSlug === requestedSlug) ?? null;
+}
 
 function splitNewsKeywordList(value: string | null | undefined) {
   return String(value ?? "")
@@ -560,4 +615,14 @@ export async function getPublicNewsArticleBySlug(slug: string) {
 
 export async function getPublicAiNewsDiscovery(locale: "zh" | "en") {
   return getCachedPublicAiNewsDiscovery(locale);
+}
+
+export async function resolvePublicToolSlug(slug: string) {
+  const items = await getCachedPublicToolSlugIndex();
+  return findSlugMatch(items, slug);
+}
+
+export async function resolvePublicNewsArticleSlug(slug: string) {
+  const items = await getCachedPublicNewsSlugIndex();
+  return findSlugMatch(items, slug);
 }

@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 
 type ZpayPaymentStatusPollerProps = {
   orderId: string;
-  toolSlug?: string | null;
+  toolHref?: string | null;
 };
 
-export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatusPollerProps) {
+export function ZpayPaymentStatusPoller({ orderId, toolHref }: ZpayPaymentStatusPollerProps) {
   const router = useRouter();
   const [message, setMessage] = useState("正在等待支付结果，请保持页面打开。");
 
@@ -29,7 +29,7 @@ export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatus
         };
         if (data.unlocked) {
           setMessage("支付成功，下载链接已解锁，正在跳转...");
-          const target = toolSlug ? `/tools/${toolSlug}#download-links` : `/orders/${orderId}?paid=success`;
+          const target = toolHref || `/orders/${orderId}?paid=success`;
           router.replace(target);
           return;
         }
@@ -50,7 +50,7 @@ export function ZpayPaymentStatusPoller({ orderId, toolSlug }: ZpayPaymentStatus
       stopped = true;
       window.clearTimeout(timer);
     };
-  }, [orderId, router, toolSlug]);
+  }, [orderId, router, toolHref]);
 
   return (
     <div className="status-success mt-6" aria-live="polite">

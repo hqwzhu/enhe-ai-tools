@@ -9,13 +9,14 @@ import type { Prisma, Order, PaymentTransaction } from "@prisma/client";
 import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { prisma } from "@/lib/db";
 import {
+  buildSeoFriendlySlug,
   parseBooleanField,
   parseNumberField,
   parseOptionalString,
   buildPublicUploadUrl,
   resolveToolSlug
 } from "@/lib/admin-form";
-import { parseNewsRelationIds, resolveNewsSlug } from "@/lib/ai-news";
+import { parseNewsRelationIds, resolveAiNewsCanonicalSlug, resolveNewsSlug } from "@/lib/ai-news";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { sendRefundProcessedAdminEmail } from "@/lib/admin-email-notifications";
@@ -46,6 +47,7 @@ import { parseTagNames, tagSlug } from "@/lib/tool-content";
 import { canOpenProtectedDownloadEntry } from "@/lib/tool-download-link";
 import { getPrimaryToolPriceSpec, parseToolPriceSpecsFromFormData, type ToolPriceSpecDraft } from "@/lib/tool-price-specs";
 import { mergeToolProductImages } from "@/lib/tool-product-images";
+import { buildCanonicalToolPath } from "@/lib/public-slugs";
 import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
 import { refundZpayTransactionForOrder } from "@/lib/zpay-orders";
@@ -1097,7 +1099,16 @@ export async function upsertToolAction(formData: FormData) {
     revalidatePath("/admin/files");
     revalidatePath("/");
     revalidatePath(type === "skill_learning" ? "/skill-learning" : type === "software" ? "/software" : "/online-tools");
-    revalidatePath(`/tools/${data.slug}`);
+    revalidatePath(
+      buildCanonicalToolPath(
+        {
+          slug: data.slug,
+          name,
+          englishName
+        },
+        "zh"
+      )
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存失败，请检查表单内容。";
     const returnTo = parseOptionalString(formData.get("returnTo")) ?? adminPath;
@@ -1622,8 +1633,13 @@ export async function upsertNewsArticleAction(formData: FormData) {
     revalidatePath("/admin/ai-news");
     revalidatePath("/ai-news");
     revalidatePath("/en/ai-news");
-    revalidatePath(`/ai-news/${slug}`);
-    revalidatePath(`/en/ai-news/${slug}`);
+    const canonicalNewsSlug = resolveAiNewsCanonicalSlug({
+      slug,
+      title,
+      englishTitle: data.englishTitle
+    });
+    revalidatePath(`/ai-news/${canonicalNewsSlug}`);
+    revalidatePath(`/en/ai-news/${canonicalNewsSlug}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存失败，请检查资讯表单。";
     redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
@@ -1649,8 +1665,13 @@ export async function archiveNewsArticleAction(formData: FormData) {
   revalidatePath("/admin/ai-news");
   revalidatePath("/ai-news");
   revalidatePath("/en/ai-news");
-  revalidatePath(`/ai-news/${article.slug}`);
-  revalidatePath(`/en/ai-news/${article.slug}`);
+  const archivedCanonicalNewsSlug = resolveAiNewsCanonicalSlug({
+    slug: article.slug,
+    title: article.title,
+    englishTitle: article.englishTitle
+  });
+  revalidatePath(`/ai-news/${archivedCanonicalNewsSlug}`);
+  revalidatePath(`/en/ai-news/${archivedCanonicalNewsSlug}`);
   redirect("/admin/ai-news?archived=1");
 }
 
@@ -1659,7 +1680,7 @@ export async function deleteNewsArticleAction(formData: FormData) {
   const id = idSchema.parse(formData.get("id"));
   const article = await prisma.newsArticle.findUnique({
     where: { id },
-    select: { id: true, title: true, slug: true, status: true }
+    select: { id: true, title: true, englishTitle: true, slug: true, status: true }
   });
   if (!article) {
     redirect(`/admin/ai-news?error=${encodeURIComponent("资讯不存在，可能已经被删除。")}`);
@@ -1685,8 +1706,13 @@ export async function deleteNewsArticleAction(formData: FormData) {
   revalidatePath("/admin/ai-news");
   revalidatePath("/ai-news");
   revalidatePath("/en/ai-news");
-  revalidatePath(`/ai-news/${article.slug}`);
-  revalidatePath(`/en/ai-news/${article.slug}`);
+  const deletedCanonicalNewsSlug = resolveAiNewsCanonicalSlug({
+    slug: article.slug,
+    title: article.title,
+    englishTitle: article.englishTitle
+  });
+  revalidatePath(`/ai-news/${deletedCanonicalNewsSlug}`);
+  revalidatePath(`/en/ai-news/${deletedCanonicalNewsSlug}`);
   redirect("/admin/ai-news?deleted=1");
 }
 

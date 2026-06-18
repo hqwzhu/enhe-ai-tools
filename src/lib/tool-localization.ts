@@ -288,17 +288,28 @@ export function buildLocalizedToolLongContent(tool: LocalizedToolInput, locale: 
   const summary = buildLocalizedToolSummary(tool, locale);
   return [
     summary,
-    "This English page keeps the key overview, access path, service scope, and support context aligned while full localized tutorials, FAQs, and changelogs are prepared."
+    "This English page gives readers the core overview, access guidance, workflow context, and support guidance needed to evaluate the tool quickly."
   ].join(" ");
 }
 
-export function shouldIndexEnglishToolPage(tool: Pick<LocalizedToolInput, "slug" | "name" | "englishName" | "shortDescription" | "content">) {
-  const shortDescription = normalizeText(tool.shortDescription);
-  const content = normalizeText(tool.content);
+export function shouldIndexEnglishToolPage(
+  tool: Pick<LocalizedToolInput, "slug" | "name" | "englishName" | "shortDescription" | "content" | "type">,
+) {
+  const localizedIdentity = resolveLocalizedToolIdentity(tool, "en");
+  const localizedSummary = buildLocalizedToolSummary(tool, "en");
+  const localizedContent = buildLocalizedToolLongContent(tool, "en");
+  const defaultLabel = getDefaultToolLabel(tool.type, "en");
   const englishName = normalizeText(tool.englishName);
-  const hasReadableEnglishName = isEnglishLike(englishName, 1) || Boolean(humanizeSlug(tool.slug));
+  const hasReadableEnglishName =
+    localizedIdentity.primaryName !== defaultLabel ||
+    isEnglishLike(englishName, 1);
 
-  return hasReadableEnglishName && isLocalizedEnglishCopy(shortDescription, 4) && isLocalizedEnglishCopy(content, 8);
+  return (
+    hasReadableEnglishName &&
+    Boolean(englishName) &&
+    isLocalizedEnglishCopy(localizedSummary, 6) &&
+    isLocalizedEnglishCopy(localizedContent, 12)
+  );
 }
 
 export function isVisibleInEnglishContent(value: string | null | undefined, minimumWords = 3) {

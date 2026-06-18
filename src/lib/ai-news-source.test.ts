@@ -50,6 +50,23 @@ describe("AI news source contracts", () => {
     expect(sitemap).toContain("newsArticle");
   });
 
+  it("routes english AI news pages through shared localization helpers for visible labels and schema keywords", () => {
+    const listing = read("src/app/ai-news/page-shell.tsx");
+    const detail = read("src/app/ai-news/[slug]/page-shell.tsx");
+
+    expect(listing).toContain('from "@/lib/ai-news-localization"');
+    expect(listing).toContain("resolveLocalizedNewsCategoryName");
+    expect(listing).toContain("resolveLocalizedNewsTagName");
+    expect(listing).toContain("buildLocalizedNewsSummary");
+
+    expect(detail).toContain('from "@/lib/ai-news-localization"');
+    expect(detail).toContain("resolveLocalizedNewsCategoryName");
+    expect(detail).toContain("resolveLocalizedNewsTagName");
+    expect(detail).toContain("buildLocalizedNewsKeywordList");
+    expect(detail).toContain("buildLocalizedTutorialPreviewTitle");
+    expect(detail).toContain("buildLocalizedTutorialPreviewToolName");
+  });
+
   it("adds Prisma news models and interaction APIs", () => {
     const schema = read("prisma/schema.prisma");
 
@@ -91,5 +108,12 @@ describe("AI news source contracts", () => {
     expect(adminList).toContain("deleteNewsArticleAction");
     expect(adminList).toContain('action={deleteNewsArticleAction}');
     expect(adminList).toContain('name="id" value={article.id}');
+  });
+
+  it("selects englishTitle when deleting AI news articles so canonical revalidation can resolve localized slugs", () => {
+    const actions = read("src/app/admin/actions.ts");
+
+    expect(actions).toContain("const deletedCanonicalNewsSlug = resolveAiNewsCanonicalSlug({");
+    expect(actions).toContain("select: { id: true, title: true, englishTitle: true, slug: true, status: true }");
   });
 });

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AdminSection } from "@/app/admin/admin-ui";
 import { NewsArticleEditor } from "@/app/admin/ai-news-editor";
 import { prisma } from "@/lib/db";
+import { buildCanonicalAiNewsPath } from "@/lib/public-slugs";
 
 type AdminAiNewsDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -52,7 +53,7 @@ export default async function AdminAiNewsDetailPage({ params, searchParams }: Ad
           返回资讯清单
         </Link>
         {article?.status === "published" ? (
-          <Link href={`/ai-news/${article.slug}`} target="_blank" className="rounded-full border border-white/15 px-4 py-2 text-sm transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+          <Link href={buildCanonicalAiNewsPath(article, "zh")} target="_blank" className="rounded-full border border-white/15 px-4 py-2 text-sm transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
             打开前台页面
           </Link>
         ) : null}

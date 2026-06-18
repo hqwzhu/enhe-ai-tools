@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { getCanonicalToolSlug } from "@/lib/public-slugs";
 import { canDownloadPaidTool, canUsePaidOnlineTool, DownloadRateLimitError, getDownloadRateLimitConfig, isDownloadRateLimitExceeded } from "@/lib/access-rules";
 import { getPrimaryToolPrice } from "@/lib/tool-price-specs";
 
@@ -31,7 +32,7 @@ export async function assertDownloadAccess(toolId: string) {
       where: { userId_toolId: { userId: user.id, toolId: tool.id } }
     });
     if (!canDownloadPaidTool({ isDownloadPaid: tool.isDownloadPaid, hasDownloadPurchase: Boolean(purchase) })) {
-      redirect(`/tools/${tool.slug}?download=pay-required`);
+      redirect(`/tools/${getCanonicalToolSlug(tool)}?download=pay-required`);
     }
   }
 
@@ -64,7 +65,7 @@ export async function assertOnlineToolAccess(toolId: string) {
       where: { userId_toolId: { userId: user.id, toolId: tool.id } }
     });
     if (!canUsePaidOnlineTool({ servicePrice, hasToolPurchase: Boolean(purchase) })) {
-      redirect(`/tools/${tool.slug}?service=pay-required`);
+      redirect(`/tools/${getCanonicalToolSlug(tool)}?service=pay-required`);
     }
   }
   await prisma.toolUsageLog.create({ data: { userId: user.id, toolId: tool.id, ip, userAgent } });

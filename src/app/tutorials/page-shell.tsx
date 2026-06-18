@@ -4,6 +4,7 @@ import { StructuredData } from "@/components/structured-data";
 import { Container, SectionTitle } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getPublicTutorials } from "@/lib/public-content";
+import { buildCanonicalToolPath } from "@/lib/public-slugs";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { buildBreadcrumbSchema, buildLocalePath, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
@@ -37,7 +38,7 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
       <SectionTitle as="h1" title={t.tutorials.title} intro={t.tutorials.intro} />
       <div className="grid gap-5 md:grid-cols-2">
         {tutorials.map((tutorial) => (
-          <Link key={tutorial.id} href={buildLocalePath(`/tools/${tutorial.tool.slug}`, forceLocale)} className="surface-panel p-6 transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
+          <Link key={tutorial.id} href={buildCanonicalToolPath(tutorial.tool, forceLocale)} className="surface-panel p-6 transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
             <p className="text-sm font-semibold text-[var(--marketing-accent)]">{tutorial.tool.name}</p>
             <h2 className="mt-2 text-2xl font-bold text-[var(--marketing-text)]">{tutorial.title}</h2>
             <p className="mt-3 line-clamp-3 leading-7 text-[var(--marketing-muted)]">{tutorial.content}</p>

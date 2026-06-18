@@ -136,7 +136,8 @@ describe("tool localization helpers", () => {
       "en"
     );
 
-    expect(content).toContain("support context aligned");
+    expect(content).toContain("support guidance");
+    expect(content).not.toContain("full localized tutorials");
     expect(content).not.toContain("适合整理文案");
   });
 
@@ -147,7 +148,8 @@ describe("tool localization helpers", () => {
         name: "ENHE 文案清洗在线工具",
         englishName: null,
         shortDescription: "清理多余空格、换行和特殊符号，适合内容整理。",
-        content: "适合整理文案、链接、标题与社交媒体内容，让页面内容更整洁。"
+        content: "适合整理文案、链接、标题与社交媒体内容，让页面内容更整洁。",
+        type: "online"
       })
     ).toBe(false);
 
@@ -157,7 +159,21 @@ describe("tool localization helpers", () => {
         name: "ENHE 文案清洗在线工具",
         englishName: "ENHE Copy Cleaner",
         shortDescription: "Clean extra spaces, line breaks, and special characters for faster content editing.",
-        content: "Use this tool to clean copy, links, headlines, and social snippets before publishing."
+        content: "Use this tool to clean copy, links, headlines, and social snippets before publishing.",
+        type: "online"
+      })
+    ).toBe(true);
+  });
+
+  it("keeps english detail pages indexable when fallback english copy can be generated from a clear english identity", () => {
+    expect(
+      shouldIndexEnglishToolPage({
+        slug: "ai-ai",
+        name: "AI语音生成（随心所欲版）",
+        englishName: "AI Voice Generator - Flexible Edition",
+        shortDescription: "本地离线 AI 语音合成桌面工具，支持文字转语音、声音克隆、多角色对话和音频管理。",
+        content: "适合在本地电脑上完成语音生成、音频素材整理与内容生产，适用于内容创作、培训材料、产品演示和多语种音频工作流。",
+        type: "software"
       })
     ).toBe(true);
   });
