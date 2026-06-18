@@ -84,6 +84,25 @@ describe("tool localization helpers", () => {
     expect(summary).not.toContain("清理多余空格");
   });
 
+  it("does not treat mixed english-and-chinese descriptions as localized english copy", () => {
+    const summary = buildLocalizedToolSummary(
+      {
+        slug: "ai-ai",
+        name: "AI语音生成（随心所欲版）",
+        englishName: "AI Voice Generator - Flexible Edition",
+        shortDescription:
+          "AI语音生成（随心所欲版）是恩禾 ENHE AI工具站推出的本地离线 AI 语音合成桌面工具。软件基于 Qwen3-TTS 开源项目整理开发，支持文字转语音、声音克隆、声音设计、多角色对话、声音管理、模型微调等功能，适合需要在本地电脑上完成语音生成、音频素材整理与内容生产的用户使用。 AI Voice Generator — Flexible Edition is a local Windows-based AI voice synthesis tool. It supports text-to-speech, voice cloning, voice design, multi-role dialogue generation, and audio file management. It is suitable for content creators, training materials, product demos, voice prototypes, and multilingual audio production workflows.",
+        type: "software",
+        categoryName: "音频工具"
+      },
+      "en"
+    );
+
+    expect(summary).toContain("AI Voice Generator - Flexible Edition is an AI software app");
+    expect(summary).not.toContain("语音生成");
+    expect(summary).not.toContain("恩禾");
+  });
+
   it("builds english detail copy without leaking untranslated chinese paragraphs", () => {
     const content = buildLocalizedToolLongContent(
       {

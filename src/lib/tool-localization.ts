@@ -108,6 +108,11 @@ function isEnglishLike(value: string, minimumWords = 2) {
   return latinChars > cjkChars * 2;
 }
 
+function isLocalizedEnglishCopy(value: string, minimumWords = 2) {
+  const normalized = normalizeText(value);
+  return Boolean(normalized) && !hasCjk(normalized) && isEnglishLike(normalized, minimumWords);
+}
+
 function isPromotionalName(value: string) {
   const normalized = normalizeText(value);
   return normalized.length > 26 || /[，。,.;；!?！？]/.test(normalized);
@@ -259,14 +264,14 @@ function buildEnglishToolSentence(tool: LocalizedToolInput) {
 export function buildLocalizedToolSummary(tool: LocalizedToolInput, locale: Locale) {
   const shortDescription = normalizeText(tool.shortDescription);
   if (locale === "zh") return shortDescription;
-  if (isEnglishLike(shortDescription, 4)) return shortDescription;
+  if (isLocalizedEnglishCopy(shortDescription, 4)) return shortDescription;
   return buildEnglishToolSentence(tool);
 }
 
 export function buildLocalizedToolLongContent(tool: LocalizedToolInput, locale: Locale) {
   const content = normalizeText(tool.content);
   if (locale === "zh") return content;
-  if (isEnglishLike(content, 8)) return content;
+  if (isLocalizedEnglishCopy(content, 8)) return content;
 
   const summary = buildLocalizedToolSummary(tool, locale);
   return [
@@ -281,11 +286,11 @@ export function shouldIndexEnglishToolPage(tool: Pick<LocalizedToolInput, "slug"
   const englishName = normalizeText(tool.englishName);
   const hasReadableEnglishName = isEnglishLike(englishName, 1) || Boolean(humanizeSlug(tool.slug));
 
-  return hasReadableEnglishName && isEnglishLike(shortDescription, 4) && isEnglishLike(content, 8);
+  return hasReadableEnglishName && isLocalizedEnglishCopy(shortDescription, 4) && isLocalizedEnglishCopy(content, 8);
 }
 
 export function isVisibleInEnglishContent(value: string | null | undefined, minimumWords = 3) {
-  return isEnglishLike(value ?? "", minimumWords);
+  return isLocalizedEnglishCopy(value ?? "", minimumWords);
 }
 
 export function buildLocalizedToolMetaHeading(tool: Pick<LocalizedToolInput, "slug" | "name" | "englishName" | "type">, locale: Locale) {
