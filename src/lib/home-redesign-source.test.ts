@@ -22,8 +22,10 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("t.home.metricsOutcome");
     expect(page).toContain("t.home.softwareButton");
     expect(page).toContain("t.home.onlineButton");
+    expect(page).toContain("t.home.aiNewsButton");
     expect(page).toContain("t.home.skillLearningButton");
     expect(page).toContain('href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"}');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
     expect(page).toContain("t.home.featuredContentTitle");
     expect(page).toContain("t.home.featuredContentIntro");
@@ -33,6 +35,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain('href="/online-tools" variant="ghost" className="home-preview-link"');
     expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"}');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
     expect(page).toContain("home-product-preview backdrop-blur-xl backdrop-saturate-150");
     expect(page).not.toContain("HeroLogoMark");

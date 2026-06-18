@@ -15,7 +15,7 @@ export const dictionaries = {
       software: "AI软件应用",
       onlineTools: "AI账号服务",
       skillLearning: "AI技能学习",
-      aiNews: "AI资讯",
+      aiNews: "AI前沿资讯",
       updates: "更新日志",
       pricing: "付费下载",
       tutorials: "使用教程",
@@ -40,6 +40,7 @@ export const dictionaries = {
       softwareButton: "AI软件应用",
       onlineButton: "AI账号服务",
       skillLearningButton: "AI技能学习",
+      aiNewsButton: "AI前沿资讯",
       metricsExploreTitle: "自由探索",
       metricsExplore: "用 AI 打开更多可能性",
       metricsOutcomeTitle: "灵感落地",
@@ -143,7 +144,7 @@ export const dictionaries = {
       intro: "按工具独立管理的教程内容，支持图片、视频链接、步骤排序和常见错误说明扩展。"
     },
     aiNews: {
-      title: "AI资讯与趋势洞察",
+      title: "AI前沿资讯与趋势洞察",
       intro: "关注 AI 工具、模型更新、行业趋势与实用教程，帮助你更快理解变化，把新技术变成真实生产力。",
       support: "不只看见趋势，更要学会使用趋势。",
       searchPlaceholder: "搜索标题、摘要、关键词或标签",
@@ -381,6 +382,7 @@ export const dictionaries = {
       softwareButton: "AI Software Apps",
       onlineButton: "AI Account Services",
       skillLearningButton: "AI Skill Learning",
+      aiNewsButton: "AI News",
       metricsExploreTitle: "Explore Freely",
       metricsExplore: "Open More Possibilities with AI",
       metricsOutcomeTitle: "Ideas to Outcomes",

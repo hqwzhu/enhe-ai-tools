@@ -23,7 +23,7 @@ export const adminDictionaries = {
       software: "AI软件应用",
       onlineTools: "AI账号服务",
       skillLearning: "AI技能学习",
-      aiNews: "AI资讯",
+      aiNews: "AI前沿资讯",
       categories: "工具分类",
       tags: "标签管理",
       tutorials: "教程管理",
