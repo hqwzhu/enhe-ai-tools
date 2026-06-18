@@ -182,19 +182,22 @@ export function buildMetaDescription(value: string | null | undefined, fallback 
 export function buildMetadataTitle({ pageTitle, brand = siteName, maxLength = 68 }: MetadataTitleInput) {
   const normalizedPageTitle = normalizeWhitespace(pageTitle);
   const normalizedBrand = normalizeWhitespace(brand);
+  const pageTitleLower = normalizedPageTitle.toLowerCase();
+  const brandLower = normalizedBrand.toLowerCase();
 
   if (!normalizedPageTitle) return normalizedBrand;
-  if (normalizedPageTitle.toLowerCase() === normalizedBrand.toLowerCase()) return normalizedBrand;
+  if (pageTitleLower === brandLower) return normalizedBrand;
+  if (brandLower.includes(pageTitleLower)) return normalizedBrand;
 
   for (const separator of [" | ", " - ", " — ", " – "]) {
     const brandSuffix = `${separator}${normalizedBrand}`.toLowerCase();
-    if (normalizedPageTitle.toLowerCase().endsWith(brandSuffix)) {
+    if (pageTitleLower.endsWith(brandSuffix)) {
       const baseTitle = normalizedPageTitle.slice(0, normalizedPageTitle.length - separator.length - normalizedBrand.length).trim();
       return baseTitle ? `${baseTitle} | ${normalizedBrand}` : normalizedBrand;
     }
   }
 
-  if (normalizedPageTitle.toLowerCase().includes(normalizedBrand.toLowerCase())) {
+  if (pageTitleLower.includes(brandLower)) {
     return normalizedPageTitle;
   }
 
@@ -242,10 +245,14 @@ function resolveToolTypeLabel(type: ToolMetaDescriptionInput["type"], locale: Lo
 export function buildToolMetadataTitle({ name, englishName, brand = siteName, maxLength = 68, locale = "zh" }: BuildTitleInput) {
   const { primaryName, secondaryName } = resolveToolTitleNames(name, englishName, locale);
   const preferredTitle = secondaryName ? `${primaryName} (${secondaryName})` : primaryName;
-  const fullTitle = buildMetadataTitle({ pageTitle: preferredTitle, brand, maxLength });
-  if (fullTitle.length <= maxLength) return fullTitle;
-
   const compactTitle = buildMetadataTitle({ pageTitle: primaryName, brand, maxLength });
+  const fullTitle = buildMetadataTitle({ pageTitle: preferredTitle, brand, maxLength });
+
+  if (secondaryName && fullTitle !== compactTitle && preferredTitle.length + ` | ${brand}`.length > maxLength) {
+    return compactTitle;
+  }
+
+  if (fullTitle.length <= maxLength) return fullTitle;
   if (compactTitle.length <= maxLength) return compactTitle;
 
   const reservedLength = ` | ${brand}`.length;

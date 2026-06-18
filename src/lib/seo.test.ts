@@ -9,6 +9,7 @@ describe("seo helpers", () => {
 
   it("builds page titles without duplicating the brand", () => {
     expect(buildMetadataTitle({ pageTitle: "ENHE AI", brand: "ENHE AI" })).toBe("ENHE AI");
+    expect(buildMetadataTitle({ pageTitle: "ENHE AI", brand: "Symbiosis ENHE AI" })).toBe("Symbiosis ENHE AI");
     expect(buildMetadataTitle({ pageTitle: "AI Software Apps", brand: "ENHE AI" })).toBe("AI Software Apps | ENHE AI");
     expect(buildMetadataTitle({ pageTitle: "AI Software Apps | ENHE AI", brand: "ENHE AI" })).toBe("AI Software Apps | ENHE AI");
   });
@@ -34,7 +35,19 @@ describe("seo helpers", () => {
 
     expect(longTitle.endsWith(" | ENHE AI")).toBe(true);
     expect(longTitle.length).toBeLessThanOrEqual(42);
-    expect(longTitle).not.toContain(" 路 ");
+    expect(longTitle).not.toContain("·");
+
+    const longZhTitle = buildToolMetadataTitle({
+      name: "A very long product name for creators and operators",
+      englishName: "Another descriptive English subtitle",
+      brand: "Symbiosis ENHE AI",
+      locale: "zh",
+      maxLength: 42
+    });
+
+    expect(longZhTitle.endsWith(" | Symbiosis ENHE AI")).toBe(true);
+    expect(longZhTitle.length).toBeLessThanOrEqual(42);
+    expect(longZhTitle).not.toContain("(");
   });
 
   it("builds locale-aware tool descriptions for detail pages", () => {
