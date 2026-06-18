@@ -337,6 +337,41 @@ describe("AI news import helpers", () => {
     expect(auditMock.writeAdminAuditLog).not.toHaveBeenCalled();
   });
 
+  it("deduplicates imported tags by normalized slug before creating tag records", async () => {
+    const seenTagSlugs = new Set<string>();
+    txMock.newsTag.upsert.mockImplementation(async ({ create }) => {
+      if (seenTagSlugs.has(create.slug)) {
+        throw { code: "P2002" };
+      }
+      seenTagSlugs.add(create.slug);
+      return {
+        id: `tag-${create.slug}`,
+        ...create
+      };
+    });
+
+    await expect(
+      importAiNewsArticle({
+        ...baseImportPayload,
+        article: {
+          ...baseImportPayload.article,
+          tags: ["AI Agent", "AI-Agent"]
+        }
+      })
+    ).resolves.toMatchObject({
+      articleId: "article-1",
+      status: "draft"
+    });
+
+    expect(txMock.newsTag.upsert).toHaveBeenCalledTimes(1);
+    expect(txMock.newsTag.upsert).toHaveBeenCalledWith({
+      where: { slug: "ai-agent" },
+      update: { status: "active" },
+      create: { name: "AI Agent", slug: "ai-agent", status: "active" }
+    });
+    expect(txMock.newsArticleTag.createMany.mock.calls[0][0].data).toHaveLength(1);
+  });
+
   it("ignores caller-provided sourceChannel and audits the fixed import channel", async () => {
     await importAiNewsArticle({
       ...baseImportPayload,

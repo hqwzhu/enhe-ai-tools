@@ -83,7 +83,7 @@ export type AiNewsImportData = {
     slug: string;
   };
   article: Omit<Prisma.NewsArticleUncheckedCreateInput, "categoryId">;
-  tags: string[];
+  tags: Array<{ name: string; slug: string }>;
   externalSources: Array<z.infer<typeof aiNewsSourceSchema> & { sortOrder: number }>;
 };
 
@@ -161,6 +161,19 @@ function buildImportCategory(article: AiNewsImportArticle) {
   return defaultAiNewsCategory;
 }
 
+function normalizeImportTags(tagNames: string[]) {
+  const tagsBySlug = new Map<string, { name: string; slug: string }>();
+  for (const tagName of tagNames) {
+    const name = tagName.trim();
+    if (!name) continue;
+    const slug = tagSlug(name);
+    if (!tagsBySlug.has(slug)) {
+      tagsBySlug.set(slug, { name, slug });
+    }
+  }
+  return Array.from(tagsBySlug.values());
+}
+
 export function buildAiNewsImportData(payload: AiNewsImportPayload, now = new Date()): AiNewsImportData {
   rejectUnsafeNewsImportContent(payload.article.content);
   if (payload.article.englishContent) {
@@ -228,7 +241,7 @@ export function buildAiNewsImportData(payload: AiNewsImportPayload, now = new Da
       englishImpactNotes: payload.article.englishImpactNotes ?? null,
       englishConclusion: payload.article.englishConclusion ?? null
     },
-    tags: payload.article.tags,
+    tags: normalizeImportTags(payload.article.tags),
     externalSources: payload.article.externalSources.map((source, index) => ({
       ...source,
       description: source.description ?? undefined,
@@ -340,11 +353,11 @@ async function persistAiNewsImportAttempt({
   const article = await tx.newsArticle.create({ data: articleCreateData });
 
   const tags = await Promise.all(
-    data.tags.map((name) =>
+    data.tags.map((tag) =>
       tx.newsTag.upsert({
-        where: { name },
+        where: { slug: tag.slug },
         update: { status: "active" },
-        create: { name, slug: tagSlug(name), status: "active" }
+        create: { name: tag.name, slug: tag.slug, status: "active" }
       })
     )
   );
