@@ -1,6 +1,7 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const sessionCookieSeparator = ".";
+const headerUserCookieSeparator = ".";
 const loginLimitWindowMs = 15 * 60 * 1000;
 const loginLimitMaxFailures = 5;
 
@@ -27,6 +28,10 @@ export function signSessionCookieValue(sessionId: string, token: string, secret:
   return `${payload}${sessionCookieSeparator}${signPayload(payload, secret)}`;
 }
 
+export function signHeaderUserCookieValue(payload: string, secret: string) {
+  return `${payload}${headerUserCookieSeparator}${signPayload(payload, secret)}`;
+}
+
 export function verifySessionCookieValue(value: string | undefined | null, secret: string) {
   if (!value) return null;
   const parts = value.split(sessionCookieSeparator);
@@ -39,6 +44,20 @@ export function verifySessionCookieValue(value: string | undefined | null, secre
   const expected = signPayload(payload, secret);
   if (!timingSafeStringEqual(signature, expected)) return null;
   return { sessionId, token };
+}
+
+export function verifyHeaderUserCookieValue(value: string | undefined | null, secret: string) {
+  if (!value) return null;
+  const lastSeparatorIndex = value.lastIndexOf(headerUserCookieSeparator);
+  if (lastSeparatorIndex <= 0) return null;
+
+  const payload = value.slice(0, lastSeparatorIndex);
+  const signature = value.slice(lastSeparatorIndex + headerUserCookieSeparator.length);
+  if (!payload || !signature) return null;
+
+  const expected = signPayload(payload, secret);
+  if (!timingSafeStringEqual(signature, expected)) return null;
+  return payload;
 }
 
 export function isLoginLimited(failedAttemptDates: Date[], now = new Date()) {

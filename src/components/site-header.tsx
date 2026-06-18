@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getHeaderUserSnapshot } from "@/lib/auth";
+import { HeaderAdminNavLink } from "@/components/header-admin-nav-link";
 import { HeaderAccountControls } from "@/components/header-account-controls";
+import { HeaderSessionGate } from "@/components/header-session-gate";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { MobileNavMenu } from "@/components/mobile-nav-menu";
 import { Container } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getCurrentLocale } from "@/lib/i18n";
@@ -10,7 +12,11 @@ import { buildLocalePath } from "@/lib/seo";
 import { getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
 export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
-  const [locale, settings] = await Promise.all([forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(), getSettingsMap()]);
+  const [locale, settings, headerUser] = await Promise.all([
+    forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(),
+    getSettingsMap(),
+    getHeaderUserSnapshot()
+  ]);
   const t = getDictionary(locale);
   const brand = getEffectiveSiteName(settings, t.brand);
   const brandWordmark = brand.includes("ENHE") ? "ENHE AI" : brand;
@@ -46,12 +52,14 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
               {label}
             </Link>
           ))}
+          <HeaderAdminNavLink locale={locale} label={t.nav.admin} initialUser={headerUser} />
         </nav>
 
         <div className="site-header-actions flex items-center gap-2">
           <HeaderAccountControls
             labels={{ login: t.nav.login, userFallback: t.nav.userFallback }}
             locale={locale}
+            initialUser={headerUser}
           />
           <Link href={buildLocalePath("/login", locale)} className="sr-only">
             {t.nav.login}
@@ -60,12 +68,11 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
             {t.nav.user}
           </Link>
           <LanguageSwitcher locale={locale} labels={t.language} />
-          <MobileNavMenu
-            labels={{ menu: t.nav.menu }}
+          <HeaderSessionGate
+            locale={locale}
+            labels={{ admin: t.nav.admin, login: t.nav.login, menu: t.nav.menu, user: t.nav.user }}
             navItems={navItems}
-            showAdmin={false}
-            loginItem={[t.nav.login, buildLocalePath("/login", locale)]}
-            userCenterItem={[t.nav.user, buildLocalePath("/user", locale)]}
+            initialUser={headerUser}
           />
         </div>
       </Container>

@@ -7,14 +7,19 @@ function read(path: string) {
 }
 
 describe("SEO follow-up source contracts", () => {
-  it("removes admin from public header navigation while keeping the mobile admin shortcut disabled", () => {
+  it("keeps admin access session-driven in the header instead of hard-removing it", () => {
     const header = read("src/components/site-header.tsx");
     const mobileNav = read("src/components/mobile-nav-menu.tsx");
+    const accountControls = read("src/components/header-account-controls.tsx");
+    const adminNav = read("src/components/header-admin-nav-link.tsx");
+    const sessionGate = read("src/components/header-session-gate.tsx");
 
-    expect(header).not.toContain('href: buildLocalePath("/admin", locale)');
-    expect(header).not.toContain("t.nav.admin");
+    expect(header).toContain("t.nav.admin");
     expect(mobileNav).toContain("showAdmin");
-    expect(header).toContain("showAdmin={false}");
+    expect(header).toContain("HeaderSessionGate");
+    expect(sessionGate).toContain('showAdmin={user?.role === "admin"}');
+    expect(adminNav).toContain('className="site-nav-link"');
+    expect(accountControls).toContain("site-user-chip");
   });
 
   it("adds AI news detail pages to the public cache header rules", () => {

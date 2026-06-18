@@ -3,17 +3,26 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import { headerUserCookieName } from "@/lib/header-user-cookie";
 import {
   createSessionToken,
   getAuthSecret,
   hashSessionToken,
   isLoginLimited,
+  signHeaderUserCookieValue,
   signSessionCookieValue,
+  verifyHeaderUserCookieValue,
   verifySessionCookieValue
 } from "@/lib/auth-security";
 
 const cookieName = process.env.AUTH_COOKIE_NAME ?? "enhe_session";
 const sessionDays = 30;
+
+type HeaderUserSnapshot = {
+  email: string | null;
+  nickname: string | null;
+  role: "admin" | "user";
+};
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 12);
@@ -44,6 +53,14 @@ export async function signInUser(userId: string) {
     path: "/",
     maxAge: 60 * 60 * 24 * sessionDays
   });
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, nickname: true, role: true }
+  });
+  if (user) {
+    setHeaderUserCookie(cookieStore, user);
+  }
 }
 
 export async function signOutUser() {
@@ -56,6 +73,7 @@ export async function signOutUser() {
     });
   }
   cookieStore.delete(cookieName);
+  cookieStore.delete(headerUserCookieName);
 }
 
 export async function getCurrentUser() {
@@ -90,6 +108,24 @@ export async function getCurrentUser() {
     newsletterEmail: session.user.newsletterEmail,
     acceptEmailUpdates: session.user.acceptEmailUpdates
   };
+}
+
+export async function getHeaderUserSnapshot(): Promise<HeaderUserSnapshot | null> {
+  const cookieStore = await cookies();
+  const payload = verifyHeaderUserCookieValue(cookieStore.get(headerUserCookieName)?.value, getAuthSecret());
+  if (!payload) return null;
+
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as HeaderUserSnapshot;
+    if (!parsed || (parsed.role !== "admin" && parsed.role !== "user")) return null;
+    return {
+      email: parsed.email ?? null,
+      nickname: parsed.nickname ?? null,
+      role: parsed.role
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function requireUser() {
@@ -129,5 +165,27 @@ export async function recordLoginAttempt(identifier: string, success: boolean) {
       success,
       ip: headerStore.get("x-forwarded-for")?.split(",")[0] ?? null
     }
+  });
+}
+
+function setHeaderUserCookie(
+  cookieStore: Awaited<ReturnType<typeof cookies>>,
+  user: { email: string | null; nickname: string | null; role: "admin" | "user" }
+) {
+  const payload = Buffer.from(
+    JSON.stringify({
+      email: user.email,
+      nickname: user.nickname,
+      role: user.role
+    }),
+    "utf8"
+  ).toString("base64url");
+
+  cookieStore.set(headerUserCookieName, signHeaderUserCookieValue(payload, getAuthSecret()), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * sessionDays
   });
 }
