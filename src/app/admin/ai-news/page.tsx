@@ -107,7 +107,14 @@ export default async function AdminAiNewsPage({ searchParams }: { searchParams: 
           {articles.map((article) => (
             <div key={article.id} className="grid grid-cols-[1.45fr_0.65fr_0.55fr_0.6fr_0.45fr_0.65fr_0.7fr] gap-4 px-5 py-4 text-sm transition hover:bg-white/5">
               <div>
-                <p className="font-semibold text-[#E8EEF8]">{article.title}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-semibold text-[#E8EEF8]">{article.title}</p>
+                  {article.sourceChannel === "ai_auto_import" ? (
+                    <span className="rounded-full border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-2 py-0.5 text-[11px] font-semibold text-[#48F5D3]">
+                      自动导入
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-1 line-clamp-1 text-xs text-[#8B95A7]">/{article.slug}</p>
               </div>
               <div className="text-[#C5D0E2]">
