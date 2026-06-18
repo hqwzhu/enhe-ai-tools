@@ -52,14 +52,14 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               </div>
 
               <div className="home-hero-actions">
-                <ButtonLink href={forceLocale === "en" ? "/en/software" : "/software"} className="home-hero-cta home-hero-cta-primary">
+                <ButtonLink href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"} className="home-hero-cta home-hero-cta-primary">
+                  {t.home.aiNewsButton}
+                </ButtonLink>
+                <ButtonLink href={forceLocale === "en" ? "/en/software" : "/software"} className="home-hero-cta home-hero-cta-accent">
                   {t.home.softwareButton}
                 </ButtonLink>
                 <ButtonLink href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"} className="home-hero-cta home-hero-cta-accent">
                   {t.home.onlineButton}
-                </ButtonLink>
-                <ButtonLink href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"} className="home-hero-cta home-hero-cta-accent">
-                  {t.home.aiNewsButton}
                 </ButtonLink>
                 <ButtonLink href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"} className="home-hero-cta home-hero-cta-primary">
                   {t.home.skillLearningButton}
