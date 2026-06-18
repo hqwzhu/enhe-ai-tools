@@ -64,7 +64,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
           <MobileNavMenu
             labels={{ menu: t.nav.menu, admin: t.nav.admin }}
             navItems={navItems}
-            showAdmin={true}
+            showAdmin={false}
             loginItem={[t.nav.login, buildLocalePath("/login", locale)]}
             userCenterItem={[t.nav.user, buildLocalePath("/user", locale)]}
           />
