@@ -45,4 +45,4 @@
 - [x] Run existing import/API/script tests.
 - [x] Run `npm run typecheck`.
 - [x] Run the updated skill validator on a sample HTML file.
-- [ ] Commit, push to `main`, deploy to Tencent Cloud, and check `/api/health`.
+- [x] Commit, push to `main`, deploy to Tencent Cloud, and check `/api/health`.
