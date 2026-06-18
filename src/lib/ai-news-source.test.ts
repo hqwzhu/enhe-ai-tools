@@ -64,4 +64,14 @@ describe("AI news source contracts", () => {
     expect(exists("src/app/api/ai-news/[slug]/like/route.ts")).toBe(true);
     expect(exists("src/app/api/ai-news/[slug]/favorite/route.ts")).toBe(true);
   });
+
+  it("adds a production-safe AI news seed script", () => {
+    expect(exists("prisma/seed-ai-news.ts")).toBe(true);
+
+    const seed = read("prisma/seed-ai-news.ts");
+    expect(seed).toContain("newsArticle.upsert");
+    expect(seed).toContain("newsCategory.upsert");
+    expect(seed).not.toContain("user.upsert");
+    expect(seed).not.toContain("siteSetting.upsert");
+  });
 });
