@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (result.status === "published") {
       revalidatePath("/ai-news");
       revalidatePath("/en/ai-news");
-      revalidatePath(result.publicUrl ?? `/ai-news/${result.slug}`);
+      revalidatePath(`/ai-news/${result.slug}`);
       revalidatePath(`/en/ai-news/${result.slug}`);
     }
 
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof ZodError) {
       return errorResponse(400, "VALIDATION_ERROR", error.issues[0]?.message ?? "Invalid AI news import payload.");
     }
-    const message = error instanceof Error ? error.message : "AI news import failed.";
-    return errorResponse(500, "IMPORT_FAILED", message);
+    console.error("AI news import failed.", error);
+    return errorResponse(500, "IMPORT_FAILED", "AI news import failed.");
   }
 }
