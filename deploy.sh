@@ -17,6 +17,9 @@ docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/dock
 echo "===== 同步数据库结构 ====="
 docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec app npx prisma migrate deploy
 
+echo "===== 初始化 AI 资讯内容 ====="
+docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec app node prisma/seed-ai-news.cjs
+
 echo "===== 查看容器状态 ====="
 docker ps | grep enhe-ai-tools
 

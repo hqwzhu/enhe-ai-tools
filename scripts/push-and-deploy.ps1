@@ -159,7 +159,7 @@ if ($NoDeploy) {
 }
 
 $resolvedKey = Protect-WindowsSshKey (Resolve-SshKey $SshKeyPath)
-$remoteCommand = "set -e; cd $RemoteProjectDir; git pull origin $Branch; chmod +x deploy.sh; SKIP_GIT_PULL=1 ./deploy.sh"
+$remoteCommand = "set -e; cd $RemoteProjectDir; git -c http.version=HTTP/1.1 pull origin $Branch; chmod +x deploy.sh; SKIP_GIT_PULL=1 ./deploy.sh"
 
 Invoke-Native -FilePath ssh -Arguments @("-i", $resolvedKey, "-p", "$SshPort", "-o", "StrictHostKeyChecking=accept-new", "$ServerUser@$ServerHost", $remoteCommand)
 
