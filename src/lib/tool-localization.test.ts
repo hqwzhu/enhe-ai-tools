@@ -103,6 +103,25 @@ describe("tool localization helpers", () => {
     expect(summary).not.toContain("恩禾");
   });
 
+  it("avoids repeating generic english category labels in generated descriptions", () => {
+    const summary = buildLocalizedToolSummary(
+      {
+        slug: "ai-ai",
+        name: "Raw local name",
+        englishName: "AI Voice Generator - Flexible Edition",
+        shortDescription: "draft",
+        type: "software",
+        categoryName: "AI Software App"
+      },
+      "en"
+    );
+
+    expect(summary).toBe(
+      "AI Voice Generator - Flexible Edition is an AI software app. Review pricing, version details, and download access on ENHE AI."
+    );
+    expect(summary).not.toContain("in ai software app");
+  });
+
   it("builds english detail copy without leaking untranslated chinese paragraphs", () => {
     const content = buildLocalizedToolLongContent(
       {

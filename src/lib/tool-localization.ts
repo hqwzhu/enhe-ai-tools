@@ -251,11 +251,23 @@ function buildEnglishToolSentence(tool: LocalizedToolInput) {
   }
 
   if (tool.type === "online") {
+    if (categoryIsGeneric) {
+      return `${localizedTool.primaryName} is an AI account service. Review pricing, delivery notes, and access guidance on ENHE AI.`;
+    }
+
     return `${localizedTool.primaryName} is an AI account service in ${categoryName.toLowerCase()}. Review pricing, delivery notes, and access guidance on ENHE AI.`;
   }
 
   if (tool.type === "skill_learning") {
+    if (categoryIsGeneric) {
+      return `${localizedTool.primaryName} is an AI skill course. Review learning access, lesson structure, and current availability on ENHE AI.`;
+    }
+
     return `${localizedTool.primaryName} is an AI skill course for ${categoryName.toLowerCase()}. Review learning access, lesson structure, and current availability on ENHE AI.`;
+  }
+
+  if (categoryIsGeneric) {
+    return `${localizedTool.primaryName} is an AI software app. Review pricing, version details, and download access on ENHE AI.`;
   }
 
   return `${localizedTool.primaryName} is an AI software app in ${categoryName.toLowerCase()}. Review pricing, version details, and download access on ENHE AI.`;
