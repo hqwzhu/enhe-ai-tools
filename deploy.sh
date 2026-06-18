@@ -15,10 +15,10 @@ echo "===== 重新构建并启动 Docker ====="
 docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml up -d --build
 
 echo "===== 同步数据库结构 ====="
-docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec app npx prisma migrate deploy
+docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec -T app sh -lc 'cd /app && ./node_modules/.bin/prisma migrate deploy'
 
 echo "===== 初始化 AI 资讯内容 ====="
-docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec app node prisma/seed-ai-news.cjs
+docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec -T app sh -lc 'cd /app && node prisma/seed-ai-news.cjs'
 
 echo "===== 查看容器状态 ====="
 docker ps | grep enhe-ai-tools

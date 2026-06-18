@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 
+cd /app
+
 echo "[enhe-ai-tools] running database migrations..."
 npx prisma migrate deploy
 

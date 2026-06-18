@@ -57,6 +57,13 @@ describe("server deployment compose config", () => {
     expect(deployScript).toContain("docker logs --tail=80 enhe-ai-tools-app");
   });
 
+  it("runs Prisma and seed commands from /app inside the app container", () => {
+    const deployScript = readFileSync(resolve(root, "deploy.sh"), "utf8");
+
+    expect(deployScript).toContain("exec -T app sh -lc 'cd /app && ./node_modules/.bin/prisma migrate deploy'");
+    expect(deployScript).toContain("exec -T app sh -lc 'cd /app && node prisma/seed-ai-news.cjs'");
+  });
+
   it("uses the skip flag after the PowerShell deploy wrapper pulls on the server", () => {
     const deployWrapper = readFileSync(resolve(root, "scripts/push-and-deploy.ps1"), "utf8");
 
