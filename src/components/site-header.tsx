@@ -51,7 +51,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
 
         <div className="site-header-actions flex items-center gap-2">
           <HeaderAccountControls
-            labels={{ admin: t.nav.admin, login: t.nav.login, userFallback: t.nav.userFallback }}
+            labels={{ login: t.nav.login, userFallback: t.nav.userFallback }}
             locale={locale}
           />
           <Link href={buildLocalePath("/login", locale)} className="sr-only">

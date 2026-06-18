@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LayoutDashboard, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import type { Locale } from "@/lib/dictionaries";
 import { buildLocalePath } from "@/lib/seo";
 
@@ -17,7 +17,6 @@ export function HeaderAccountControls({
   locale
 }: {
   labels: {
-    admin: string;
     login: string;
     userFallback: string;
   };
@@ -62,12 +61,6 @@ export function HeaderAccountControls({
 
   return (
     <>
-      {user.role === "admin" ? (
-        <Link href="/admin" className="site-admin-link hidden items-center gap-2 lg:inline-flex">
-          <LayoutDashboard size={16} />
-          {labels.admin}
-        </Link>
-      ) : null}
       <Link href={userPath} className="site-user-chip hidden sm:inline-flex">
         <UserRound size={16} />
         <span className="truncate">{user.nickname ?? user.email ?? labels.userFallback}</span>

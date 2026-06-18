@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 describe("site header navigation", () => {
   it("keeps the homepage nav first, moves admin into the main nav, and removes updates from the header nav", () => {
     const source = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
+    const accountControlsSource = readFileSync(new URL("../components/header-account-controls.tsx", import.meta.url), "utf8");
     const adminNavIndex = source.indexOf("t.nav.admin");
     const updatesNavIndex = source.indexOf("t.nav.updates");
 
@@ -21,6 +22,7 @@ describe("site header navigation", () => {
     expect(source).not.toContain('href: buildLocalePath("/#updates", locale)');
     expect(adminNavIndex).toBeGreaterThan(source.indexOf("t.nav.skillLearning"));
     expect(updatesNavIndex).toBe(-1);
-    expect(source).not.toContain("className=\"site-admin-link hidden items-center gap-2 lg:inline-flex\"");
+    expect(accountControlsSource).not.toContain("className=\"site-admin-link hidden items-center gap-2 lg:inline-flex\"");
+    expect(accountControlsSource).not.toContain("labels.admin");
   });
 });
