@@ -1,6 +1,6 @@
+import { timingSafeEqual } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { writeAdminAuditLog } from "@/lib/admin-audit";
 import { resolveNewsSlug } from "@/lib/ai-news";
 import { prisma } from "@/lib/db";
 import { tagSlug } from "@/lib/tool-content";
@@ -11,60 +11,66 @@ const defaultAiNewsCategory = {
 };
 
 const aiNewsImportSourceChannel = "ai_auto_import";
+const maxRawImportPayloadChars = 100_000;
+const maxSlugCollisionAttempts = 5;
+
+const optionalTrimmedString = (max: number) => z.string().trim().min(1).max(max).optional();
+const optionalHttpUrl = z.string().trim().url().max(2_000).refine((value) => /^https?:\/\//i.test(value), "URL must use http or https").optional();
+const publishedAtSchema = z.string().trim().datetime().transform((value) => new Date(value)).optional();
 
 export const aiNewsSourceSchema = z.object({
-  title: z.string().trim().min(1),
-  url: z.string().trim().url().refine((value) => /^https?:\/\//i.test(value), "Source URL must use http or https"),
-  sourceType: z.string().trim().min(1),
-  description: z.string().trim().min(1).optional()
+  title: z.string().trim().min(1).max(220),
+  url: z.string().trim().url().max(2_000).refine((value) => /^https?:\/\//i.test(value), "Source URL must use http or https"),
+  sourceType: z.string().trim().min(1).max(80),
+  description: optionalTrimmedString(500)
 });
 
 export const aiNewsImportArticleSchema = z.object({
-  title: z.string().trim().min(1),
-  slug: z.string().trim().min(1).optional(),
-  subtitle: z.string().trim().min(1).optional(),
-  description: z.string().trim().min(1).optional(),
-  keywords: z.string().trim().min(1).optional(),
-  summary: z.string().trim().min(1),
-  content: z.string().trim().min(1),
-  coverImage: z.string().trim().min(1).optional(),
-  videoUrl: z.string().trim().min(1).optional(),
-  videoTitle: z.string().trim().min(1).optional(),
-  videoDescription: z.string().trim().min(1).optional(),
-  author: z.string().trim().min(1).optional(),
-  categoryName: z.string().trim().min(1).optional(),
-  categorySlug: z.string().trim().min(1).optional(),
-  tags: z.array(z.string().trim().min(1)).default([]),
+  title: z.string().trim().min(1).max(180),
+  slug: optionalTrimmedString(220),
+  subtitle: optionalTrimmedString(220),
+  description: optionalTrimmedString(500),
+  keywords: optionalTrimmedString(500),
+  summary: z.string().trim().min(1).max(1_200),
+  content: z.string().trim().min(1).max(50_000),
+  coverImage: optionalHttpUrl,
+  videoUrl: optionalHttpUrl,
+  videoTitle: optionalTrimmedString(220),
+  videoDescription: optionalTrimmedString(500),
+  author: optionalTrimmedString(120),
+  categoryName: optionalTrimmedString(120),
+  categorySlug: optionalTrimmedString(220),
+  tags: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
   readingTime: z.number().int().positive().optional(),
-  seoTitle: z.string().trim().min(1).optional(),
-  seoDescription: z.string().trim().min(1).optional(),
-  seoKeywords: z.string().trim().min(1).optional(),
-  canonicalUrl: z.string().trim().min(1).optional(),
-  keyTakeaways: z.array(z.string().trim().min(1)).default([]),
-  impactNotes: z.string().trim().min(1).optional(),
-  conclusion: z.string().trim().min(1).optional(),
-  relatedArticleIds: z.array(z.string().trim().min(1)).default([]),
-  relatedToolIds: z.array(z.string().trim().min(1)).default([]),
-  relatedTutorialIds: z.array(z.string().trim().min(1)).default([]),
-  englishTitle: z.string().trim().min(1).optional(),
-  englishSubtitle: z.string().trim().min(1).optional(),
-  englishDescription: z.string().trim().min(1).optional(),
-  englishSummary: z.string().trim().min(1).optional(),
-  englishContent: z.string().trim().min(1).optional(),
-  englishKeywords: z.string().trim().min(1).optional(),
-  englishSeoTitle: z.string().trim().min(1).optional(),
-  englishSeoDescription: z.string().trim().min(1).optional(),
-  englishSeoKeywords: z.string().trim().min(1).optional(),
-  englishKeyTakeaways: z.array(z.string().trim().min(1)).default([]),
-  englishImpactNotes: z.string().trim().min(1).optional(),
-  englishConclusion: z.string().trim().min(1).optional(),
-  externalSources: z.array(aiNewsSourceSchema).min(1)
+  seoTitle: optionalTrimmedString(220),
+  seoDescription: optionalTrimmedString(500),
+  seoKeywords: optionalTrimmedString(500),
+  canonicalUrl: optionalHttpUrl,
+  keyTakeaways: z.array(z.string().trim().min(1).max(220)).max(8).default([]),
+  impactNotes: optionalTrimmedString(2_000),
+  conclusion: optionalTrimmedString(2_000),
+  relatedArticleIds: z.array(z.string().trim().min(1).max(120)).max(20).default([]),
+  relatedToolIds: z.array(z.string().trim().min(1).max(120)).max(20).default([]),
+  relatedTutorialIds: z.array(z.string().trim().min(1).max(120)).max(20).default([]),
+  englishTitle: optionalTrimmedString(180),
+  englishSubtitle: optionalTrimmedString(220),
+  englishDescription: optionalTrimmedString(500),
+  englishSummary: optionalTrimmedString(1_200),
+  englishContent: optionalTrimmedString(50_000),
+  englishKeywords: optionalTrimmedString(500),
+  englishSeoTitle: optionalTrimmedString(220),
+  englishSeoDescription: optionalTrimmedString(500),
+  englishSeoKeywords: optionalTrimmedString(500),
+  englishKeyTakeaways: z.array(z.string().trim().min(1).max(220)).max(8).default([]),
+  englishImpactNotes: optionalTrimmedString(2_000),
+  englishConclusion: optionalTrimmedString(2_000),
+  externalSources: z.array(aiNewsSourceSchema).min(1).max(12)
 });
 
 export const aiNewsImportPayloadSchema = z.object({
   publishMode: z.enum(["draft", "published"]).default("draft"),
-  publishedAt: z.coerce.date().optional(),
-  importBatchId: z.string().trim().min(1).optional(),
+  publishedAt: publishedAtSchema,
+  importBatchId: optionalTrimmedString(120),
   article: aiNewsImportArticleSchema
 });
 
@@ -75,6 +81,7 @@ export type AiNewsImportData = {
   category: {
     name: string;
     slug: string;
+    shouldUpdateName: boolean;
   };
   article: Omit<Prisma.NewsArticleUncheckedCreateInput, "categoryId">;
   tags: string[];
@@ -89,13 +96,18 @@ export type AiNewsImportResult = {
   publicUrl: string | null;
 };
 
-export function verifyAiNewsImportToken(authorization: string | null, expectedToken: string) {
-  if (!expectedToken.trim() || !authorization) return false;
+export function verifyAiNewsImportToken(authorization: string | null, expectedToken: string | undefined) {
+  const expected = expectedToken?.trim();
+  if (!expected || !authorization) return false;
 
   const match = authorization.match(/^Bearer\s+(.+)$/);
   if (!match) return false;
 
-  return match[1] === expectedToken;
+  const receivedBuffer = Buffer.from(match[1]);
+  const expectedBuffer = Buffer.from(expected);
+  if (receivedBuffer.length !== expectedBuffer.length) return false;
+
+  return timingSafeEqual(receivedBuffer, expectedBuffer);
 }
 
 export function rejectUnsafeNewsImportContent(content: string) {
@@ -117,13 +129,42 @@ export function rejectUnsafeNewsImportContent(content: string) {
 }
 
 export function sanitizeRawImportPayload(payload: AiNewsImportPayload) {
-  return JSON.parse(
+  const sanitized = JSON.parse(
     JSON.stringify({
       ...payload,
       publishedAt: payload.publishedAt?.toISOString(),
       sourceChannel: aiNewsImportSourceChannel
     })
   );
+  const length = JSON.stringify(sanitized).length;
+  if (length > maxRawImportPayloadChars) {
+    throw new Error(`Raw import payload exceeds ${maxRawImportPayloadChars} characters.`);
+  }
+
+  return sanitized;
+}
+
+function buildImportCategory(article: AiNewsImportArticle) {
+  if (article.categorySlug) {
+    return {
+      name: article.categoryName ?? defaultAiNewsCategory.name,
+      slug: resolveNewsSlug({ title: article.categorySlug, slugInput: article.categorySlug, fallbackSeed: defaultAiNewsCategory.slug }),
+      shouldUpdateName: Boolean(article.categoryName)
+    };
+  }
+
+  if (article.categoryName) {
+    return {
+      name: article.categoryName,
+      slug: resolveNewsSlug({ title: article.categoryName, fallbackSeed: defaultAiNewsCategory.slug }),
+      shouldUpdateName: true
+    };
+  }
+
+  return {
+    ...defaultAiNewsCategory,
+    shouldUpdateName: true
+  };
 }
 
 export function buildAiNewsImportData(payload: AiNewsImportPayload, now = new Date()): AiNewsImportData {
@@ -140,14 +181,10 @@ export function buildAiNewsImportData(payload: AiNewsImportPayload, now = new Da
     slugInput: payload.article.slug,
     fallbackSeed
   });
-  const categorySlug = payload.article.categorySlug ?? defaultAiNewsCategory.slug;
-  const categoryName = payload.article.categoryName ?? defaultAiNewsCategory.name;
+  const category = buildImportCategory(payload.article);
 
   return {
-    category: {
-      name: categoryName,
-      slug: categorySlug
-    },
+    category,
     article: {
       title: payload.article.title,
       slug,
@@ -206,28 +243,78 @@ export function buildAiNewsImportData(payload: AiNewsImportPayload, now = new Da
   };
 }
 
-async function resolveUniqueImportSlug(input: { title: string; slugInput?: string | null; fallbackSeed: string }) {
-  let slug = resolveNewsSlug(input);
-  const baseSlug = slug;
-  let retry = 0;
+type AiNewsImportTransaction = Omit<
+  typeof prisma,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
-  while (await prisma.newsArticle.findFirst({ where: { slug }, select: { id: true } })) {
-    retry += 1;
-    slug = `${baseSlug}-${Math.random().toString(36).slice(2, 8)}`;
-    if (retry > 10) break;
-  }
-
-  return slug;
+function importSlugCandidate(baseSlug: string, attempt: number) {
+  return attempt === 1 ? baseSlug : `${baseSlug}-${attempt}`;
 }
 
-export async function importAiNewsArticle(rawPayload: unknown): Promise<AiNewsImportResult> {
-  const payload = aiNewsImportPayloadSchema.parse(rawPayload);
-  const now = new Date();
-  const slug = await resolveUniqueImportSlug({
-    title: payload.article.title,
-    slugInput: payload.article.slug,
-    fallbackSeed: payload.importBatchId ?? now.getTime().toString(36)
+async function resolveUniqueImportSlug(tx: AiNewsImportTransaction, baseSlug: string) {
+  for (let attempt = 1; attempt <= maxSlugCollisionAttempts; attempt += 1) {
+    const slug = importSlugCandidate(baseSlug, attempt);
+    const existing = await tx.newsArticle.findFirst({ where: { slug }, select: { id: true } });
+    if (!existing) return slug;
+  }
+
+  throw new Error("Unable to resolve a unique AI news article slug.");
+}
+
+function isPrismaUniqueCollision(error: unknown) {
+  return (
+    (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") ||
+    (typeof error === "object" && error !== null && "code" in error && error.code === "P2002")
+  );
+}
+
+async function createImportAuditLog({
+  tx,
+  article,
+  payload,
+  sourceCount,
+  tagCount
+}: {
+  tx: AiNewsImportTransaction;
+  article: { id: string; title: string; slug: string; status: string };
+  payload: AiNewsImportPayload;
+  sourceCount: number;
+  tagCount: number;
+}) {
+  await tx.adminAuditLog.create({
+    data: {
+      adminId: null,
+      action: "news_article.auto_import",
+      targetType: "news_article",
+      targetId: article.id,
+      summary: "Auto-imported AI news article.",
+      metadata: {
+        title: article.title,
+        slug: article.slug,
+        status: article.status,
+        importBatchId: payload.importBatchId ?? null,
+        sourceChannel: aiNewsImportSourceChannel,
+        sourceCount,
+        tagCount
+      },
+      ip: null,
+      userAgent: null
+    }
   });
+}
+
+async function persistAiNewsImportAttempt({
+  tx,
+  payload,
+  now,
+  slug
+}: {
+  tx: AiNewsImportTransaction;
+  payload: AiNewsImportPayload;
+  now: Date;
+  slug: string;
+}) {
   const data = buildAiNewsImportData(
     {
       ...payload,
@@ -239,12 +326,16 @@ export async function importAiNewsArticle(rawPayload: unknown): Promise<AiNewsIm
     now
   );
 
-  const category = await prisma.newsCategory.upsert({
+  const category = await tx.newsCategory.upsert({
     where: { slug: data.category.slug },
-    update: {
-      name: data.category.name,
-      status: "active"
-    },
+    update: data.category.shouldUpdateName
+      ? {
+          name: data.category.name,
+          status: "active"
+        }
+      : {
+          status: "active"
+        },
     create: {
       name: data.category.name,
       slug: data.category.slug,
@@ -257,11 +348,11 @@ export async function importAiNewsArticle(rawPayload: unknown): Promise<AiNewsIm
     categoryId: category.id
   };
 
-  const article = await prisma.newsArticle.create({ data: articleCreateData });
+  const article = await tx.newsArticle.create({ data: articleCreateData });
 
   const tags = await Promise.all(
     data.tags.map((name) =>
-      prisma.newsTag.upsert({
+      tx.newsTag.upsert({
         where: { name },
         update: { status: "active" },
         create: { name, slug: tagSlug(name), status: "active" }
@@ -269,16 +360,16 @@ export async function importAiNewsArticle(rawPayload: unknown): Promise<AiNewsIm
     )
   );
 
-  await prisma.newsArticleTag.deleteMany({ where: { articleId: article.id } });
+  await tx.newsArticleTag.deleteMany({ where: { articleId: article.id } });
   if (tags.length) {
-    await prisma.newsArticleTag.createMany({
+    await tx.newsArticleTag.createMany({
       data: tags.map((tag) => ({ articleId: article.id, tagId: tag.id })),
       skipDuplicates: true
     });
   }
 
-  await prisma.newsExternalSource.deleteMany({ where: { articleId: article.id } });
-  await prisma.newsExternalSource.createMany({
+  await tx.newsExternalSource.deleteMany({ where: { articleId: article.id } });
+  await tx.newsExternalSource.createMany({
     data: data.externalSources.map((source) => ({
       articleId: article.id,
       title: source.title,
@@ -289,28 +380,47 @@ export async function importAiNewsArticle(rawPayload: unknown): Promise<AiNewsIm
     }))
   });
 
-  await writeAdminAuditLog({
-    adminId: null,
-    action: "news_article.auto_import",
-    targetType: "news_article",
-    targetId: article.id,
-    summary: "Auto-imported AI news article.",
-    metadata: {
-      title: article.title,
-      slug: article.slug,
-      status: article.status,
-      importBatchId: payload.importBatchId ?? null,
-      sourceChannel: aiNewsImportSourceChannel
-    }
+  await createImportAuditLog({
+    tx,
+    article,
+    payload,
+    sourceCount: data.externalSources.length,
+    tagCount: tags.length
   });
 
-  const status = article.status as "draft" | "published";
+  return article;
+}
 
-  return {
-    articleId: article.id,
-    slug: article.slug,
-    status,
-    adminUrl: `/admin/ai-news/${article.id}`,
-    publicUrl: status === "published" ? `/ai-news/${article.slug}` : null
-  };
+export async function importAiNewsArticle(rawPayload: unknown): Promise<AiNewsImportResult> {
+  const payload = aiNewsImportPayloadSchema.parse(rawPayload);
+  const now = new Date();
+  const baseSlug = resolveNewsSlug({
+    title: payload.article.title,
+    slugInput: payload.article.slug,
+    fallbackSeed: payload.importBatchId ?? now.getTime().toString(36)
+  });
+
+  for (let attempt = 1; attempt <= maxSlugCollisionAttempts; attempt += 1) {
+    try {
+      const article = await prisma.$transaction(async (tx) => {
+        const slug = await resolveUniqueImportSlug(tx, importSlugCandidate(baseSlug, attempt));
+        return persistAiNewsImportAttempt({ tx, payload, now, slug });
+      });
+      const status = article.status as "draft" | "published";
+
+      return {
+        articleId: article.id,
+        slug: article.slug,
+        status,
+        adminUrl: `/admin/ai-news/${article.id}`,
+        publicUrl: status === "published" ? `/ai-news/${article.slug}` : null
+      };
+    } catch (error) {
+      if (!isPrismaUniqueCollision(error) || attempt === maxSlugCollisionAttempts) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error("Unable to import AI news article with a unique slug.");
 }

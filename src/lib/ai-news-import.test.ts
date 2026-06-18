@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const prismaMock = vi.hoisted(() => ({
+  $transaction: vi.fn(),
   newsArticle: {
     findFirst: vi.fn(),
     create: vi.fn()
@@ -43,21 +44,21 @@ const baseImportPayload = {
   publishMode: "draft" as const,
   importBatchId: "batch-42",
   article: {
-    title: "中国智能体落地提速",
-    summary: "中国AI智能体应用案例增多。",
-    content: "## 事实概述\n\n正文",
-    tags: ["智能体", "AI落地"],
+    title: "!!!",
+    summary: "AI agent deployments are increasing.",
+    content: "## Facts\n\nBody copy",
+    tags: ["Agents", "AI Deployment"],
     externalSources: [
       {
-        title: "中国网信网",
+        title: "Official notice",
         url: "https://www.cac.gov.cn/2026-05/08/c_1779979789523320.htm",
         sourceType: "official_announcement"
       },
       {
-        title: "行业研究",
+        title: "Industry report",
         url: "https://example.com/report",
         sourceType: "authority_media",
-        description: "补充案例"
+        description: "Supporting case"
       }
     ]
   }
@@ -66,10 +67,11 @@ const baseImportPayload = {
 beforeEach(() => {
   vi.clearAllMocks();
 
+  prismaMock.$transaction.mockImplementation(async (callback) => callback(prismaMock));
   prismaMock.newsArticle.findFirst.mockResolvedValue(null);
   prismaMock.newsCategory.upsert.mockResolvedValue({
     id: "category-1",
-    name: "AI快讯",
+    name: "AI\u5feb\u8baf",
     slug: "ai-news-flash"
   });
   prismaMock.newsArticle.create.mockImplementation(async ({ data }) => ({
@@ -84,6 +86,7 @@ beforeEach(() => {
   prismaMock.newsArticleTag.createMany.mockResolvedValue({ count: 0 });
   prismaMock.newsExternalSource.deleteMany.mockResolvedValue({ count: 0 });
   prismaMock.newsExternalSource.createMany.mockResolvedValue({ count: 0 });
+  prismaMock.adminAuditLog.create.mockResolvedValue({ id: "audit-1" });
   auditMock.writeAdminAuditLog.mockResolvedValue(undefined);
 });
 
@@ -94,10 +97,11 @@ describe("AI news import helpers", () => {
     expect(verifyAiNewsImportToken(null, "secret-token")).toBe(false);
     expect(verifyAiNewsImportToken("secret-token", "secret-token")).toBe(false);
     expect(verifyAiNewsImportToken("Bearer secret-token", "")).toBe(false);
+    expect(verifyAiNewsImportToken("Bearer secret-token", undefined)).toBe(false);
   });
 
   it("rejects unsafe raw HTML and script-like content", () => {
-    expect(() => rejectUnsafeNewsImportContent("## 正文\n\n普通段落")).not.toThrow();
+    expect(() => rejectUnsafeNewsImportContent("## Body\n\nPlain paragraph")).not.toThrow();
     expect(() => rejectUnsafeNewsImportContent("<!doctype html><html><body>x</body></html>")).toThrow("raw HTML");
     expect(() => rejectUnsafeNewsImportContent("<script>alert(1)</script>")).toThrow("script");
     expect(() => rejectUnsafeNewsImportContent("<style>body{}</style>")).toThrow("style");
@@ -109,12 +113,12 @@ describe("AI news import helpers", () => {
       publishMode: "draft",
       importBatchId: "batch-1",
       article: {
-        title: "中国智能体落地提速",
-        summary: "中国AI智能体应用案例增多。",
-        content: "## 事实概述\n\n正文",
+        title: "China agent deployment accelerates",
+        summary: "More AI agent applications are shipping.",
+        content: "## Facts\n\nBody copy",
         externalSources: [
           {
-            title: "中国网信网",
+            title: "Official source",
             url: "https://www.cac.gov.cn/2026-05/08/c_1779979789523320.htm",
             sourceType: "official_announcement"
           }
@@ -130,11 +134,55 @@ describe("AI news import helpers", () => {
     expect(() =>
       aiNewsImportPayloadSchema.parse({
         article: {
-          title: "标题",
-          summary: "摘要",
-          content: "## 正文\n\n内容",
+          title: "Title",
+          summary: "Summary",
+          content: "## Body\n\nContent",
           externalSources: []
         }
+      })
+    ).toThrow();
+  });
+
+  it("rejects oversized content and raw import payloads", () => {
+    expect(() =>
+      aiNewsImportPayloadSchema.parse({
+        article: {
+          ...baseImportPayload.article,
+          content: "x".repeat(50_001)
+        }
+      })
+    ).toThrow();
+
+    const parsed = aiNewsImportPayloadSchema.parse({
+      article: {
+        ...baseImportPayload.article,
+        content: "x".repeat(50_000),
+        englishContent: "y".repeat(50_000)
+      }
+    });
+    expect(() => buildAiNewsImportData(parsed, new Date("2026-06-18T08:00:00.000Z"))).toThrow("Raw import payload exceeds");
+  });
+
+  it("rejects non-string publishedAt values instead of accepting Unix epoch coercion", () => {
+    expect(() =>
+      aiNewsImportPayloadSchema.parse({
+        ...baseImportPayload,
+        publishMode: "published",
+        publishedAt: null
+      })
+    ).toThrow();
+    expect(() =>
+      aiNewsImportPayloadSchema.parse({
+        ...baseImportPayload,
+        publishMode: "published",
+        publishedAt: 0
+      })
+    ).toThrow();
+    expect(() =>
+      aiNewsImportPayloadSchema.parse({
+        ...baseImportPayload,
+        publishMode: "published",
+        publishedAt: true
       })
     ).toThrow();
   });
@@ -142,7 +190,7 @@ describe("AI news import helpers", () => {
   it("builds draft import data with safe defaults", () => {
     const data = buildAiNewsImportData(aiNewsImportPayloadSchema.parse(baseImportPayload), new Date("2026-06-18T08:00:00.000Z"));
 
-    expect(data.category).toEqual({ name: "AI快讯", slug: "ai-news-flash" });
+    expect(data.category).toEqual({ name: "AI\u5feb\u8baf", slug: "ai-news-flash", shouldUpdateName: true });
     expect(data.article).toMatchObject({
       status: "draft",
       publishedAt: null,
@@ -151,7 +199,26 @@ describe("AI news import helpers", () => {
     });
   });
 
-  it("imports draft news into article, tags, sources, and audit log", async () => {
+  it("normalizes category names and slugs without accidentally using the default slug", () => {
+    const data = buildAiNewsImportData(
+      aiNewsImportPayloadSchema.parse({
+        ...baseImportPayload,
+        article: {
+          ...baseImportPayload.article,
+          categoryName: "AI Policy"
+        }
+      }),
+      new Date("2026-06-18T08:00:00.000Z")
+    );
+
+    expect(data.category).toEqual({
+      name: "AI Policy",
+      slug: "ai-policy",
+      shouldUpdateName: true
+    });
+  });
+
+  it("imports draft news into article, tags, sources, and audit log in a transaction", async () => {
     const result = await importAiNewsArticle(baseImportPayload);
 
     expect(result).toEqual({
@@ -161,15 +228,16 @@ describe("AI news import helpers", () => {
       adminUrl: "/admin/ai-news/article-1",
       publicUrl: null
     });
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
     expect(prismaMock.newsCategory.upsert).toHaveBeenCalledWith({
       where: { slug: "ai-news-flash" },
-      update: { name: "AI快讯", status: "active" },
-      create: { name: "AI快讯", slug: "ai-news-flash", status: "active" }
+      update: { name: "AI\u5feb\u8baf", status: "active" },
+      create: { name: "AI\u5feb\u8baf", slug: "ai-news-flash", status: "active" }
     });
 
     const articleData = prismaMock.newsArticle.create.mock.calls[0][0].data;
     expect(articleData).toMatchObject({
-      title: "中国智能体落地提速",
+      title: "!!!",
       slug: "news-batch-42",
       status: "draft",
       publishedAt: null,
@@ -191,7 +259,7 @@ describe("AI news import helpers", () => {
       data: [
         {
           articleId: "article-1",
-          title: "中国网信网",
+          title: "Official notice",
           url: "https://www.cac.gov.cn/2026-05/08/c_1779979789523320.htm",
           sourceType: "official_announcement",
           description: null,
@@ -199,28 +267,35 @@ describe("AI news import helpers", () => {
         },
         {
           articleId: "article-1",
-          title: "行业研究",
+          title: "Industry report",
           url: "https://example.com/report",
           sourceType: "authority_media",
-          description: "补充案例",
+          description: "Supporting case",
           sortOrder: 1
         }
       ]
     });
-    expect(auditMock.writeAdminAuditLog).toHaveBeenCalledWith({
-      adminId: null,
-      action: "news_article.auto_import",
-      targetType: "news_article",
-      targetId: "article-1",
-      summary: "Auto-imported AI news article.",
-      metadata: {
-        title: "中国智能体落地提速",
-        slug: "news-batch-42",
-        status: "draft",
-        importBatchId: "batch-42",
-        sourceChannel: "ai_auto_import"
+    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+      data: {
+        adminId: null,
+        action: "news_article.auto_import",
+        targetType: "news_article",
+        targetId: "article-1",
+        summary: "Auto-imported AI news article.",
+        metadata: {
+          title: "!!!",
+          slug: "news-batch-42",
+          status: "draft",
+          importBatchId: "batch-42",
+          sourceChannel: "ai_auto_import",
+          sourceCount: 2,
+          tagCount: 2
+        },
+        ip: null,
+        userAgent: null
       }
     });
+    expect(auditMock.writeAdminAuditLog).not.toHaveBeenCalled();
   });
 
   it("ignores caller-provided sourceChannel and audits the fixed import channel", async () => {
@@ -232,7 +307,63 @@ describe("AI news import helpers", () => {
     const articleData = prismaMock.newsArticle.create.mock.calls[0][0].data;
     expect(articleData.sourceChannel).toBe("ai_auto_import");
     expect(articleData.rawImportPayload.sourceChannel).toBe("ai_auto_import");
-    expect(auditMock.writeAdminAuditLog.mock.calls[0][0].metadata.sourceChannel).toBe("ai_auto_import");
+    expect(prismaMock.adminAuditLog.create.mock.calls[0][0].data.metadata.sourceChannel).toBe("ai_auto_import");
+  });
+
+  it("does not rename an existing category when only categorySlug is provided", async () => {
+    await importAiNewsArticle({
+      ...baseImportPayload,
+      article: {
+        ...baseImportPayload.article,
+        categorySlug: "AI Policy Updates!"
+      }
+    });
+
+    expect(prismaMock.newsCategory.upsert).toHaveBeenCalledWith({
+      where: { slug: "ai-policy-updates" },
+      update: { status: "active" },
+      create: { name: "AI\u5feb\u8baf", slug: "ai-policy-updates", status: "active" }
+    });
+  });
+
+  it("uses a deterministic slug suffix when the base slug already exists", async () => {
+    prismaMock.newsArticle.findFirst.mockResolvedValueOnce({ id: "existing-article" }).mockResolvedValueOnce(null);
+
+    const result = await importAiNewsArticle({
+      ...baseImportPayload,
+      article: {
+        ...baseImportPayload.article,
+        title: "OpenAI Agent Update"
+      }
+    });
+
+    expect(result.slug).toBe("openai-agent-update-2");
+    expect(prismaMock.newsArticle.create.mock.calls[0][0].data.slug).toBe("openai-agent-update-2");
+    expect(prismaMock.newsArticle.findFirst).toHaveBeenNthCalledWith(1, { where: { slug: "openai-agent-update" }, select: { id: true } });
+    expect(prismaMock.newsArticle.findFirst).toHaveBeenNthCalledWith(2, { where: { slug: "openai-agent-update-2" }, select: { id: true } });
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries with the next deterministic suffix when article creation hits a unique slug collision", async () => {
+    prismaMock.newsArticle.create
+      .mockRejectedValueOnce({ code: "P2002" })
+      .mockImplementationOnce(async ({ data }) => ({
+        id: "article-retry",
+        ...data
+      }));
+
+    const result = await importAiNewsArticle({
+      ...baseImportPayload,
+      article: {
+        ...baseImportPayload.article,
+        title: "OpenAI Agent Update"
+      }
+    });
+
+    expect(result.slug).toBe("openai-agent-update-2");
+    expect(prismaMock.newsArticle.create.mock.calls[0][0].data.slug).toBe("openai-agent-update");
+    expect(prismaMock.newsArticle.create.mock.calls[1][0].data.slug).toBe("openai-agent-update-2");
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(2);
   });
 
   it("imports published news with non-null publishedAt and a public URL", async () => {
