@@ -7,6 +7,7 @@ describe("homepage SaaS redesign source", () => {
     const header = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
     const dictionaries = readFileSync(new URL("../lib/dictionaries.ts", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+    const normalizedCss = css.replace(/\r\n/g, "\n");
 
     expect(page).toContain('className="home-page-shell"');
     expect(page).toContain("home-hero-shell");
@@ -68,10 +69,10 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-hero-metrics");
     expect(css).toContain(".home-featured-shell");
     expect(css).toContain("scroll-margin-top: 96px");
-    expect(css).toContain(".home-hero-actions {\n    width: 100%;\n    flex-wrap: wrap;");
-    expect(css).toContain(".home-hero-cta {\n    flex: 1 1 42%;");
+    expect(normalizedCss).toContain(".home-hero-actions {\n    width: 100%;\n    flex-wrap: wrap;");
+    expect(normalizedCss).toContain(".home-hero-cta {\n    flex: 1 1 42%;");
     expect(css).toContain("white-space: pre-line");
-    expect(css).toContain(".home-product-preview {\n  width: min(100%, 1040px);\n  margin: 0 auto;");
+    expect(normalizedCss).toContain(".home-product-preview {\n  width: min(100%, 1040px);\n  margin: 0 auto;");
     expect(css).not.toContain(".enhe-orbital-system");
     expect(css).not.toContain(".home-hero-scroll-cue");
   });
