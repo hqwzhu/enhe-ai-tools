@@ -9,6 +9,8 @@ describe("site header navigation", () => {
     expect(source).toContain("nav.software");
     expect(source).toContain("nav.onlineTools");
     expect(source).toContain("nav.skillLearning");
+    expect(source).toContain("nav.aiNews");
+    expect(source).toContain('href: buildLocalePath("/ai-news", locale)');
     expect(source).toContain("t.nav.login");
     expect(source).not.toContain('"/tutorials"');
     expect(source).not.toContain("t.nav.tutorials");

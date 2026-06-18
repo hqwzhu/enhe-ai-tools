@@ -21,6 +21,7 @@ const adminNav = [
   ["software", "/admin/software"],
   ["onlineTools", "/admin/online-tools"],
   ["skillLearning", "/admin/skill-learning"],
+  ["aiNews", "/admin/ai-news"],
   ["categories", "/admin/categories"],
   ["tags", "/admin/tags"],
   ["tutorials", "/admin/tutorials"],
