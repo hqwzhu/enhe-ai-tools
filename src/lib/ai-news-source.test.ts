@@ -29,7 +29,7 @@ describe("AI news source contracts", () => {
     const adminI18n = read("src/lib/admin-i18n.ts");
 
     expect(dictionaries).toContain("aiNews");
-    expect(dictionaries).toContain("AI资讯");
+    expect(dictionaries).toContain("AI前沿资讯");
     expect(dictionaries).toContain("AI News");
     expect(header).toContain('buildLocalePath("/ai-news", locale)');
     expect(adminLayout).toContain('["aiNews", "/admin/ai-news"]');
@@ -79,5 +79,17 @@ describe("AI news source contracts", () => {
     expect(seed).not.toContain("siteSetting.upsert");
     expect(containerSeed).not.toContain("user.upsert");
     expect(containerSeed).not.toContain("siteSetting.upsert");
+  });
+
+  it("allows admins to delete AI news articles from the list page", () => {
+    const actions = read("src/app/admin/actions.ts");
+    const adminList = read("src/app/admin/ai-news/page.tsx");
+
+    expect(actions).toContain("export async function deleteNewsArticleAction");
+    expect(actions).toContain('action: "news_article.delete"');
+    expect(actions).toContain('redirect("/admin/ai-news?deleted=1")');
+    expect(adminList).toContain("deleteNewsArticleAction");
+    expect(adminList).toContain('action={deleteNewsArticleAction}');
+    expect(adminList).toContain('name="id" value={article.id}');
   });
 });

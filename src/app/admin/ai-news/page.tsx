@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { AdminSection, inputClass, selectClass } from "@/app/admin/admin-ui";
+import { deleteNewsArticleAction } from "@/app/admin/actions";
+import { AdminSection, DangerButton, inputClass, selectClass } from "@/app/admin/admin-ui";
 import { prisma } from "@/lib/db";
 
 const pageSize = 20;
@@ -59,6 +60,7 @@ export default async function AdminAiNewsPage({ searchParams }: { searchParams: 
       </div>
 
       {params.archived ? <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">资讯已归档。</p> : null}
+      {params.deleted ? <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">资讯已删除。</p> : null}
       {params.error ? <p className="mb-5 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">{params.error}</p> : null}
 
       <form className="mb-6 grid gap-3 rounded-2xl border border-white/12 bg-white/6 p-4 lg:grid-cols-[1fr_150px_180px_150px_130px]">
@@ -127,6 +129,10 @@ export default async function AdminAiNewsPage({ searchParams }: { searchParams: 
                 <Link href={`/admin/ai-news/${article.id}`} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
                   编辑
                 </Link>
+                <form action={deleteNewsArticleAction}>
+                  <input type="hidden" name="id" value={article.id} />
+                  <DangerButton className="px-3 py-2 text-xs" pendingLabel="删除中...">删除</DangerButton>
+                </form>
               </span>
             </div>
           ))}

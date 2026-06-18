@@ -60,7 +60,8 @@ describe("server deployment compose config", () => {
   it("uses the skip flag after the PowerShell deploy wrapper pulls on the server", () => {
     const deployWrapper = readFileSync(resolve(root, "scripts/push-and-deploy.ps1"), "utf8");
 
-    expect(deployWrapper).toContain("git pull origin $Branch");
+    expect(deployWrapper).toContain('@("pull", "--rebase", "origin", $Branch)');
+    expect(deployWrapper).toContain("git -c http.version=HTTP/1.1 pull origin $Branch");
     expect(deployWrapper).toContain("SKIP_GIT_PULL=1 ./deploy.sh");
   });
 });

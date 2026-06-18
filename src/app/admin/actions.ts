@@ -1654,6 +1654,42 @@ export async function archiveNewsArticleAction(formData: FormData) {
   redirect("/admin/ai-news?archived=1");
 }
 
+export async function deleteNewsArticleAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const article = await prisma.newsArticle.findUnique({
+    where: { id },
+    select: { id: true, title: true, slug: true, status: true }
+  });
+  if (!article) {
+    redirect(`/admin/ai-news?error=${encodeURIComponent("资讯不存在，可能已经被删除。")}`);
+  }
+
+  await prisma.$transaction([
+    prisma.newsArticleTag.deleteMany({ where: { articleId: id } }),
+    prisma.newsExternalSource.deleteMany({ where: { articleId: id } }),
+    prisma.newsArticleFavorite.deleteMany({ where: { articleId: id } }),
+    prisma.newsArticleLike.deleteMany({ where: { articleId: id } }),
+    prisma.newsArticle.delete({ where: { id } })
+  ]);
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "news_article.delete",
+    targetType: "news_article",
+    targetId: id,
+    summary: "Deleted news article and cleaned related records.",
+    metadata: { title: article.title, slug: article.slug, status: article.status }
+  });
+
+  revalidatePath("/admin/ai-news");
+  revalidatePath("/ai-news");
+  revalidatePath("/en/ai-news");
+  revalidatePath(`/ai-news/${article.slug}`);
+  revalidatePath(`/en/ai-news/${article.slug}`);
+  redirect("/admin/ai-news?deleted=1");
+}
+
 export async function upsertNewsKeywordInterventionAction(formData: FormData) {
   const admin = await requireAdmin();
   const id = parseOptionalString(formData.get("id"));
