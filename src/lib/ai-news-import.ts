@@ -81,7 +81,6 @@ export type AiNewsImportData = {
   category: {
     name: string;
     slug: string;
-    shouldUpdateName: boolean;
   };
   article: Omit<Prisma.NewsArticleUncheckedCreateInput, "categoryId">;
   tags: string[];
@@ -148,23 +147,18 @@ function buildImportCategory(article: AiNewsImportArticle) {
   if (article.categorySlug) {
     return {
       name: article.categoryName ?? defaultAiNewsCategory.name,
-      slug: resolveNewsSlug({ title: article.categorySlug, slugInput: article.categorySlug, fallbackSeed: defaultAiNewsCategory.slug }),
-      shouldUpdateName: false
+      slug: resolveNewsSlug({ title: article.categorySlug, slugInput: article.categorySlug, fallbackSeed: defaultAiNewsCategory.slug })
     };
   }
 
   if (article.categoryName) {
     return {
       name: article.categoryName,
-      slug: resolveNewsSlug({ title: article.categoryName, fallbackSeed: defaultAiNewsCategory.slug }),
-      shouldUpdateName: true
+      slug: resolveNewsSlug({ title: article.categoryName, fallbackSeed: defaultAiNewsCategory.slug })
     };
   }
 
-  return {
-    ...defaultAiNewsCategory,
-    shouldUpdateName: true
-  };
+  return defaultAiNewsCategory;
 }
 
 export function buildAiNewsImportData(payload: AiNewsImportPayload, now = new Date()): AiNewsImportData {
@@ -328,14 +322,9 @@ async function persistAiNewsImportAttempt({
 
   const category = await tx.newsCategory.upsert({
     where: { slug: data.category.slug },
-    update: data.category.shouldUpdateName
-      ? {
-          name: data.category.name,
-          status: "active"
-        }
-      : {
-          status: "active"
-        },
+    update: {
+      status: "active"
+    },
     create: {
       name: data.category.name,
       slug: data.category.slug,

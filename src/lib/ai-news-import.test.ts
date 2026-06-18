@@ -225,7 +225,7 @@ describe("AI news import helpers", () => {
   it("builds draft import data with safe defaults", () => {
     const data = buildAiNewsImportData(aiNewsImportPayloadSchema.parse(baseImportPayload), new Date("2026-06-18T08:00:00.000Z"));
 
-    expect(data.category).toEqual({ name: "AI\u5feb\u8baf", slug: "ai-news-flash", shouldUpdateName: true });
+    expect(data.category).toEqual({ name: "AI\u5feb\u8baf", slug: "ai-news-flash" });
     expect(data.article).toMatchObject({
       status: "draft",
       publishedAt: null,
@@ -248,8 +248,7 @@ describe("AI news import helpers", () => {
 
     expect(data.category).toEqual({
       name: "AI Policy",
-      slug: "ai-policy",
-      shouldUpdateName: true
+      slug: "ai-policy"
     });
   });
 
@@ -266,7 +265,7 @@ describe("AI news import helpers", () => {
     expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
     expect(txMock.newsCategory.upsert).toHaveBeenCalledWith({
       where: { slug: "ai-news-flash" },
-      update: { name: "AI\u5feb\u8baf", status: "active" },
+      update: { status: "active" },
       create: { name: "AI\u5feb\u8baf", slug: "ai-news-flash", status: "active" }
     });
 
@@ -363,6 +362,22 @@ describe("AI news import helpers", () => {
       where: { slug: "ai-policy-updates" },
       update: { status: "active" },
       create: { name: "AI\u5feb\u8baf", slug: "ai-policy-updates", status: "active" }
+    });
+  });
+
+  it("does not rename an existing category when only categoryName normalizes to an existing slug", async () => {
+    await importAiNewsArticle({
+      ...baseImportPayload,
+      article: {
+        ...baseImportPayload.article,
+        categoryName: "AI Policy"
+      }
+    });
+
+    expect(txMock.newsCategory.upsert).toHaveBeenCalledWith({
+      where: { slug: "ai-policy" },
+      update: { status: "active" },
+      create: { name: "AI Policy", slug: "ai-policy", status: "active" }
     });
   });
 
