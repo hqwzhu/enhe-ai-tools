@@ -10,6 +10,13 @@ function exists(path: string) {
   return existsSync(join(process.cwd(), path));
 }
 
+function readPrismaModel(modelName: string) {
+  const schema = read("prisma/schema.prisma");
+  const match = schema.match(new RegExp(`model ${modelName} \\{[\\s\\S]*?\\n\\}`));
+  expect(match).not.toBeNull();
+  return match?.[0] ?? "";
+}
+
 describe("AI news auto publishing source contracts", () => {
   it("adds a token-protected import route and shared import service", () => {
     expect(exists("src/app/api/admin/ai-news/import/route.ts")).toBe(true);
@@ -35,17 +42,17 @@ describe("AI news auto publishing source contracts", () => {
   });
 
   it("adds import metadata to NewsArticle and exposes an admin badge", () => {
-    const schema = read("prisma/schema.prisma");
-    expect(schema).toContain("sourceChannel");
-    expect(schema).toContain("@map(\"source_channel\")");
-    expect(schema).toContain("importedAt");
-    expect(schema).toContain("@map(\"imported_at\")");
-    expect(schema).toContain("importBatchId");
-    expect(schema).toContain("@map(\"import_batch_id\")");
-    expect(schema).toContain("rawImportPayload");
-    expect(schema).toContain("@map(\"raw_import_payload\")");
-    expect(schema).toContain("@@index([sourceChannel, importedAt])");
-    expect(schema).toContain("@@index([importBatchId])");
+    const newsArticleModel = readPrismaModel("NewsArticle");
+    expect(newsArticleModel).toContain("sourceChannel");
+    expect(newsArticleModel).toContain("@map(\"source_channel\")");
+    expect(newsArticleModel).toContain("importedAt");
+    expect(newsArticleModel).toContain("@map(\"imported_at\")");
+    expect(newsArticleModel).toContain("importBatchId");
+    expect(newsArticleModel).toContain("@map(\"import_batch_id\")");
+    expect(newsArticleModel).toContain("rawImportPayload");
+    expect(newsArticleModel).toContain("@map(\"raw_import_payload\")");
+    expect(newsArticleModel).toContain("@@index([sourceChannel, importedAt])");
+    expect(newsArticleModel).toContain("@@index([importBatchId])");
 
     const adminList = read("src/app/admin/ai-news/page.tsx");
     expect(adminList).toContain("sourceChannel");
