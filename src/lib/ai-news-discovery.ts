@@ -57,6 +57,11 @@ export const minRenderableArticleCount = 3;
 export const maxKeywordCloudItems = 12;
 export const topicCollectionCount = 5;
 
+const defaultTopicSeeds: Record<Locale, string[]> = {
+  zh: ["AI资讯", "ENHE AI", "趋势解读", "工具落地", "AI教程"],
+  en: ["AI News", "ENHE AI", "Trend Insights", "Tool Workflows", "AI Tutorials"]
+};
+
 const genericStopWords = new Set([
   "ai",
   "AI",
@@ -253,6 +258,21 @@ export function buildAiNewsTopicCollections(input: {
       articleCount: candidate.articleCount,
       searchCount30d: candidate.searchCount30d,
       totalHeat: candidate.totalHeat
+    });
+  }
+
+  for (const seed of defaultTopicSeeds[input.locale]) {
+    const normalized = normalizeAiNewsKeyword(seed);
+    if (!normalized || topicMap.has(normalized)) continue;
+
+    topicMap.set(normalized, {
+      key: normalized,
+      title: seed,
+      query: seed,
+      score: 0,
+      articleCount: 0,
+      searchCount30d: 0,
+      totalHeat: 0
     });
   }
 
