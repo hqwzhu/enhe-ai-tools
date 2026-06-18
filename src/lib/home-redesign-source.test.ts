@@ -6,7 +6,7 @@ describe("homepage SaaS redesign source", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
     const dictionaries = readFileSync(new URL("../lib/dictionaries.ts", import.meta.url), "utf8");
-    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
     expect(page).toContain('className="home-page-shell"');
     expect(page).toContain("home-hero-shell");

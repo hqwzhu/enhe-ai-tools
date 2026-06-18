@@ -22,6 +22,8 @@ import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { sendRefundProcessedAdminEmail } from "@/lib/admin-email-notifications";
 import { getAdminUserDeleteBlockReason } from "@/lib/admin-user-rules";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
+import { buildAiNewsImportPayloadFromHtml } from "@/lib/ai-news-html-import";
+import { importAiNewsArticle } from "@/lib/ai-news-import";
 import { revokeEntitlementsForRefundedOrder } from "@/lib/membership";
 import { createLicenseCode, isUnlimitedLicenseKeyValid, parseLicenseCode } from "@/lib/license-generator";
 import type { LicenseGeneratorActionState } from "@/lib/license-generator-action-state";
@@ -1517,6 +1519,51 @@ async function syncNewsExternalSources(articleId: string, sources: ReturnType<ty
     prisma.newsExternalSource.deleteMany({ where: { articleId } }),
     ...sources.map((source) => prisma.newsExternalSource.create({ data: { articleId, ...source } }))
   ]);
+}
+
+async function readAiNewsImportHtml(formData: FormData) {
+  const file = formData.get("htmlFile");
+  if (file instanceof File && file.size > 0) {
+    if (file.size > 256 * 1024) throw new Error("HTML 文件不能超过 256KB。");
+    return file.text();
+  }
+
+  return String(formData.get("html") ?? "");
+}
+
+function parseAiNewsImportPublishMode(value: FormDataEntryValue | null) {
+  return value === "published" ? "published" : "draft";
+}
+
+export async function importNewsArticleHtmlAction(formData: FormData) {
+  await requireAdmin();
+
+  let result: Awaited<ReturnType<typeof importAiNewsArticle>>;
+  try {
+    const html = await readAiNewsImportHtml(formData);
+    const payload = buildAiNewsImportPayloadFromHtml({
+      html,
+      publishMode: parseAiNewsImportPublishMode(formData.get("publishMode")),
+      importBatchId: parseOptionalString(formData.get("importBatchId")) ?? undefined,
+      categoryName: parseOptionalString(formData.get("categoryName")) ?? undefined,
+      categorySlug: parseOptionalString(formData.get("categorySlug")) ?? undefined,
+      tags: parseTagNames(String(formData.get("tags") ?? ""))
+    });
+    result = await importAiNewsArticle(payload);
+
+    revalidatePath("/admin/ai-news");
+    if (result.status === "published") {
+      revalidatePath("/ai-news");
+      revalidatePath("/en/ai-news");
+      revalidatePath(`/ai-news/${result.canonicalSlug}`);
+      revalidatePath(`/en/ai-news/${result.canonicalSlug}`);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "HTML 导入失败，请检查文章内容。";
+    redirect(`/admin/ai-news/import?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(`/admin/ai-news/${result.articleId}?saved=1`);
 }
 
 export async function upsertNewsCategoryAction(formData: FormData) {

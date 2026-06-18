@@ -55,9 +55,14 @@ export default async function AdminAiNewsPage({ searchParams }: { searchParams: 
     <AdminSection title="AI资讯管理" intro="维护 AI 资讯、趋势解读、工具落地引导和中英文 SEO 内容。">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="text-sm text-[#8B95A7]">共 {total} 篇资讯</div>
-        <Link href="/admin/ai-news/new" className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
-          新增资讯
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/admin/ai-news/import" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold transition hover:border-[#48F5D3]/50 hover:text-[#48F5D3]">
+            导入 HTML
+          </Link>
+          <Link href="/admin/ai-news/new" className="rounded-full bg-[#7AA7FF] px-5 py-3 text-sm font-semibold text-[#07101f]">
+            新增资讯
+          </Link>
+        </div>
       </div>
 
       {params.archived ? <p className="mb-5 rounded-xl border border-[#48F5D3]/30 bg-[#48F5D3]/10 px-4 py-3 text-sm text-[#48F5D3]">资讯已归档。</p> : null}
