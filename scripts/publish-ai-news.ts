@@ -50,6 +50,10 @@ function parseJsonObject(text: string) {
   }
 }
 
+function stripUtf8Bom(text: string) {
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+}
+
 function formatImportFailure(response: Response, text: string) {
   const body = parseJsonObject(text);
   if (body) {
@@ -75,7 +79,7 @@ async function main() {
   assertSafeImportUrl(importUrl);
 
   const publishMode = assertPublishMode(readArg("--mode"));
-  const raw = await readFile(resolve(file), "utf8");
+  const raw = stripUtf8Bom(await readFile(resolve(file), "utf8"));
   const payload = JSON.parse(raw) as Record<string, unknown>;
   payload.publishMode = publishMode;
 

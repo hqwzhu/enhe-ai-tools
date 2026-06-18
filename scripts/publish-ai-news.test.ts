@@ -28,6 +28,13 @@ async function createPayloadFile() {
   return file;
 }
 
+async function createBomPayloadFile() {
+  const dir = await mkdtemp(join(tmpdir(), "publish-ai-news-"));
+  const file = join(dir, "payload.json");
+  await writeFile(file, `\uFEFF${JSON.stringify({ title: "AI News" })}`, "utf8");
+  return file;
+}
+
 async function runScript(args: string[], env: Record<string, string>): Promise<ScriptResult> {
   try {
     const result = await execFileAsync(process.execPath, ["--import", "tsx", scriptPath, ...args], {
@@ -114,5 +121,29 @@ describe("publish-ai-news script", () => {
     expect(result.code).toBe(1);
     expect(result.stderr).toContain("Import failed with HTTP 500");
     expect(result.stderr).toContain("plain failure from import endpoint");
+  });
+
+  it("accepts UTF-8 BOM JSON files", async () => {
+    const file = await createBomPayloadFile();
+    let receivedBody = "";
+    const url = await withServer((req, res) => {
+      req.setEncoding("utf8");
+      req.on("data", (chunk) => {
+        receivedBody += chunk;
+      });
+      req.on("end", () => {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: true, articleId: "article-1", adminUrl: "/admin/ai-news/article-1" }));
+      });
+    });
+
+    const result = await runScript(["--file", file], {
+      AI_NEWS_IMPORT_URL: url,
+      AI_NEWS_IMPORT_TOKEN: "secret"
+    });
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(receivedBody)).toMatchObject({ title: "AI News", publishMode: "draft" });
+    expect(result.stdout).toContain("Imported AI news article: article-1");
   });
 });
