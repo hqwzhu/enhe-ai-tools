@@ -41,7 +41,7 @@ export const aiNewsImportArticleSchema = z.object({
   categoryName: optionalTrimmedString(120),
   categorySlug: optionalTrimmedString(220),
   tags: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
-  readingTime: z.number().int().positive().optional(),
+  readingTime: z.number().int().positive().max(120).optional(),
   seoTitle: optionalTrimmedString(220),
   seoDescription: optionalTrimmedString(500),
   seoKeywords: optionalTrimmedString(500),
@@ -149,7 +149,7 @@ function buildImportCategory(article: AiNewsImportArticle) {
     return {
       name: article.categoryName ?? defaultAiNewsCategory.name,
       slug: resolveNewsSlug({ title: article.categorySlug, slugInput: article.categorySlug, fallbackSeed: defaultAiNewsCategory.slug }),
-      shouldUpdateName: Boolean(article.categoryName)
+      shouldUpdateName: false
     };
   }
 

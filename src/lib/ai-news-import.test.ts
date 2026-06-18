@@ -25,6 +25,30 @@ const prismaMock = vi.hoisted(() => ({
   }
 }));
 
+const txMock = vi.hoisted(() => ({
+  newsArticle: {
+    findFirst: vi.fn(),
+    create: vi.fn()
+  },
+  newsCategory: {
+    upsert: vi.fn()
+  },
+  newsTag: {
+    upsert: vi.fn()
+  },
+  newsArticleTag: {
+    deleteMany: vi.fn(),
+    createMany: vi.fn()
+  },
+  newsExternalSource: {
+    deleteMany: vi.fn(),
+    createMany: vi.fn()
+  },
+  adminAuditLog: {
+    create: vi.fn()
+  }
+}));
+
 const auditMock = vi.hoisted(() => ({
   writeAdminAuditLog: vi.fn()
 }));
@@ -67,26 +91,26 @@ const baseImportPayload = {
 beforeEach(() => {
   vi.clearAllMocks();
 
-  prismaMock.$transaction.mockImplementation(async (callback) => callback(prismaMock));
-  prismaMock.newsArticle.findFirst.mockResolvedValue(null);
-  prismaMock.newsCategory.upsert.mockResolvedValue({
+  prismaMock.$transaction.mockImplementation(async (callback) => callback(txMock));
+  txMock.newsArticle.findFirst.mockResolvedValue(null);
+  txMock.newsCategory.upsert.mockResolvedValue({
     id: "category-1",
     name: "AI\u5feb\u8baf",
     slug: "ai-news-flash"
   });
-  prismaMock.newsArticle.create.mockImplementation(async ({ data }) => ({
+  txMock.newsArticle.create.mockImplementation(async ({ data }) => ({
     id: "article-1",
     ...data
   }));
-  prismaMock.newsTag.upsert.mockImplementation(async ({ create }) => ({
+  txMock.newsTag.upsert.mockImplementation(async ({ create }) => ({
     id: `tag-${create.slug}`,
     ...create
   }));
-  prismaMock.newsArticleTag.deleteMany.mockResolvedValue({ count: 0 });
-  prismaMock.newsArticleTag.createMany.mockResolvedValue({ count: 0 });
-  prismaMock.newsExternalSource.deleteMany.mockResolvedValue({ count: 0 });
-  prismaMock.newsExternalSource.createMany.mockResolvedValue({ count: 0 });
-  prismaMock.adminAuditLog.create.mockResolvedValue({ id: "audit-1" });
+  txMock.newsArticleTag.deleteMany.mockResolvedValue({ count: 0 });
+  txMock.newsArticleTag.createMany.mockResolvedValue({ count: 0 });
+  txMock.newsExternalSource.deleteMany.mockResolvedValue({ count: 0 });
+  txMock.newsExternalSource.createMany.mockResolvedValue({ count: 0 });
+  txMock.adminAuditLog.create.mockResolvedValue({ id: "audit-1" });
   auditMock.writeAdminAuditLog.mockResolvedValue(undefined);
 });
 
@@ -163,6 +187,17 @@ describe("AI news import helpers", () => {
     expect(() => buildAiNewsImportData(parsed, new Date("2026-06-18T08:00:00.000Z"))).toThrow("Raw import payload exceeds");
   });
 
+  it("rejects oversized readingTime values", () => {
+    expect(() =>
+      aiNewsImportPayloadSchema.parse({
+        article: {
+          ...baseImportPayload.article,
+          readingTime: 121
+        }
+      })
+    ).toThrow();
+  });
+
   it("rejects non-string publishedAt values instead of accepting Unix epoch coercion", () => {
     expect(() =>
       aiNewsImportPayloadSchema.parse({
@@ -229,13 +264,13 @@ describe("AI news import helpers", () => {
       publicUrl: null
     });
     expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
-    expect(prismaMock.newsCategory.upsert).toHaveBeenCalledWith({
+    expect(txMock.newsCategory.upsert).toHaveBeenCalledWith({
       where: { slug: "ai-news-flash" },
       update: { name: "AI\u5feb\u8baf", status: "active" },
       create: { name: "AI\u5feb\u8baf", slug: "ai-news-flash", status: "active" }
     });
 
-    const articleData = prismaMock.newsArticle.create.mock.calls[0][0].data;
+    const articleData = txMock.newsArticle.create.mock.calls[0][0].data;
     expect(articleData).toMatchObject({
       title: "!!!",
       slug: "news-batch-42",
@@ -251,11 +286,11 @@ describe("AI news import helpers", () => {
       sourceChannel: "ai_auto_import"
     });
 
-    expect(prismaMock.newsTag.upsert).toHaveBeenCalledTimes(2);
-    expect(prismaMock.newsArticleTag.deleteMany).toHaveBeenCalledWith({ where: { articleId: "article-1" } });
-    expect(prismaMock.newsArticleTag.createMany.mock.calls[0][0].data).toHaveLength(2);
-    expect(prismaMock.newsExternalSource.deleteMany).toHaveBeenCalledWith({ where: { articleId: "article-1" } });
-    expect(prismaMock.newsExternalSource.createMany).toHaveBeenCalledWith({
+    expect(txMock.newsTag.upsert).toHaveBeenCalledTimes(2);
+    expect(txMock.newsArticleTag.deleteMany).toHaveBeenCalledWith({ where: { articleId: "article-1" } });
+    expect(txMock.newsArticleTag.createMany.mock.calls[0][0].data).toHaveLength(2);
+    expect(txMock.newsExternalSource.deleteMany).toHaveBeenCalledWith({ where: { articleId: "article-1" } });
+    expect(txMock.newsExternalSource.createMany).toHaveBeenCalledWith({
       data: [
         {
           articleId: "article-1",
@@ -275,7 +310,7 @@ describe("AI news import helpers", () => {
         }
       ]
     });
-    expect(prismaMock.adminAuditLog.create).toHaveBeenCalledWith({
+    expect(txMock.adminAuditLog.create).toHaveBeenCalledWith({
       data: {
         adminId: null,
         action: "news_article.auto_import",
@@ -295,6 +330,11 @@ describe("AI news import helpers", () => {
         userAgent: null
       }
     });
+    expect(prismaMock.newsArticle.create).not.toHaveBeenCalled();
+    expect(prismaMock.newsCategory.upsert).not.toHaveBeenCalled();
+    expect(prismaMock.newsTag.upsert).not.toHaveBeenCalled();
+    expect(prismaMock.newsExternalSource.createMany).not.toHaveBeenCalled();
+    expect(prismaMock.adminAuditLog.create).not.toHaveBeenCalled();
     expect(auditMock.writeAdminAuditLog).not.toHaveBeenCalled();
   });
 
@@ -304,10 +344,10 @@ describe("AI news import helpers", () => {
       sourceChannel: "evil"
     });
 
-    const articleData = prismaMock.newsArticle.create.mock.calls[0][0].data;
+    const articleData = txMock.newsArticle.create.mock.calls[0][0].data;
     expect(articleData.sourceChannel).toBe("ai_auto_import");
     expect(articleData.rawImportPayload.sourceChannel).toBe("ai_auto_import");
-    expect(prismaMock.adminAuditLog.create.mock.calls[0][0].data.metadata.sourceChannel).toBe("ai_auto_import");
+    expect(txMock.adminAuditLog.create.mock.calls[0][0].data.metadata.sourceChannel).toBe("ai_auto_import");
   });
 
   it("does not rename an existing category when only categorySlug is provided", async () => {
@@ -319,15 +359,32 @@ describe("AI news import helpers", () => {
       }
     });
 
-    expect(prismaMock.newsCategory.upsert).toHaveBeenCalledWith({
+    expect(txMock.newsCategory.upsert).toHaveBeenCalledWith({
       where: { slug: "ai-policy-updates" },
       update: { status: "active" },
       create: { name: "AI\u5feb\u8baf", slug: "ai-policy-updates", status: "active" }
     });
   });
 
+  it("does not rename an existing category when categorySlug and categoryName are both provided", async () => {
+    await importAiNewsArticle({
+      ...baseImportPayload,
+      article: {
+        ...baseImportPayload.article,
+        categorySlug: "existing-cat",
+        categoryName: "Injected Name"
+      }
+    });
+
+    expect(txMock.newsCategory.upsert).toHaveBeenCalledWith({
+      where: { slug: "existing-cat" },
+      update: { status: "active" },
+      create: { name: "Injected Name", slug: "existing-cat", status: "active" }
+    });
+  });
+
   it("uses a deterministic slug suffix when the base slug already exists", async () => {
-    prismaMock.newsArticle.findFirst.mockResolvedValueOnce({ id: "existing-article" }).mockResolvedValueOnce(null);
+    txMock.newsArticle.findFirst.mockResolvedValueOnce({ id: "existing-article" }).mockResolvedValueOnce(null);
 
     const result = await importAiNewsArticle({
       ...baseImportPayload,
@@ -338,14 +395,14 @@ describe("AI news import helpers", () => {
     });
 
     expect(result.slug).toBe("openai-agent-update-2");
-    expect(prismaMock.newsArticle.create.mock.calls[0][0].data.slug).toBe("openai-agent-update-2");
-    expect(prismaMock.newsArticle.findFirst).toHaveBeenNthCalledWith(1, { where: { slug: "openai-agent-update" }, select: { id: true } });
-    expect(prismaMock.newsArticle.findFirst).toHaveBeenNthCalledWith(2, { where: { slug: "openai-agent-update-2" }, select: { id: true } });
+    expect(txMock.newsArticle.create.mock.calls[0][0].data.slug).toBe("openai-agent-update-2");
+    expect(txMock.newsArticle.findFirst).toHaveBeenNthCalledWith(1, { where: { slug: "openai-agent-update" }, select: { id: true } });
+    expect(txMock.newsArticle.findFirst).toHaveBeenNthCalledWith(2, { where: { slug: "openai-agent-update-2" }, select: { id: true } });
     expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
   });
 
   it("retries with the next deterministic suffix when article creation hits a unique slug collision", async () => {
-    prismaMock.newsArticle.create
+    txMock.newsArticle.create
       .mockRejectedValueOnce({ code: "P2002" })
       .mockImplementationOnce(async ({ data }) => ({
         id: "article-retry",
@@ -361,13 +418,13 @@ describe("AI news import helpers", () => {
     });
 
     expect(result.slug).toBe("openai-agent-update-2");
-    expect(prismaMock.newsArticle.create.mock.calls[0][0].data.slug).toBe("openai-agent-update");
-    expect(prismaMock.newsArticle.create.mock.calls[1][0].data.slug).toBe("openai-agent-update-2");
+    expect(txMock.newsArticle.create.mock.calls[0][0].data.slug).toBe("openai-agent-update");
+    expect(txMock.newsArticle.create.mock.calls[1][0].data.slug).toBe("openai-agent-update-2");
     expect(prismaMock.$transaction).toHaveBeenCalledTimes(2);
   });
 
   it("imports published news with non-null publishedAt and a public URL", async () => {
-    prismaMock.newsArticle.create.mockImplementationOnce(async ({ data }) => ({
+    txMock.newsArticle.create.mockImplementationOnce(async ({ data }) => ({
       id: "article-published",
       ...data
     }));
@@ -384,7 +441,7 @@ describe("AI news import helpers", () => {
       }
     });
 
-    const articleData = prismaMock.newsArticle.create.mock.calls[0][0].data;
+    const articleData = txMock.newsArticle.create.mock.calls[0][0].data;
     expect(articleData).toMatchObject({
       slug: "openai-agent-update",
       status: "published",
