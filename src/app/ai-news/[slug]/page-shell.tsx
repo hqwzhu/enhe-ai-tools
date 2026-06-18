@@ -10,6 +10,7 @@ import {
   extractNewsTableOfContents,
   isEnglishNewsArticleIndexable,
   renderNewsContentBlocks,
+  toNewsIsoDate,
   type NewsContentBlock
 } from "@/lib/ai-news";
 import { prisma } from "@/lib/db";
@@ -384,8 +385,8 @@ function buildNewsArticleSchema(article: NewsArticle, localized: ReturnType<type
     description: localized.description || localized.summary,
     url,
     inLanguage: locale === "en" ? "en-US" : "zh-CN",
-    datePublished: (article.publishedAt ?? article.createdAt).toISOString(),
-    dateModified: article.updatedAt.toISOString(),
+    datePublished: toNewsIsoDate(article.publishedAt ?? article.createdAt),
+    dateModified: toNewsIsoDate(article.updatedAt),
     author: {
       "@type": "Person",
       name: article.author || siteName

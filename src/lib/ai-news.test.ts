@@ -5,7 +5,8 @@ import {
   parseNewsRelationIds,
   parseNewsSearchParams,
   renderNewsContentBlocks,
-  resolveNewsSlug
+  resolveNewsSlug,
+  toNewsIsoDate
 } from "@/lib/ai-news";
 
 describe("AI news helpers", () => {
@@ -66,5 +67,10 @@ describe("AI news helpers", () => {
 
   it("parses relation ids from comma and newline separated fields", () => {
     expect(parseNewsRelationIds("a, b\nc，a")).toEqual(["a", "b", "c"]);
+  });
+
+  it("serializes cached Date strings for structured data", () => {
+    expect(toNewsIsoDate("2026-06-18T08:00:00.000Z")).toBe("2026-06-18T08:00:00.000Z");
+    expect(toNewsIsoDate(new Date("2026-06-18T08:00:00.000Z"))).toBe("2026-06-18T08:00:00.000Z");
   });
 });
