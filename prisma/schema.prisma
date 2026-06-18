@@ -757,6 +757,10 @@ model NewsArticle {
   seoDescription        String?              @map("seo_description")
   seoKeywords           String?              @map("seo_keywords")
   canonicalUrl          String?              @map("canonical_url")
+  sourceChannel         String?              @map("source_channel")
+  importedAt            DateTime?            @map("imported_at")
+  importBatchId         String?              @map("import_batch_id")
+  rawImportPayload      Json?                @map("raw_import_payload")
   keyTakeaways          String[]             @default([]) @map("key_takeaways")
   impactNotes           String?              @map("impact_notes")
   conclusion            String?
@@ -786,6 +790,8 @@ model NewsArticle {
   @@index([status, publishedAt])
   @@index([categoryId, status])
   @@index([isFeatured, isPinned, sortOrder])
+  @@index([sourceChannel, importedAt])
+  @@index([importBatchId])
   @@map("news_articles")
 }
 
