@@ -16,3 +16,4 @@ output/
 .codex-logs/
 .dev-logs/
 web-access/
+.worktrees/
