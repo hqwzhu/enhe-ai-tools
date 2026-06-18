@@ -1,11 +1,10 @@
 import {
   AiNewsDetailPageShell,
-  aiNewsDetailPageRevalidate,
   generateAiNewsDetailPageMetadata
 } from "@/app/ai-news/[slug]/page-shell";
 import { PublicSiteChrome } from "@/components/public-site-chrome";
 
-export const revalidate = aiNewsDetailPageRevalidate;
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -1,7 +1,7 @@
-import { AiNewsPageShell, aiNewsPageRevalidate, generateAiNewsPageMetadata } from "@/app/ai-news/page-shell";
+import { AiNewsPageShell, generateAiNewsPageMetadata } from "@/app/ai-news/page-shell";
 import { PublicSiteChrome } from "@/components/public-site-chrome";
 
-export const revalidate = aiNewsPageRevalidate;
+export const revalidate = 300;
 
 export async function generateMetadata() {
   return generateAiNewsPageMetadata("zh");
