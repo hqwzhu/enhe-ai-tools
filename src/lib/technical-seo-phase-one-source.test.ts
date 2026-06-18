@@ -34,6 +34,15 @@ describe("technical seo phase one source", () => {
     expect(sitemap).toContain('"/en/skill-learning"');
   });
 
+  it("keeps the sitemap runtime-generated so database-backed tool URLs are included", () => {
+    const sitemap = read("src/app/sitemap.ts");
+
+    expect(sitemap).toContain('export const dynamic = "force-dynamic";');
+    expect(sitemap).toContain("prisma.tool");
+    expect(sitemap).toContain('"/tools"');
+    expect(sitemap).toContain('"/en/tools"');
+  });
+
   it("adds an indexable english route tree and locale-aware public navigation", () => {
     const enLayout = read("src/app/en/layout.tsx");
     const enHome = read("src/app/en/page.tsx");

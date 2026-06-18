@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 import { absoluteUrl, buildLanguageAlternates } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 const staticRoutes = [
