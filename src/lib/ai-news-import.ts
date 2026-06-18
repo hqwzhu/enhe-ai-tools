@@ -10,6 +10,8 @@ const defaultAiNewsCategory = {
   slug: "ai-news-flash"
 };
 
+const aiNewsImportSourceChannel = "ai_auto_import";
+
 export const aiNewsSourceSchema = z.object({
   title: z.string().trim().min(1),
   url: z.string().trim().url().refine((value) => /^https?:\/\//i.test(value), "Source URL must use http or https"),
@@ -63,7 +65,6 @@ export const aiNewsImportPayloadSchema = z.object({
   publishMode: z.enum(["draft", "published"]).default("draft"),
   publishedAt: z.coerce.date().optional(),
   importBatchId: z.string().trim().min(1).optional(),
-  sourceChannel: z.string().trim().min(1).default("ai_auto_import"),
   article: aiNewsImportArticleSchema
 });
 
@@ -119,7 +120,8 @@ export function sanitizeRawImportPayload(payload: AiNewsImportPayload) {
   return JSON.parse(
     JSON.stringify({
       ...payload,
-      publishedAt: payload.publishedAt?.toISOString()
+      publishedAt: payload.publishedAt?.toISOString(),
+      sourceChannel: aiNewsImportSourceChannel
     })
   );
 }
@@ -172,7 +174,7 @@ export function buildAiNewsImportData(payload: AiNewsImportPayload, now = new Da
       seoDescription: payload.article.seoDescription ?? null,
       seoKeywords: payload.article.seoKeywords ?? null,
       canonicalUrl: payload.article.canonicalUrl ?? null,
-      sourceChannel: payload.sourceChannel,
+      sourceChannel: aiNewsImportSourceChannel,
       importedAt: now,
       importBatchId: payload.importBatchId ?? null,
       rawImportPayload: sanitizeRawImportPayload(payload),
@@ -298,7 +300,7 @@ export async function importAiNewsArticle(rawPayload: unknown): Promise<AiNewsIm
       slug: article.slug,
       status: article.status,
       importBatchId: payload.importBatchId ?? null,
-      sourceChannel: payload.sourceChannel
+      sourceChannel: aiNewsImportSourceChannel
     }
   });
 

@@ -223,6 +223,18 @@ describe("AI news import helpers", () => {
     });
   });
 
+  it("ignores caller-provided sourceChannel and audits the fixed import channel", async () => {
+    await importAiNewsArticle({
+      ...baseImportPayload,
+      sourceChannel: "evil"
+    });
+
+    const articleData = prismaMock.newsArticle.create.mock.calls[0][0].data;
+    expect(articleData.sourceChannel).toBe("ai_auto_import");
+    expect(articleData.rawImportPayload.sourceChannel).toBe("ai_auto_import");
+    expect(auditMock.writeAdminAuditLog.mock.calls[0][0].metadata.sourceChannel).toBe("ai_auto_import");
+  });
+
   it("imports published news with non-null publishedAt and a public URL", async () => {
     prismaMock.newsArticle.create.mockImplementationOnce(async ({ data }) => ({
       id: "article-published",
