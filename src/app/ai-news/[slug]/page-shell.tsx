@@ -10,6 +10,7 @@ import {
   extractNewsTableOfContents,
   isEnglishNewsArticleIndexable,
   renderNewsContentBlocks,
+  resolveNewsVideo,
   toNewsIsoDate,
   type NewsContentBlock
 } from "@/lib/ai-news";
@@ -95,6 +96,7 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
   const coverImage = normalizeImageSrc(article.coverImage);
   const toc = extractNewsTableOfContents(localized.content);
   const contentBlocks = renderNewsContentBlocks(localized.content);
+  const articleVideo = resolveNewsVideo(article, localized.title);
   const [relatedTools, relatedTutorials, relatedArticles] = await Promise.all([
     getRelatedTools(article.relatedToolIds),
     getRelatedTutorials(article.relatedTutorialIds),
@@ -160,6 +162,23 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
             <section className="glass rounded-2xl p-6">
               <NewsContent blocks={contentBlocks} />
             </section>
+
+            {articleVideo ? (
+              <section className="glass rounded-2xl p-6">
+                <h2 className="text-2xl font-black text-[var(--marketing-text)]">{articleVideo.title}</h2>
+                {articleVideo.description ? (
+                  <p className="mt-4 text-base leading-8 text-[var(--marketing-muted)]">{articleVideo.description}</p>
+                ) : null}
+                <a
+                  href={articleVideo.url}
+                  target="_blank"
+                  rel="nofollow noopener noreferrer"
+                  className="mt-5 inline-flex break-all rounded-xl border border-[var(--marketing-accent)]/40 px-4 py-3 text-sm font-bold text-[var(--marketing-accent)] transition hover:border-[var(--marketing-accent)]"
+                >
+                  {articleVideo.url}
+                </a>
+              </section>
+            ) : null}
 
             {localized.impactNotes ? (
               <section className="glass rounded-2xl p-6">
@@ -372,6 +391,17 @@ function NewsContent({ blocks }: { blocks: NewsContentBlock[] }) {
         if (block.type === "quote") {
           return (
             <blockquote key={index} className="rounded-2xl border border-[var(--marketing-accent)]/25 bg-[var(--marketing-accent)]/8 p-5 text-base leading-8 text-[var(--marketing-text)]" dangerouslySetInnerHTML={{ __html: block.text }} />
+          );
+        }
+
+        if (block.type === "image") {
+          return (
+            <figure key={`${block.src}-${index}`} className="overflow-hidden rounded-2xl border border-white/10 bg-white/6">
+              <Image src={block.src} alt={block.alt} width={1200} height={675} className="aspect-[16/9] w-full object-cover" unoptimized />
+              {block.caption ? (
+                <figcaption className="px-4 py-3 text-sm leading-6 text-[var(--marketing-muted)]" dangerouslySetInnerHTML={{ __html: block.caption }} />
+              ) : null}
+            </figure>
           );
         }
 

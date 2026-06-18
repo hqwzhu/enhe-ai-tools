@@ -112,6 +112,33 @@ function extractCoverImage(html: string) {
   return undefined;
 }
 
+type HtmlImage = {
+  src: string;
+  alt: string;
+  caption?: string;
+};
+
+function escapeMarkdownImageText(value: string) {
+  return normalizeWhitespace(value).replace(/"/g, "'");
+}
+
+function extractImageFromTag(tag: string, caption?: string): HtmlImage | null {
+  const src = getAttribute(tag, "src");
+  if (!isHttpUrl(src)) return null;
+
+  return {
+    src,
+    alt: getAttribute(tag, "alt"),
+    ...(caption ? { caption: stripTags(caption) } : {})
+  };
+}
+
+function imageToMarkdown(image: HtmlImage) {
+  const alt = escapeMarkdownImageText(image.alt);
+  const caption = image.caption ? escapeMarkdownImageText(image.caption) : "";
+  return caption ? `![${alt}](${image.src} "${caption}")` : `![${alt}](${image.src})`;
+}
+
 function extractPublishedAt(html: string, publishMode: PublishMode) {
   if (publishMode !== "published") return undefined;
   const timeTags = html.match(/<time\b[^>]*>/gi) ?? [];
@@ -301,15 +328,29 @@ function convertPre(innerHtml: string) {
   return code ? `\`\`\`\n${code}\n\`\`\`` : "";
 }
 
+function convertImageBlock(outerHtml: string) {
+  const imageTag = outerHtml.match(/<img\b[^>]*>/i)?.[0] ?? "";
+  if (!imageTag) return null;
+
+  const caption = firstMatch(outerHtml, /<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/i);
+  const image = extractImageFromTag(imageTag, caption);
+  return image ? imageToMarkdown(image) : null;
+}
+
 function convertBlocksToMarkdown(html: string, { requireContent = true } = {}) {
   const blocks: string[] = [];
-  const blockPattern = /<(h1|h2|h3|p|ul|ol|blockquote|pre)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+  const coverImage = extractCoverImage(html);
+  const blockPattern = /<(h1|h2|h3|p|ul|ol|blockquote|pre|figure)\b[^>]*>[\s\S]*?<\/\1>|<img\b[^>]*>/gi;
   let match: RegExpExecArray | null;
   let skippingSources = false;
 
   while ((match = blockPattern.exec(html))) {
-    const tagName = match[1].toLowerCase();
-    const innerHtml = match[2];
+    const outerHtml = match[0];
+    const openTag = outerHtml.match(/^<([a-z][a-z0-9:-]*)\b[^>]*>/i);
+    if (!openTag) continue;
+
+    const tagName = openTag[1].toLowerCase();
+    const innerHtml = tagName === "img" ? "" : stripWrappingTag(outerHtml);
     const text = convertInlineText(innerHtml);
 
     if (shouldSkipBlock(tagName, innerHtml)) {
@@ -319,6 +360,17 @@ function convertBlocksToMarkdown(html: string, { requireContent = true } = {}) {
       continue;
     }
     if (skippingSources) continue;
+
+    if (tagName === "figure" || tagName === "img") {
+      const imageMarkdown = convertImageBlock(outerHtml);
+      if (!imageMarkdown) continue;
+      const imageSrc = outerHtml.match(/<img\b[^>]*>/i)?.[0] ? getAttribute(outerHtml.match(/<img\b[^>]*>/i)?.[0] ?? "", "src") : "";
+      if (coverImage && imageSrc === coverImage) {
+        continue;
+      }
+      blocks.push(imageMarkdown);
+      continue;
+    }
 
     if (!text && tagName !== "pre") continue;
 

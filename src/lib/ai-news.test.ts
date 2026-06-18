@@ -5,6 +5,7 @@ import {
   parseNewsRelationIds,
   parseNewsSearchParams,
   renderNewsContentBlocks,
+  resolveNewsVideo,
   resolveAiNewsCanonicalSlug,
   resolveNewsSlug,
   toNewsIsoDate
@@ -71,6 +72,46 @@ describe("AI news helpers", () => {
       { type: "list", ordered: false, items: ["要点"] },
       { type: "quote", text: "引用" }
     ]);
+  });
+
+  it("renders markdown image blocks with safe alt text, source and caption", () => {
+    const blocks = renderNewsContentBlocks(
+      '## 媒体解读\n![AI智能体工作流看板](https://images.unsplash.com/photo-agent-dashboard "AI智能体工作流示意图")\n正文继续。'
+    );
+
+    expect(blocks).toEqual([
+      { type: "heading", level: 2, id: "section-1", text: "媒体解读" },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-agent-dashboard",
+        alt: "AI智能体工作流看板",
+        caption: "AI智能体工作流示意图"
+      },
+      { type: "paragraph", text: "正文继续。" }
+    ]);
+  });
+
+  it("resolves safe article video links with fallback titles", () => {
+    expect(
+      resolveNewsVideo(
+        {
+          videoUrl: "https://www.youtube.com/watch?v=agent-demo",
+          videoTitle: "AI智能体工作流演示",
+          videoDescription: "展示团队如何理解 AI 工作流自动化。"
+        },
+        "文章标题"
+      )
+    ).toEqual({
+      url: "https://www.youtube.com/watch?v=agent-demo",
+      title: "AI智能体工作流演示",
+      description: "展示团队如何理解 AI 工作流自动化。"
+    });
+
+    expect(resolveNewsVideo({ videoUrl: "javascript:alert(1)", videoTitle: "Bad" }, "文章标题")).toBeNull();
+    expect(resolveNewsVideo({ videoUrl: "https://example.com/video", videoTitle: "" }, "文章标题")).toEqual({
+      url: "https://example.com/video",
+      title: "文章标题"
+    });
   });
 
   it("guards English indexing when translated content is too thin", () => {

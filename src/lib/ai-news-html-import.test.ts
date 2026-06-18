@@ -2,6 +2,38 @@ import { describe, expect, it } from "vitest";
 import { buildAiNewsImportPayloadFromHtml } from "@/lib/ai-news-html-import";
 
 describe("AI news HTML import parser", () => {
+  it("keeps topic-specific inline article images after extracting the featured cover", () => {
+    const payload = buildAiNewsImportPayloadFromHtml({
+      html: `
+        <article>
+          <h1>企业 AI 智能体工作流更新</h1>
+          <time datetime="2026-06-19">2026年6月19日</time>
+          <meta name="description" content="企业 AI 智能体工作流的最新变化。">
+          <meta name="keywords" content="AI智能体, AI工作流自动化">
+          <header>
+            <img src="https://images.unsplash.com/photo-cover-agent-workflow" alt="AI智能体工作流封面">
+          </header>
+          <h2 id="facts">事实概述</h2>
+          <p>企业开始把 AI 智能体放进更具体的流程管理场景。</p>
+          <figure>
+            <img src="https://images.unsplash.com/photo-agent-dashboard" alt="AI智能体工作流看板">
+            <figcaption>AI智能体工作流看板示意，适合解释企业自动化流程。</figcaption>
+          </figure>
+          <h2 id="sources">来源</h2>
+          <ul><li><a href="https://example.com/agent-workflow">来源报道</a></li></ul>
+        </article>
+      `,
+      publishMode: "published"
+    });
+
+    expect(payload.article.coverImage).toBe("https://images.unsplash.com/photo-cover-agent-workflow");
+    expect(payload.article.content).toContain("## 事实概述");
+    expect(payload.article.content).toContain(
+      '![AI智能体工作流看板](https://images.unsplash.com/photo-agent-dashboard "AI智能体工作流看板示意，适合解释企业自动化流程。")'
+    );
+    expect(payload.article.content).not.toContain("AI智能体工作流封面");
+  });
+
   it("extracts CMS SEO, bilingual, tags and source fields from the dedicated CMS section", () => {
     const payload = buildAiNewsImportPayloadFromHtml({
       html: `

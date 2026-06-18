@@ -21,6 +21,7 @@ export type NewsTocItem = {
 export type NewsContentBlock =
   | { type: "heading"; level: 2 | 3; id: string; text: string }
   | { type: "paragraph"; text: string }
+  | { type: "image"; src: string; alt: string; caption?: string }
   | { type: "list"; ordered: boolean; items: string[] }
   | { type: "quote"; text: string }
   | { type: "code"; language?: string; code: string };
@@ -134,6 +135,27 @@ function pushList(items: string[], ordered: boolean, blocks: NewsContentBlock[])
   items.length = 0;
 }
 
+function isHttpNewsMediaUrl(value: string) {
+  return /^https?:\/\//i.test(value.trim());
+}
+
+function parseMarkdownImage(line: string) {
+  const match = line.match(/^!\[([^\]]*)\]\((\S+?)(?:\s+"([^"]+)")?\)$/);
+  if (!match) return null;
+
+  const src = match[2].trim();
+  if (!isHttpNewsMediaUrl(src)) return null;
+
+  const alt = match[1].trim();
+  const caption = match[3]?.trim();
+  return {
+    type: "image" as const,
+    src,
+    alt,
+    ...(caption ? { caption: escapeNewsText(caption) } : {})
+  };
+}
+
 export function renderNewsContentBlocks(content: string): NewsContentBlock[] {
   const blocks: NewsContentBlock[] = [];
   const paragraphLines: string[] = [];
@@ -184,6 +206,14 @@ export function renderNewsContentBlocks(content: string): NewsContentBlock[] {
         id: `section-${headingCount}`,
         text: escapeNewsText(stripHeadingPrefix(line))
       });
+      continue;
+    }
+
+    const image = parseMarkdownImage(line.trim());
+    if (image) {
+      pushParagraph(paragraphLines, blocks);
+      pushList(listItems, currentListOrdered, blocks);
+      blocks.push(image);
       continue;
     }
 
@@ -244,6 +274,26 @@ export function parseNewsRelationIds(value: string | null | undefined) {
       seen.add(item);
       return true;
     });
+}
+
+export function resolveNewsVideo(
+  article: {
+    videoUrl?: string | null;
+    videoTitle?: string | null;
+    videoDescription?: string | null;
+  },
+  fallbackTitle: string
+) {
+  const url = String(article.videoUrl ?? "").trim();
+  if (!isHttpNewsMediaUrl(url)) return null;
+
+  const title = String(article.videoTitle ?? "").trim() || fallbackTitle;
+  const description = String(article.videoDescription ?? "").trim();
+  return {
+    url,
+    title,
+    ...(description ? { description } : {})
+  };
 }
 
 export function toNewsIsoDate(value: Date | string) {
