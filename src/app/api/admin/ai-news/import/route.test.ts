@@ -195,6 +195,66 @@ describe("POST /api/admin/ai-news/import", () => {
     });
   });
 
+  it("passes CMS SEO and English fields from HTML import requests to the import service", async () => {
+    process.env.AI_NEWS_IMPORT_TOKEN = "test-token";
+    importAiNewsArticleMock.mockResolvedValueOnce({
+      articleId: "article-cms-html",
+      slug: "cms-html-story",
+      canonicalSlug: "cms-html-story",
+      status: "published",
+      adminUrl: "/admin/ai-news/article-cms-html",
+      publicUrl: "/ai-news/cms-html-story"
+    });
+
+    const response = await POST(
+      createRequest({
+        body: JSON.stringify({
+          format: "html",
+          publishMode: "published",
+          html: `
+            <article>
+              <h1>AI agents move into team workflows</h1>
+              <time datetime="2026-06-18">2026年6月18日</time>
+              <meta name="description" content="A short factual summary for ENHE readers.">
+              <meta name="keywords" content="AI agents, workflow automation">
+              <p>Teams are adopting agent workflows for practical office automation.</p>
+              <section id="cms-fields">
+                <h2>CMS 字段</h2>
+                <section data-field="keyTakeaways"><h3>核心要点，每行一条</h3><ul><li>智能体开始进入团队流程</li><li>权限管理影响实际落地</li></ul></section>
+                <section data-field="impactNotes"><h3>这对用户意味着什么</h3><p>用户需要评估账号权限、流程复用和审计能力。</p></section>
+                <section data-field="seoTitle"><h3>SEO 标题</h3><p>AI agents and workflow automation for teams</p></section>
+                <section data-field="seoDescription"><h3>SEO 描述</h3><p>A concise ENHE AI brief on AI agents, team workflows and account safety.</p></section>
+                <section data-field="englishTitle"><h3>English title</h3><p>AI agents move into team workflows</p></section>
+                <section data-field="englishSeoDescription"><h3>English SEO description</h3><p>AI agents, workflow automation and account safety for small teams.</p></section>
+                <section data-field="tags"><h3>标签</h3><p>AI资讯, 自动发布</p></section>
+              </section>
+              <h2>Sources</h2>
+              <a href="https://example.com/report">Example report</a>
+            </article>
+          `
+        })
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(importAiNewsArticleMock).toHaveBeenCalledWith({
+      publishMode: "published",
+      publishedAt: new Date("2026-06-18T00:00:00.000Z"),
+      article: expect.objectContaining({
+        title: "AI agents move into team workflows",
+        keyTakeaways: ["智能体开始进入团队流程", "权限管理影响实际落地"],
+        impactNotes: "用户需要评估账号权限、流程复用和审计能力。",
+        seoTitle: "AI agents and workflow automation for teams",
+        seoDescription: "A concise ENHE AI brief on AI agents, team workflows and account safety.",
+        englishTitle: "AI agents move into team workflows",
+        englishDescription: "AI agents, workflow automation and account safety for small teams.",
+        englishSeoDescription: "AI agents, workflow automation and account safety for small teams.",
+        tags: ["AI agents", "workflow automation", "AI资讯", "自动发布"],
+        externalSources: [{ title: "Example report", url: "https://example.com/report", sourceType: "source" }]
+      })
+    });
+  });
+
   it("returns 400 when an HTML import request is invalid", async () => {
     process.env.AI_NEWS_IMPORT_TOKEN = "test-token";
 

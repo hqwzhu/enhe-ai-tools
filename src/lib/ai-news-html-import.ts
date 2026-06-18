@@ -67,12 +67,27 @@ function firstMatch(html: string, pattern: RegExp) {
   return html.match(pattern)?.[1] ?? "";
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function extractMetaContent(html: string, name: string) {
   const metaTags = html.match(/<meta\b[^>]*>/gi) ?? [];
   for (const tag of metaTags) {
     if (getAttribute(tag, "name").toLowerCase() === name.toLowerCase()) {
       return getAttribute(tag, "content");
     }
+  }
+  return "";
+}
+
+function extractCanonicalUrl(html: string) {
+  const linkTags = html.match(/<link\b[^>]*>/gi) ?? [];
+  for (const tag of linkTags) {
+    const rel = getAttribute(tag, "rel").toLowerCase().split(/\s+/);
+    if (!rel.includes("canonical")) continue;
+    const href = getAttribute(tag, "href");
+    if (isHttpUrl(href)) return href;
   }
   return "";
 }
@@ -129,8 +144,38 @@ function dedupeText(items: string[]) {
   return deduped;
 }
 
-function extractTags(html: string, inputTags: string[] | undefined) {
-  return dedupeText([...splitKeywords(extractMetaContent(html, "keywords")), ...(inputTags ?? [])]).slice(0, 20);
+function textWithLineBreaks(html: string) {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|li|div|section|article|h[1-6])\s*>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .split(/\r?\n/)
+    .map((line) => normalizeWhitespace(line))
+    .filter(Boolean)
+    .join("\n");
+}
+
+function extractListItems(innerHtml: string) {
+  return (innerHtml.match(/<li\b[^>]*>[\s\S]*?<\/li>/gi) ?? [])
+    .map((item) => stripTags(item))
+    .filter(Boolean);
+}
+
+function splitFieldItems(value: string) {
+  return value
+    .split(/[\r\n,，;；、]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function extractItemsFromField(innerHtml: string) {
+  const listItems = extractListItems(innerHtml);
+  if (listItems.length) return dedupeText(listItems);
+  return dedupeText(splitFieldItems(textWithLineBreaks(innerHtml)));
+}
+
+function extractTags(html: string, inputTags: string[] | undefined, cmsTags: string[]) {
+  return dedupeText([...splitKeywords(extractMetaContent(html, "keywords")), ...cmsTags, ...(inputTags ?? [])]).slice(0, 20);
 }
 
 function isSourceHeading(text: string) {
@@ -175,6 +220,65 @@ function extractSources(html: string, publishMode: PublishMode) {
   return result.length ? result : [defaultDraftSource];
 }
 
+function extractBalancedElementFromStart(html: string, start: number, tagName: string) {
+  const tagPattern = new RegExp(`<\\/?${escapeRegExp(tagName)}\\b[^>]*>`, "gi");
+  tagPattern.lastIndex = start;
+  let depth = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagPattern.exec(html))) {
+    const tag = match[0];
+    const isClosing = /^<\//.test(tag);
+    const isSelfClosing = /\/>$/.test(tag);
+
+    if (isClosing) {
+      depth -= 1;
+    } else if (!isSelfClosing) {
+      depth += 1;
+    }
+
+    if (depth === 0) {
+      return html.slice(start, tagPattern.lastIndex);
+    }
+  }
+
+  return "";
+}
+
+function extractElementOuterHtmlById(html: string, id: string) {
+  const tagPattern = /<([a-z][a-z0-9:-]*)\b[^>]*>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagPattern.exec(html))) {
+    const openTag = match[0];
+    if (getAttribute(openTag, "id") !== id) continue;
+    return extractBalancedElementFromStart(html, match.index, match[1]);
+  }
+
+  return "";
+}
+
+function stripWrappingTag(outerHtml: string) {
+  const openTag = outerHtml.match(/^<([a-z][a-z0-9:-]*)\b[^>]*>/i);
+  if (!openTag) return outerHtml;
+  const tagName = openTag[1];
+  return outerHtml.slice(openTag[0].length).replace(new RegExp(`</${escapeRegExp(tagName)}>\\s*$`, "i"), "");
+}
+
+function removeElementById(html: string, id: string) {
+  let result = html;
+  for (let index = 0; index < 20; index += 1) {
+    const outerHtml = extractElementOuterHtmlById(result, id);
+    if (!outerHtml) return result;
+    result = result.replace(outerHtml, "");
+  }
+  return result;
+}
+
+function removeTagBlocks(html: string, tagName: string) {
+  return html.replace(new RegExp(`<${escapeRegExp(tagName)}\\b[\\s\\S]*?</${escapeRegExp(tagName)}>`, "gi"), "");
+}
+
 function shouldSkipBlock(tagName: string, innerHtml: string) {
   if (tagName === "h1" || tagName === "time") return true;
   if ((tagName === "h2" || tagName === "h3") && isSourceHeading(stripTags(innerHtml))) return true;
@@ -197,7 +301,7 @@ function convertPre(innerHtml: string) {
   return code ? `\`\`\`\n${code}\n\`\`\`` : "";
 }
 
-function extractContent(html: string) {
+function convertBlocksToMarkdown(html: string, { requireContent = true } = {}) {
   const blocks: string[] = [];
   const blockPattern = /<(h1|h2|h3|p|ul|ol|blockquote|pre)\b[^>]*>([\s\S]*?)<\/\1>/gi;
   let match: RegExpExecArray | null;
@@ -236,12 +340,153 @@ function extractContent(html: string) {
     }
   }
 
-  const content = blocks.join("\n\n").trim();
-  if (!content) throw new Error("HTML import requires article body content.");
+  const content = blocks.join("\n\n").trim() || textWithLineBreaks(html);
+  if (!content && requireContent) throw new Error("HTML import requires article body content.");
   return content.slice(0, 50_000);
 }
 
+function removeLeadingHeading(html: string) {
+  return html.replace(/^\s*<h[1-6]\b[^>]*>[\s\S]*?<\/h[1-6]>\s*/i, "");
+}
+
+function normalizeFieldLabel(value: string) {
+  return value.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+const cmsFieldAliases = new Map(
+  [
+    ["subtitle", "subtitle"],
+    ["副标题", "subtitle"],
+    ["summary", "summary"],
+    ["一句话摘要", "summary"],
+    ["摘要", "summary"],
+    ["description", "description"],
+    ["描述", "description"],
+    ["keywords", "keywords"],
+    ["关键词", "keywords"],
+    ["keytakeaways", "keyTakeaways"],
+    ["takeaways", "keyTakeaways"],
+    ["核心要点每行一条", "keyTakeaways"],
+    ["核心要点", "keyTakeaways"],
+    ["impactnotes", "impactNotes"],
+    ["impact", "impactNotes"],
+    ["这对用户意味着什么", "impactNotes"],
+    ["对用户意味着什么", "impactNotes"],
+    ["conclusion", "conclusion"],
+    ["总结", "conclusion"],
+    ["videourl", "videoUrl"],
+    ["视频url", "videoUrl"],
+    ["视频链接", "videoUrl"],
+    ["videotitle", "videoTitle"],
+    ["视频标题", "videoTitle"],
+    ["videodescription", "videoDescription"],
+    ["视频说明", "videoDescription"],
+    ["seotitle", "seoTitle"],
+    ["seo标题", "seoTitle"],
+    ["seodescription", "seoDescription"],
+    ["seo描述", "seoDescription"],
+    ["seokeywords", "seoKeywords"],
+    ["seo关键词", "seoKeywords"],
+    ["canonicalurl", "canonicalUrl"],
+    ["canonical", "canonicalUrl"],
+    ["englishtitle", "englishTitle"],
+    ["englishsubtitle", "englishSubtitle"],
+    ["englishdescription", "englishDescription"],
+    ["englishsummary", "englishSummary"],
+    ["englishcontent", "englishContent"],
+    ["englishkeywords", "englishKeywords"],
+    ["englishkeytakeaways", "englishKeyTakeaways"],
+    ["englishtakeaways", "englishKeyTakeaways"],
+    ["englishimpactnotes", "englishImpactNotes"],
+    ["englishconclusion", "englishConclusion"],
+    ["englishseotitle", "englishSeoTitle"],
+    ["englishseodescription", "englishSeoDescription"],
+    ["englishseokeywords", "englishSeoKeywords"],
+    ["tags", "tags"],
+    ["标签逗号或换行分隔", "tags"],
+    ["标签", "tags"],
+    ["relatedarticleids", "relatedArticleIds"],
+    ["相关资讯id", "relatedArticleIds"],
+    ["relatedtoolids", "relatedToolIds"],
+    ["相关工具id", "relatedToolIds"],
+    ["relatedtutorialids", "relatedTutorialIds"],
+    ["相关教程id", "relatedTutorialIds"]
+  ].map(([alias, key]) => [normalizeFieldLabel(alias), key])
+);
+
+type CmsField = {
+  bodyHtml: string;
+  text: string;
+  markdown: string;
+  items: string[];
+};
+
+function canonicalCmsFieldKey(value: string) {
+  return cmsFieldAliases.get(normalizeFieldLabel(value)) ?? "";
+}
+
+function createCmsField(bodyHtml: string): CmsField {
+  const body = removeLeadingHeading(bodyHtml).trim();
+  return {
+    bodyHtml: body,
+    text: textWithLineBreaks(body),
+    markdown: convertBlocksToMarkdown(body, { requireContent: false }),
+    items: extractItemsFromField(body)
+  };
+}
+
+function extractCmsFields(html: string) {
+  const cmsOuterHtml = extractElementOuterHtmlById(html, "cms-fields");
+  const fields = new Map<string, CmsField>();
+  if (!cmsOuterHtml) return fields;
+
+  const cmsInnerHtml = stripWrappingTag(cmsOuterHtml);
+  const dataFieldPattern = /<([a-z][a-z0-9:-]*)\b[^>]*\sdata-field\s*=\s*(?:"[^"]+"|'[^']+'|[^\s>]+)[^>]*>[\s\S]*?<\/\1>/gi;
+  let dataMatch: RegExpExecArray | null;
+
+  while ((dataMatch = dataFieldPattern.exec(cmsInnerHtml))) {
+    const outerHtml = dataMatch[0];
+    const openTag = outerHtml.match(/^<([a-z][a-z0-9:-]*)\b[^>]*>/i)?.[0] ?? "";
+    const key = canonicalCmsFieldKey(getAttribute(openTag, "data-field"));
+    if (!key || fields.has(key)) continue;
+    fields.set(key, createCmsField(stripWrappingTag(outerHtml)));
+  }
+
+  const headingPattern = /<h[3-4]\b[^>]*>([\s\S]*?)<\/h[3-4]>/gi;
+  let headingMatch: RegExpExecArray | null;
+  while ((headingMatch = headingPattern.exec(cmsInnerHtml))) {
+    const key = canonicalCmsFieldKey(stripTags(headingMatch[1]));
+    if (!key || fields.has(key)) continue;
+    const start = headingPattern.lastIndex;
+    const nextHeadingIndex = cmsInnerHtml.slice(start).search(/<h[3-4]\b/i);
+    const bodyHtml = nextHeadingIndex === -1 ? cmsInnerHtml.slice(start) : cmsInnerHtml.slice(start, start + nextHeadingIndex);
+    fields.set(key, createCmsField(bodyHtml));
+  }
+
+  return fields;
+}
+
+function cmsText(fields: Map<string, CmsField>, key: string) {
+  return fields.get(key)?.text.trim() ?? "";
+}
+
+function cmsMarkdown(fields: Map<string, CmsField>, key: string) {
+  return fields.get(key)?.markdown.trim() ?? "";
+}
+
+function cmsItems(fields: Map<string, CmsField>, key: string) {
+  return fields.get(key)?.items ?? [];
+}
+
+function extractContent(html: string) {
+  const articleHtml = removeTagBlocks(removeElementById(html, "cms-fields"), "nav");
+  return convertBlocksToMarkdown(articleHtml);
+}
+
 function extractSummary(html: string, content: string) {
+  const cmsSummary = cmsText(extractCmsFields(html), "summary");
+  if (cmsSummary) return cmsSummary.slice(0, 1_200);
+
   const metaDescription = extractMetaContent(html, "description");
   if (metaDescription) return metaDescription.slice(0, 1_200);
 
@@ -259,10 +504,19 @@ export function buildAiNewsImportPayloadFromHtml(input: AiNewsHtmlImportInput): 
   rejectUnsafeHtml(html);
 
   const publishMode = input.publishMode ?? "draft";
+  const cmsFields = extractCmsFields(html);
   const title = extractTitle(html);
   const content = extractContent(html);
   const summary = extractSummary(html, content);
-  const tags = extractTags(html, input.tags);
+  const metaKeywords = extractMetaContent(html, "keywords");
+  const keywords = cmsText(cmsFields, "keywords") || metaKeywords;
+  const seoKeywords = cmsText(cmsFields, "seoKeywords") || keywords;
+  const seoDescription = cmsText(cmsFields, "seoDescription") || extractMetaContent(html, "description");
+  const englishKeywords = cmsText(cmsFields, "englishKeywords");
+  const englishDescription = cmsText(cmsFields, "englishDescription");
+  const englishSeoDescription = cmsText(cmsFields, "englishSeoDescription");
+  const englishSeoKeywords = cmsText(cmsFields, "englishSeoKeywords") || englishKeywords;
+  const tags = extractTags(html, input.tags, cmsItems(cmsFields, "tags"));
   const externalSources = extractSources(html, publishMode);
   const publishedAt = extractPublishedAt(html, publishMode);
   const coverImage = extractCoverImage(html);
@@ -275,15 +529,41 @@ export function buildAiNewsImportPayloadFromHtml(input: AiNewsHtmlImportInput): 
       title,
       summary,
       content,
+      author: "ENHE AI",
+      ...(cmsText(cmsFields, "subtitle") ? { subtitle: cmsText(cmsFields, "subtitle") } : {}),
+      ...(seoDescription ? { description: seoDescription } : {}),
+      ...(keywords ? { keywords } : {}),
       ...(coverImage ? { coverImage } : {}),
+      ...(cmsText(cmsFields, "videoUrl") ? { videoUrl: cmsText(cmsFields, "videoUrl") } : {}),
+      ...(cmsText(cmsFields, "videoTitle") ? { videoTitle: cmsText(cmsFields, "videoTitle") } : {}),
+      ...(cmsText(cmsFields, "videoDescription") ? { videoDescription: cmsText(cmsFields, "videoDescription") } : {}),
       ...(input.categoryName?.trim() ? { categoryName: input.categoryName.trim() } : {}),
       ...(input.categorySlug?.trim() ? { categorySlug: input.categorySlug.trim() } : {}),
       tags,
-      keyTakeaways: [],
-      relatedArticleIds: [],
-      relatedToolIds: [],
-      relatedTutorialIds: [],
-      englishKeyTakeaways: [],
+      ...(cmsText(cmsFields, "seoTitle") ? { seoTitle: cmsText(cmsFields, "seoTitle") } : {}),
+      ...(seoDescription ? { seoDescription } : {}),
+      ...(seoKeywords ? { seoKeywords } : {}),
+      ...(cmsText(cmsFields, "canonicalUrl") || extractCanonicalUrl(html)
+        ? { canonicalUrl: cmsText(cmsFields, "canonicalUrl") || extractCanonicalUrl(html) }
+        : {}),
+      keyTakeaways: cmsItems(cmsFields, "keyTakeaways"),
+      ...(cmsText(cmsFields, "impactNotes") ? { impactNotes: cmsText(cmsFields, "impactNotes") } : {}),
+      ...(cmsText(cmsFields, "conclusion") ? { conclusion: cmsText(cmsFields, "conclusion") } : {}),
+      relatedArticleIds: cmsItems(cmsFields, "relatedArticleIds"),
+      relatedToolIds: cmsItems(cmsFields, "relatedToolIds"),
+      relatedTutorialIds: cmsItems(cmsFields, "relatedTutorialIds"),
+      ...(cmsText(cmsFields, "englishTitle") ? { englishTitle: cmsText(cmsFields, "englishTitle") } : {}),
+      ...(cmsText(cmsFields, "englishSubtitle") ? { englishSubtitle: cmsText(cmsFields, "englishSubtitle") } : {}),
+      ...(englishDescription || englishSeoDescription ? { englishDescription: englishDescription || englishSeoDescription } : {}),
+      ...(cmsText(cmsFields, "englishSummary") ? { englishSummary: cmsText(cmsFields, "englishSummary") } : {}),
+      ...(cmsMarkdown(cmsFields, "englishContent") ? { englishContent: cmsMarkdown(cmsFields, "englishContent") } : {}),
+      ...(englishKeywords ? { englishKeywords } : {}),
+      ...(cmsText(cmsFields, "englishSeoTitle") ? { englishSeoTitle: cmsText(cmsFields, "englishSeoTitle") } : {}),
+      ...(englishSeoDescription ? { englishSeoDescription } : {}),
+      ...(englishSeoKeywords ? { englishSeoKeywords } : {}),
+      englishKeyTakeaways: cmsItems(cmsFields, "englishKeyTakeaways"),
+      ...(cmsText(cmsFields, "englishImpactNotes") ? { englishImpactNotes: cmsText(cmsFields, "englishImpactNotes") } : {}),
+      ...(cmsText(cmsFields, "englishConclusion") ? { englishConclusion: cmsText(cmsFields, "englishConclusion") } : {}),
       externalSources
     }
   };
