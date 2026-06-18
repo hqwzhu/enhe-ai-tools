@@ -9,7 +9,7 @@ describe("home AI news label contracts", () => {
     expect(dictionaries.zh.aiNews.title).toBe("AI前沿资讯与趋势洞察");
   });
 
-  it("keeps the home hero wired to the AI news route and accent button style", () => {
+  it("keeps the home hero wired to the AI news route with alternating black and orange button styles", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
 
     expect(page).toContain("t.home.aiNewsButton");
@@ -18,5 +18,7 @@ describe("home AI news label contracts", () => {
     expect(page.indexOf("{t.home.aiNewsButton}")).toBeLessThan(page.indexOf("{t.home.softwareButton}"));
     expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"} className="home-hero-cta home-hero-cta-primary"');
     expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"} className="home-hero-cta home-hero-cta-accent"');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"} className="home-hero-cta home-hero-cta-primary"');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"} className="home-hero-cta home-hero-cta-accent"');
   });
 });

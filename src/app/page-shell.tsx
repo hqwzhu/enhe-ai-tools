@@ -58,10 +58,10 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                 <ButtonLink href={forceLocale === "en" ? "/en/software" : "/software"} className="home-hero-cta home-hero-cta-accent">
                   {t.home.softwareButton}
                 </ButtonLink>
-                <ButtonLink href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"} className="home-hero-cta home-hero-cta-accent">
+                <ButtonLink href={forceLocale === "en" ? "/en/online-tools" : "/online-tools"} className="home-hero-cta home-hero-cta-primary">
                   {t.home.onlineButton}
                 </ButtonLink>
-                <ButtonLink href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"} className="home-hero-cta home-hero-cta-primary">
+                <ButtonLink href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"} className="home-hero-cta home-hero-cta-accent">
                   {t.home.skillLearningButton}
                 </ButtonLink>
               </div>
