@@ -6,12 +6,60 @@ type PublishMode = "draft" | "published";
 function readArg(name: string) {
   const index = process.argv.indexOf(name);
   if (index === -1) return null;
-  return process.argv[index + 1] ?? null;
+  const value = process.argv[index + 1] ?? null;
+  if (!value || value.startsWith("--")) {
+    throw new Error(`Missing value for ${name}.`);
+  }
+  return value;
 }
 
 function assertPublishMode(value: string | null): PublishMode {
+  if (value === null) return "draft";
+  if (value === "draft") return "draft";
   if (value === "published") return "published";
-  return "draft";
+  throw new Error(`Invalid --mode ${value}. Expected draft or published.`);
+}
+
+function assertSafeImportUrl(value: string) {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("AI_NEWS_IMPORT_URL must be a valid URL.");
+  }
+
+  if (url.protocol === "https:") return;
+  if (
+    url.protocol === "http:" &&
+    (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]")
+  ) {
+    return;
+  }
+
+  throw new Error("Refusing to send AI_NEWS_IMPORT_TOKEN to plaintext remote URL.");
+}
+
+function parseJsonObject(text: string) {
+  try {
+    const value = JSON.parse(text) as unknown;
+    return value && typeof value === "object" && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function formatImportFailure(response: Response, text: string) {
+  const body = parseJsonObject(text);
+  if (body) {
+    const error = typeof body.error === "string" ? body.error : "IMPORT_FAILED";
+    const message = typeof body.message === "string" ? body.message : response.statusText;
+    return `Import failed with HTTP ${response.status}: ${error}: ${message}`;
+  }
+
+  const excerpt = text.trim().slice(0, 500) || response.statusText;
+  return `Import failed with HTTP ${response.status}: ${excerpt}`;
 }
 
 async function main() {
@@ -24,6 +72,7 @@ async function main() {
   const importToken = process.env.AI_NEWS_IMPORT_TOKEN;
   if (!importUrl) throw new Error("Missing AI_NEWS_IMPORT_URL.");
   if (!importToken) throw new Error("Missing AI_NEWS_IMPORT_TOKEN.");
+  assertSafeImportUrl(importUrl);
 
   const publishMode = assertPublishMode(readArg("--mode"));
   const raw = await readFile(resolve(file), "utf8");
@@ -39,17 +88,18 @@ async function main() {
     body: JSON.stringify(payload)
   });
 
-  const body = (await response.json()) as {
+  const responseText = await response.text();
+  const body = parseJsonObject(responseText) as {
     ok?: boolean;
     error?: string;
     message?: string;
     articleId?: string;
     adminUrl?: string;
     publicUrl?: string | null;
-  };
+  } | null;
 
-  if (!response.ok || !body.ok) {
-    throw new Error(`${body.error ?? "IMPORT_FAILED"}: ${body.message ?? response.statusText}`);
+  if (!response.ok || !body?.ok) {
+    throw new Error(formatImportFailure(response, responseText));
   }
 
   console.log(`Imported AI news article: ${body.articleId}`);
