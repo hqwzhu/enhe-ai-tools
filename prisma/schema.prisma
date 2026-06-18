@@ -119,6 +119,12 @@ enum ProductReleaseStatus {
   archived
 }
 
+enum NewsStatus {
+  draft
+  published
+  archived
+}
+
 model User {
   id              String          @id @default(cuid())
   email           String?         @unique
@@ -148,6 +154,8 @@ model User {
     notifications    Notification[]
     newsletterEmail     String?   @map("newsletter_email")
     acceptEmailUpdates  Boolean   @default(true) @map("accept_email_updates")
+    newsFavorites    NewsArticleFavorite[]
+    newsLikes        NewsArticleLike[]
 
   @@map("users")
 }
@@ -689,4 +697,147 @@ model LoginAttempt {
   @@index([identifier, createdAt])
   @@index([ip, createdAt])
   @@map("login_attempts")
+}
+
+model NewsCategory {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String?
+  status      ContentStatus @default(active)
+  sortOrder   Int           @default(0) @map("sort_order")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  articles    NewsArticle[]
+
+  @@index([status, sortOrder])
+  @@map("news_categories")
+}
+
+model NewsTag {
+  id           String           @id @default(cuid())
+  name         String           @unique
+  slug         String           @unique
+  description  String?
+  status       ContentStatus    @default(active)
+  sortOrder    Int              @default(0) @map("sort_order")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  articleLinks NewsArticleTag[]
+
+  @@index([status, sortOrder])
+  @@map("news_tags")
+}
+
+model NewsArticle {
+  id                    String               @id @default(cuid())
+  title                 String
+  slug                  String               @unique
+  subtitle              String?
+  description           String?
+  keywords              String?
+  summary               String
+  content               String
+  coverImage            String?              @map("cover_image")
+  videoUrl              String?              @map("video_url")
+  videoTitle            String?              @map("video_title")
+  videoDescription      String?              @map("video_description")
+  author                String?
+  status                NewsStatus           @default(draft)
+  categoryId            String?              @map("category_id")
+  publishedAt           DateTime?            @map("published_at")
+  readingTime           Int                  @default(5) @map("reading_time")
+  viewCount             Int                  @default(0) @map("view_count")
+  likeCount             Int                  @default(0) @map("like_count")
+  favoriteCount         Int                  @default(0) @map("favorite_count")
+  isFeatured            Boolean              @default(false) @map("is_featured")
+  isPinned              Boolean              @default(false) @map("is_pinned")
+  sortOrder             Int                  @default(0) @map("sort_order")
+  seoTitle              String?              @map("seo_title")
+  seoDescription        String?              @map("seo_description")
+  seoKeywords           String?              @map("seo_keywords")
+  canonicalUrl          String?              @map("canonical_url")
+  keyTakeaways          String[]             @default([]) @map("key_takeaways")
+  impactNotes           String?              @map("impact_notes")
+  conclusion            String?
+  relatedArticleIds     String[]             @default([]) @map("related_article_ids")
+  relatedToolIds        String[]             @default([]) @map("related_tool_ids")
+  relatedTutorialIds    String[]             @default([]) @map("related_tutorial_ids")
+  englishTitle          String?              @map("english_title")
+  englishSubtitle       String?              @map("english_subtitle")
+  englishDescription    String?              @map("english_description")
+  englishSummary        String?              @map("english_summary")
+  englishContent        String?              @map("english_content")
+  englishKeywords       String?              @map("english_keywords")
+  englishSeoTitle       String?              @map("english_seo_title")
+  englishSeoDescription String?              @map("english_seo_description")
+  englishSeoKeywords    String?              @map("english_seo_keywords")
+  englishKeyTakeaways   String[]             @default([]) @map("english_key_takeaways")
+  englishImpactNotes    String?              @map("english_impact_notes")
+  englishConclusion     String?              @map("english_conclusion")
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
+  category              NewsCategory?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tagLinks              NewsArticleTag[]
+  externalSources       NewsExternalSource[]
+  favorites             NewsArticleFavorite[]
+  likes                 NewsArticleLike[]
+
+  @@index([status, publishedAt])
+  @@index([categoryId, status])
+  @@index([isFeatured, isPinned, sortOrder])
+  @@map("news_articles")
+}
+
+model NewsArticleTag {
+  id        String      @id @default(cuid())
+  articleId String      @map("article_id")
+  tagId     String      @map("tag_id")
+  article   NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       NewsTag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, tagId])
+  @@map("news_article_tags")
+}
+
+model NewsExternalSource {
+  id          String      @id @default(cuid())
+  articleId   String      @map("article_id")
+  title       String
+  url         String
+  sourceType  String      @map("source_type")
+  description String?
+  sortOrder   Int         @default(0) @map("sort_order")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  article     NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, sortOrder])
+  @@map("news_external_sources")
+}
+
+model NewsArticleFavorite {
+  id        String      @id @default(cuid())
+  articleId String      @map("article_id")
+  userId    String      @map("user_id")
+  createdAt DateTime    @default(now()) @map("created_at")
+  article   NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([userId, createdAt])
+  @@map("news_article_favorites")
+}
+
+model NewsArticleLike {
+  id        String      @id @default(cuid())
+  articleId String      @map("article_id")
+  userId    String      @map("user_id")
+  createdAt DateTime    @default(now()) @map("created_at")
+  article   NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([userId, createdAt])
+  @@map("news_article_likes")
 }
