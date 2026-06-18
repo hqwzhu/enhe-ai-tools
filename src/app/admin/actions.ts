@@ -1653,3 +1653,65 @@ export async function archiveNewsArticleAction(formData: FormData) {
   revalidatePath(`/en/ai-news/${article.slug}`);
   redirect("/admin/ai-news?archived=1");
 }
+
+export async function upsertNewsKeywordInterventionAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const keyword = z.string().min(1).parse(formData.get("keyword")).trim();
+  const locale = z.enum(["zh", "en"]).parse(formData.get("locale") ?? "zh");
+  const isPinned = parseBooleanField(formData.get("isPinned"));
+  const isHidden = parseBooleanField(formData.get("isHidden"));
+  const displayName = parseOptionalString(formData.get("displayName"));
+  const weightBoost = parseNumberField(formData.get("weightBoost"), 0);
+
+  const saved = id
+    ? await prisma.newsKeywordIntervention.update({
+        where: { id },
+        data: { keyword, locale, isPinned, isHidden, displayName, weightBoost }
+      })
+    : await prisma.newsKeywordIntervention.upsert({
+        where: { keyword_locale: { keyword, locale } },
+        update: { isPinned, isHidden, displayName, weightBoost },
+        create: { keyword, locale, isPinned, isHidden, displayName, weightBoost }
+      });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "news_keyword_intervention.upsert",
+    targetType: "news_keyword_intervention",
+    targetId: saved.id,
+    summary: id ? "Updated AI news keyword intervention." : "Created AI news keyword intervention.",
+    metadata: { keyword, locale, isPinned, isHidden, displayName, weightBoost }
+  });
+
+  revalidatePath("/admin/ai-news");
+  revalidatePath("/admin/ai-news/keywords");
+  revalidatePath("/ai-news");
+  revalidatePath("/en/ai-news");
+  redirect("/admin/ai-news/keywords?saved=1");
+}
+
+export async function deleteNewsKeywordInterventionAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+
+  const deleted = await prisma.newsKeywordIntervention.delete({
+    where: { id },
+    select: { id: true, keyword: true, locale: true }
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "news_keyword_intervention.delete",
+    targetType: "news_keyword_intervention",
+    targetId: deleted.id,
+    summary: "Deleted AI news keyword intervention.",
+    metadata: { keyword: deleted.keyword, locale: deleted.locale }
+  });
+
+  revalidatePath("/admin/ai-news");
+  revalidatePath("/admin/ai-news/keywords");
+  revalidatePath("/ai-news");
+  revalidatePath("/en/ai-news");
+  redirect("/admin/ai-news/keywords?deleted=1");
+}

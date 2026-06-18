@@ -31,6 +31,7 @@ describe("analytics funnel helpers", () => {
 
   it("validates only known event names", () => {
     expect(isAnalyticsEventName("refund_request_submitted")).toBe(true);
+    expect(isAnalyticsEventName("search_ai_news")).toBe(true);
     expect(isAnalyticsEventName("unknown_event")).toBe(false);
   });
 

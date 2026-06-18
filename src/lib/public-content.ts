@@ -1,5 +1,13 @@
 import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
+import {
+  buildAiNewsKeywordCloud,
+  buildAiNewsTopicCollections,
+  defaultAiNewsExternalSeoProvider,
+  normalizeAiNewsKeyword,
+  type AiNewsKeywordCandidate,
+  type AiNewsKeywordInterventionRule
+} from "@/lib/ai-news-discovery";
 import { prisma } from "@/lib/db";
 
 const publicContentRevalidate = 300;
@@ -240,6 +248,280 @@ const getCachedPublicNewsArticleBySlug = unstable_cache(
   { revalidate: publicContentRevalidate, tags: ["public-news"] }
 );
 
+function splitNewsKeywordList(value: string | null | undefined) {
+  return String(value ?? "")
+    .split(/[,\n，、|]/)
+    .map((item) => normalizeAiNewsKeyword(item))
+    .filter((item): item is string => Boolean(item));
+}
+
+function getArticleHeat(article: {
+  viewCount: number;
+  isPinned: boolean;
+  isFeatured: boolean;
+  publishedAt: Date | null;
+  createdAt: Date;
+}) {
+  const publishedTime = article.publishedAt ?? article.createdAt;
+  const freshnessDays = Math.max(0, Math.floor((Date.now() - publishedTime.getTime()) / 86400000));
+  return {
+    totalHeat: article.viewCount + (article.isPinned ? 20 : 0) + (article.isFeatured ? 10 : 0),
+    freshnessDays
+  };
+}
+
+function buildKeywordCandidatesFromArticles(
+  locale: "zh" | "en",
+  articles: Array<{
+    keywords: string | null;
+    seoKeywords: string | null;
+    englishKeywords: string | null;
+    englishSeoKeywords: string | null;
+    viewCount: number;
+    isPinned: boolean;
+    isFeatured: boolean;
+    publishedAt: Date | null;
+    createdAt: Date;
+    tagLinks: Array<{ tag: { name: string } }>;
+  }>
+) {
+  const candidates = new Map<string, AiNewsKeywordCandidate>();
+  const tagFallbacks = new Map<string, AiNewsKeywordCandidate>();
+
+  for (const article of articles) {
+    const { totalHeat, freshnessDays } = getArticleHeat(article);
+    const keywordValues =
+      locale === "en"
+        ? [...splitNewsKeywordList(article.englishKeywords), ...splitNewsKeywordList(article.englishSeoKeywords)]
+        : [...splitNewsKeywordList(article.keywords), ...splitNewsKeywordList(article.seoKeywords)];
+    const seenKeywords = new Set<string>();
+
+    for (const keyword of keywordValues) {
+      const current = candidates.get(keyword);
+      const next: AiNewsKeywordCandidate = current
+        ? {
+            keyword,
+            articleCount: current.articleCount + (seenKeywords.has(keyword) ? 0 : 1),
+            searchCount30d: current.searchCount30d,
+            totalHeat: current.totalHeat + totalHeat,
+            freshnessDays: Math.min(current.freshnessDays, freshnessDays),
+            tagHits: current.tagHits,
+            keywordFieldHits: current.keywordFieldHits + 1
+          }
+        : {
+            keyword,
+            articleCount: 1,
+            searchCount30d: 0,
+            totalHeat,
+            freshnessDays,
+            tagHits: 0,
+            keywordFieldHits: 1
+          };
+
+      candidates.set(keyword, next);
+      seenKeywords.add(keyword);
+    }
+
+    const seenTags = new Set<string>();
+    for (const tagLink of article.tagLinks) {
+      const keyword = normalizeAiNewsKeyword(tagLink.tag.name);
+      if (!keyword) continue;
+
+      const current = candidates.get(keyword);
+      const next: AiNewsKeywordCandidate = current
+        ? {
+            keyword,
+            articleCount: current.articleCount + (seenTags.has(keyword) ? 0 : 1),
+            searchCount30d: current.searchCount30d,
+            totalHeat: current.totalHeat + totalHeat,
+            freshnessDays: Math.min(current.freshnessDays, freshnessDays),
+            tagHits: current.tagHits + 1,
+            keywordFieldHits: current.keywordFieldHits
+          }
+        : {
+            keyword,
+            articleCount: 1,
+            searchCount30d: 0,
+            totalHeat,
+            freshnessDays,
+            tagHits: 1,
+            keywordFieldHits: 0
+          };
+
+      const fallbackCurrent = tagFallbacks.get(keyword);
+      const fallbackNext: AiNewsKeywordCandidate = fallbackCurrent
+        ? {
+            keyword,
+            articleCount: fallbackCurrent.articleCount + (seenTags.has(keyword) ? 0 : 1),
+            searchCount30d: fallbackCurrent.searchCount30d,
+            totalHeat: fallbackCurrent.totalHeat + totalHeat,
+            freshnessDays: Math.min(fallbackCurrent.freshnessDays, freshnessDays),
+            tagHits: fallbackCurrent.tagHits + 1,
+            keywordFieldHits: fallbackCurrent.keywordFieldHits
+          }
+        : {
+            keyword,
+            articleCount: 1,
+            searchCount30d: 0,
+            totalHeat,
+            freshnessDays,
+            tagHits: 1,
+            keywordFieldHits: 0
+          };
+
+      candidates.set(keyword, next);
+      tagFallbacks.set(keyword, fallbackNext);
+      seenTags.add(keyword);
+    }
+  }
+
+  return {
+    candidates: Array.from(candidates.values()),
+    tagFallbacks: Array.from(tagFallbacks.values())
+  };
+}
+
+function mergeSearchSignalsIntoCandidates(
+  candidates: AiNewsKeywordCandidate[],
+  searchQueries: string[]
+) {
+  const map = new Map(candidates.map((candidate) => [candidate.keyword, { ...candidate }]));
+
+  for (const rawQuery of searchQueries) {
+    const keyword = normalizeAiNewsKeyword(rawQuery);
+    if (!keyword) continue;
+
+    const current = map.get(keyword);
+    if (!current) {
+      map.set(keyword, {
+        keyword,
+        articleCount: 0,
+        searchCount30d: 1,
+        totalHeat: 0,
+        freshnessDays: 30,
+        tagHits: 0,
+        keywordFieldHits: 0
+      });
+      continue;
+    }
+
+    current.searchCount30d += 1;
+    map.set(keyword, current);
+  }
+
+  return Array.from(map.values());
+}
+
+function normalizeKeywordInterventions(
+  locale: "zh" | "en",
+  rows: Array<{
+    keyword: string;
+    locale: string;
+    isPinned: boolean;
+    isHidden: boolean;
+    displayName: string | null;
+    weightBoost: number;
+  }>
+) {
+  return rows
+    .filter((row) => row.locale === locale)
+    .map(
+      (row) =>
+        ({
+          keyword: row.keyword,
+          locale,
+          isPinned: row.isPinned,
+          isHidden: row.isHidden,
+          displayName: row.displayName,
+          weightBoost: row.weightBoost
+        }) satisfies AiNewsKeywordInterventionRule
+    );
+}
+
+function isMissingKeywordInterventionTableError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: unknown; meta?: { table?: unknown } };
+  return candidate.code === "P2021" && typeof candidate.meta?.table === "string" && candidate.meta.table.includes("news_keyword_interventions");
+}
+
+const getCachedPublicAiNewsDiscovery = unstable_cache(
+  async (locale: "zh" | "en") => {
+    try {
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const [articles, analyticsRows, interventionRows] = await Promise.all([
+        prisma.newsArticle.findMany({
+          where: { status: "published" },
+          select: {
+            keywords: true,
+            seoKeywords: true,
+            englishKeywords: true,
+            englishSeoKeywords: true,
+            viewCount: true,
+            isPinned: true,
+            isFeatured: true,
+            publishedAt: true,
+            createdAt: true,
+            tagLinks: { select: { tag: { select: { name: true } } } }
+          }
+        }),
+        prisma.analyticsEvent.findMany({
+          where: { eventName: "search_ai_news", createdAt: { gte: since } },
+          select: { metadata: true }
+        }),
+        prisma.newsKeywordIntervention.findMany({
+          select: {
+            keyword: true,
+            locale: true,
+            isPinned: true,
+            isHidden: true,
+            displayName: true,
+            weightBoost: true
+          }
+        })
+      ]);
+
+      const { candidates: articleCandidates, tagFallbacks } = buildKeywordCandidatesFromArticles(locale, articles);
+      const searchQueries = analyticsRows
+        .map((row) => {
+          const metadata = (row.metadata ?? {}) as Record<string, unknown>;
+          return typeof metadata.query === "string" ? metadata.query : "";
+        })
+        .filter(Boolean);
+      const mergedCandidates = mergeSearchSignalsIntoCandidates(articleCandidates, searchQueries);
+      const interventions = normalizeKeywordInterventions(locale, interventionRows);
+      const keywordCloudItems = await buildAiNewsKeywordCloud({
+        locale,
+        candidates: mergedCandidates,
+        interventions,
+        externalProvider: defaultAiNewsExternalSeoProvider
+      });
+      const topicCollectionItems = buildAiNewsTopicCollections({
+        locale,
+        keywordItems: keywordCloudItems,
+        fallbackTags: tagFallbacks.map((candidate) => ({
+          keyword: candidate.keyword,
+          displayName: candidate.keyword,
+          score: candidate.totalHeat + candidate.tagHits * 4,
+          articleCount: candidate.articleCount,
+          searchCount30d: candidate.searchCount30d,
+          totalHeat: candidate.totalHeat,
+          isPinned: false
+        }))
+      });
+
+      return { keywordCloudItems, topicCollectionItems };
+    } catch (error) {
+      if (isRecoverablePublicReadError(error) || isMissingKeywordInterventionTableError(error)) {
+        return { keywordCloudItems: [], topicCollectionItems: [] };
+      }
+
+      throw error;
+    }
+  },
+  ["public-ai-news-discovery"],
+  { revalidate: publicContentRevalidate, tags: ["public-news"] }
+);
+
 export async function getHomeRecommendedTools() {
   return getCachedHomeRecommendedTools();
 }
@@ -274,4 +556,8 @@ export async function getPublicNewsTags() {
 
 export async function getPublicNewsArticleBySlug(slug: string) {
   return getCachedPublicNewsArticleBySlug(slug);
+}
+
+export async function getPublicAiNewsDiscovery(locale: "zh" | "en") {
+  return getCachedPublicAiNewsDiscovery(locale);
 }

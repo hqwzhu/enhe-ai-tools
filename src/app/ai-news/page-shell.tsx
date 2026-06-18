@@ -7,6 +7,7 @@ import { parseNewsSearchParams } from "@/lib/ai-news";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { normalizeImageSrc } from "@/lib/media";
 import {
+  getPublicAiNewsDiscovery,
   getPublicNewsCategories,
   getPublicNewsListing,
   getPublicNewsTags,
@@ -16,28 +17,8 @@ import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { absoluteUrl, buildBreadcrumbSchema, buildLocalePath, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 type NewsCardArticle = Awaited<ReturnType<typeof getPublicNewsListing>>["articles"][number];
-
-const popularKeywords = [
-  "OpenAI",
-  "Claude",
-  "Gemini",
-  "DeepSeek",
-  "通义千问",
-  "Kimi",
-  "AI视频",
-  "AI绘图",
-  "AI办公",
-  "AI变现",
-  "ComfyUI",
-  "本地部署"
-] as const;
-
-const topicCollections = [
-  { zh: "AI视频生成专题", en: "AI Video Generation", query: "AI视频" },
-  { zh: "AI办公效率专题", en: "AI Office Productivity", query: "AI办公" },
-  { zh: "AI变现入门专题", en: "AI Monetization Starter", query: "AI变现" },
-  { zh: "本地部署工具专题", en: "Local Deployment Tools", query: "本地部署" }
-] as const;
+type KeywordCloudItem = Awaited<ReturnType<typeof getPublicAiNewsDiscovery>>["keywordCloudItems"][number];
+type TopicCollectionItem = Awaited<ReturnType<typeof getPublicAiNewsDiscovery>>["topicCollectionItems"][number];
 
 export const aiNewsPageRevalidate = publicPageCacheSeconds;
 
@@ -62,12 +43,13 @@ export async function AiNewsPageShell({
   const params = await searchParams;
   const filters = parseNewsSearchParams(params);
   const t = getDictionary(forceLocale);
-  const [{ articles, total }, featured, hot, categories, tags] = await Promise.all([
+  const [{ articles, total }, featured, hot, categories, tags, discovery] = await Promise.all([
     getPublicNewsListing(filters satisfies PublicNewsListingFilters),
     getPublicNewsListing({ sort: "featured", take: 3 }),
     getPublicNewsListing({ sort: "hot", take: 6 }),
     getPublicNewsCategories(),
-    getPublicNewsTags()
+    getPublicNewsTags(),
+    getPublicAiNewsDiscovery(forceLocale)
   ]);
   const pageCount = Math.max(1, Math.ceil(total / filters.pageSize));
   const breadcrumbSchema = buildBreadcrumbSchema({
@@ -130,8 +112,8 @@ export async function AiNewsPageShell({
 
         <aside className="space-y-6">
           <TrendPanel articles={hot.articles} locale={forceLocale} />
-          <KeywordCloud locale={forceLocale} />
-          <TopicCollections locale={forceLocale} />
+          <KeywordCloud locale={forceLocale} items={discovery.keywordCloudItems} />
+          <TopicCollections locale={forceLocale} items={discovery.topicCollectionItems} />
         </aside>
       </div>
 
@@ -164,7 +146,15 @@ function FilterBar({
   const t = getDictionary(locale);
 
   return (
-    <form className="filter-surface mt-8 grid gap-3 lg:grid-cols-[1fr_180px_160px_140px]">
+    <form
+      className="filter-surface mt-8 grid gap-3 lg:grid-cols-[1fr_180px_160px_140px]"
+      data-analytics-event="search_ai_news"
+      data-analytics-meta-locale={locale}
+      data-analytics-meta-query={filters.q ?? ""}
+      data-analytics-meta-category={filters.category ?? ""}
+      data-analytics-meta-tag={filters.tag ?? ""}
+      data-analytics-meta-sort={filters.sort}
+    >
       <input name="q" defaultValue={filters.q} placeholder={t.aiNews.searchPlaceholder} className="form-control-dark" />
       <select name="category" defaultValue={filters.category ?? ""} className="form-select-dark">
         <option value="">{t.aiNews.allCategories}</option>
@@ -261,16 +251,16 @@ function TrendPanel({ articles, locale }: { articles: NewsCardArticle[]; locale:
   );
 }
 
-function KeywordCloud({ locale }: { locale: Locale }) {
+function KeywordCloud({ locale, items }: { locale: Locale; items: KeywordCloudItem[] }) {
   const t = getDictionary(locale);
 
   return (
     <section className="glass rounded-2xl p-5">
       <h2 className="text-lg font-black text-[var(--marketing-text)]">{t.aiNews.keywordsTitle}</h2>
       <div className="mt-4 flex flex-wrap gap-2">
-        {popularKeywords.map((keyword) => (
-          <Link key={keyword} href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(keyword)}`} className="rounded-full border border-white/14 bg-white/7 px-3 py-1 text-xs font-semibold text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]">
-            {keyword}
+        {items.map((item) => (
+          <Link key={item.keyword} href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(item.query)}`} className="rounded-full border border-white/14 bg-white/7 px-3 py-1 text-xs font-semibold text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]">
+            {item.displayName}
           </Link>
         ))}
       </div>
@@ -278,16 +268,16 @@ function KeywordCloud({ locale }: { locale: Locale }) {
   );
 }
 
-function TopicCollections({ locale }: { locale: Locale }) {
+function TopicCollections({ locale, items }: { locale: Locale; items: TopicCollectionItem[] }) {
   const t = getDictionary(locale);
 
   return (
     <section className="glass rounded-2xl p-5">
       <h2 className="text-lg font-black text-[var(--marketing-text)]">{t.aiNews.topicsTitle}</h2>
       <div className="mt-4 grid gap-3">
-        {topicCollections.map((topic) => (
-          <Link key={topic.query} href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(topic.query)}`} className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]">
-            {locale === "en" ? topic.en : topic.zh}
+        {items.map((item) => (
+          <Link key={item.key} href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(item.query)}`} className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]">
+            {item.title}
           </Link>
         ))}
       </div>
