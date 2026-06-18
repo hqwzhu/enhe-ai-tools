@@ -94,6 +94,7 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
   const t = getDictionary(forceLocale);
   const localized = localizeArticle(article, forceLocale);
   const coverImage = normalizeImageSrc(article.coverImage);
+  const publishedAt = article.publishedAt ?? article.createdAt;
   const toc = extractNewsTableOfContents(localized.content);
   const contentBlocks = renderNewsContentBlocks(localized.content);
   const articleVideo = resolveNewsVideo(article, localized.title);
@@ -132,7 +133,7 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
           {localized.subtitle ? <p className="mt-5 max-w-3xl text-lg font-medium leading-8 text-[var(--marketing-muted)]">{localized.subtitle}</p> : null}
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[var(--marketing-muted)]">
             <span>{article.author || "ENHE AI"}</span>
-            <span>{formatDate(article.publishedAt ?? article.createdAt, forceLocale)}</span>
+            <time dateTime={toNewsIsoDate(publishedAt)}>{formatDate(publishedAt, forceLocale)}</time>
             <span>{article.readingTime} min</span>
             <span>{article.viewCount} views</span>
           </div>

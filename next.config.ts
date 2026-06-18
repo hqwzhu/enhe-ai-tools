@@ -25,8 +25,16 @@ const nextConfig: NextConfig = {
         value: "en-US"
       }
     ];
+    const publicAssetCacheHeaders = [
+      {
+        key: "Cache-Control",
+        value: "public, s-maxage=300, stale-while-revalidate=86400"
+      }
+    ];
 
     return [
+      { source: "/robots.txt", headers: publicAssetCacheHeaders },
+      { source: "/sitemap.xml", headers: publicAssetCacheHeaders },
       { source: "/", headers: zhPublicCacheHeaders },
       { source: "/en", headers: enPublicCacheHeaders },
       { source: "/software", headers: zhPublicCacheHeaders },

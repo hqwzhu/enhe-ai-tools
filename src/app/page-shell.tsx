@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ArrowUpRight } from "lucide-react";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
@@ -36,6 +37,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               <p className="home-hero-eyebrow">{t.home.eyebrow}</p>
               <h1 className="home-hero-title">
                 <span>{heroTitle}</span>
+                {" "}
                 <span>{t.home.titleSecondLine}</span>
               </h1>
               <p className="home-hero-intro">{heroIntro}</p>
@@ -86,7 +88,19 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                 ))}
               </div>
             ) : (
-              <div className="home-product-preview-empty">{t.home.featuredContentEmpty}</div>
+              <div className="home-fallback-link-grid">
+                {[
+                  { label: t.home.aiNewsButton, href: forceLocale === "en" ? "/en/ai-news" : "/ai-news" },
+                  { label: t.home.softwareButton, href: forceLocale === "en" ? "/en/software" : "/software" },
+                  { label: t.home.onlineButton, href: forceLocale === "en" ? "/en/account-services" : "/account-services" },
+                  { label: t.home.skillLearningButton, href: forceLocale === "en" ? "/en/skill-learning" : "/skill-learning" }
+                ].map((item) => (
+                  <ButtonLink key={item.href} href={item.href} variant="ghost" className="home-fallback-link">
+                    {item.label}
+                    <ArrowUpRight size={16} />
+                  </ButtonLink>
+                ))}
+              </div>
             )}
           </div>
         </Container>

@@ -39,7 +39,10 @@ describe("launch readiness source coverage", () => {
     expect(toolCard).toContain("audienceLabel");
 
     const header = read("src/components/site-header.tsx");
-    expect(header).toContain("MobileNavMenu");
+    expect(header).toContain("HeaderSessionGate");
+
+    const headerSessionGate = read("src/components/header-session-gate.tsx");
+    expect(headerSessionGate).toContain("MobileNavMenu");
 
     const mobileNav = read("src/components/mobile-nav-menu.tsx");
     expect(mobileNav).toContain("details");

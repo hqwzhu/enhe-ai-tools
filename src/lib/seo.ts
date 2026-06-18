@@ -212,8 +212,9 @@ export function buildMetadataTitle({ pageTitle, brand = siteName, maxLength = 68
 }
 
 export function buildHomeMetadataTitle(locale: Locale, brand = siteName) {
-  const scope = locale === "en" ? "AI Software, Account Services & Skill Learning" : "AI软件、账号服务与技能学习";
-  return buildMetadataTitle({ pageTitle: brand, brand: scope, maxLength: locale === "en" ? 72 : 64 });
+  const scope =
+    locale === "en" ? "AI News, Software Apps, Account Services & Skill Learning" : "AI前沿资讯、软件应用、账号服务与技能学习";
+  return truncateText(`${normalizeWhitespace(brand)} | ${scope}`, locale === "en" ? 72 : 64);
 }
 
 function resolveToolTitleNames(name: string, englishName: string | null | undefined, locale: Locale) {

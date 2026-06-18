@@ -930,6 +930,22 @@ select option:disabled {
   -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
+.home-fallback-link-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.home-fallback-link {
+  min-height: 76px;
+  justify-content: space-between !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.075) !important;
+  color: var(--marketing-text) !important;
+  text-align: left;
+  box-shadow: none !important;
+}
+
 .evidence-card {
   overflow: hidden;
   border-color: var(--marketing-border);
@@ -1015,7 +1031,8 @@ footer {
   }
 
   .home-recommended-tool-grid,
-  .home-recommended-tool-grid-wide {
+  .home-recommended-tool-grid-wide,
+  .home-fallback-link-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -10,8 +10,9 @@ export function middleware(request: NextRequest) {
   const isEnglishPath = pathname === "/en" || pathname.startsWith("/en/");
   const isChinesePublicPath =
     pathname === "/" ||
-    ["/software", "/account-services", "/online-tools", "/skill-learning", "/pricing", "/tutorials"].includes(pathname) ||
+    ["/software", "/account-services", "/online-tools", "/skill-learning", "/pricing", "/tutorials", "/ai-news"].includes(pathname) ||
     pathname.startsWith("/account-services/") ||
+    pathname.startsWith("/ai-news/") ||
     pathname.startsWith("/tools/") ||
     pathname.startsWith("/legal/");
   const resolvedLocale = isEnglishPath ? "en" : cookieLocale === "en" ? "en" : "zh";
