@@ -148,6 +148,17 @@ describe("AI news import helpers", () => {
     expect(parsed.article.externalSources).toHaveLength(1);
   });
 
+  it("accepts Date publishedAt values produced by HTML imports", () => {
+    const publishedAt = new Date("2026-06-18T08:00:00.000Z");
+    const parsed = aiNewsImportPayloadSchema.parse({
+      ...baseImportPayload,
+      publishMode: "published",
+      publishedAt
+    });
+
+    expect(parsed.publishedAt).toEqual(publishedAt);
+  });
+
   it("builds import data without removed source metadata columns", () => {
     const data = buildAiNewsImportData(aiNewsImportPayloadSchema.parse(baseImportPayload), new Date("2026-06-18T08:00:00.000Z"));
 

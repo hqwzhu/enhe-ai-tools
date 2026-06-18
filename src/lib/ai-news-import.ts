@@ -15,7 +15,9 @@ const maxSlugCollisionAttempts = 5;
 
 const optionalTrimmedString = (max: number) => z.string().trim().min(1).max(max).optional();
 const optionalHttpUrl = z.string().trim().url().max(2_000).refine((value) => /^https?:\/\//i.test(value), "URL must use http or https").optional();
-const publishedAtSchema = z.string().trim().datetime().transform((value) => new Date(value)).optional();
+const publishedAtSchema = z
+  .union([z.string().trim().datetime().transform((value) => new Date(value)), z.date()])
+  .optional();
 
 export const aiNewsSourceSchema = z.object({
   title: z.string().trim().min(1).max(220),
