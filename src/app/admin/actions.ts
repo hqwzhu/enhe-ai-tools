@@ -15,6 +15,7 @@ import {
   buildPublicUploadUrl,
   resolveToolSlug
 } from "@/lib/admin-form";
+import { parseNewsRelationIds, resolveNewsSlug } from "@/lib/ai-news";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { getOrderTimestampPatch } from "@/lib/admin-order";
 import { sendRefundProcessedAdminEmail } from "@/lib/admin-email-notifications";
@@ -1438,4 +1439,217 @@ export async function updatePaymentQrCodesAction(formData: FormData) {
 export async function goToPayAction(formData: FormData) {
   const orderId = idSchema.parse(formData.get("orderId"));
   redirect(`/orders/${orderId}/pay`);
+}
+
+function parseNewsDateField(value: FormDataEntryValue | null) {
+  const text = parseOptionalString(value);
+  if (!text) return null;
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parseMultilineItems(value: FormDataEntryValue | null) {
+  return String(value ?? "")
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parseExternalSources(value: FormDataEntryValue | null) {
+  return String(value ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      const [title = "", url = "", sourceType = "authority_media", description = ""] = line
+        .split("|")
+        .map((part) => part.trim());
+      return { title, url, sourceType, description: description || null, sortOrder: index };
+    })
+    .filter((source) => source.title && /^https?:\/\//i.test(source.url));
+}
+
+async function resolveUniqueNewsSlug(input: { title: string; slugInput?: string | null; fallbackSeed: string; id?: string | null }) {
+  let slug = resolveNewsSlug(input);
+  const baseSlug = slug;
+  let retry = 0;
+
+  while (await prisma.newsArticle.findFirst({ where: { slug, ...(input.id ? { id: { not: input.id } } : {}) }, select: { id: true } })) {
+    retry += 1;
+    slug = `${baseSlug}-${Math.random().toString(36).slice(2, 8)}`;
+    if (retry > 10) break;
+  }
+
+  return slug;
+}
+
+async function syncNewsArticleTags(articleId: string, rawTags: FormDataEntryValue | null) {
+  const tagNames = parseTagNames(String(rawTags ?? ""));
+  const tags = await Promise.all(
+    tagNames.map((name) =>
+      prisma.newsTag.upsert({
+        where: { name },
+        update: { status: "active" },
+        create: { name, slug: tagSlug(name), status: "active" }
+      })
+    )
+  );
+
+  await prisma.$transaction([
+    prisma.newsArticleTag.deleteMany({ where: { articleId } }),
+    ...tags.map((tag) => prisma.newsArticleTag.create({ data: { articleId, tagId: tag.id } }))
+  ]);
+}
+
+async function syncNewsExternalSources(articleId: string, sources: ReturnType<typeof parseExternalSources>) {
+  await prisma.$transaction([
+    prisma.newsExternalSource.deleteMany({ where: { articleId } }),
+    ...sources.map((source) => prisma.newsExternalSource.create({ data: { articleId, ...source } }))
+  ]);
+}
+
+export async function upsertNewsCategoryAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const name = z.string().min(1).parse(formData.get("name"));
+  const slug = resolveNewsSlug({ title: name, slugInput: parseOptionalString(formData.get("slug")), fallbackSeed: id ?? Date.now().toString(36) });
+  const data = {
+    name,
+    slug,
+    description: parseOptionalString(formData.get("description")),
+    status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active"),
+    sortOrder: parseNumberField(formData.get("sortOrder"), 0)
+  };
+  const saved = id ? await prisma.newsCategory.update({ where: { id }, data }) : await prisma.newsCategory.create({ data });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: id ? "news_category.update" : "news_category.create",
+    targetType: "news_category",
+    targetId: saved.id,
+    summary: id ? "Updated news category." : "Created news category.",
+    metadata: { name, slug }
+  });
+  revalidatePath("/admin/ai-news");
+  revalidatePath("/ai-news");
+  revalidatePath("/en/ai-news");
+}
+
+export async function upsertNewsArticleAction(formData: FormData) {
+  const admin = await requireAdmin();
+  let savedId = parseOptionalString(formData.get("id"));
+  const returnTo = parseOptionalString(formData.get("returnTo")) ?? "/admin/ai-news";
+
+  try {
+    const id = savedId;
+    const title = z.string().min(1).parse(formData.get("title"));
+    const slug = await resolveUniqueNewsSlug({
+      title,
+      slugInput: parseOptionalString(formData.get("slug")),
+      fallbackSeed: id ?? Date.now().toString(36),
+      id
+    });
+    const status = z.enum(["draft", "published", "archived"]).parse(formData.get("status") ?? "draft");
+    const publishedAt = parseNewsDateField(formData.get("publishedAt")) ?? (status === "published" ? new Date() : null);
+    const data = {
+      title,
+      slug,
+      subtitle: parseOptionalString(formData.get("subtitle")),
+      description: parseOptionalString(formData.get("description")),
+      keywords: parseOptionalString(formData.get("keywords")),
+      summary: z.string().min(1).parse(formData.get("summary")),
+      content: z.string().min(1).parse(formData.get("content")),
+      coverImage: parseOptionalString(formData.get("coverImage")),
+      videoUrl: parseOptionalString(formData.get("videoUrl")),
+      videoTitle: parseOptionalString(formData.get("videoTitle")),
+      videoDescription: parseOptionalString(formData.get("videoDescription")),
+      author: parseOptionalString(formData.get("author")),
+      status,
+      categoryId: parseOptionalString(formData.get("categoryId")),
+      publishedAt,
+      readingTime: Math.max(1, parseNumberField(formData.get("readingTime"), 5)),
+      viewCount: Math.max(0, parseNumberField(formData.get("viewCount"), 0)),
+      likeCount: Math.max(0, parseNumberField(formData.get("likeCount"), 0)),
+      favoriteCount: Math.max(0, parseNumberField(formData.get("favoriteCount"), 0)),
+      isFeatured: parseBooleanField(formData.get("isFeatured")),
+      isPinned: parseBooleanField(formData.get("isPinned")),
+      sortOrder: parseNumberField(formData.get("sortOrder"), 0),
+      seoTitle: parseOptionalString(formData.get("seoTitle")),
+      seoDescription: parseOptionalString(formData.get("seoDescription")),
+      seoKeywords: parseOptionalString(formData.get("seoKeywords")),
+      canonicalUrl: parseOptionalString(formData.get("canonicalUrl")),
+      keyTakeaways: parseMultilineItems(formData.get("keyTakeaways")),
+      impactNotes: parseOptionalString(formData.get("impactNotes")),
+      conclusion: parseOptionalString(formData.get("conclusion")),
+      relatedArticleIds: parseNewsRelationIds(String(formData.get("relatedArticleIds") ?? "")),
+      relatedToolIds: parseNewsRelationIds(String(formData.get("relatedToolIds") ?? "")),
+      relatedTutorialIds: parseNewsRelationIds(String(formData.get("relatedTutorialIds") ?? "")),
+      englishTitle: parseOptionalString(formData.get("englishTitle")),
+      englishSubtitle: parseOptionalString(formData.get("englishSubtitle")),
+      englishDescription: parseOptionalString(formData.get("englishDescription")),
+      englishSummary: parseOptionalString(formData.get("englishSummary")),
+      englishContent: parseOptionalString(formData.get("englishContent")),
+      englishKeywords: parseOptionalString(formData.get("englishKeywords")),
+      englishSeoTitle: parseOptionalString(formData.get("englishSeoTitle")),
+      englishSeoDescription: parseOptionalString(formData.get("englishSeoDescription")),
+      englishSeoKeywords: parseOptionalString(formData.get("englishSeoKeywords")),
+      englishKeyTakeaways: parseMultilineItems(formData.get("englishKeyTakeaways")),
+      englishImpactNotes: parseOptionalString(formData.get("englishImpactNotes")),
+      englishConclusion: parseOptionalString(formData.get("englishConclusion"))
+    };
+
+    if (id) {
+      await prisma.newsArticle.update({ where: { id }, data });
+      savedId = id;
+    } else {
+      const created = await prisma.newsArticle.create({ data });
+      savedId = created.id;
+    }
+    if (!savedId) throw new Error("News article save failed.");
+
+    await syncNewsArticleTags(savedId, formData.get("tags"));
+    await syncNewsExternalSources(savedId, parseExternalSources(formData.get("externalSources")));
+
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: id ? "news_article.update" : "news_article.create",
+      targetType: "news_article",
+      targetId: savedId,
+      summary: id ? "Updated news article." : "Created news article.",
+      metadata: { title, slug, status }
+    });
+
+    revalidatePath("/admin/ai-news");
+    revalidatePath("/ai-news");
+    revalidatePath("/en/ai-news");
+    revalidatePath(`/ai-news/${slug}`);
+    revalidatePath(`/en/ai-news/${slug}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "保存失败，请检查资讯表单。";
+    redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(`/admin/ai-news/${savedId}?saved=1`);
+}
+
+export async function archiveNewsArticleAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const article = await prisma.newsArticle.update({ where: { id }, data: { status: "archived" } });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "news_article.archive",
+    targetType: "news_article",
+    targetId: id,
+    summary: "Archived news article.",
+    metadata: { title: article.title, slug: article.slug }
+  });
+
+  revalidatePath("/admin/ai-news");
+  revalidatePath("/ai-news");
+  revalidatePath("/en/ai-news");
+  revalidatePath(`/ai-news/${article.slug}`);
+  revalidatePath(`/en/ai-news/${article.slug}`);
+  redirect("/admin/ai-news?archived=1");
 }
