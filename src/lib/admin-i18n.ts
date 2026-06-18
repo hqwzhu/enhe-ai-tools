@@ -11,6 +11,7 @@ export const adminDictionaries = {
     },
     nav: {
       dashboard: "数据看板",
+      seoInsights: "SEO 洞察",
       messages: "消息中心",
       development: "开发进度",
       releases: "产品版本",
@@ -99,6 +100,7 @@ export const adminDictionaries = {
     },
     nav: {
       dashboard: "Dashboard",
+      seoInsights: "SEO insights",
       messages: "Messages",
       development: "Development",
       releases: "Product releases",

@@ -2,13 +2,14 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { classifyTrafficSource, getSeoContentType, isSeoTrackablePath } from "@/lib/seo-insights";
 
 type AnalyticsPayload = {
   eventName: string;
   path?: string;
   entityType?: string;
   entityId?: string;
-  metadata?: Record<string, string>;
+  metadata?: Record<string, string | number | boolean | null | undefined>;
 };
 
 export function AnalyticsTracker() {
@@ -18,6 +19,15 @@ export function AnalyticsTracker() {
     const eventName = getPageViewEventName(pathname);
     if (eventName) {
       sendAnalyticsEvent({ eventName, path: pathname });
+    }
+
+    const seoMetadata = getSeoLandingMetadata(pathname);
+    if (seoMetadata) {
+      sendAnalyticsEvent({
+        eventName: "seo_landing_view",
+        path: pathname ?? window.location.pathname,
+        metadata: seoMetadata
+      });
     }
   }, [pathname]);
 
@@ -54,6 +64,33 @@ function getPageViewEventName(pathname: string | null) {
   if (path === "/user") return "view_user_center";
   if (path.startsWith("/tools/")) return "view_tool";
   return null;
+}
+
+function getSeoLandingMetadata(pathname: string | null) {
+  const path = normalizePublicPath(pathname ?? window.location.pathname);
+  const contentType = getSeoContentType(path);
+  if (!isSeoTrackablePath(path)) return null;
+
+  const traffic = classifyTrafficSource({ pageUrl: window.location.href, referrer: document.referrer });
+  return {
+    landingPath: path,
+    contentType,
+    source: traffic.source,
+    trafficMedium: traffic.medium,
+    searchEngine: traffic.searchEngine,
+    searchQuery: traffic.searchQuery,
+    referrerHost: traffic.referrerHost,
+    utmSource: traffic.utmSource,
+    utmMedium: traffic.utmMedium,
+    utmCampaign: traffic.utmCampaign,
+    locale: path.startsWith("/en") ? "en" : document.documentElement.lang?.startsWith("en") ? "en" : "zh"
+  };
+}
+
+function normalizePublicPath(pathname: string) {
+  const rawPath = String(pathname || "/").split("?")[0].replace(/\/+$/, "") || "/";
+  if (rawPath === "/en") return "/";
+  return rawPath.replace(/^\/en(?=\/)/, "") || "/";
 }
 
 function collectAnalyticsMetadata(element: HTMLElement) {
