@@ -3,8 +3,9 @@ import type { Locale } from "@/lib/dictionaries";
 import { prisma } from "@/lib/db";
 import { resolvePublicToolSlug } from "@/lib/public-content";
 import { buildCanonicalToolPath } from "@/lib/public-slugs";
+import { absoluteUrl } from "@/lib/seo";
 
-export async function buildLegacyToolDetailRedirectResponse(slug: string, forceLocale: Locale, requestUrl: string) {
+export async function buildLegacyToolDetailRedirectResponse(slug: string, forceLocale: Locale) {
   const slugMatch = await resolvePublicToolSlug(slug);
   if (!slugMatch) return null;
 
@@ -14,6 +15,5 @@ export async function buildLegacyToolDetailRedirectResponse(slug: string, forceL
   });
   if (!tool || tool.status !== "published") return null;
 
-  const location = new URL(buildCanonicalToolPath(tool, forceLocale), requestUrl);
-  return NextResponse.redirect(location, 301);
+  return NextResponse.redirect(absoluteUrl(buildCanonicalToolPath(tool, forceLocale)), 301);
 }

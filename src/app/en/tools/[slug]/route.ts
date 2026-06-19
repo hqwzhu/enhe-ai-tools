@@ -3,7 +3,7 @@ import { buildLegacyToolDetailRedirectResponse } from "@/lib/legacy-tool-redirec
 
 export const revalidate = 300;
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return (await buildLegacyToolDetailRedirectResponse(slug, "en", request.url)) ?? NextResponse.json({ error: "Not found" }, { status: 404 });
+  return (await buildLegacyToolDetailRedirectResponse(slug, "en")) ?? NextResponse.json({ error: "Not found" }, { status: 404 });
 }

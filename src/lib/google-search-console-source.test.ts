@@ -101,7 +101,8 @@ describe("Google Search Console SEO source contract", () => {
     expect(zhToolsDetail).toContain("buildLegacyToolDetailRedirectResponse");
     expect(zhToolsDetail).toContain('NextResponse.json({ error: "Not found" }, { status: 404 })');
     expect(enToolsDetail).toContain("buildLegacyToolDetailRedirectResponse");
-    expect(legacyToolRedirect).toContain("NextResponse.redirect(location, 301)");
+    expect(legacyToolRedirect).toContain("absoluteUrl(buildCanonicalToolPath(tool, forceLocale))");
+    expect(legacyToolRedirect).toContain("NextResponse.redirect(absoluteUrl(buildCanonicalToolPath(tool, forceLocale)), 301)");
   });
 
   it("does not ship hardcoded HTTP production links in tracked source files", () => {
