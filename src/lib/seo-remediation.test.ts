@@ -25,6 +25,16 @@ describe("SEO remediation helpers", () => {
     expect(description).not.toContain("Live in symbiosis with AI");
   });
 
+  it("skips generic brand-slogan candidates when resolving AI news descriptions", () => {
+    const description = resolveAiNewsMetaDescription(
+      ["Live in symbiosis with AI, awaken in this era, and define the future through creation."],
+      "OpenAI workspace agents connect ChatGPT with team workflows, showing how AI agents can move from chat into practical execution."
+    );
+
+    expect(description).toContain("OpenAI workspace agents");
+    expect(description).not.toContain("Live in symbiosis with AI");
+  });
+
   it("builds an article-specific AI news fallback when description fields are empty or date-only", () => {
     const fallback = buildAiNewsDescriptionFallback({
       title: "OpenAI workspace agents connect ChatGPT with team workflows",

@@ -323,6 +323,15 @@ function looksLikeDateOnlyDescription(value: string) {
   );
 }
 
+function looksLikeGenericAiNewsDescription(value: string) {
+  const text = value.toLowerCase().replace(/\s+/g, " ").trim();
+  return (
+    text === "live in symbiosis with ai, awaken in this era, and define the future through creation." ||
+    text.includes("live in symbiosis with ai, awaken in this era") ||
+    text.includes("define the future through creation")
+  );
+}
+
 function normalizeAiNewsMetaCandidate(value: string | null | undefined) {
   return String(value ?? "")
     .replace(/```[\s\S]*?```/g, " ")
@@ -342,10 +351,10 @@ export function resolveAiNewsMetaDescription(
 ) {
   const validCandidate = candidates
     .map((candidate) => normalizeAiNewsMetaCandidate(candidate))
-    .find((candidate) => candidate.length >= minLength && !looksLikeDateOnlyDescription(candidate));
+    .find((candidate) => candidate.length >= minLength && !looksLikeDateOnlyDescription(candidate) && !looksLikeGenericAiNewsDescription(candidate));
   const normalizedFallback = normalizeAiNewsMetaCandidate(fallback);
 
-  return validCandidate || (looksLikeDateOnlyDescription(normalizedFallback) ? "" : normalizedFallback);
+  return validCandidate || (looksLikeDateOnlyDescription(normalizedFallback) || looksLikeGenericAiNewsDescription(normalizedFallback) ? "" : normalizedFallback);
 }
 
 export function buildAiNewsDescriptionFallback({
