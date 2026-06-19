@@ -63,6 +63,7 @@ describe("Google Search Console SEO source contract", () => {
   });
 
   it("keeps legacy public routes as permanent redirects instead of sitemap targets", () => {
+    const nextConfig = read("next.config.ts");
     const zhOnline = read("src/app/(zh-public)/online-tools/page.tsx");
     const zhOnlineDetail = read("src/app/(zh-public)/online-tools/[slug]/page.tsx");
     const enOnline = read("src/app/en/online-tools/page.tsx");
@@ -71,6 +72,16 @@ describe("Google Search Console SEO source contract", () => {
     const enToolsDetail = read("src/app/en/tools/[slug]/page.tsx");
     const toolShell = read("src/app/tools/[slug]/page-shell.tsx");
 
+    expect(nextConfig).toContain("redirects()");
+    expect(nextConfig).toContain('source: "/online-tools"');
+    expect(nextConfig).toContain('destination: "/account-services"');
+    expect(nextConfig).toContain('source: "/online-tools/:slug*"');
+    expect(nextConfig).toContain('destination: "/account-services/:slug*"');
+    expect(nextConfig).toContain('source: "/en/online-tools"');
+    expect(nextConfig).toContain('destination: "/en/account-services"');
+    expect(nextConfig).toContain('source: "/en/online-tools/:slug*"');
+    expect(nextConfig).toContain('destination: "/en/account-services/:slug*"');
+    expect(nextConfig).toContain("statusCode: 301");
     expect(zhOnline).toContain("permanentRedirect");
     expect(zhOnline).toContain('"/account-services"');
     expect(zhOnlineDetail).toContain("permanentRedirect");
