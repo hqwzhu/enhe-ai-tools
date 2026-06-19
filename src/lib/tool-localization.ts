@@ -119,6 +119,30 @@ function isPromotionalName(value: string) {
   return normalized.length > 26 || /[，。,.;；!?！？]/.test(normalized);
 }
 
+function hasAccountServiceRiskCopy(value: string | null | undefined) {
+  const normalized = normalizeText(value);
+  return Boolean(normalized) && sanitizeAccountServiceCopy(normalized, "zh") !== normalized;
+}
+
+function extractAccountServiceProductName(value: string | null | undefined, fallback: string) {
+  const normalized = normalizeText(value);
+  const productMatch = normalized.match(/(?:ChatGPT|Gemini|Claude|Midjourney|OpenAI|Google AI|Perplexity|Sora|Runway|Kling|Grok)(?:\s+(?:Plus|Pro|Team|Enterprise|API|Studio|Ultra|Max|Advanced|AI|Google AI Pro|3 Flash))*|[A-Za-z][A-Za-z0-9.+-]*(?:\s+[A-Za-z0-9.+-]+){0,3}/i);
+  const productName = normalizeText(productMatch?.[0] ?? "");
+  return productName || fallback;
+}
+
+function sanitizeAccountServiceName(value: string | null | undefined, locale: Locale, fallback: string) {
+  const normalized = normalizeText(value);
+  if (!normalized) return fallback;
+  if (!hasAccountServiceRiskCopy(normalized)) return normalized;
+
+  if (locale === "en") {
+    return `${extractAccountServiceProductName(normalized, "AI")} account service guidance`;
+  }
+
+  return `${extractAccountServiceProductName(normalized, "AI工具")} AI账号服务咨询`;
+}
+
 function humanizeSlugWord(word: string) {
   const lower = word.toLowerCase();
   return englishWordOverrides[lower] ?? `${lower.slice(0, 1).toUpperCase()}${lower.slice(1)}`;
@@ -142,7 +166,7 @@ function buildEnglishCategoryFromChinese(name: string, type: ToolType) {
   if (name.includes("电脑软件") || name.includes("桌面")) return "AI Desktop Software";
   if (name.includes("在线处理")) return "Online Processing";
   if (name.includes("账号购买")) return "AI Account Service";
-  if (name.includes("代充")) return "AI Recharge Service";
+  if (name.includes("代充")) return "AI Account Service";
   if (name.includes("在线") && name.includes("工具")) return "Online AI Tool";
   if (name.includes("视频")) return "AI Video Tool";
   if (name.includes("音频") || name.includes("语音")) return "AI Audio Tool";
@@ -198,22 +222,26 @@ export function resolveLocalizedToolIdentity(tool: Pick<LocalizedToolInput, "slu
   const englishName = normalizeText(tool.englishName);
 
   if (locale === "zh") {
+    const primaryName = tool.type === "online" ? sanitizeAccountServiceName(name || englishName, "zh", localizedFallbackName) : name || englishName || localizedFallbackName;
+    const secondaryCandidate = englishName && englishName.toLowerCase() !== primaryName.toLowerCase() ? englishName : "";
     return {
-      primaryName: name || englishName || localizedFallbackName,
-      secondaryName: englishName && englishName.toLowerCase() !== name.toLowerCase() ? englishName : ""
+      primaryName,
+      secondaryName: tool.type === "online" && hasAccountServiceRiskCopy(secondaryCandidate) ? "" : secondaryCandidate
     };
   }
 
   if (englishName && isEnglishLike(englishName, 1)) {
+    const primaryName = tool.type === "online" ? sanitizeAccountServiceName(englishName, "en", localizedFallbackName) : englishName;
+    const secondaryCandidate = name && name.toLowerCase() !== primaryName.toLowerCase() ? name : "";
     return {
-      primaryName: englishName,
-      secondaryName: name && name.toLowerCase() !== englishName.toLowerCase() ? name : ""
+      primaryName,
+      secondaryName: tool.type === "online" && hasAccountServiceRiskCopy(secondaryCandidate) ? "" : secondaryCandidate
     };
   }
 
   if (name && isEnglishLike(name, 1) && !isPromotionalName(name)) {
     return {
-      primaryName: name,
+      primaryName: tool.type === "online" ? sanitizeAccountServiceName(name, "en", localizedFallbackName) : name,
       secondaryName: ""
     };
   }
@@ -349,7 +377,11 @@ export function buildLocalizedToolPreviewText(tool: LocalizedToolInput, locale: 
 
 export function buildLocalizedToolOfferName(name: string | null | undefined, type: ToolType, locale: Locale, index: number) {
   const normalized = normalizeText(name);
-  if (locale === "zh") return normalized;
+  if (locale === "zh") {
+    if (type === "online" && hasAccountServiceRiskCopy(normalized)) return `AI账号服务咨询方案 ${index + 1}`;
+    return normalized;
+  }
+  if (type === "online" && hasAccountServiceRiskCopy(normalized)) return `Service option ${index + 1}`;
   if (isEnglishLike(normalized, 1) && !hasCjk(normalized)) return normalized;
 
   if (type === "skill_learning") return `Course option ${index + 1}`;

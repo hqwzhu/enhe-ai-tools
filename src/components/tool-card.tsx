@@ -63,7 +63,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
         {coverImage ? (
           <Image
             src={coverImage}
-            alt={tool.name}
+            alt={localizedTool.primaryName}
             fill
             className="object-cover opacity-90 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-100"
             sizes="(min-width: 1024px) 420px, 100vw"
