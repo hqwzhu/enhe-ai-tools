@@ -67,6 +67,14 @@ describe("AI news source contracts", () => {
     expect(detail).toContain("buildLocalizedTutorialPreviewToolName");
   });
 
+  it("uses sanitized AI news descriptions for metadata and structured data", () => {
+    const detail = read("src/app/ai-news/[slug]/page-shell.tsx");
+
+    expect(detail).toContain("resolveAiNewsMetaDescription");
+    expect(detail).toContain("description: localized.description");
+    expect(detail).not.toContain("description: localized.description || localized.summary");
+  });
+
   it("adds Prisma news models and interaction APIs", () => {
     const schema = read("prisma/schema.prisma");
 

@@ -62,7 +62,7 @@ export async function generateAiNewsDetailPageMetadata(forceLocale: Locale, slug
   const localized = localizeArticle(article, forceLocale);
   const metadata = buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: localized.title, brand: t.brand }),
-    description: localized.description || localized.summary,
+    description: localized.description,
     path: `/ai-news/${canonicalSlug}`,
     image: normalizeImageSrc(article.coverImage),
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
@@ -491,7 +491,7 @@ function buildNewsArticleSchema(article: NewsArticle, localized: ReturnType<type
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: localized.title,
-    description: localized.description || localized.summary,
+    description: localized.description,
     url,
     inLanguage: locale === "en" ? "en-US" : "zh-CN",
     datePublished: toNewsIsoDate(article.publishedAt ?? article.createdAt),
