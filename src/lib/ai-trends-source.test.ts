@@ -1,0 +1,63 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const root = process.cwd();
+
+function read(path: string) {
+  return readFileSync(join(root, path), "utf8");
+}
+
+function exists(path: string) {
+  return existsSync(join(root, path));
+}
+
+describe("AI trend briefing source contracts", () => {
+  it("adds public AI trend topic and daily briefing routes", () => {
+    expect(exists("src/app/ai-trends/page-shell.tsx")).toBe(true);
+    expect(exists("src/app/ai-trends/daily/page-shell.tsx")).toBe(true);
+    expect(exists("src/app/ai-trends/daily/[date]/page-shell.tsx")).toBe(true);
+    expect(exists("src/app/(zh-public)/ai-trends/page.tsx")).toBe(true);
+    expect(exists("src/app/(zh-public)/ai-trends/daily/page.tsx")).toBe(true);
+    expect(exists("src/app/(zh-public)/ai-trends/daily/[date]/page.tsx")).toBe(true);
+  });
+
+  it("keeps only the evergreen topic page indexable in sitemap", () => {
+    const sitemap = read("src/app/sitemap.ts");
+    const robots = read("src/app/robots.ts");
+
+    expect(sitemap).toContain('"/ai-trends"');
+    expect(sitemap).not.toContain('"/ai-trends/daily"');
+    expect(sitemap).not.toContain('`/ai-trends/daily/');
+    expect(robots).not.toContain("/ai-trends/daily");
+  });
+
+  it("sets noindex follow metadata on daily archive and daily detail pages", () => {
+    const archiveShell = read("src/app/ai-trends/daily/page-shell.tsx");
+    const detailShell = read("src/app/ai-trends/daily/[date]/page-shell.tsx");
+
+    expect(archiveShell).toContain("generateAiTrendDailyArchiveMetadata");
+    expect(archiveShell).toContain("index: false");
+    expect(archiveShell).toContain("follow: true");
+    expect(detailShell).toContain("generateAiTrendDailyDetailMetadata");
+    expect(detailShell).toContain("index: false");
+    expect(detailShell).toContain("follow: true");
+  });
+
+  it("gates full daily HTML behind login without exposing it in the public branch", () => {
+    const detailShell = read("src/app/ai-trends/daily/[date]/page-shell.tsx");
+
+    expect(detailShell).toContain("getCurrentUser");
+    expect(detailShell).toContain("const isLoggedIn = Boolean(user)");
+    expect(detailShell).toContain("toAiTrendBriefingView(briefing, isLoggedIn)");
+    expect(detailShell).toContain("buildAiTrendLoginUrl(date)");
+    expect(detailShell).toContain("buildAiTrendReportSrcDoc");
+    expect(detailShell).toContain("sandbox=");
+    expect(detailShell).toContain("view.fullHtml");
+  });
+
+  it("adds the publishing script for automation upserts", () => {
+    expect(exists("scripts/publish-ai-trend-briefing-html.ts")).toBe(true);
+    expect(exists("scripts/publish-ai-trend-briefing-html.test.ts")).toBe(true);
+  });
+});

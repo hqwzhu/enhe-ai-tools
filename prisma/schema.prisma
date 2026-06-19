@@ -125,6 +125,12 @@ enum NewsStatus {
   archived
 }
 
+enum AiTrendBriefingStatus {
+  draft
+  published
+  archived
+}
+
 model User {
   id              String          @id @default(cuid())
   email           String?         @unique
@@ -856,4 +862,25 @@ model NewsArticleLike {
   @@unique([articleId, userId])
   @@index([userId, createdAt])
   @@map("news_article_likes")
+}
+
+model AiTrendBriefing {
+  id                    String                 @id @default(cuid())
+  date                  DateTime               @unique
+  slug                  String                 @unique
+  title                 String
+  summary               String
+  coreConclusion        String                 @map("core_conclusion")
+  publicHighlights      String[]               @default([]) @map("public_highlights")
+  fullHtml              String                 @map("full_html")
+  sourceSignals         Json?                  @map("source_signals")
+  status                AiTrendBriefingStatus  @default(draft)
+  publishedAt           DateTime?              @map("published_at")
+  isIncludedInTopicPage Boolean                @default(false) @map("is_included_in_topic_page")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+
+  @@index([status, publishedAt])
+  @@index([isIncludedInTopicPage, publishedAt])
+  @@map("ai_trend_briefings")
 }

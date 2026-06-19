@@ -7,6 +7,7 @@ import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
+const aiTrendTopicPath = "/ai-trends";
 
 const staticRoutes = [
   "/",
@@ -100,6 +101,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: path === "/" || path === "/en" ? ("daily" as const) : ("weekly" as const),
       priority: getPriority(path)
     })),
+    {
+      url: absoluteUrl(aiTrendTopicPath),
+      lastModified: new Date("2026-06-19T00:00:00.000Z"),
+      changeFrequency: "weekly" as const,
+      priority: 0.76
+    },
     ...tools.flatMap((tool) => {
       const canonicalPath = buildCanonicalToolPath(tool, "zh");
       const localizedRoutes = [
