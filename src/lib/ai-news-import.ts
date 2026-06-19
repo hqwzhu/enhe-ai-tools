@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { resolveAiNewsCanonicalSlug, resolveNewsSlug } from "@/lib/ai-news";
+import { buildAiNewsCoverImageDuplicateWhere } from "@/lib/ai-news-cover-images";
 import { prisma } from "@/lib/db";
 import { tagSlug } from "@/lib/tool-content";
 
@@ -96,6 +97,15 @@ export type AiNewsImportResult = {
   adminUrl: string;
   publicUrl: string | null;
 };
+
+export class DuplicateAiNewsCoverImageError extends Error {
+  readonly code = "DUPLICATE_COVER_IMAGE";
+
+  constructor(readonly coverImage: string) {
+    super("AI news cover image is already used by another article.");
+    this.name = "DuplicateAiNewsCoverImageError";
+  }
+}
 
 export function verifyAiNewsImportToken(authorization: string | null, expectedToken: string | undefined) {
   const expected = expectedToken?.trim();
@@ -251,6 +261,17 @@ async function resolveUniqueImportSlug(tx: AiNewsImportTransaction, baseSlug: st
   throw new Error("Unable to resolve a unique AI news article slug.");
 }
 
+async function assertUniqueCoverImage(tx: AiNewsImportTransaction, coverImage: string | undefined) {
+  if (!coverImage) return;
+  const existing = await tx.newsArticle.findFirst({
+    where: buildAiNewsCoverImageDuplicateWhere(coverImage),
+    select: { id: true }
+  });
+  if (existing) {
+    throw new DuplicateAiNewsCoverImageError(coverImage);
+  }
+}
+
 function isPrismaUniqueCollision(error: unknown) {
   return (
     (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") ||
@@ -389,6 +410,7 @@ export async function importAiNewsArticle(rawPayload: unknown): Promise<AiNewsIm
     try {
       const article = await prisma.$transaction(async (tx) => {
         const slug = await resolveUniqueImportSlug(tx, importSlugCandidate(baseSlug, attempt));
+        await assertUniqueCoverImage(tx, payload.article.coverImage);
         return persistAiNewsImportAttempt({ tx, payload, now, slug });
       });
       const status = article.status as "draft" | "published";

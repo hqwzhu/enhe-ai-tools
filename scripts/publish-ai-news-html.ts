@@ -68,6 +68,9 @@ function formatImportFailure(response: Response, text: string) {
   if (body) {
     const error = typeof body.error === "string" ? body.error : "IMPORT_FAILED";
     const message = typeof body.message === "string" ? body.message : response.statusText;
+    if (error === "DUPLICATE_COVER_IMAGE") {
+      return `RETRYABLE_COVER_IMAGE_DUPLICATE: ${message}`;
+    }
     return `Import failed with HTTP ${response.status}: ${error}: ${message}`;
   }
 

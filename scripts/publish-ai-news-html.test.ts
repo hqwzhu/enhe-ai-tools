@@ -118,4 +118,27 @@ describe("publish-ai-news-html script", () => {
     expect(body.html).toBe("<article><h1>AI News</h1><p>Body</p></article>");
     expect(result.stdout).toContain("Imported AI news article: article-html");
   });
+
+  it("marks duplicate cover image import errors as retryable for automation", async () => {
+    const file = await createHtmlFile();
+    const url = await withServer((_req, res) => {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          ok: false,
+          error: "DUPLICATE_COVER_IMAGE",
+          message: "AI news cover image is already used by another article."
+        })
+      );
+    });
+
+    const result = await runScript(["--file", file, "--mode", "published"], {
+      AI_NEWS_IMPORT_URL: url,
+      AI_NEWS_IMPORT_TOKEN: "secret"
+    });
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("RETRYABLE_COVER_IMAGE_DUPLICATE");
+    expect(result.stderr).toContain("AI news cover image is already used by another article.");
+  });
 });

@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { ZodError } from "zod";
 import { buildAiNewsImportPayloadFromHtml } from "@/lib/ai-news-html-import";
-import { importAiNewsArticle, verifyAiNewsImportToken } from "@/lib/ai-news-import";
+import { DuplicateAiNewsCoverImageError, importAiNewsArticle, verifyAiNewsImportToken } from "@/lib/ai-news-import";
 
 export const dynamic = "force-dynamic";
 
@@ -79,6 +79,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof ZodError) {
       return errorResponse(400, "VALIDATION_ERROR", error.issues[0]?.message ?? "Invalid AI news import payload.");
+    }
+    if (error instanceof DuplicateAiNewsCoverImageError) {
+      return errorResponse(400, error.code, error.message);
     }
     console.error("AI news import failed.", error);
     return errorResponse(500, "IMPORT_FAILED", "AI news import failed.");

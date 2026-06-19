@@ -227,6 +227,25 @@ describe("AI news import helpers", () => {
     });
   });
 
+  it("rejects imported AI news when the cover image is already used by another article", async () => {
+    txMock.newsArticle.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "existing-article", title: "Existing story" });
+
+    await expect(
+      importAiNewsArticle({
+        ...baseImportPayload,
+        article: {
+          ...baseImportPayload.article,
+          title: "Different AI news story",
+          coverImage: "https://images.unsplash.com/photo-reused-cover"
+        }
+      })
+    ).rejects.toThrow("AI news cover image is already used");
+
+    expect(txMock.newsArticle.create).not.toHaveBeenCalled();
+  });
+
   it("deduplicates imported tags by normalized slug before creating tag records", async () => {
     await expect(
       importAiNewsArticle({

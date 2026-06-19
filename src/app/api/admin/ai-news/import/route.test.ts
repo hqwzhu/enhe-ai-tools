@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 import type { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZodError, z } from "zod";
-import { importAiNewsArticle } from "@/lib/ai-news-import";
+import { DuplicateAiNewsCoverImageError, importAiNewsArticle } from "@/lib/ai-news-import";
 import { POST } from "./route";
 
 vi.mock("next/cache", () => ({
@@ -119,6 +119,20 @@ describe("POST /api/admin/ai-news/import", () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith("AI news import failed.", internalError);
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it("returns 400 when the imported cover image has already been used", async () => {
+    process.env.AI_NEWS_IMPORT_TOKEN = "test-token";
+    importAiNewsArticleMock.mockRejectedValueOnce(new DuplicateAiNewsCoverImageError("https://images.unsplash.com/photo-reused-cover"));
+
+    const response = await POST(createRequest());
+
+    expect(response.status).toBe(400);
+    expect(await readJson(response)).toEqual({
+      ok: false,
+      error: "DUPLICATE_COVER_IMAGE",
+      message: "AI news cover image is already used by another article."
+    });
   });
 
   it("imports a draft article and revalidates the admin AI news page", async () => {
