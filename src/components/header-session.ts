@@ -11,6 +11,21 @@ export type HeaderSessionUser = {
 let cachedUser: HeaderSessionUser | null | undefined;
 let inflightSessionRequest: Promise<HeaderSessionUser | null> | null = null;
 
+export function resolveHeaderSessionState(
+  initialUser: HeaderSessionUser | null,
+  cachedSessionUser: HeaderSessionUser | null | undefined
+) {
+  if (initialUser) {
+    return { user: initialUser, loaded: true };
+  }
+
+  if (cachedSessionUser !== undefined) {
+    return { user: cachedSessionUser, loaded: true };
+  }
+
+  return { user: null, loaded: false };
+}
+
 async function fetchHeaderSessionUser() {
   const response = await fetch("/api/session", { cache: "no-store" });
   if (!response.ok) return null;
@@ -35,16 +50,19 @@ function refreshHeaderSessionUser() {
 }
 
 export function useHeaderSessionUser(initialUser: HeaderSessionUser | null) {
-  const [user, setUser] = useState<HeaderSessionUser | null>(() => cachedUser ?? initialUser ?? null);
-  const [loaded, setLoaded] = useState(true);
+  const [user, setUser] = useState<HeaderSessionUser | null>(() => resolveHeaderSessionState(initialUser, cachedUser).user);
+  const [loaded, setLoaded] = useState(() => resolveHeaderSessionState(initialUser, cachedUser).loaded);
 
   useEffect(() => {
     let isMounted = true;
 
-    const optimisticUser = initialUser ?? null;
-    cachedUser = optimisticUser;
-    setUser(optimisticUser);
-    setLoaded(true);
+    if (initialUser) {
+      cachedUser = initialUser;
+    }
+
+    const optimisticState = resolveHeaderSessionState(initialUser, cachedUser);
+    setUser(optimisticState.user);
+    setLoaded(optimisticState.loaded);
 
     refreshHeaderSessionUser().then((nextUser) => {
       if (!isMounted) return;

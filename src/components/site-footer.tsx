@@ -7,37 +7,66 @@ import { legalPages } from "@/lib/legal";
 import { buildLocalePath } from "@/lib/seo";
 import { getEffectiveFooterCopyright, getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
 
+const companyContact = {
+  name: "深圳市龙岗区恩禾网络科技工作室",
+  address: "深圳市龙岗区横岗街道塘坑社区宸和路51号中联展数字电商产业园C栋C305",
+  phone: "15715097597",
+  phoneHref: "tel:15715097597",
+  email: "ENHEAI.life@protonmail.com",
+  emailHref: "mailto:ENHEAI.life@protonmail.com"
+};
+
 export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
   const [locale, settings] = await Promise.all([forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(), getSettingsMap()]);
   const t = getDictionary(locale);
   const siteName = getEffectiveSiteName(settings, t.footer.siteName);
   const copyright = getEffectiveFooterCopyright(settings, t.footer.copyright);
+  const contactLabels =
+    locale === "en"
+      ? { company: "Company", address: "Address", phone: "Phone", email: "Email" }
+      : { company: "公司名称", address: "地址", phone: "电话", email: "邮箱" };
 
   return (
     <footer className="border-t border-white/14 py-10 text-sm text-[var(--marketing-muted)]">
       <Container>
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="font-semibold text-[var(--marketing-text)]">{siteName}</p>
             <p className="mt-2">{copyright}</p>
           </div>
-          <nav className="flex flex-wrap gap-x-5 gap-y-3">
-            <Link href={buildLocalePath("/legal/user-agreement", locale)} className="transition hover:text-[var(--marketing-accent)]">
-              {t.footer.helpSupport}
-            </Link>
-            <Link href={buildLocalePath("/#updates", locale)} className="transition hover:text-[var(--marketing-accent)]">
-              {t.nav.updates}
-            </Link>
-            {legalPages.map((page) => (
-              <Link
-                key={page.slug}
-                href={buildLocalePath(`/legal/${page.slug}`, locale)}
-                className="transition hover:text-[var(--marketing-accent)]"
-              >
-                {t.footer.legal[page.slug as keyof typeof t.footer.legal]}
+          <div className="flex max-w-3xl flex-col gap-5 lg:items-end">
+            <nav className="flex flex-wrap gap-x-5 gap-y-3 lg:justify-end">
+              <Link href={buildLocalePath("/legal/user-agreement", locale)} className="transition hover:text-[var(--marketing-accent)]">
+                {t.footer.helpSupport}
               </Link>
-            ))}
-          </nav>
+              <Link href={buildLocalePath("/#updates", locale)} className="transition hover:text-[var(--marketing-accent)]">
+                {t.nav.updates}
+              </Link>
+              {legalPages.map((page) => (
+                <Link
+                  key={page.slug}
+                  href={buildLocalePath(`/legal/${page.slug}`, locale)}
+                  className="transition hover:text-[var(--marketing-accent)]"
+                >
+                  {t.footer.legal[page.slug as keyof typeof t.footer.legal]}
+                </Link>
+              ))}
+            </nav>
+            <address className="grid gap-1 not-italic text-xs leading-6 text-[var(--marketing-muted)] lg:text-right">
+              <span>
+                {contactLabels.company}: {companyContact.name}
+              </span>
+              <span>
+                {contactLabels.address}: {companyContact.address}
+              </span>
+              <a href={companyContact.phoneHref} className="transition hover:text-[var(--marketing-accent)]">
+                {contactLabels.phone}: {companyContact.phone}
+              </a>
+              <a href={companyContact.emailHref} className="transition hover:text-[var(--marketing-accent)]">
+                {contactLabels.email}: {companyContact.email}
+              </a>
+            </address>
+          </div>
         </div>
         <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/10 pt-5 text-xs text-[var(--marketing-muted)]">
           <a
