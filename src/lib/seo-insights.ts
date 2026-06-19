@@ -9,6 +9,7 @@ export type SeoContentType =
   | "account_service_listing"
   | "account_service_detail"
   | "skill_learning_listing"
+  | "skill_learning_detail"
   | "tutorial_listing"
   | "pricing"
   | "legal"
@@ -128,10 +129,11 @@ export function getSeoContentType(pathname: string | null | undefined): SeoConte
   if (path === "/ai-news") return "ai_news_listing";
   if (path.startsWith("/ai-news/")) return "ai_news_article";
   if (path === "/software") return "software_listing";
-  if (path.startsWith("/tools/")) return "software_detail";
+  if (path.startsWith("/software/") || path.startsWith("/tools/")) return "software_detail";
   if (path === "/account-services" || path === "/online-tools") return "account_service_listing";
   if (path.startsWith("/account-services/") || path.startsWith("/online-tools/")) return "account_service_detail";
   if (path === "/skill-learning") return "skill_learning_listing";
+  if (path.startsWith("/skill-learning/")) return "skill_learning_detail";
   if (path === "/tutorials") return "tutorial_listing";
   if (path === "/pricing") return "pricing";
   if (path.startsWith("/legal/")) return "legal";
@@ -392,6 +394,7 @@ function normalizeSeoContentType(value: string | null): SeoContentType | null {
     "account_service_listing",
     "account_service_detail",
     "skill_learning_listing",
+    "skill_learning_detail",
     "tutorial_listing",
     "pricing",
     "legal",

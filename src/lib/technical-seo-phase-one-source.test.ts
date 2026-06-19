@@ -40,19 +40,22 @@ describe("technical seo phase one source", () => {
 
     expect(sitemap).toContain('export const dynamic = "force-dynamic";');
     expect(sitemap).toContain("prisma.tool");
-    expect(sitemap).toContain('const toolDetailBasePath = "/tools";');
-    expect(sitemap).toContain('`/en${toolDetailBasePath}/${canonicalSlug}`');
+    expect(sitemap).toContain("buildCanonicalToolPath");
+    expect(sitemap).not.toContain('const toolDetailBasePath = "/tools";');
+    expect(sitemap).not.toContain('`/en${toolDetailBasePath}/${canonicalSlug}`');
   });
 
   it("adds an indexable english route tree and locale-aware public navigation", () => {
     const enLayout = read("src/app/en/layout.tsx");
     const enHome = read("src/app/en/page.tsx");
     const enSoftware = read("src/app/en/software/page.tsx");
+    const enSoftwareDetail = read("src/app/en/software/[slug]/page.tsx");
     const enOnline = read("src/app/en/account-services/page.tsx");
+    const enAccountServiceDetail = read("src/app/en/account-services/[slug]/page.tsx");
     const enSkillLearning = read("src/app/en/skill-learning/page.tsx");
+    const enSkillLearningDetail = read("src/app/en/skill-learning/[slug]/page.tsx");
     const enPricing = read("src/app/en/pricing/page.tsx");
     const enTutorials = read("src/app/en/tutorials/page.tsx");
-    const enToolDetail = read("src/app/en/tools/[slug]/page.tsx");
     const enLegal = read("src/app/en/legal/[slug]/page.tsx");
     const header = read("src/components/site-header.tsx");
     const footer = read("src/components/site-footer.tsx");
@@ -62,11 +65,13 @@ describe("technical seo phase one source", () => {
     expect(enLayout).toContain('lang="en-US"');
     expect(enHome).toContain('forceLocale="en"');
     expect(enSoftware).toContain('forceLocale="en"');
+    expect(enSoftwareDetail).toContain('forceLocale="en"');
     expect(enOnline).toContain('forceLocale="en"');
+    expect(enAccountServiceDetail).toContain('forceLocale="en"');
     expect(enSkillLearning).toContain('forceLocale="en"');
+    expect(enSkillLearningDetail).toContain('forceLocale="en"');
     expect(enPricing).toContain('forceLocale="en"');
     expect(enTutorials).toContain('forceLocale="en"');
-    expect(enToolDetail).toContain('forceLocale="en"');
     expect(enLegal).toContain('forceLocale="en"');
 
     expect(header).toContain("buildLocalePath");

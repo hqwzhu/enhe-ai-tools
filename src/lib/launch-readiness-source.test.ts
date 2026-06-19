@@ -23,9 +23,14 @@ describe("launch readiness source coverage", () => {
     expect(seo).toContain("openGraph");
     expect(seo).toContain("twitter");
 
-    const toolDetail = read("src/app/(zh-public)/tools/[slug]/page.tsx");
-    expect(toolDetail).toContain("generateMetadata");
-    expect(toolDetail).toContain("generateToolDetailPageMetadata");
+    const softwareDetail = read("src/app/(zh-public)/software/[slug]/page.tsx");
+    const skillLearningDetail = read("src/app/(zh-public)/skill-learning/[slug]/page.tsx");
+    const legacyToolDetail = read("src/app/(zh-public)/tools/[slug]/page.tsx");
+    expect(softwareDetail).toContain("generateMetadata");
+    expect(softwareDetail).toContain("generateToolDetailPageMetadata");
+    expect(skillLearningDetail).toContain("generateMetadata");
+    expect(skillLearningDetail).toContain("generateToolDetailPageMetadata");
+    expect(legacyToolDetail).toContain("redirectLegacyToolDetailPage");
   });
 
   it("makes paid downloads, home cards, mobile nav, and tool detail more conversion-ready", () => {

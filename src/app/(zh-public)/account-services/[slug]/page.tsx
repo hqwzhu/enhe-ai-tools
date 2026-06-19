@@ -12,7 +12,7 @@ export default async function AccountServiceDetailPage({ params }: { params: Pro
   const { slug } = await params;
   return (
     <PublicSiteChrome forceLocale="zh">
-      <ToolDetailPageShell slug={slug} forceLocale="zh" />
+      <ToolDetailPageShell slug={slug} forceLocale="zh" expectedType="online" />
     </PublicSiteChrome>
   );
 }

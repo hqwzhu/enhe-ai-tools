@@ -11,7 +11,9 @@ export function middleware(request: NextRequest) {
   const isChinesePublicPath =
     pathname === "/" ||
     ["/software", "/account-services", "/online-tools", "/skill-learning", "/pricing", "/tutorials", "/ai-news"].includes(pathname) ||
+    pathname.startsWith("/software/") ||
     pathname.startsWith("/account-services/") ||
+    pathname.startsWith("/skill-learning/") ||
     pathname.startsWith("/ai-news/") ||
     pathname.startsWith("/tools/") ||
     pathname.startsWith("/legal/");

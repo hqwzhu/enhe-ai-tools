@@ -19,11 +19,17 @@
    if (active.length) return active.sort((a, b) => Number(a.price) - Number(b.price))[0].price;
    return Number(downloadPrice ?? 0) > 0 ? downloadPrice : 0;
  }
+
+ function buildToolPublicPath(tool: { slug: string; type: "software" | "online" | "skill_learning" }) {
+   const basePath = tool.type === "online" ? "/account-services" : tool.type === "skill_learning" ? "/skill-learning" : "/software";
+   return `${basePath}/${tool.slug}`;
+ }
  
  function buildToolCard(tool: {
    name: string;
    englishName?: string | null;
    slug: string;
+   type: "software" | "online" | "skill_learning";
    shortDescription: string;
    content: string;
    priceSpecs: { price: unknown; status: string }[];
@@ -31,7 +37,7 @@
  }) {
    const detail = truncate(tool.shortDescription, 80);
    const pain = truncate(tool.content.replace(/<[^>]+>/g, ""), 120);
-   const link = `https://www.enhe-tech.com.cn/tools/${tool.slug}`;
+   const link = `https://www.enhe-tech.com.cn${buildToolPublicPath(tool)}`;
  
    return `<tr>
      <td style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);color:#F6FAFF;font-weight:600">${tool.name}${tool.englishName ? `<br><span style="font-size:12px;color:#7DD3FC;font-weight:400">${tool.englishName}</span>` : ""}</td>

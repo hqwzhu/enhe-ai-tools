@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import { prisma } from "@/lib/db";
-import { getCanonicalAiNewsSlug, getCanonicalToolSlug } from "@/lib/public-slugs";
+import { buildCanonicalToolPath, getCanonicalAiNewsSlug } from "@/lib/public-slugs";
 import { absoluteUrl, buildLanguageAlternates } from "@/lib/seo";
+import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
-const toolDetailBasePath = "/tools";
 
 const staticRoutes = [
   "/",
@@ -101,12 +101,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: getPriority(path)
     })),
     ...tools.flatMap((tool) => {
-      const canonicalSlug = getCanonicalToolSlug(tool);
-      const canonicalPath = tool.type === "online" ? `/account-services/${canonicalSlug}` : `${toolDetailBasePath}/${canonicalSlug}`;
-      const localizedRoutes =
-        tool.type === "online"
-          ? [`/account-services/${canonicalSlug}`, `/en/account-services/${canonicalSlug}`]
-          : [`${toolDetailBasePath}/${canonicalSlug}`, `/en${toolDetailBasePath}/${canonicalSlug}`];
+      const canonicalPath = buildCanonicalToolPath(tool, "zh");
+      const localizedRoutes = [
+        canonicalPath,
+        ...(shouldIndexEnglishToolPage(tool) ? [buildCanonicalToolPath(tool, "en")] : [])
+      ];
 
       return localizedRoutes.map((path) => ({
         url: absoluteUrl(path),

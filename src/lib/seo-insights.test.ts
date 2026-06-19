@@ -23,9 +23,11 @@ describe("SEO insight helpers", () => {
     expect(getSeoContentType("/")).toBe("home");
     expect(getSeoContentType("/ai-news")).toBe("ai_news_listing");
     expect(getSeoContentType("/en/ai-news/open-source-llm")).toBe("ai_news_article");
+    expect(getSeoContentType("/software/faceswap-studio")).toBe("software_detail");
     expect(getSeoContentType("/tools/faceswap-studio")).toBe("software_detail");
     expect(getSeoContentType("/en/account-services/chatgpt-plus")).toBe("account_service_detail");
     expect(getSeoContentType("/skill-learning")).toBe("skill_learning_listing");
+    expect(getSeoContentType("/skill-learning/prompt-engineering")).toBe("skill_learning_detail");
   });
 
   it("turns search and landing-page signals into next action recommendations", () => {

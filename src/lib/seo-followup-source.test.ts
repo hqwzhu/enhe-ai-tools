@@ -38,7 +38,7 @@ describe("SEO follow-up source contracts", () => {
     expect(adminForm).toContain("buildSeoFriendlySlug");
     expect(aiNews).toContain("resolveAiNewsCanonicalSlug");
     expect(toolDetail).toContain("buildSeoFriendlySlug");
-    expect(toolDetail).toContain("redirect(");
+    expect(toolDetail).toContain("permanentRedirect(");
     expect(newsDetail).toContain("getCanonicalAiNewsSlug");
     expect(newsDetail).toContain("redirect(");
   });

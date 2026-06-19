@@ -10,6 +10,9 @@ import {
 describe("analytics funnel helpers", () => {
   it("maps important pages to launch funnel events", () => {
     expect(getPageViewEventName("/")).toBe("visit_home");
+    expect(getPageViewEventName("/software/faceswap-studio")).toBe("view_tool");
+    expect(getPageViewEventName("/skill-learning/prompt-engineering")).toBe("view_tool");
+    expect(getPageViewEventName("/account-services/chatgpt-plus")).toBe("view_tool");
     expect(getPageViewEventName("/tools/faceswap-studio")).toBe("view_tool");
     expect(getPageViewEventName("/pricing")).toBe("view_pricing");
     expect(getPageViewEventName("/user")).toBe("view_user_center");

@@ -129,9 +129,11 @@ export function buildLocalePath(path: string, locale: Locale) {
 const localizedPublicRoutePatterns = [
   /^\/$/,
   /^\/software$/,
+  /^\/software\/.+$/,
   /^\/account-services$/,
   /^\/account-services\/.+$/,
   /^\/skill-learning$/,
+  /^\/skill-learning\/.+$/,
   /^\/ai-news$/,
   /^\/ai-news\/.+$/,
   /^\/pricing$/,

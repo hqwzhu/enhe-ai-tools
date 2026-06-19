@@ -1,18 +1,8 @@
-import { generateToolDetailPageMetadata, ToolDetailPageShell } from "@/app/tools/[slug]/page-shell";
-import { PublicSiteChrome } from "@/components/public-site-chrome";
+import { redirectLegacyToolDetailPage } from "@/app/tools/[slug]/page-shell";
 
 export const revalidate = 300;
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export default async function LegacyEnglishToolDetailRedirectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return generateToolDetailPageMetadata("en", slug);
-}
-
-export default async function EnglishToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  return (
-    <PublicSiteChrome forceLocale="en">
-      <ToolDetailPageShell slug={slug} forceLocale="en" />
-    </PublicSiteChrome>
-  );
+  await redirectLegacyToolDetailPage(slug, "en");
 }

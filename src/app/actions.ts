@@ -38,7 +38,7 @@ import { createUserNotification } from "@/lib/notifications";
 import { canUserCancelOrder, canUserRequestRefundForOrder, normalizeRefundRecordAmount } from "@/lib/order-rules";
 import { validatePasswordChangeInput } from "@/lib/password";
 import { getCurrentLocale } from "@/lib/i18n";
-import { buildCanonicalToolPath, getCanonicalToolSlug } from "@/lib/public-slugs";
+import { buildCanonicalToolPath } from "@/lib/public-slugs";
 import { buildLocalePath } from "@/lib/seo";
 import { resolveToolOrderPriceSpec } from "@/lib/tool-price-specs";
 
@@ -182,7 +182,7 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
   });
   await trackAnalyticsEvent({
     eventName: "create_order",
-    path: tool.type === "online" ? `/account-services/${getCanonicalToolSlug(tool)}` : `/tools/${getCanonicalToolSlug(tool)}`,
+    path: buildCanonicalToolPath(tool, locale),
     entityType: "order",
     entityId: order.id,
     userId: user.id,

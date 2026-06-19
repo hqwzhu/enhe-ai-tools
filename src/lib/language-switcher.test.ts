@@ -8,7 +8,9 @@ describe("buildLanguageSwitcherHref", () => {
     expect(buildLanguageSwitcherHref("/en", "zh")).toBe("/");
     expect(buildLanguageSwitcherHref("/software", "en")).toBe("/en/software");
     expect(buildLanguageSwitcherHref("/en/software", "zh")).toBe("/software");
-    expect(buildLanguageSwitcherHref("/tools/demo-tool", "en")).toBe("/en/tools/demo-tool");
+    expect(buildLanguageSwitcherHref("/software/demo-tool", "en")).toBe("/en/software/demo-tool");
+    expect(buildLanguageSwitcherHref("/skill-learning/demo-course", "en")).toBe("/en/skill-learning/demo-course");
+    expect(buildLanguageSwitcherHref("/account-services/demo-service", "en")).toBe("/en/account-services/demo-service");
     expect(buildLanguageSwitcherHref("/en/legal/privacy-policy", "zh")).toBe("/legal/privacy-policy");
   });
 

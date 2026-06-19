@@ -62,7 +62,14 @@ function getPageViewEventName(pathname: string | null) {
   if (path === "/") return "visit_home";
   if (path === "/pricing") return "view_pricing";
   if (path === "/user") return "view_user_center";
-  if (path.startsWith("/tools/")) return "view_tool";
+  if (
+    path.startsWith("/software/") ||
+    path.startsWith("/skill-learning/") ||
+    path.startsWith("/account-services/") ||
+    path.startsWith("/tools/")
+  ) {
+    return "view_tool";
+  }
   return null;
 }
 

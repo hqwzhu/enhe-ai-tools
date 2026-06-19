@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { createCommentAction, createSoftwareDownloadOrderAction } from "@/app/actions";
 import { FormSubmitButton } from "@/components/form-submit-button";
 import { StructuredData } from "@/components/structured-data";
@@ -67,7 +67,7 @@ export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: 
       })
     : null;
   const canonicalSlug = slugMatch?.canonicalSlug ?? slug;
-  const canonical = tool?.type === "online" ? `/account-services/${canonicalSlug}` : `/tools/${canonicalSlug}`;
+  const canonical = tool ? buildCanonicalToolPath(tool, forceLocale) : buildLocalePath(`/software/${canonicalSlug}`, forceLocale);
   if (!tool || tool.status !== "published") {
     return buildPageMetadata({
       title: `${t.toolDetail.introTitle} - ${t.brand}`,
@@ -111,10 +111,12 @@ export async function generateToolDetailPageMetadata(forceLocale: Locale, slug: 
 
 export async function ToolDetailPageShell({
   slug,
-  forceLocale
+  forceLocale,
+  expectedType
 }: {
   slug: string;
   forceLocale: Locale;
+  expectedType?: "software" | "online" | "skill_learning";
 }) {
   const [user, slugMatch] = await Promise.all([getCurrentUser(), resolvePublicToolSlug(slug)]);
   if (!slugMatch) notFound();
@@ -140,8 +142,8 @@ export async function ToolDetailPageShell({
     name: tool.name,
     englishName: tool.englishName
   });
-  if (slug !== canonicalSlug) {
-    redirect(buildCanonicalToolPath(tool, forceLocale));
+  if (slug !== canonicalSlug || (expectedType && tool.type !== expectedType)) {
+    permanentRedirect(buildCanonicalToolPath(tool, forceLocale));
   }
 
   const localizedTool = resolveLocalizedToolIdentity(tool, forceLocale);
@@ -588,6 +590,19 @@ export async function ToolDetailPageShell({
       </section>
     </Container>
   );
+}
+
+export async function redirectLegacyToolDetailPage(slug: string, forceLocale: Locale) {
+  const slugMatch = await resolvePublicToolSlug(slug);
+  if (!slugMatch) notFound();
+
+  const tool = await prisma.tool.findUnique({
+    where: { id: slugMatch.id },
+    select: { slug: true, name: true, englishName: true, status: true, type: true }
+  });
+  if (!tool || tool.status !== "published") notFound();
+
+  permanentRedirect(buildCanonicalToolPath(tool, forceLocale));
 }
 
 function Info({ label, value }: { label: string; value: string }) {

@@ -16,8 +16,21 @@ describe("public slug helpers", () => {
     };
 
     expect(getCanonicalToolSlug(tool)).toBe("ai-voice-generator-flexible-edition");
-    expect(buildCanonicalToolPath(tool, "zh")).toBe("/tools/ai-voice-generator-flexible-edition");
-    expect(buildCanonicalToolPath(tool, "en")).toBe("/en/tools/ai-voice-generator-flexible-edition");
+    expect(buildCanonicalToolPath(tool, "zh")).toBe("/software/ai-voice-generator-flexible-edition");
+    expect(buildCanonicalToolPath(tool, "en")).toBe("/en/software/ai-voice-generator-flexible-edition");
+  });
+
+  it("uses skill-learning for skill course canonical paths", () => {
+    const tool = {
+      slug: "ai-course",
+      name: "AI prompt course",
+      englishName: "AI Prompt Engineering Course",
+      type: "skill_learning" as const
+    };
+
+    expect(getCanonicalToolSlug(tool)).toBe("ai-prompt-engineering-course");
+    expect(buildCanonicalToolPath(tool, "zh")).toBe("/skill-learning/ai-prompt-engineering-course");
+    expect(buildCanonicalToolPath(tool, "en")).toBe("/en/skill-learning/ai-prompt-engineering-course");
   });
 
   it("builds canonical AI news slugs and localized paths", () => {

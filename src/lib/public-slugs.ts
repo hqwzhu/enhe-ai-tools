@@ -24,11 +24,13 @@ export function buildCanonicalToolPath(
   },
   locale: Locale
 ) {
-  if (tool.type === "online") {
-    return buildLocalePath(`/account-services/${getCanonicalToolSlug(tool)}`, locale);
-  }
+  return buildLocalePath(`${getCanonicalToolBasePath(tool)}/${getCanonicalToolSlug(tool)}`, locale);
+}
 
-  return buildLocalePath(`/tools/${getCanonicalToolSlug(tool)}`, locale);
+export function getCanonicalToolBasePath(tool: { type?: "software" | "online" | "skill_learning" }) {
+  if (tool.type === "online") return "/account-services";
+  if (tool.type === "skill_learning") return "/skill-learning";
+  return "/software";
 }
 
 export function getCanonicalAiNewsSlug(article: {

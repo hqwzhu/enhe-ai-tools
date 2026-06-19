@@ -44,7 +44,14 @@ export function getPageViewEventName(path: string): AnalyticsEventName | null {
   if (normalized === "/") return "visit_home";
   if (normalized === "/pricing") return "view_pricing";
   if (normalized === "/user") return "view_user_center";
-  if (normalized.startsWith("/tools/")) return "view_tool";
+  if (
+    normalized.startsWith("/software/") ||
+    normalized.startsWith("/skill-learning/") ||
+    normalized.startsWith("/account-services/") ||
+    normalized.startsWith("/tools/")
+  ) {
+    return "view_tool";
+  }
   return null;
 }
 
