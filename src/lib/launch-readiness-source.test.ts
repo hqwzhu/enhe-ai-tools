@@ -25,12 +25,12 @@ describe("launch readiness source coverage", () => {
 
     const softwareDetail = read("src/app/(zh-public)/software/[slug]/page.tsx");
     const skillLearningDetail = read("src/app/(zh-public)/skill-learning/[slug]/page.tsx");
-    const legacyToolDetail = read("src/app/(zh-public)/tools/[slug]/page.tsx");
+    const legacyToolDetail = read("src/app/(zh-public)/tools/[slug]/route.ts");
     expect(softwareDetail).toContain("generateMetadata");
     expect(softwareDetail).toContain("generateToolDetailPageMetadata");
     expect(skillLearningDetail).toContain("generateMetadata");
     expect(skillLearningDetail).toContain("generateToolDetailPageMetadata");
-    expect(legacyToolDetail).toContain("redirectLegacyToolDetailPage");
+    expect(legacyToolDetail).toContain("buildLegacyToolDetailRedirectResponse");
   });
 
   it("makes paid downloads, home cards, mobile nav, and tool detail more conversion-ready", () => {

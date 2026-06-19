@@ -263,6 +263,40 @@ export function isEnglishNewsArticleIndexable(article: {
   return title.length >= 12 && summary.length >= 24 && content.length >= 180;
 }
 
+function looksLikeDateOnlyDescription(value: string) {
+  const text = value.trim();
+  return (
+    /^\d{4}[-/.年]\d{1,2}[-/.月]\d{1,2}日?$/.test(text) ||
+    /^[A-Z][a-z]+ \d{1,2}, \d{4}$/.test(text) ||
+    /^\d{1,2} [A-Z][a-z]+ \d{4}$/.test(text)
+  );
+}
+
+function normalizeAiNewsMetaCandidate(value: string | null | undefined) {
+  return String(value ?? "")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/!\[[^\]]*]\([^)]+\)/g, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*]\s+/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function resolveAiNewsMetaDescription(
+  candidates: Array<string | null | undefined>,
+  fallback: string,
+  minLength = 24
+) {
+  const validCandidate = candidates
+    .map((candidate) => normalizeAiNewsMetaCandidate(candidate))
+    .find((candidate) => candidate.length >= minLength && !looksLikeDateOnlyDescription(candidate));
+  const normalizedFallback = normalizeAiNewsMetaCandidate(fallback);
+
+  return validCandidate || (looksLikeDateOnlyDescription(normalizedFallback) ? "" : normalizedFallback);
+}
+
 export function parseNewsRelationIds(value: string | null | undefined) {
   const seen = new Set<string>();
   return String(value ?? "")

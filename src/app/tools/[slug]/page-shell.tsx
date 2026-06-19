@@ -592,19 +592,6 @@ export async function ToolDetailPageShell({
   );
 }
 
-export async function redirectLegacyToolDetailPage(slug: string, forceLocale: Locale) {
-  const slugMatch = await resolvePublicToolSlug(slug);
-  if (!slugMatch) notFound();
-
-  const tool = await prisma.tool.findUnique({
-    where: { id: slugMatch.id },
-    select: { slug: true, name: true, englishName: true, status: true, type: true }
-  });
-  if (!tool || tool.status !== "published") notFound();
-
-  permanentRedirect(buildCanonicalToolPath(tool, forceLocale));
-}
-
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/8 p-4">
