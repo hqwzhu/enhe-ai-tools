@@ -21,7 +21,7 @@ import {
   type PublicNewsListingFilters
 } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { absoluteUrl, buildBreadcrumbSchema, buildLocalePath, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
+import { absoluteUrl, buildBreadcrumbSchema, buildListingMetaDescription, buildLocalePath, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 type NewsCardArticle = Awaited<ReturnType<typeof getPublicNewsListing>>["articles"][number];
 type KeywordCloudItem = Awaited<ReturnType<typeof getPublicAiNewsDiscovery>>["keywordCloudItems"][number];
@@ -33,7 +33,7 @@ export async function generateAiNewsPageMetadata(forceLocale: Locale): Promise<M
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: t.aiNews.title, brand: t.brand }),
-    description: t.aiNews.intro,
+    description: buildListingMetaDescription("ai-news", forceLocale),
     path: "/ai-news",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale

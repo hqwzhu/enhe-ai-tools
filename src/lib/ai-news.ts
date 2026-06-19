@@ -348,6 +348,27 @@ export function resolveAiNewsMetaDescription(
   return validCandidate || (looksLikeDateOnlyDescription(normalizedFallback) ? "" : normalizedFallback);
 }
 
+export function buildAiNewsDescriptionFallback({
+  title,
+  categoryName,
+  locale
+}: {
+  title: string;
+  categoryName?: string | null;
+  locale: "zh" | "en";
+}) {
+  const normalizedTitle = normalizeAiNewsMetaCandidate(title);
+  const normalizedCategory = normalizeAiNewsMetaCandidate(categoryName);
+
+  if (locale === "en") {
+    const topic = normalizedCategory ? `${normalizedCategory} topic` : "AI trend";
+    return `Read ENHE AI's analysis of ${normalizedTitle || topic}, including the key facts, practical impact, related tools, tutorials, and next steps for AI workflows.`;
+  }
+
+  const topic = normalizedCategory ? `“${normalizedCategory}”方向` : "AI趋势";
+  return `阅读 ENHE AI 对${normalizedTitle ? `“${normalizedTitle}”` : topic}的资讯解读，了解核心信息、实际影响、相关工具、教程和下一步落地建议。`;
+}
+
 export function parseNewsRelationIds(value: string | null | undefined) {
   const seen = new Set<string>();
   return String(value ?? "")

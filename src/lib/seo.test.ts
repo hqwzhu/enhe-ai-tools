@@ -86,7 +86,7 @@ describe("seo helpers", () => {
   });
 
   it("builds homepage titles as brand plus business scope", () => {
-    expect(buildHomeMetadataTitle("en", "ENHE AI")).toBe("ENHE AI | AI News, Software Apps, Account Services & Skill Learning");
+    expect(buildHomeMetadataTitle("en", "ENHE AI")).toBe("ENHE AI | AI News, Apps, Accounts & Courses");
     expect(buildHomeMetadataTitle("zh", "恩禾 ENHE AI")).toBe("恩禾 ENHE AI | AI前沿资讯、软件应用、账号服务与技能学习");
   });
 });

@@ -48,8 +48,14 @@ if [ -f "$HOT_NGINX_CONF" ]; then
   cp "$HOT_NGINX_CONF" "$BEFORE_NGINX_CONF"
 
   if grep -q "server_name www.enhe-tech.com.cn;" "$HOT_NGINX_CONF"; then
+    if ! grep -q "server_name www.enhe-tech.com.cn enhe-tech.com.cn;" "$HOT_NGINX_CONF"; then
+      sed -i 's/server_name www.enhe-tech.com.cn;/server_name www.enhe-tech.com.cn enhe-tech.com.cn;/g' "$HOT_NGINX_CONF"
+    fi
+    if ! grep -q "if (\$host = enhe-tech.com.cn)" "$HOT_NGINX_CONF"; then
+      sed -i '/server_name www.enhe-tech.com.cn enhe-tech.com.cn;/a\    if ($host = enhe-tech.com.cn) {\n        return 301 https://www.enhe-tech.com.cn$request_uri;\n    }' "$HOT_NGINX_CONF"
+    fi
     if ! grep -q "client_max_body_size 520m;" "$HOT_NGINX_CONF"; then
-      sed -i '/server_name www.enhe-tech.com.cn;/a\    client_max_body_size 520m;' "$HOT_NGINX_CONF"
+      sed -i '/server_name www.enhe-tech.com.cn enhe-tech.com.cn;/a\    client_max_body_size 520m;' "$HOT_NGINX_CONF"
     fi
     sed -i 's/enhe-ai-tools-app-1:3000/enhe-ai-tools-app:3000/g' "$HOT_NGINX_CONF"
     if ! grep -q "proxy_set_header X-Forwarded-Host" "$HOT_NGINX_CONF"; then

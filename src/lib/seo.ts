@@ -215,8 +215,63 @@ export function buildMetadataTitle({ pageTitle, brand = siteName, maxLength = 68
 
 export function buildHomeMetadataTitle(locale: Locale, brand = siteName) {
   const scope =
-    locale === "en" ? "AI News, Software Apps, Account Services & Skill Learning" : "AI前沿资讯、软件应用、账号服务与技能学习";
-  return truncateText(`${normalizeWhitespace(brand)} | ${scope}`, locale === "en" ? 72 : 64);
+    locale === "en" ? "AI News, Apps, Accounts & Courses" : "AI前沿资讯、软件应用、账号服务与技能学习";
+  return truncateText(`${normalizeWhitespace(brand)} | ${scope}`, locale === "en" ? 62 : 64);
+}
+
+export function buildHomeMetaDescription(locale: Locale, customIntro?: string | null) {
+  const intro = normalizeWhitespace(customIntro ?? "");
+  const defaultBrandSentence = normalizeWhitespace(defaultSiteDescription);
+  const shouldUseTemplate = !intro || intro === defaultBrandSentence || intro.length < (locale === "en" ? 100 : 50);
+
+  if (!shouldUseTemplate) {
+    return buildMetaDescription(intro, defaultSiteDescription, locale === "en" ? 155 : 150);
+  }
+
+  if (locale === "en") {
+    return "ENHE AI brings together global AI news, AI software apps, account service guidance, skill courses, and practical tutorials to turn AI changes into productivity.";
+  }
+
+  return "恩禾 ENHE AI 聚合 AI前沿资讯、AI软件应用、AI账号服务、AI技能课程与实用教程，帮助用户理解趋势、选择工具、提升效率并把想法落地。";
+}
+
+export function buildListingMetaDescription(
+  kind: "software" | "account-services" | "skill-learning" | "ai-news" | "pricing" | "tutorials",
+  locale: Locale
+) {
+  const zhDescriptions = {
+    software: "精选本地部署AI应用、AI效率工具、桌面软件和创作辅助工具，覆盖内容生产、运营自动化、音视频处理与日常工作流，帮助你更快完成实际任务。",
+    "account-services": "浏览AI账号服务咨询、AI工具订阅与账号使用支持、合规使用建议和交付说明。使用第三方平台前，请以对应平台官方政策为准。",
+    "skill-learning": "学习AI提示词、AI工具实战、本地部署、自动化流程和内容创作课程，用清晰教程把AI能力转化为可复用的工作技能。",
+    "ai-news": "关注全球AI智能体、本地部署AI应用、开源模型、AI工具、AI技能教程与行业趋势，帮助你把AI变化转化为实际生产力。",
+    pricing: "查看ENHE AI付费软件、课程与服务的购买流程、权益说明、支付审核、售后边界和退款规则，购买前先了解交付与使用方式。",
+    tutorials: "阅读ENHE AI工具教程、软件使用指南、AI技能实战步骤和常见问题处理方法，把工具能力转化为可执行的工作流程。"
+  } as const;
+  const enDescriptions = {
+    software: "Explore AI software apps for local deployment, productivity workflows, content creation, automation, audio, video, and daily work. Compare features, pricing, and access.",
+    "account-services": "Browse AI account service guidance, subscription support, account usage notes, compliance reminders, pricing, and delivery boundaries for AI tools.",
+    "skill-learning": "Learn prompt engineering, AI tool workflows, local AI deployment, automation, and content creation through practical ENHE AI skill courses.",
+    "ai-news": "Follow global AI agents, local AI deployment, open models, AI tools, tutorials, and industry trends so new AI changes become practical productivity.",
+    pricing: "Review ENHE AI paid software, courses, service access, payment review, delivery boundaries, after-sales support, and refund rules before purchase.",
+    tutorials: "Read ENHE AI tutorials, software guides, AI workflow steps, and practical troubleshooting notes to turn tools into repeatable outcomes."
+  } as const;
+
+  return locale === "en" ? enDescriptions[kind] : zhDescriptions[kind];
+}
+
+export function sanitizeAccountServiceCopy(value: string | null | undefined, locale: Locale = "zh") {
+  const normalized = normalizeWhitespace(value ?? "");
+  const riskyPattern =
+    /(官方代充|代充需求|代充|低价稳定|永久可用|共享账号|破解|绕过限制|保证不封号|黑卡|免风控|无封号|掉订阅|账号\s*\+\s*密码|提供账号|充值|recharge|shared account|cracked|bypass|black card|no ban|guaranteed)/i;
+
+  if (!normalized) return "";
+  if (!riskyPattern.test(normalized)) return normalized;
+
+  if (locale === "en") {
+    return "AI tool subscription and account usage support with access guidance, delivery notes, and compliance reminders. Please follow the rules of each platform; for third-party services, the official policy should prevail.";
+  }
+
+  return "AI工具订阅与账号使用支持，提供订阅咨询、账号使用建议、交付说明与售后边界。使用前请遵守对应平台规则；如涉及第三方平台，请以官方政策为准。";
 }
 
 function resolveToolTitleNames(name: string, englishName: string | null | undefined, locale: Locale) {
@@ -270,7 +325,8 @@ function resolveToolTypeLabel(type: ToolMetaDescriptionInput["type"], locale: Lo
   return "AI软件应用";
 }
 
-export function buildToolMetadataTitle({ name, englishName, brand = siteName, maxLength = 68, locale = "zh" }: BuildTitleInput) {
+export function buildToolMetadataTitle({ name, englishName, brand = siteName, maxLength, locale = "zh" }: BuildTitleInput) {
+  const targetMaxLength = maxLength ?? (locale === "en" ? 62 : 68);
   const { primaryName, secondaryName } = resolveToolTitleNames(name, englishName, locale);
   const splitTitle = locale === "en" ? splitToolTypeFromName(primaryName) : { toolName: primaryName, typeName: "" };
 
@@ -278,24 +334,24 @@ export function buildToolMetadataTitle({ name, englishName, brand = siteName, ma
     const titleWithType = buildMetadataTitle({
       pageTitle: `${splitTitle.toolName} | ${splitTitle.typeName}`,
       brand,
-      maxLength
+      maxLength: targetMaxLength
     });
-    if (titleWithType.length <= maxLength) return titleWithType;
+    if (titleWithType.length <= targetMaxLength) return titleWithType;
   }
 
   const preferredTitle = secondaryName ? `${primaryName} (${secondaryName})` : primaryName;
-  const compactTitle = buildMetadataTitle({ pageTitle: primaryName, brand, maxLength });
-  const fullTitle = buildMetadataTitle({ pageTitle: preferredTitle, brand, maxLength });
+  const compactTitle = buildMetadataTitle({ pageTitle: primaryName, brand, maxLength: targetMaxLength });
+  const fullTitle = buildMetadataTitle({ pageTitle: preferredTitle, brand, maxLength: targetMaxLength });
 
-  if (secondaryName && fullTitle !== compactTitle && preferredTitle.length + ` | ${brand}`.length > maxLength) {
+  if (secondaryName && fullTitle !== compactTitle && preferredTitle.length + ` | ${brand}`.length > targetMaxLength) {
     return compactTitle;
   }
 
-  if (fullTitle.length <= maxLength) return fullTitle;
-  if (compactTitle.length <= maxLength) return compactTitle;
+  if (fullTitle.length <= targetMaxLength) return fullTitle;
+  if (compactTitle.length <= targetMaxLength) return compactTitle;
 
   const reservedLength = ` | ${brand}`.length;
-  return `${truncateText(primaryName, Math.max(12, maxLength - reservedLength))} | ${brand}`;
+  return `${truncateText(primaryName, Math.max(12, targetMaxLength - reservedLength))} | ${brand}`;
 }
 
 export function buildToolMetaDescription({
@@ -307,7 +363,7 @@ export function buildToolMetaDescription({
   type = "software",
   maxLength = 160
 }: ToolMetaDescriptionInput) {
-  const normalizedDescription = normalizeWhitespace(description ?? "");
+  const normalizedDescription = type === "online" ? sanitizeAccountServiceCopy(description, locale) : normalizeWhitespace(description ?? "");
   const { primaryName } = resolveToolTitleNames(name, englishName, locale);
   const typeLabel = resolveToolTypeLabel(type, locale);
 

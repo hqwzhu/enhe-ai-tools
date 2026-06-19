@@ -36,7 +36,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
           <span className="site-brand-mark" aria-hidden="true">
             <Image
               src="/images/brand/enhe-icon-gradient-transparent-cropped.png"
-              alt=""
+              alt={`${brandWordmark} logo`}
               width={92}
               height={60}
               className="site-brand-logo site-brand-logo-dark"

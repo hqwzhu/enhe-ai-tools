@@ -6,7 +6,7 @@ import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getPublicToolCategories, getPublicToolListing } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
-import { buildBreadcrumbSchema, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildListingMetaDescription, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 export const accountServicesPageRevalidate = publicPageCacheSeconds;
 
@@ -14,7 +14,7 @@ export async function generateAccountServicesPageMetadata(forceLocale: Locale): 
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: t.listing.onlineTitle, brand: t.brand }),
-    description: t.listing.onlineIntro,
+    description: buildListingMetaDescription("account-services", forceLocale),
     path: "/account-services",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale

@@ -5,7 +5,7 @@ import { StructuredData } from "@/components/structured-data";
 import { Container, SectionTitle } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildBreadcrumbSchema, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildListingMetaDescription, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
 
 export const pricingPageRevalidate = publicPageCacheSeconds;
 
@@ -16,10 +16,7 @@ export async function generatePricingPageMetadata(forceLocale: Locale): Promise<
       pageTitle: forceLocale === "en" ? "Paid downloads" : "付费下载",
       brand: t.brand
     }),
-    description:
-      forceLocale === "en"
-        ? "Paid software can be purchased from each tool detail page."
-        : "付费软件请在具体工具详情页购买。",
+    description: buildListingMetaDescription("pricing", forceLocale),
     path: "/pricing",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale
@@ -36,7 +33,11 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
             "ENHE AI now sells paid software downloads by individual tool. Open a software detail page, confirm the price, submit payment proof, and the download link will appear after review approval.",
           cardTitle: "Buy from the software page",
           cardText: "Each paid desktop app has its own price and unlocks only that app's download-link content.",
-          cta: "View AI software apps"
+          cta: "View AI software apps",
+          guidanceTitle: "Before you buy",
+          purchaseGuidance: "Open the software, course, or service detail page first. The detail page shows the current price, access scope, delivery notes, and related guidance.",
+          paymentReview: "After payment, submit the required proof through the page workflow. ENHE AI reviews the order and unlocks the matching download, course, or service access after approval.",
+          afterSalesBoundary: "Paid access follows the description on each detail page. Third-party platform services must follow the official rules of that platform, and support is limited to usage guidance and delivery assistance."
         }
       : {
           title: "付费下载已改为按工具购买",
@@ -44,7 +45,11 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
             "ENHE AI 现在改为按具体软件付费下载。进入软件详情页确认价格，提交付款凭证，后台审核通过后即可查看该软件的下载链接内容。",
           cardTitle: "前往AI软件应用购买",
           cardText: "每个收费软件都有独立价格，购买后只解锁该软件的下载链接内容。",
-          cta: "查看AI软件应用"
+          cta: "查看AI软件应用",
+          guidanceTitle: "购买前需要确认",
+          purchaseGuidance: "请先进入软件、课程或服务详情页，查看当前价格、权益范围、交付方式与相关使用说明。",
+          paymentReview: "完成支付后，按页面流程提交相应凭证。ENHE AI 审核通过后，会解锁对应的下载、课程或服务权限。",
+          afterSalesBoundary: "付费权益以各详情页说明为准。涉及第三方平台的服务，请以对应平台官方规则为准，支持范围以使用建议与交付协助为主。"
         };
   const breadcrumbSchema = buildBreadcrumbSchema({
     schemaType: "BreadcrumbList",
@@ -75,6 +80,18 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
             <ArrowRight size={16} />
           </Link>
         </div>
+      </section>
+      <section className="mt-6 grid gap-4 md:grid-cols-3">
+        {[
+          { title: copy.guidanceTitle, text: copy.purchaseGuidance },
+          { title: forceLocale === "en" ? "Payment review" : "支付审核", text: copy.paymentReview },
+          { title: forceLocale === "en" ? "Support boundary" : "售后边界", text: copy.afterSalesBoundary }
+        ].map((item) => (
+          <article key={item.title} className="surface-panel p-5">
+            <h2 className="text-lg font-semibold text-[var(--marketing-text)]">{item.title}</h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.text}</p>
+          </article>
+        ))}
       </section>
     </Container>
   );

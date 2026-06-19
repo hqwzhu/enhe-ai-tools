@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import { sanitizeAccountServiceCopy } from "@/lib/seo";
 
 type ToolType = "software" | "online" | "skill_learning";
 
@@ -275,14 +276,14 @@ function buildEnglishToolSentence(tool: LocalizedToolInput) {
 
 export function buildLocalizedToolSummary(tool: LocalizedToolInput, locale: Locale) {
   const shortDescription = normalizeText(tool.shortDescription);
-  if (locale === "zh") return shortDescription;
+  if (locale === "zh") return tool.type === "online" ? sanitizeAccountServiceCopy(shortDescription, "zh") : shortDescription;
   if (isLocalizedEnglishCopy(shortDescription, 4)) return shortDescription;
   return buildEnglishToolSentence(tool);
 }
 
 export function buildLocalizedToolLongContent(tool: LocalizedToolInput, locale: Locale) {
   const content = normalizeText(tool.content);
-  if (locale === "zh") return content;
+  if (locale === "zh") return tool.type === "online" ? sanitizeAccountServiceCopy(content || tool.shortDescription, "zh") : content;
   if (isLocalizedEnglishCopy(content, 8)) return content;
 
   const summary = buildLocalizedToolSummary(tool, locale);
@@ -329,14 +330,18 @@ export function buildLocalizedToolMetaHeading(tool: Pick<LocalizedToolInput, "sl
 
 export function buildLocalizedToolMetaDescription(tool: LocalizedToolInput, locale: Locale) {
   if (locale === "zh") {
-    return normalizeText(tool.shortDescription) || normalizeText(tool.content);
+    const description = normalizeText(tool.shortDescription) || normalizeText(tool.content);
+    return tool.type === "online" ? sanitizeAccountServiceCopy(description, "zh") : description;
   }
 
   return buildLocalizedToolSummary(tool, "en");
 }
 
 export function buildLocalizedToolPreviewText(tool: LocalizedToolInput, locale: Locale) {
-  if (locale === "zh") return normalizeText(tool.shortDescription);
+  if (locale === "zh") {
+    const preview = normalizeText(tool.shortDescription);
+    return tool.type === "online" ? sanitizeAccountServiceCopy(preview, "zh") : preview;
+  }
 
   const summary = buildLocalizedToolSummary(tool, "en");
   return summary.split(sentenceBreakPattern).find(Boolean)?.trim() ?? summary;
@@ -375,8 +380,61 @@ function buildEnglishFaqFallback(tool: LocalizedToolInput): LocalizedFaqInput[] 
   ];
 }
 
+function buildChineseFaqFallback(tool: LocalizedToolInput): LocalizedFaqInput[] {
+  if (tool.type === "online") {
+    return [
+      {
+        id: "localized-faq-service-scope",
+        question: "这项AI账号服务主要提供什么支持？",
+        answer: "该服务主要提供AI工具订阅与账号使用支持、访问建议、交付说明和售后边界说明。使用前请遵守对应平台规则；如涉及第三方平台，请以官方政策为准。"
+      },
+      {
+        id: "localized-faq-compliance",
+        question: "使用账号服务时需要注意什么？",
+        answer: "请按对应平台规则合规使用，不承诺绕过平台限制，也不保证第三方平台政策长期不变。遇到访问、订阅或使用问题时，可联系ENHE AI客服获取使用建议。"
+      }
+    ];
+  }
+
+  if (tool.type === "skill_learning") {
+    return [
+      {
+        id: "localized-faq-course-access",
+        question: "购买课程后如何学习？",
+        answer: "完成购买并通过审核后，可在用户中心查看课程内容、学习资料和相关使用说明。"
+      },
+      {
+        id: "localized-faq-course-fit",
+        question: "课程适合什么用户？",
+        answer: "课程适合希望系统学习AI工具、提示词、自动化流程和实战方法的用户。建议先阅读课程介绍和目录，再决定是否购买。"
+      }
+    ];
+  }
+
+  return [
+    {
+      id: "localized-faq-software-access",
+      question: "购买软件后如何获取下载内容？",
+      answer: "完成购买并通过审核后，可在用户中心查看对应软件的下载链接、版本信息和使用说明。"
+    },
+    {
+      id: "localized-faq-software-requirements",
+      question: "使用前需要确认什么？",
+      answer: "请先查看系统要求、版本记录、工具介绍和使用教程，确认软件适合你的设备环境和工作流程。"
+    }
+  ];
+}
+
 export function buildLocalizedToolFaqItems(faqs: LocalizedFaqInput[], tool: LocalizedToolInput, locale: Locale) {
-  if (locale === "zh") return faqs;
+  if (locale === "zh") {
+    if (!faqs.length) return buildChineseFaqFallback(tool);
+    if (tool.type !== "online") return faqs;
+
+    return faqs.map((faq) => ({
+      ...faq,
+      answer: sanitizeAccountServiceCopy(faq.answer, "zh")
+    }));
+  }
 
   const localizedFaqs = faqs.filter(
     (faq) => isVisibleInEnglishContent(faq.question, 2) && isVisibleInEnglishContent(faq.answer, 5)

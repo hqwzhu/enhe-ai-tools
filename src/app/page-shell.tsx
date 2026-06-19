@@ -4,7 +4,7 @@ import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getHomeRecommendedTools } from "@/lib/public-content";
-import { buildHomeMetadataTitle, buildPageMetadata } from "@/lib/seo";
+import { buildHomeMetaDescription, buildHomeMetadataTitle, buildPageMetadata } from "@/lib/seo";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { getEffectiveLocalizedHomeHeroIntro, getEffectiveHomeHeroTitle, getSettingsMap } from "@/lib/settings";
 
@@ -15,7 +15,7 @@ export async function generateHomePageMetadata(forceLocale: Locale): Promise<Met
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
     title: buildHomeMetadataTitle(forceLocale, t.brand),
-    description: getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro),
+    description: buildHomeMetaDescription(forceLocale, getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro)),
     path: "/",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale
