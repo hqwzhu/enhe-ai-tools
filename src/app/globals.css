@@ -134,7 +134,9 @@ html[lang='zh-CN'] :is(
   .site-nav-link,
   .site-login-link,
   .site-admin-link,
+  .site-user-chip,
   .site-user-center-cta,
+  .site-language-switcher a,
   .home-hero-eyebrow,
   .home-hero-intro,
   .home-hero-metrics strong,
@@ -818,7 +820,7 @@ select option:disabled {
 
 .home-hero-title {
   display: grid;
-  gap: 0.56em;
+  gap: 0.448em;
   margin: 0;
   color: var(--marketing-text);
   font-size: clamp(4.4rem, 8.1vw, 6.3rem);

@@ -98,7 +98,9 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".site-nav-link");
     expect(css).toContain(".site-login-link");
     expect(css).toContain(".site-admin-link");
+    expect(css).toContain(".site-user-chip");
     expect(css).toContain(".site-user-center-cta");
+    expect(css).toContain(".site-language-switcher a");
     expect(css).toContain(".home-hero-eyebrow");
     expect(css).toContain(".home-hero-intro");
     expect(css).toContain(".home-hero-metrics strong");
@@ -112,6 +114,6 @@ describe("homepage SaaS redesign source", () => {
   it("adds more breathing room between the two hero title lines", () => {
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
-    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.56em;");
+    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.448em;");
   });
 });
