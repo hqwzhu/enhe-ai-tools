@@ -194,7 +194,10 @@ function buildEnglishTagFromChinese(name: string) {
 export function resolveLocalizedToolCategoryName(name: string | null | undefined, type: ToolType, locale: Locale) {
   const normalized = normalizeText(name);
   if (!normalized) return getDefaultToolLabel(type, locale);
-  if (locale === "zh") return normalized;
+  if (locale === "zh") {
+    if (type === "online" && hasAccountServiceRiskCopy(normalized)) return "AI账号服务咨询";
+    return normalized;
+  }
   if (!hasCjk(normalized) && isEnglishLike(normalized, 1)) return normalized;
   return buildEnglishCategoryFromChinese(normalized, type);
 }

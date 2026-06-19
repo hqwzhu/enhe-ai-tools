@@ -13,6 +13,7 @@ import {
   buildLocalizedToolMetaHeading,
   buildLocalizedToolOfferName,
   buildLocalizedToolPreviewText,
+  resolveLocalizedToolCategoryName,
   buildLocalizedToolSummary,
   resolveLocalizedToolIdentity
 } from "@/lib/tool-localization";
@@ -144,6 +145,31 @@ describe("SEO remediation helpers", () => {
 
     for (const output of [identity.primaryName, heading, offerName]) {
       for (const risky of ["官方代充", "代充", "充值", "不封号", "低价稳定", "Recharge"]) {
+        expect(output).not.toContain(risky);
+      }
+    }
+  });
+
+  it("sanitizes production account-service warranty names and recharge categories", () => {
+    const tool = {
+      slug: "gemini-pro",
+      name: "Gemini Pro（一年订阅期）【质保一个月】成品号/非学生",
+      englishName: "Gemini Pro",
+      shortDescription: "AI工具订阅与账号使用支持。",
+      content: "AI工具订阅与账号使用支持。",
+      type: "online" as const,
+      categoryName: "账号代充服务"
+    };
+
+    const identity = resolveLocalizedToolIdentity(tool, "zh");
+    const category = resolveLocalizedToolCategoryName(tool.categoryName, tool.type, "zh");
+
+    expect(identity.primaryName).toBe("Gemini Pro AI账号服务咨询");
+    expect(identity.secondaryName).toBe("Gemini Pro");
+    expect(category).toBe("AI账号服务咨询");
+
+    for (const output of [identity.primaryName, category]) {
+      for (const risky of ["质保", "成品号", "学生", "非学生", "代充"]) {
         expect(output).not.toContain(risky);
       }
     }

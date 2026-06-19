@@ -262,7 +262,7 @@ export function buildListingMetaDescription(
 export function sanitizeAccountServiceCopy(value: string | null | undefined, locale: Locale = "zh") {
   const normalized = normalizeWhitespace(value ?? "");
   const riskyPattern =
-    /(官方代充|代充需求|代充|低价稳定|永久可用|共享账号|破解|绕过限制|保证不封号|黑卡|免风控|无封号|掉订阅|账号\s*\+\s*密码|提供账号|充值|recharge|shared account|cracked|bypass|black card|no ban|guaranteed)/i;
+    /(官方代充|代充需求|代充|低价稳定|永久可用|共享账号|破解|绕过限制|保证不封号|黑卡|免风控|无封号|掉订阅|账号\s*\+\s*密码|提供账号|充值|recharge|shared account|cracked|bypass|black card|no ban|guaranteed|质保|成品号|非学生|学生号|学生|保号|售后保障|membership access|warranty included|stable membership)/i;
 
   if (!normalized) return "";
   if (!riskyPattern.test(normalized)) return normalized;
