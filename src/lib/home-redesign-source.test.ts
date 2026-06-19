@@ -59,7 +59,8 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain("--marketing-bg: #ffffff");
     expect(css).not.toContain(".site-brand-logo-light");
     expect(css).toContain("--marketing-accent: #f05a35");
-    expect(css).toContain("Microsoft YaHei UI");
+    expect(css).toContain("--font-sans: 'Montserrat', 'MiSans'");
+    expect(css).not.toContain("Microsoft YaHei UI");
     expect(css).toContain("MiSans");
     expect(css).toContain("HarmonyOS Sans SC");
     expect(css).toContain(".home-page-shell");
@@ -74,5 +75,18 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-product-preview {\n  width: min(100%, 1040px);\n  margin: 0 auto;");
     expect(css).not.toContain(".enhe-orbital-system");
     expect(css).not.toContain(".home-hero-scroll-cue");
+  });
+
+  it("emphasizes the Chinese hero promise with the ENHE orange breathing glow", () => {
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+
+    expect(page).toContain('<span className="home-hero-title-emphasis">{t.home.titleSecondLine}</span>');
+    expect(css).toContain(".home-hero-title-emphasis");
+    expect(css).toContain("color: var(--marketing-accent)");
+    expect(css).toContain("animation: hero-title-breathe");
+    expect(css).toContain("@keyframes hero-title-breathe");
+    expect(css).toContain("text-shadow:");
+    expect(css).toContain(".home-hero-title-emphasis {\n    animation: none");
   });
 });
