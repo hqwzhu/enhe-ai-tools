@@ -7,13 +7,16 @@ import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import {
+  buildAiNewsRelatedKeywords,
   extractNewsTableOfContents,
   isEnglishNewsArticleIndexable,
+  mergeAiNewsRelatedItems,
   renderNewsContentBlocks,
   resolveAiNewsMetaDescription,
   resolveNewsVideo,
   toNewsIsoDate,
-  type NewsContentBlock
+  type NewsContentBlock,
+  type NewsInlinePart
 } from "@/lib/ai-news";
 import {
   buildLocalizedNewsKeywordList,
@@ -28,7 +31,7 @@ import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { normalizeImageSrc } from "@/lib/media";
 import { getPublicNewsArticleBySlug, resolvePublicNewsArticleSlug } from "@/lib/public-content";
-import { buildCanonicalAiNewsPath, getCanonicalAiNewsSlug } from "@/lib/public-slugs";
+import { buildCanonicalAiNewsPath, buildCanonicalToolPath, getCanonicalAiNewsSlug } from "@/lib/public-slugs";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import {
   absoluteUrl,
@@ -99,10 +102,17 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
   const toc = extractNewsTableOfContents(localized.content);
   const contentBlocks = renderNewsContentBlocks(localized.content);
   const articleVideo = resolveNewsVideo(article, localized.title);
+  const relatedKeywords = buildAiNewsRelatedKeywords({
+    title: article.title,
+    keywords: article.keywords,
+    seoKeywords: article.seoKeywords,
+    categoryName: article.category?.name,
+    tagNames: article.tagLinks.map(({ tag }) => tag.name)
+  });
   const [relatedTools, relatedTutorials, relatedArticles] = await Promise.all([
-    getRelatedTools(article.relatedToolIds),
-    getRelatedTutorials(article.relatedTutorialIds),
-    getRelatedNewsArticles(article)
+    getRelatedTools(article.relatedToolIds, relatedKeywords),
+    getRelatedTutorials(article.relatedTutorialIds, relatedKeywords),
+    getRelatedNewsArticles(article, relatedKeywords)
   ]);
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [
@@ -205,7 +215,7 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
                 <h2 className="text-2xl font-black text-[var(--marketing-text)]">{t.aiNews.relatedTutorials}</h2>
                 <div className="mt-5 grid gap-3">
                   {relatedTutorials.map((tutorial) => (
-                    <Link key={tutorial.id} href={buildLocalePath("/tutorials", forceLocale)} className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45">
+                    <Link key={tutorial.id} href={buildCanonicalToolPath(tutorial.tool, forceLocale)} className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45">
                       <p className="font-semibold text-[var(--marketing-text)]">
                         {buildLocalizedTutorialPreviewTitle(tutorial.title, tutorial.tool, forceLocale)}
                       </p>
@@ -391,7 +401,9 @@ function NewsContent({ blocks }: { blocks: NewsContentBlock[] }) {
           return (
             <Tag key={index} className={`space-y-2 pl-5 text-base leading-8 text-[var(--marketing-muted)] ${block.ordered ? "list-decimal" : "list-disc"}`}>
               {block.items.map((item) => (
-                <li key={item} dangerouslySetInnerHTML={{ __html: item }} />
+                <li key={typeof item === "string" ? item : item.parts.map((part) => part.text).join("")}>
+                  {typeof item === "string" ? <span dangerouslySetInnerHTML={{ __html: item }} /> : <InlineParts parts={item.parts} />}
+                </li>
               ))}
             </Tag>
           );
@@ -422,47 +434,141 @@ function NewsContent({ blocks }: { blocks: NewsContentBlock[] }) {
           );
         }
 
-        return <p key={index} className="text-base leading-8 text-[var(--marketing-muted)]" dangerouslySetInnerHTML={{ __html: block.text }} />;
+        return (
+          <p key={index} className="text-base leading-8 text-[var(--marketing-muted)]">
+            {block.parts ? <InlineParts parts={block.parts} /> : <span dangerouslySetInnerHTML={{ __html: block.text ?? "" }} />}
+          </p>
+        );
       })}
     </div>
   );
 }
 
-async function getRelatedTools(ids: string[]) {
-  if (ids.length) {
-    return prisma.tool.findMany({
-      where: { id: { in: ids }, status: "published" },
-      include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
-      take: 3
-    });
-  }
+function InlineParts({ parts }: { parts: NewsInlinePart[] }) {
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.type === "link") {
+          return (
+            <Link key={`${part.href}-${index}`} href={part.href} className="font-semibold text-[var(--marketing-accent)] underline decoration-[var(--marketing-accent)]/35 underline-offset-4 transition hover:decoration-[var(--marketing-accent)]">
+              <span dangerouslySetInnerHTML={{ __html: part.text }} />
+            </Link>
+          );
+        }
 
-  return prisma.tool.findMany({
-    where: { status: "published" },
-    include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
-    orderBy: [{ isHomeRecommended: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
-    take: 3
-  });
+        return <span key={`${part.text}-${index}`} dangerouslySetInnerHTML={{ __html: part.text }} />;
+      })}
+    </>
+  );
 }
 
-async function getRelatedTutorials(ids: string[]) {
-  if (ids.length) {
-    return prisma.tutorial.findMany({
-      where: { id: { in: ids }, status: "active", tool: { status: "published" } },
+function buildKeywordContainsOr(keywords: string[], fields: string[]) {
+  return keywords.flatMap((keyword) =>
+    fields.map((field) => ({
+      [field]: { contains: keyword, mode: "insensitive" as const }
+    }))
+  );
+}
+
+function buildToolKeywordOr(keywords: string[]) {
+  return [
+    ...buildKeywordContainsOr(keywords, ["name", "englishName", "shortDescription", "content"]),
+    ...keywords.map((keyword) => ({ category: { name: { contains: keyword, mode: "insensitive" as const } } })),
+    ...keywords.map((keyword) => ({ tagLinks: { some: { tag: { name: { contains: keyword, mode: "insensitive" as const } } } } }))
+  ];
+}
+
+function buildTutorialKeywordOr(keywords: string[]) {
+  return [
+    ...buildKeywordContainsOr(keywords, ["title", "content", "notes", "commonErrors"]),
+    ...keywords.flatMap((keyword) => [
+      { tool: { name: { contains: keyword, mode: "insensitive" as const } } },
+      { tool: { englishName: { contains: keyword, mode: "insensitive" as const } } },
+      { tool: { shortDescription: { contains: keyword, mode: "insensitive" as const } } },
+      { tool: { category: { name: { contains: keyword, mode: "insensitive" as const } } } }
+    ])
+  ];
+}
+
+function buildNewsKeywordOr(keywords: string[]) {
+  return [
+    ...buildKeywordContainsOr(keywords, [
+      "title",
+      "subtitle",
+      "summary",
+      "description",
+      "keywords",
+      "seoTitle",
+      "seoDescription",
+      "seoKeywords",
+      "englishTitle",
+      "englishSummary",
+      "englishKeywords",
+      "englishSeoKeywords"
+    ]),
+    ...keywords.map((keyword) => ({ category: { name: { contains: keyword, mode: "insensitive" as const } } })),
+    ...keywords.map((keyword) => ({ tagLinks: { some: { tag: { name: { contains: keyword, mode: "insensitive" as const } } } } }))
+  ];
+}
+
+async function getRelatedTools(ids: string[], keywords: string[]) {
+  const include = { category: true, priceSpecs: { where: { status: "active" as const }, orderBy: [{ sortOrder: "asc" as const }, { createdAt: "asc" as const }] } };
+  const [explicit, keywordMatched, fallback] = await Promise.all([
+    ids.length
+      ? prisma.tool.findMany({
+          where: { id: { in: ids }, status: "published" },
+          include,
+          take: 3
+        })
+      : Promise.resolve([]),
+    keywords.length
+      ? prisma.tool.findMany({
+          where: { status: "published", OR: buildToolKeywordOr(keywords) },
+          include,
+          orderBy: [{ isHomeRecommended: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
+          take: 6
+        })
+      : Promise.resolve([]),
+    prisma.tool.findMany({
+      where: { status: "published" },
+      include,
+      orderBy: [{ isHomeRecommended: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
+      take: 6
+    })
+  ]);
+
+  return mergeAiNewsRelatedItems([explicit, keywordMatched, fallback], 3);
+}
+
+async function getRelatedTutorials(ids: string[], keywords: string[]) {
+  const [explicit, keywordMatched, fallback] = await Promise.all([
+    ids.length
+      ? prisma.tutorial.findMany({
+          where: { id: { in: ids }, status: "active", tool: { status: "published" } },
+          include: { tool: true },
+          take: 3
+        })
+      : Promise.resolve([]),
+    keywords.length
+      ? prisma.tutorial.findMany({
+          where: { status: "active", tool: { status: "published" }, OR: buildTutorialKeywordOr(keywords) },
+          include: { tool: true },
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+          take: 6
+        })
+      : Promise.resolve([]),
+    prisma.tutorial.findMany({
+      where: { status: "active", tool: { status: "published" } },
       include: { tool: true },
-      take: 3
-    });
-  }
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      take: 6
+    })
+  ]);
 
-  return prisma.tutorial.findMany({
-    where: { status: "active", tool: { status: "published" } },
-    include: { tool: true },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-    take: 3
-  });
+  return mergeAiNewsRelatedItems([explicit, keywordMatched, fallback], 3);
 }
 
-async function getRelatedNewsArticles(article: NewsArticle) {
+async function getRelatedNewsArticles(article: NewsArticle, keywords: string[]) {
   const explicit = article.relatedArticleIds.length
     ? await prisma.newsArticle.findMany({
         where: { id: { in: article.relatedArticleIds }, status: "published" },
@@ -471,18 +577,43 @@ async function getRelatedNewsArticles(article: NewsArticle) {
       })
     : [];
 
-  if (explicit.length) return explicit;
+  const [keywordMatched, categoryFallback, latestFallback] = await Promise.all([
+    keywords.length
+      ? prisma.newsArticle.findMany({
+          where: {
+            status: "published",
+            id: { not: article.id },
+            OR: buildNewsKeywordOr(keywords)
+          },
+          include: { category: true, tagLinks: { include: { tag: true } } },
+          orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
+          take: 6
+        })
+      : Promise.resolve([]),
+    article.categoryId
+      ? prisma.newsArticle.findMany({
+          where: {
+            status: "published",
+            id: { not: article.id },
+            categoryId: article.categoryId
+          },
+          include: { category: true, tagLinks: { include: { tag: true } } },
+          orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
+          take: 6
+        })
+      : Promise.resolve([]),
+    prisma.newsArticle.findMany({
+      where: {
+        status: "published",
+        id: { not: article.id }
+      },
+      include: { category: true, tagLinks: { include: { tag: true } } },
+      orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
+      take: 6
+    })
+  ]);
 
-  return prisma.newsArticle.findMany({
-    where: {
-      status: "published",
-      id: { not: article.id },
-      ...(article.categoryId ? { categoryId: article.categoryId } : {})
-    },
-    include: { category: true, tagLinks: { include: { tag: true } } },
-    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
-    take: 3
-  });
+  return mergeAiNewsRelatedItems([explicit, keywordMatched, categoryFallback, latestFallback], 6);
 }
 
 function buildNewsArticleSchema(article: NewsArticle, localized: ReturnType<typeof localizeArticle>, locale: Locale, coverImage: string | null) {

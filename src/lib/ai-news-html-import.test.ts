@@ -34,6 +34,32 @@ describe("AI news HTML import parser", () => {
     expect(payload.article.content).not.toContain("AI智能体工作流封面");
   });
 
+  it("keeps safe ENHE internal links in article body and strips unsafe links", () => {
+    const payload = buildAiNewsImportPayloadFromHtml({
+      html: `
+        <article>
+          <h1>AI 工具内链测试</h1>
+          <meta name="description" content="测试 AI 资讯正文内链。">
+          <p>更多工具可查看 <a href="/software">AI软件应用</a>，账号相关内容可查看 <a href="https://www.enhe-tech.com.cn/account-services">AI账号服务</a>。</p>
+          <ul>
+            <li>学习 <a href="/skill-learning">AI技能教程</a></li>
+            <li>不要保留 <a href="javascript:alert(1)">危险链接</a> 和 <a href="https://example.com/bad">外部正文链接</a></li>
+          </ul>
+          <h2>来源</h2>
+          <a href="https://example.com/source">来源报道</a>
+        </article>
+      `,
+      publishMode: "draft"
+    });
+
+    expect(payload.article.content).toContain("[AI软件应用](/software)");
+    expect(payload.article.content).toContain("[AI账号服务](/account-services)");
+    expect(payload.article.content).toContain("- 学习 [AI技能教程](/skill-learning)");
+    expect(payload.article.content).toContain("不要保留 危险链接 和 外部正文链接");
+    expect(payload.article.content).not.toContain("javascript:");
+    expect(payload.article.content).not.toContain("https://example.com/bad");
+  });
+
   it("extracts CMS SEO, bilingual, tags and source fields from the dedicated CMS section", () => {
     const payload = buildAiNewsImportPayloadFromHtml({
       html: `

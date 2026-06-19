@@ -18,11 +18,13 @@ export type NewsTocItem = {
   title: string;
 };
 
+export type NewsInlinePart = { type: "text"; text: string } | { type: "link"; href: string; text: string };
+
 export type NewsContentBlock =
   | { type: "heading"; level: 2 | 3; id: string; text: string }
-  | { type: "paragraph"; text: string }
+  | { type: "paragraph"; text?: string; parts?: NewsInlinePart[] }
   | { type: "image"; src: string; alt: string; caption?: string }
-  | { type: "list"; ordered: boolean; items: string[] }
+  | { type: "list"; ordered: boolean; items: Array<string | { parts: NewsInlinePart[] }> }
   | { type: "quote"; text: string }
   | { type: "code"; language?: string; code: string };
 
@@ -125,13 +127,13 @@ export function extractNewsTableOfContents(content: string): NewsTocItem[] {
 
 function pushParagraph(lines: string[], blocks: NewsContentBlock[]) {
   const text = lines.join(" ").trim();
-  if (text) blocks.push({ type: "paragraph", text: escapeNewsText(text) });
+  if (text) blocks.push(inlineTextBlock(text));
   lines.length = 0;
 }
 
 function pushList(items: string[], ordered: boolean, blocks: NewsContentBlock[]) {
   if (!items.length) return;
-  blocks.push({ type: "list", ordered, items: items.map(escapeNewsText) });
+  blocks.push({ type: "list", ordered, items: items.map(inlineListItem) });
   items.length = 0;
 }
 
@@ -154,6 +156,55 @@ function parseMarkdownImage(line: string) {
     alt,
     ...(caption ? { caption: escapeNewsText(caption) } : {})
   };
+}
+
+function normalizeInternalNewsHref(href: string) {
+  const trimmed = href.trim();
+  if (/^https:\/\/www\.enhe-tech\.com\.cn\//i.test(trimmed)) {
+    return trimmed.replace(/^https:\/\/www\.enhe-tech\.com\.cn/i, "") || "/";
+  }
+  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) return null;
+  if (/[\s"'<>]/.test(trimmed)) return null;
+  return trimmed;
+}
+
+function parseInlineParts(value: string): NewsInlinePart[] {
+  const parts: NewsInlinePart[] = [];
+  const pattern = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(value))) {
+    const before = value.slice(cursor, match.index);
+    if (before) parts.push({ type: "text", text: escapeNewsText(before) });
+
+    const href = normalizeInternalNewsHref(match[2]);
+    const text = match[1].trim();
+    if (href && text) {
+      parts.push({ type: "link", href, text: escapeNewsText(text) });
+    } else {
+      parts.push({ type: "text", text: escapeNewsText(text || match[0]) });
+    }
+    cursor = pattern.lastIndex;
+  }
+
+  const rest = value.slice(cursor);
+  if (rest) parts.push({ type: "text", text: escapeNewsText(rest) });
+  return parts.length ? parts : [{ type: "text", text: escapeNewsText(value) }];
+}
+
+function hasInlineLink(parts: NewsInlinePart[]) {
+  return parts.some((part) => part.type === "link");
+}
+
+function inlineTextBlock(value: string): Extract<NewsContentBlock, { type: "paragraph" }> {
+  const parts = parseInlineParts(value);
+  return hasInlineLink(parts) ? { type: "paragraph", parts } : { type: "paragraph", text: parts.map((part) => part.text).join("") };
+}
+
+function inlineListItem(value: string): string | { parts: NewsInlinePart[] } {
+  const parts = parseInlineParts(value);
+  return hasInlineLink(parts) ? { parts } : parts.map((part) => part.text).join("");
 }
 
 export function renderNewsContentBlocks(content: string): NewsContentBlock[] {
@@ -308,6 +359,50 @@ export function parseNewsRelationIds(value: string | null | undefined) {
       seen.add(item);
       return true;
     });
+}
+
+const genericRelatedKeywordSet = new Set(["ai", "ai资讯", "ai快讯", "自动发布", "ai前沿", "enhe", "恩禾", "恩禾enhe ai"]);
+
+export function buildAiNewsRelatedKeywords({
+  keywords,
+  seoKeywords,
+  categoryName,
+  tagNames
+}: {
+  title?: string | null;
+  keywords?: string | null;
+  seoKeywords?: string | null;
+  categoryName?: string | null;
+  tagNames?: string[];
+}) {
+  const seen = new Set<string>();
+  return [...(tagNames ?? []), keywords ?? "", seoKeywords ?? "", categoryName ?? ""]
+    .flatMap((value) => String(value).split(/[,\n，、|]/))
+    .map((item) => item.trim())
+    .filter((item) => item.length >= 3)
+    .filter((item) => {
+      const key = item.toLowerCase().replace(/\s+/g, "");
+      if (genericRelatedKeywordSet.has(key) || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 8);
+}
+
+export function mergeAiNewsRelatedItems<T extends { id: string }>(groups: T[][], limit: number) {
+  const seen = new Set<string>();
+  const merged: T[] = [];
+
+  for (const group of groups) {
+    for (const item of group) {
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+      merged.push(item);
+      if (merged.length >= limit) return merged;
+    }
+  }
+
+  return merged;
 }
 
 export function resolveNewsVideo(

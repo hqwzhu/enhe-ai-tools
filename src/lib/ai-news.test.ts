@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildAiNewsRelatedKeywords,
+  mergeAiNewsRelatedItems,
   extractNewsTableOfContents,
   isEnglishNewsArticleIndexable,
   parseNewsRelationIds,
@@ -89,6 +91,63 @@ describe("AI news helpers", () => {
         caption: "AI智能体工作流示意图"
       },
       { type: "paragraph", text: "正文继续。" }
+    ]);
+  });
+
+  it("renders safe internal markdown links in paragraph and list blocks", () => {
+    const blocks = renderNewsContentBlocks(
+      "正文可查看 [AI软件应用](/software) 和 [AI账号服务](https://www.enhe-tech.com.cn/account-services)。\n- 学习 [AI技能教程](/skill-learning)\n- 忽略 [外部链接](https://example.com/bad)"
+    );
+
+    expect(blocks).toEqual([
+      {
+        type: "paragraph",
+        parts: [
+          { type: "text", text: "正文可查看 " },
+          { type: "link", href: "/software", text: "AI软件应用" },
+          { type: "text", text: " 和 " },
+          { type: "link", href: "/account-services", text: "AI账号服务" },
+          { type: "text", text: "。" }
+        ]
+      },
+      {
+        type: "list",
+        ordered: false,
+        items: [
+          {
+            parts: [
+              { type: "text", text: "学习 " },
+              { type: "link", href: "/skill-learning", text: "AI技能教程" }
+            ]
+          },
+          "忽略 外部链接"
+        ]
+      }
+    ]);
+  });
+
+  it("builds deduped related keywords without generic automation tags", () => {
+    expect(
+      buildAiNewsRelatedKeywords({
+        title: "OpenAI 智能体进入工作区",
+        keywords: "AI智能体, AI工作流自动化, AI",
+        seoKeywords: "AI工作流自动化, 账号安全",
+        categoryName: "AI快讯",
+        tagNames: ["AI资讯", "自动发布", "AI智能体", "AI账号安全"]
+      })
+    ).toEqual(["AI智能体", "AI账号安全", "AI工作流自动化", "账号安全"]);
+  });
+
+  it("merges related items by priority while removing duplicates and capping the result", () => {
+    const explicit = [{ id: "tool-a" }, { id: "tool-b" }];
+    const keywordMatched = [{ id: "tool-b" }, { id: "tool-c" }];
+    const fallback = [{ id: "tool-d" }, { id: "tool-e" }];
+
+    expect(mergeAiNewsRelatedItems([explicit, keywordMatched, fallback], 4)).toEqual([
+      { id: "tool-a" },
+      { id: "tool-b" },
+      { id: "tool-c" },
+      { id: "tool-d" }
     ]);
   });
 

@@ -313,12 +313,36 @@ function shouldSkipBlock(tagName: string, innerHtml: string) {
 }
 
 function convertInlineText(html: string) {
-  return stripTags(html);
+  return stripTags(convertSafeInternalAnchorsToMarkdown(html));
+}
+
+function normalizeInternalHref(value: string) {
+  const href = value.trim();
+  if (/^https:\/\/www\.enhe-tech\.com\.cn\//i.test(href)) {
+    return href.replace(/^https:\/\/www\.enhe-tech\.com\.cn/i, "") || "/";
+  }
+  if (!href.startsWith("/") || href.startsWith("//")) return "";
+  if (/[\s"'<>]/.test(href)) return "";
+  return href;
+}
+
+function escapeMarkdownLinkText(value: string) {
+  return value.replace(/[[\]]/g, "").trim();
+}
+
+function convertSafeInternalAnchorsToMarkdown(html: string) {
+  return html.replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, (anchor) => {
+    const openTag = anchor.match(/<a\b[^>]*>/i)?.[0] ?? "";
+    const href = normalizeInternalHref(getAttribute(openTag, "href"));
+    const text = escapeMarkdownLinkText(stripTags(anchor));
+    if (!href || !text) return text;
+    return `[${text}](${href})`;
+  });
 }
 
 function convertList(innerHtml: string, ordered: boolean) {
   const items = (innerHtml.match(/<li\b[^>]*>[\s\S]*?<\/li>/gi) ?? [])
-    .map((item) => stripTags(item))
+    .map((item) => convertInlineText(item))
     .filter(Boolean);
   return items.map((item, index) => (ordered ? `${index + 1}. ${item}` : `- ${item}`)).join("\n");
 }
