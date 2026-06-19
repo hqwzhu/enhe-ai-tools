@@ -89,4 +89,23 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("text-shadow:");
     expect(css).toContain(".home-hero-title-emphasis {\n    animation: none");
   });
+
+  it("applies the new Chinese display font to the homepage header, call-to-action buttons, and slogan copy while keeping the header text white", () => {
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+
+    expect(css).toContain("html[lang='zh-CN'] :is(");
+    expect(css).toContain(".site-brand-wordmark");
+    expect(css).toContain(".site-nav-link");
+    expect(css).toContain(".site-login-link");
+    expect(css).toContain(".site-admin-link");
+    expect(css).toContain(".site-user-center-cta");
+    expect(css).toContain(".home-hero-eyebrow");
+    expect(css).toContain(".home-hero-intro");
+    expect(css).toContain(".home-hero-metrics strong");
+    expect(css).toContain(".home-hero-metrics span");
+    expect(css).toContain(".home-hero-cta");
+    expect(css).toContain("font-family: var(--font-heading-zh)");
+    expect(css).toContain(".site-nav-link,\n.site-login-link,\n.site-admin-link {\n  align-items: center;\n  border-radius: 999px;\n  color: var(--marketing-text);");
+    expect(css).toContain(".site-language-switcher a {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  border-radius: 999px;\n  background: transparent;\n  color: var(--marketing-text);");
+  });
 });

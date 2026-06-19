@@ -129,6 +129,21 @@ html[lang='zh-CN'] :is(h1, h2, h3, .home-hero-title) {
   font-family: var(--font-heading-zh);
 }
 
+html[lang='zh-CN'] :is(
+  .site-brand-wordmark,
+  .site-nav-link,
+  .site-login-link,
+  .site-admin-link,
+  .site-user-center-cta,
+  .home-hero-eyebrow,
+  .home-hero-intro,
+  .home-hero-metrics strong,
+  .home-hero-metrics span,
+  .home-hero-cta
+) {
+  font-family: var(--font-heading-zh);
+}
+
 html[lang='en-US'] :is(h1, h2, h3, .home-hero-title) {
   font-family: var(--font-heading-en);
 }
@@ -597,7 +612,7 @@ select option:disabled {
 .site-admin-link {
   align-items: center;
   border-radius: 999px;
-  color: var(--marketing-muted);
+  color: var(--marketing-text);
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
@@ -688,7 +703,7 @@ select option:disabled {
   justify-content: center;
   border-radius: 999px;
   background: transparent;
-  color: var(--marketing-muted);
+  color: var(--marketing-text);
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
