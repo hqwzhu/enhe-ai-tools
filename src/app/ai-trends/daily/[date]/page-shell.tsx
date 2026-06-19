@@ -13,8 +13,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { absoluteUrl, buildMetaDescription, buildMetadataTitle, defaultOgImage, siteName } from "@/lib/seo";
 
 export function generateAiTrendDailyDetailMetadata(date: string): Metadata {
-  const title = buildMetadataTitle({ pageTitle: `AI 需求趋势晨报 ${date}`, brand: siteName });
-  const description = buildMetaDescription("AI 需求趋势每日晨报详情页。公开展示摘要，登录后阅读完整视觉化 HTML 报告。");
+  const title = buildMetadataTitle({ pageTitle: `AI 需求趋势分析 ${date}`, brand: siteName });
+  const description = buildMetaDescription("AI 需求趋势每日分析详情页。公开展示摘要，登录后阅读完整视觉化 HTML 报告。");
   const path = `/ai-trends/daily/${date}`;
 
   return {
@@ -32,7 +32,7 @@ export function generateAiTrendDailyDetailMetadata(date: string): Metadata {
       description,
       url: absoluteUrl(path),
       siteName,
-      images: [{ url: absoluteUrl(defaultOgImage), alt: `AI 需求趋势晨报 ${date}` }],
+      images: [{ url: absoluteUrl(defaultOgImage), alt: `AI 需求趋势分析 ${date}` }],
       locale: "zh_CN",
       type: "article"
     }
@@ -53,13 +53,13 @@ export async function AiTrendDailyDetailPageShell({ date }: { date: string }) {
     <Container className="py-14">
       <Link href="/ai-trends/daily" className="inline-flex items-center gap-2 text-sm font-bold text-[var(--marketing-muted)] transition hover:text-[var(--marketing-accent)]">
         <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
-        返回晨报归档
+        返回分析归档
       </Link>
 
       <article className="mt-6">
         <section className="surface-panel p-7 md:p-10">
           <div className="flex flex-wrap gap-2">
-            <Badge className="text-[var(--marketing-accent)]">AI Demand Briefing</Badge>
+            <Badge className="text-[var(--marketing-accent)]">AI Demand Analysis</Badge>
             <Badge>{view.sourceCount} 个来源信号</Badge>
             {!isLoggedIn ? <Badge>公开摘要</Badge> : <Badge>完整报告</Badge>}
           </div>

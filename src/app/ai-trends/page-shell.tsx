@@ -117,7 +117,7 @@ export async function AiTrendTopicPageShell() {
               核心结论：用户最渴望 AI 解决的不是抽象智能问题，而是把高频、耗时、需要专业判断的任务变成可复用、可验证、可交付的工作流。
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <ButtonLink href="/ai-trends/daily">查看每日晨报</ButtonLink>
+              <ButtonLink href="/ai-trends/daily">查看每日分析</ButtonLink>
               <ButtonLink href="/ai-news" variant="ghost">查看 AI 前沿资讯</ButtonLink>
             </div>
           </div>
@@ -187,7 +187,7 @@ export async function AiTrendTopicPageShell() {
       </section>
 
       <section className="mt-12">
-        <SectionTitle title="近期晨报" intro="每日自动化报告公开摘要可分享，完整 HTML 报告登录后阅读；日更页不会进入 sitemap，也不会参与索引竞争。" />
+        <SectionTitle title="近期分析" intro="每日自动化报告公开摘要可分享，完整 HTML 报告登录后阅读；日更页不会进入 sitemap，也不会参与索引竞争。" />
         {recentBriefings.length ? (
           <div className="grid gap-4 md:grid-cols-3">
             {recentBriefings.map((briefing) => (
@@ -206,7 +206,7 @@ export async function AiTrendTopicPageShell() {
         ) : (
           <div className="surface-panel-soft p-7">
             <p className="text-sm leading-7 text-[var(--marketing-muted)]">
-              还没有已发布的每日晨报。自动化发布后，这里会显示最近的公开摘要。
+              还没有已发布的每日分析。自动化发布后，这里会显示最近的公开摘要。
             </p>
           </div>
         )}

@@ -16,7 +16,7 @@ export const dictionaries = {
       onlineTools: "AI账号服务",
       skillLearning: "AI技能学习",
       aiNews: "AI前沿资讯",
-      aiTrends: "AI趋势晨报",
+      aiTrends: "AI趋势分析",
       updates: "更新日志",
       pricing: "付费下载",
       tutorials: "使用教程",

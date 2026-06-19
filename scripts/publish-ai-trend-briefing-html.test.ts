@@ -18,7 +18,7 @@ async function createFiles({
   html = "\uFEFF<article><h1>AI 需求趋势</h1><p>完整内容</p></article>",
   summary = {
     date: "2026-06-19",
-    title: "AI 需求趋势晨报",
+    title: "AI 需求趋势分析",
     summary: "公开摘要",
     coreConclusion: "核心结论",
     publicHighlights: ["工作效率", "视频生成"],
@@ -70,7 +70,7 @@ describe("publish-ai-trend-briefing-html script", () => {
     const { htmlFile, summaryFile } = await createFiles({
       summary: {
         date: "2026-06-19",
-        title: "AI 需求趋势晨报",
+        title: "AI 需求趋势分析",
         summary: "公开摘要",
         coreConclusion: "核心结论",
         publicHighlights: [],

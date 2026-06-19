@@ -21,11 +21,11 @@ const validSourceSignals = [
 
 const validInput = {
   date: "2026-06-19",
-  title: "AI 需求趋势晨报",
+  title: "AI 需求趋势分析",
   summary: "本期摘要显示，用户最想用 AI 处理重复工作、内容生产和复杂研究。",
   coreConclusion: "AI 的高频需求正在从尝鲜转向可衡量的任务完成。",
   publicHighlights: ["工作效率仍是最强需求", "视频生成和内容创作保持高热度"],
-  fullHtml: "<article><h1>AI 需求趋势晨报</h1><p>完整报告正文。</p></article>",
+  fullHtml: "<article><h1>AI 需求趋势分析</h1><p>完整报告正文。</p></article>",
   sourceSignals: validSourceSignals,
   status: "published" as const
 };
@@ -34,7 +34,7 @@ const validBriefing: AiTrendBriefingRecord = {
   id: "briefing-1",
   date: new Date("2026-06-19T00:00:00.000Z"),
   slug: "2026-06-19",
-  title: "AI 需求趋势晨报",
+  title: "AI 需求趋势分析",
   summary: "公开摘要",
   coreConclusion: "核心结论",
   publicHighlights: ["亮点一", "亮点二"],
