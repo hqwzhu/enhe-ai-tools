@@ -108,4 +108,10 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".site-nav-link,\n.site-login-link,\n.site-admin-link {\n  align-items: center;\n  border-radius: 999px;\n  color: var(--marketing-text);");
     expect(css).toContain(".site-language-switcher a {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  border-radius: 999px;\n  background: transparent;\n  color: var(--marketing-text);");
   });
+
+  it("adds more breathing room between the two hero title lines", () => {
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+
+    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.56em;");
+  });
 });
