@@ -23,6 +23,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
   const navItems = [
     { label: t.nav.home, href: buildLocalePath("/", locale) },
     { label: t.nav.aiNews, href: buildLocalePath("/ai-news", locale) },
+    { label: t.nav.aiTrends, href: buildLocalePath("/ai-trends", locale) },
     { label: t.nav.software, href: buildLocalePath("/software", locale) },
     { label: t.nav.onlineTools, href: buildLocalePath("/account-services", locale) },
     { label: t.nav.skillLearning, href: buildLocalePath("/skill-learning", locale) }
