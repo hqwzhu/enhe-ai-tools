@@ -35,6 +35,21 @@ describe("SEO remediation helpers", () => {
     expect(description).not.toContain("Live in symbiosis with AI");
   });
 
+  it("uses article fallback when candidates and source summaries are generic brand slogans", () => {
+    const fallback = buildAiNewsDescriptionFallback({
+      title: "OpenAI workspace agents connect ChatGPT with team workflows",
+      categoryName: "AI Agent",
+      locale: "en"
+    });
+    const description = resolveAiNewsMetaDescription(
+      ["Live in symbiosis with AI, awaken in this era, and define the future through creation."],
+      fallback
+    );
+
+    expect(description).toContain("OpenAI workspace agents");
+    expect(description).not.toContain("Live in symbiosis with AI");
+  });
+
   it("builds an article-specific AI news fallback when description fields are empty or date-only", () => {
     const fallback = buildAiNewsDescriptionFallback({
       title: "OpenAI workspace agents connect ChatGPT with team workflows",

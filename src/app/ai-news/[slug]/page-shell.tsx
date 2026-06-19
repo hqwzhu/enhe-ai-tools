@@ -356,12 +356,11 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
       subtitle: article.englishSubtitle || article.subtitle,
       description: resolveAiNewsMetaDescription(
         [article.englishSeoDescription, article.englishSummary, article.englishDescription, article.seoDescription, article.summary, article.description],
-        summary ||
-          buildAiNewsDescriptionFallback({
-            title: article.englishTitle || article.title,
-            categoryName: article.category?.name,
-            locale: "en"
-          })
+        buildAiNewsDescriptionFallback({
+          title: article.englishTitle || article.title,
+          categoryName: article.category?.name,
+          locale: "en"
+        })
       ),
       summary,
       content: article.englishContent || article.content,
@@ -376,12 +375,11 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
     subtitle: article.subtitle,
     description: resolveAiNewsMetaDescription(
       [article.seoDescription, article.summary, article.description],
-      article.summary ||
-        buildAiNewsDescriptionFallback({
-          title: article.title,
-          categoryName: article.category?.name,
-          locale: "zh"
-        })
+      buildAiNewsDescriptionFallback({
+        title: article.title,
+        categoryName: article.category?.name,
+        locale: "zh"
+      })
     ),
     summary: article.summary,
     content: article.content,
