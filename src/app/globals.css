@@ -1,11 +1,73 @@
+@import url('/fonts/misans/MiSans-Regular.min.css');
+@import url('/fonts/misans/MiSans-Semibold.min.css');
+@import url('/fonts/misans/MiSans-Bold.min.css');
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/montserrat/montserrat-latin-400-normal.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/montserrat/montserrat-latin-500-normal.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/montserrat/montserrat-latin-600-normal.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/montserrat/montserrat-latin-700-normal.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/montserrat/montserrat-latin-800-normal.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 800;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/montserrat/montserrat-latin-900-normal.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: 'SmileySans';
+  src: url('/fonts/smiley-sans/SmileySans-Oblique.ttf.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 900;
+}
+
 @theme {
-  --font-sans: 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Noto Sans SC', Arial, Helvetica, sans-serif;
+  --font-sans: 'Montserrat', 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Noto Sans SC', Arial, Helvetica, sans-serif;
 }
 
 :root {
   color-scheme: dark;
+  --font-sans: 'Montserrat', 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Noto Sans SC', Arial, Helvetica, sans-serif;
+  --font-heading-en: 'Montserrat', var(--font-sans);
+  --font-heading-zh: 'SmileySans', 'MiSans', var(--font-sans);
   --mouse-x: 72vw;
   --mouse-y: 18vh;
   --marketing-bg: #22242a;
@@ -60,7 +122,15 @@ body {
     radial-gradient(circle at 78% 12%, rgba(240, 90, 53, 0.1), transparent 26rem),
     linear-gradient(180deg, #22242a 0%, #22242a 60%, #202229 100%);
   color: var(--foreground);
-  font-family: 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Noto Sans SC', Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+html[lang='zh-CN'] :is(h1, h2, h3, .home-hero-title) {
+  font-family: var(--font-heading-zh);
+}
+
+html[lang='en-US'] :is(h1, h2, h3, .home-hero-title) {
+  font-family: var(--font-heading-en);
 }
 
 body::before,

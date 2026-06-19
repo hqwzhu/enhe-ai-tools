@@ -7,7 +7,9 @@ describe("global night glass UI source contract", () => {
 
     expect(css).toContain("--marketing-bg: #22242a");
     expect(css).toContain("--marketing-accent: #f05a35");
-    expect(css).toContain("Microsoft YaHei UI");
+    expect(css).toContain("--font-sans: 'Montserrat', 'MiSans'");
+    expect(css).toContain("--font-heading-zh: 'SmileySans', 'MiSans'");
+    expect(css).not.toContain("Microsoft YaHei UI");
     expect(css).toContain(".surface-panel");
     expect(css).toContain(".surface-panel-soft");
     expect(css).toContain(".filter-surface");
