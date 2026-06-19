@@ -10,6 +10,7 @@ import {
   extractNewsTableOfContents,
   isEnglishNewsArticleIndexable,
   renderNewsContentBlocks,
+  resolveAiNewsMetaDescription,
   resolveNewsVideo,
   toNewsIsoDate,
   type NewsContentBlock
@@ -318,6 +319,20 @@ export async function AiNewsDetailPageShell({ slug, forceLocale }: { slug: strin
 
 function localizeArticle(article: NewsArticle, locale: Locale) {
   if (locale === "en") {
+    const summary = article.englishSummary ||
+      buildLocalizedNewsSummary(
+        {
+          title: article.title,
+          englishTitle: article.englishTitle,
+          summary: article.summary,
+          englishSummary: article.englishSummary,
+          description: article.description,
+          englishDescription: article.englishDescription,
+          categoryName: article.category?.name
+        },
+        "en"
+      );
+
     return {
       title: buildLocalizedNewsTitle(
         {
@@ -328,21 +343,11 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
         "en"
       ),
       subtitle: article.englishSubtitle || article.subtitle,
-      description: article.englishSeoDescription || article.englishDescription || article.seoDescription || article.description,
-      summary:
-        article.englishSummary ||
-        buildLocalizedNewsSummary(
-          {
-            title: article.title,
-            englishTitle: article.englishTitle,
-            summary: article.summary,
-            englishSummary: article.englishSummary,
-            description: article.description,
-            englishDescription: article.englishDescription,
-            categoryName: article.category?.name
-          },
-          "en"
-        ),
+      description: resolveAiNewsMetaDescription(
+        [article.englishSeoDescription, article.englishSummary, article.englishDescription, article.seoDescription, article.summary, article.description],
+        summary
+      ),
+      summary,
       content: article.englishContent || article.content,
       keyTakeaways: article.englishKeyTakeaways.length ? article.englishKeyTakeaways : article.keyTakeaways,
       impactNotes: article.englishImpactNotes || article.impactNotes,
@@ -353,7 +358,10 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
   return {
     title: article.title,
     subtitle: article.subtitle,
-    description: article.seoDescription || article.description,
+    description: resolveAiNewsMetaDescription(
+      [article.seoDescription, article.summary, article.description],
+      article.summary
+    ),
     summary: article.summary,
     content: article.content,
     keyTakeaways: article.keyTakeaways,

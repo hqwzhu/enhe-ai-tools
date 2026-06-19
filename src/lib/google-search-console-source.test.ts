@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -6,6 +7,13 @@ const root = process.cwd();
 
 function read(path: string) {
   return readFileSync(join(root, path), "utf8");
+}
+
+function trackedSourceFiles() {
+  return execFileSync("git", ["ls-files"], { cwd: root, encoding: "utf8" })
+    .split(/\r?\n/)
+    .filter((file) => /\.(cjs|css|js|json|md|mjs|prisma|sql|ts|tsx|txt|yml|yaml)$/.test(file))
+    .filter((file) => existsSync(join(root, file)));
 }
 
 describe("Google Search Console SEO source contract", () => {
@@ -68,9 +76,9 @@ describe("Google Search Console SEO source contract", () => {
     const zhOnlineDetail = read("src/app/(zh-public)/online-tools/[slug]/page.tsx");
     const enOnline = read("src/app/en/online-tools/page.tsx");
     const enOnlineDetail = read("src/app/en/online-tools/[slug]/page.tsx");
-    const zhToolsDetail = read("src/app/(zh-public)/tools/[slug]/page.tsx");
-    const enToolsDetail = read("src/app/en/tools/[slug]/page.tsx");
-    const toolShell = read("src/app/tools/[slug]/page-shell.tsx");
+    const zhToolsDetail = read("src/app/(zh-public)/tools/[slug]/route.ts");
+    const enToolsDetail = read("src/app/en/tools/[slug]/route.ts");
+    const legacyToolRedirect = read("src/lib/legacy-tool-redirect.ts");
 
     expect(nextConfig).toContain("redirects()");
     expect(nextConfig).toContain('source: "/online-tools"');
@@ -90,8 +98,20 @@ describe("Google Search Console SEO source contract", () => {
     expect(enOnline).toContain('"/en/account-services"');
     expect(enOnlineDetail).toContain("permanentRedirect");
     expect(enOnlineDetail).toContain("`/en/account-services/${slug}`");
-    expect(zhToolsDetail).toContain("redirectLegacyToolDetailPage");
-    expect(enToolsDetail).toContain("redirectLegacyToolDetailPage");
-    expect(toolShell).toContain("permanentRedirect(buildCanonicalToolPath(tool, forceLocale))");
+    expect(zhToolsDetail).toContain("buildLegacyToolDetailRedirectResponse");
+    expect(zhToolsDetail).toContain('NextResponse.json({ error: "Not found" }, { status: 404 })');
+    expect(enToolsDetail).toContain("buildLegacyToolDetailRedirectResponse");
+    expect(legacyToolRedirect).toContain("NextResponse.redirect(location, 301)");
+  });
+
+  it("does not ship hardcoded HTTP production links in tracked source files", () => {
+    const productionHttpOrigin = "http://" + "www.enhe-tech.com.cn";
+    const offenders = trackedSourceFiles().filter((file) => {
+      if (file === "src/lib/redirect-url.test.ts") return false;
+      const source = read(file);
+      return source.includes(productionHttpOrigin);
+    });
+
+    expect(offenders).toEqual([]);
   });
 });

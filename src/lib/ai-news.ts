@@ -263,6 +263,27 @@ export function isEnglishNewsArticleIndexable(article: {
   return title.length >= 12 && summary.length >= 24 && content.length >= 180;
 }
 
+function looksLikeDateOnlyDescription(value: string) {
+  const text = value.trim();
+  return (
+    /^\d{4}[-/.年]\d{1,2}[-/.月]\d{1,2}日?$/.test(text) ||
+    /^[A-Z][a-z]+ \d{1,2}, \d{4}$/.test(text) ||
+    /^\d{1,2} [A-Z][a-z]+ \d{4}$/.test(text)
+  );
+}
+
+export function resolveAiNewsMetaDescription(
+  candidates: Array<string | null | undefined>,
+  fallback: string,
+  minLength = 24
+) {
+  const validCandidate = candidates
+    .map((candidate) => String(candidate ?? "").replace(/\s+/g, " ").trim())
+    .find((candidate) => candidate.length >= minLength && !looksLikeDateOnlyDescription(candidate));
+
+  return validCandidate || fallback;
+}
+
 export function parseNewsRelationIds(value: string | null | undefined) {
   const seen = new Set<string>();
   return String(value ?? "")

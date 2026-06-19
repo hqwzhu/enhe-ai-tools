@@ -11,7 +11,7 @@ const routeFiles = [
   "../app/en/skill-learning/[slug]/page.tsx",
   "../app/en/software/page.tsx",
   "../app/en/software/[slug]/page.tsx",
-  "../app/en/tools/[slug]/page.tsx",
+  "../app/en/tools/[slug]/route.ts",
   "../app/en/tutorials/page.tsx",
   "../app/(zh-public)/legal/[slug]/page.tsx",
   "../app/(zh-public)/account-services/page.tsx",
@@ -21,7 +21,7 @@ const routeFiles = [
   "../app/(zh-public)/skill-learning/[slug]/page.tsx",
   "../app/(zh-public)/software/page.tsx",
   "../app/(zh-public)/software/[slug]/page.tsx",
-  "../app/(zh-public)/tools/[slug]/page.tsx",
+  "../app/(zh-public)/tools/[slug]/route.ts",
   "../app/(zh-public)/tutorials/page.tsx"
 ];
 

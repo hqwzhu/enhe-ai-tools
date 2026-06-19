@@ -5,6 +5,7 @@ import {
   parseNewsRelationIds,
   parseNewsSearchParams,
   renderNewsContentBlocks,
+  resolveAiNewsMetaDescription,
   resolveNewsVideo,
   resolveAiNewsCanonicalSlug,
   resolveNewsSlug,
@@ -123,6 +124,15 @@ describe("AI news helpers", () => {
         englishContent: "This update matters because it changes how teams can connect model capabilities with everyday workflows. ".repeat(3)
       })
     ).toBe(true);
+  });
+
+  it("skips date-only and thin fields when resolving SEO descriptions", () => {
+    expect(resolveAiNewsMetaDescription(["2026年6月18日", "Short", "A useful AI news summary that explains the practical value."], "Fallback")).toBe(
+      "A useful AI news summary that explains the practical value."
+    );
+    expect(resolveAiNewsMetaDescription(["2026-06-18", "Too short"], "Fallback summary with enough context")).toBe(
+      "Fallback summary with enough context"
+    );
   });
 
   it("parses relation ids from comma and newline separated fields", () => {
