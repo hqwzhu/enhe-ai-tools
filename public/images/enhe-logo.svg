@@ -1,43 +1,16 @@
 <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="enheMarkFill" x1="32" y1="34" x2="96" y2="124" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/>
-      <stop offset="0.22" stop-color="#DCE9FF"/>
-      <stop offset="0.62" stop-color="#8FB7FF"/>
-      <stop offset="1" stop-color="#69E0FF"/>
-    </linearGradient>
-    <linearGradient id="enheMarkChrome" x1="90" y1="30" x2="128" y2="128" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F6FAFF"/>
-      <stop offset="0.4" stop-color="#E5EEF8"/>
-      <stop offset="0.74" stop-color="#B4C5EF"/>
-      <stop offset="1" stop-color="#94AAFF"/>
-    </linearGradient>
-    <linearGradient id="enheMarkRim" x1="29" y1="31" x2="129" y2="127" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/>
-      <stop offset="0.48" stop-color="#C9D9FF"/>
-      <stop offset="1" stop-color="#8DEAFF"/>
-    </linearGradient>
-    <filter id="enheMarkBloom" x="-18%" y="-24%" width="136%" height="148%">
-      <feGaussianBlur stdDeviation="1.8" result="blur"/>
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.3 0 0 0 0 0.86 0 0 0 0 0.9 0 0 0 0.2 0"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
-  <g filter="url(#enheMarkBloom)">
-    <path d="M34 52L50 34H90V52H34Z" fill="url(#enheMarkFill)"/>
-    <path d="M34 72H82V88H34V72Z" fill="url(#enheMarkFill)"/>
-    <path d="M34 108L50 126H90V108H34Z" fill="url(#enheMarkFill)"/>
-    <path d="M90 72H112V34H128V126H112V88H90V72Z" fill="url(#enheMarkChrome)"/>
-    <path d="M34 52L50 34H90V52H34Z" stroke="url(#enheMarkRim)" stroke-width="2" stroke-linejoin="round"/>
-    <path d="M34 72H82V88H34V72Z" stroke="url(#enheMarkRim)" stroke-width="2" stroke-linejoin="round"/>
-    <path d="M34 108L50 126H90V108H34Z" stroke="url(#enheMarkRim)" stroke-width="2" stroke-linejoin="round"/>
-    <path d="M90 72H112V34H128V126H112V88H90V72Z" stroke="url(#enheMarkRim)" stroke-width="2" stroke-linejoin="round"/>
+  <g >
+    <path d="M34 52L50 34H90V52H34Z" fill="#f05a35"/>
+    <path d="M34 72H82V88H34V72Z" fill="#f05a35"/>
+    <path d="M34 108L50 126H90V108H34Z" fill="#f05a35"/>
+    <path d="M90 72H112V34H128V126H112V88H90V72Z" fill="#f05a35"/>
+    <path d="M34 52L50 34H90V52H34Z" stroke="#ff8a6a" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M34 72H82V88H34V72Z" stroke="#ff8a6a" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M34 108L50 126H90V108H34Z" stroke="#ff8a6a" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M90 72H112V34H128V126H112V88H90V72Z" stroke="#ff8a6a" stroke-width="2" stroke-linejoin="round"/>
   </g>
-  <path d="M44 49L53 40H85" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M43 77H76" stroke="#FFFFFF" stroke-opacity="0.52" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M44 113H85" stroke="#BDEFFF" stroke-opacity="0.5" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M114 40H123V118" stroke="#FFFFFF" stroke-opacity="0.42" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M44 49L53 40H85" stroke="#ff8a6a" stroke-opacity="0.7" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M43 77H76" stroke="#ff8a6a" stroke-opacity="0.52" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M44 113H85" stroke="#ff8a6a" stroke-opacity="0.5" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M114 40H123V118" stroke="#ff8a6a" stroke-opacity="0.42" stroke-width="1.8" stroke-linecap="round"/>
 </svg>
