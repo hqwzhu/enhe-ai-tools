@@ -63,4 +63,16 @@ describe("AI trend briefing source contracts", () => {
     expect(exists("scripts/publish-ai-trend-briefing-html.ts")).toBe(true);
     expect(exists("scripts/publish-ai-trend-briefing-html.test.ts")).toBe(true);
   });
+
+  it("keeps the topic hero focused and moves the top ranking label above the demand heat section", () => {
+    const topicPage = read("src/app/ai-trends/page-shell.tsx");
+    const heroStart = topicPage.indexOf("<section className=\"surface-panel overflow-hidden");
+    const heroEnd = topicPage.indexOf("<section className=\"mt-12\">", heroStart);
+    const demandSection = topicPage.slice(heroEnd, topicPage.indexOf("<section className=\"mt-12\">", heroEnd + 1));
+
+    expect(topicPage).not.toContain("demandDirections.slice(0, 5)");
+    expect(topicPage.slice(heroStart, heroEnd)).not.toContain("item.heat");
+    expect(demandSection).toContain("<Badge className=\"text-[var(--marketing-accent)]\">TOP</Badge>");
+    expect(demandSection.indexOf("TOP")).toBeLessThan(demandSection.indexOf("copy.demandTitle"));
+  });
 });

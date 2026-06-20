@@ -249,51 +249,25 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
     <Container className="py-14">
       <StructuredData data={[breadcrumbSchema, collectionSchema]} />
       <section className="surface-panel overflow-hidden p-7 md:p-10">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-end">
-          <div>
-            <Badge className="text-[var(--marketing-accent)]">AI Demand Trends</Badge>
-            <h1 className="mt-6 max-w-4xl text-4xl font-black leading-tight text-[var(--marketing-text)] md:text-6xl">
-              {copy.title}
-            </h1>
-            <p className="mt-5 max-w-3xl text-base font-medium leading-8 text-[var(--marketing-muted)] md:text-lg">
-              {copy.hero}
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <ButtonLink href={buildLocalePath("/ai-trends/daily", forceLocale)}>{copy.dailyButton}</ButtonLink>
-              <ButtonLink href={buildLocalePath("/ai-news", forceLocale)} variant="ghost">
-                {copy.newsButton}
-              </ButtonLink>
-            </div>
-          </div>
-          <div className="grid gap-3">
-            {demandDirections.slice(0, 5).map((item, index) => (
-              <div key={item.zhName} className="rounded-2xl border border-white/10 bg-white/7 p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--marketing-accent)]/14 text-[var(--marketing-accent)]">
-                      <item.icon size={18} strokeWidth={1.8} aria-hidden="true" />
-                    </span>
-                    <div>
-                      <p className="font-bold text-[var(--marketing-text)]">
-                        #{index + 1} {forceLocale === "en" ? item.enName : item.zhName}
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-[var(--marketing-muted)]">
-                        {forceLocale === "en" ? item.enSignal : item.zhSignal}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xl font-black text-[var(--marketing-accent)]">{item.heat}</span>
-                </div>
-                <div className="mt-3 h-2 rounded-full bg-white/8">
-                  <div className="h-full rounded-full bg-[var(--marketing-accent)]" style={{ width: `${item.heat}%` }} />
-                </div>
-              </div>
-            ))}
+        <div className="max-w-4xl">
+          <Badge className="text-[var(--marketing-accent)]">AI Demand Trends</Badge>
+          <h1 className="mt-6 max-w-4xl text-4xl font-black leading-tight text-[var(--marketing-text)] md:text-6xl">
+            {copy.title}
+          </h1>
+          <p className="mt-5 max-w-3xl text-base font-medium leading-8 text-[var(--marketing-muted)] md:text-lg">
+            {copy.hero}
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <ButtonLink href={buildLocalePath("/ai-trends/daily", forceLocale)}>{copy.dailyButton}</ButtonLink>
+            <ButtonLink href={buildLocalePath("/ai-news", forceLocale)} variant="ghost">
+              {copy.newsButton}
+            </ButtonLink>
           </div>
         </div>
       </section>
 
       <section className="mt-12">
+        <Badge className="text-[var(--marketing-accent)]">TOP</Badge>
         <SectionTitle title={copy.demandTitle} intro={copy.demandIntro} />
         <div className="grid gap-4 md:grid-cols-2">
           {demandDirections.map((item) => (
