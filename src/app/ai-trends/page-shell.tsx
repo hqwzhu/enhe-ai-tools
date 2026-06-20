@@ -267,7 +267,6 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
       </section>
 
       <section className="mt-12">
-        <Badge className="text-[var(--marketing-accent)]">TOP</Badge>
         <SectionTitle title={copy.demandTitle} intro={copy.demandIntro} />
         <div className="grid gap-4 md:grid-cols-2">
           {demandDirections.map((item) => (
