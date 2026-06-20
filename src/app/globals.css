@@ -1,6 +1,6 @@
-@import url('/fonts/misans/MiSans-Regular.min.css');
-@import url('/fonts/misans/MiSans-Semibold.min.css');
-@import url('/fonts/misans/MiSans-Bold.min.css');
+@import "../../public/fonts/misans/MiSans-Regular.min.css";
+@import "../../public/fonts/misans/MiSans-Semibold.min.css";
+@import "../../public/fonts/misans/MiSans-Bold.min.css";
 @import "tailwindcss";
 
 @font-face {

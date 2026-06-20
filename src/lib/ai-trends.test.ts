@@ -3,6 +3,7 @@ import {
   aiTrendDateSlugToDate,
   buildAiTrendLoginUrl,
   isValidAiTrendDateSlug,
+  localizeAiTrendBriefingView,
   normalizeAiTrendSourceSignals,
   sanitizeAiTrendBriefingHtml,
   toAiTrendBriefingView,
@@ -96,5 +97,18 @@ describe("AI trend briefing helpers", () => {
 
   it("builds login URLs that return to the requested daily report", () => {
     expect(buildAiTrendLoginUrl("2026-06-19")).toBe("/login?next=%2Fai-trends%2Fdaily%2F2026-06-19");
+    expect(buildAiTrendLoginUrl("2026-06-19", "en")).toBe("/en/login?next=%2Fen%2Fai-trends%2Fdaily%2F2026-06-19");
+  });
+
+  it("builds English-safe trend briefings when stored content is only available in Chinese", () => {
+    const localized = localizeAiTrendBriefingView(toAiTrendBriefingView(validBriefing, true), "en");
+
+    expect(localized.title).toBe("AI Demand Briefing - 2026-06-19");
+    expect(localized.summary).not.toMatch(/[\u3400-\u9fff]/);
+    expect(localized.coreConclusion).not.toMatch(/[\u3400-\u9fff]/);
+    expect(localized.publicHighlights.join(" ")).not.toMatch(/[\u3400-\u9fff]/);
+    expect(localized.sourceSignals[0]?.observedSignal).not.toMatch(/[\u3400-\u9fff]/);
+    expect(localized.fullHtml).toContain("AI Demand Briefing");
+    expect(localized.fullHtml).not.toMatch(/[\u3400-\u9fff]/);
   });
 });

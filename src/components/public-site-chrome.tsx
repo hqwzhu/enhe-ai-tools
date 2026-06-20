@@ -8,7 +8,12 @@ import {
   buildOrganizationSchema,
   buildWebsiteSchema
 } from "@/lib/seo";
-import { getEffectiveLocalizedHomeHeroIntro, getEffectiveSiteLogo, getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
+import {
+  getEffectiveLocalizedHomeHeroIntro,
+  getEffectiveLocalizedSiteName,
+  getEffectiveSiteLogo,
+  getSettingsMap
+} from "@/lib/settings";
 
 export async function PublicSiteChrome({
   children,
@@ -18,7 +23,7 @@ export async function PublicSiteChrome({
   const t = getDictionary(forceLocale);
   const languageAlternates = buildLanguageAlternates("/");
   const inLanguage = forceLocale === "en" ? "en-US" : "zh-CN";
-  const siteDisplayName = getEffectiveSiteName(settings, t.footer.siteName);
+  const siteDisplayName = getEffectiveLocalizedSiteName(settings, forceLocale, t.footer.siteName);
   const siteLogo = getEffectiveSiteLogo(settings, "/images/brand/enhe-icon-gradient-white-bg-cropped.png");
   const siteDescription = getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro);
 

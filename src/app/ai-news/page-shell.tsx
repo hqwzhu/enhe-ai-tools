@@ -7,6 +7,7 @@ import { parseNewsSearchParams } from "@/lib/ai-news";
 import {
   buildLocalizedNewsSummary,
   buildLocalizedNewsTitle,
+  localizeAiNewsDiscoveryLabel,
   resolveLocalizedNewsCategoryName,
   resolveLocalizedNewsTagName
 } from "@/lib/ai-news-localization";
@@ -299,7 +300,7 @@ function KeywordCloud({ locale, items }: { locale: Locale; items: KeywordCloudIt
       <div className="mt-4 flex flex-wrap gap-2">
         {items.map((item) => (
           <Link key={item.keyword} href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(item.query)}`} className="rounded-full border border-white/14 bg-white/7 px-3 py-1 text-xs font-semibold text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]">
-            {item.displayName}
+            {localizeAiNewsDiscoveryLabel(item.displayName, locale, locale === "en" ? "AI Insights" : item.displayName)}
           </Link>
         ))}
       </div>
@@ -316,7 +317,7 @@ function TopicCollections({ locale, items }: { locale: Locale; items: TopicColle
       <div className="mt-4 grid gap-3">
         {items.map((item) => (
           <Link key={item.key} href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(item.query)}`} className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]">
-            {item.title}
+            {localizeAiNewsDiscoveryLabel(item.title, locale, locale === "en" ? "AI Insights" : item.title)}
           </Link>
         ))}
       </div>

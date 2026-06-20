@@ -373,7 +373,7 @@ export const dictionaries = {
     },
     language: {
       label: "Language",
-      zh: "中文",
+      zh: "ZH",
       en: "EN"
     },
     home: {

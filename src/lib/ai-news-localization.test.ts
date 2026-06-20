@@ -3,6 +3,7 @@ import {
   buildLocalizedNewsKeywordList,
   buildLocalizedNewsSummary,
   buildLocalizedNewsTitle,
+  localizeAiNewsDiscoveryLabel,
   buildLocalizedTutorialPreviewTitle,
   buildLocalizedTutorialPreviewToolName,
   resolveLocalizedNewsCategoryName,
@@ -89,5 +90,12 @@ describe("AI news localization helpers", () => {
         "en"
       )
     ).toBe("AI News Update");
+  });
+
+  it("localizes AI news discovery labels on English pages", () => {
+    expect(localizeAiNewsDiscoveryLabel("AI资讯", "en", "AI Insights")).toBe("AI News");
+    expect(localizeAiNewsDiscoveryLabel("趋势解读", "en", "AI Insights")).toBe("Trend Insights");
+    expect(localizeAiNewsDiscoveryLabel("工具落地", "en", "AI Insights")).toBe("Tool Workflows");
+    expect(localizeAiNewsDiscoveryLabel("OpenAI", "en", "AI Insights")).toBe("OpenAI");
   });
 });

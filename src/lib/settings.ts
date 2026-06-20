@@ -65,8 +65,27 @@ function cleanSettingValue(value: string | undefined) {
   return trimmed || undefined;
 }
 
+function hasCjk(value: string | undefined) {
+  return /[\u3400-\u9fff]/.test(value ?? "");
+}
+
 export function getEffectiveSiteName(settings: SettingsMap, fallback: string) {
   return cleanSettingValue(settings.site_name) ?? fallback;
+}
+
+export function getEffectiveLocalizedSiteName(settings: SettingsMap, locale: Locale, fallback: string) {
+  const localized = cleanSettingValue(settings[`site_name_${locale}`]);
+
+  if (locale === "en") {
+    if (localized && !hasCjk(localized)) return localized;
+
+    const globalName = cleanSettingValue(settings.site_name);
+    if (globalName && !hasCjk(globalName)) return globalName;
+
+    return fallback;
+  }
+
+  return localized ?? cleanSettingValue(settings.site_name) ?? fallback;
 }
 
 export function getEffectiveSiteLogo(settings: SettingsMap, fallback: string) {

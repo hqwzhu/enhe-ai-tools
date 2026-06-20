@@ -9,7 +9,7 @@ import { Container } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getCurrentLocale } from "@/lib/i18n";
 import { buildLocalePath } from "@/lib/seo";
-import { getEffectiveSiteName, getSettingsMap } from "@/lib/settings";
+import { getEffectiveLocalizedSiteName, getSettingsMap } from "@/lib/settings";
 
 export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
   const [locale, settings, headerUser] = await Promise.all([
@@ -18,7 +18,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
     getHeaderUserSnapshot()
   ]);
   const t = getDictionary(locale);
-  const brand = getEffectiveSiteName(settings, t.brand);
+  const brand = getEffectiveLocalizedSiteName(settings, locale, t.brand);
   const brandWordmark = brand.includes("ENHE") ? "ENHE AI" : brand;
   const navItems = [
     { label: t.nav.home, href: buildLocalePath("/", locale) },

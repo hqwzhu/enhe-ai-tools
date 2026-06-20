@@ -118,8 +118,57 @@ export function dateToAiTrendSlug(value: Date) {
   return value.toISOString().slice(0, 10);
 }
 
-export function buildAiTrendLoginUrl(dateSlug: string) {
-  return `/login?next=${encodeURIComponent(`/ai-trends/daily/${dateSlug}`)}`;
+export function buildAiTrendLoginUrl(dateSlug: string, locale: "zh" | "en" = "zh") {
+  const nextPath = locale === "en" ? `/en/ai-trends/daily/${dateSlug}` : `/ai-trends/daily/${dateSlug}`;
+  const loginPath = locale === "en" ? "/en/login" : "/login";
+  return `${loginPath}?next=${encodeURIComponent(nextPath)}`;
+}
+
+function hasCjk(value: string | null | undefined) {
+  return /[\u3400-\u9fff]/.test(String(value ?? ""));
+}
+
+function normalizeEnglishSentence(value: string) {
+  const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+  return normalized;
+}
+
+function buildEnglishTrendFallbackTitle(slug: string) {
+  return `AI Demand Briefing - ${slug}`;
+}
+
+function buildEnglishTrendFallbackSummary(slug: string) {
+  return `Daily AI demand summary for ${slug}, highlighting practical workflow demand, adoption signals, and the next actions worth tracking.`;
+}
+
+function buildEnglishTrendFallbackConclusion(slug: string) {
+  return `This ${slug} briefing focuses on repeatable AI workflows, measurable efficiency gains, and product opportunities shaped by real-world demand signals.`;
+}
+
+function buildEnglishTrendFallbackHighlights(slug: string) {
+  return [
+    `Workflow demand remained the clearest signal in the ${slug} briefing.`,
+    "Users continue to value AI that saves time, reduces repetition, and improves delivery quality.",
+    "Lower-risk, high-frequency use cases remain the strongest opportunity area."
+  ];
+}
+
+function localizeAiTrendSourceSignal(signal: AiTrendSourceSignal): AiTrendSourceSignal {
+  return {
+    ...signal,
+    observedSignal: hasCjk(signal.observedSignal)
+      ? "Public source signal captured from trend, product, or community activity."
+      : normalizeEnglishSentence(signal.observedSignal),
+    credibilityNote: hasCjk(signal.credibilityNote)
+      ? "Source note available in the original published briefing."
+      : signal.credibilityNote
+  };
+}
+
+function buildLocalizedAiTrendHtml(view: AiTrendBriefingView) {
+  return `<article><h1>${buildEnglishTrendFallbackTitle(view.slug)}</h1><p>${buildEnglishTrendFallbackConclusion(
+    view.slug
+  )}</p></article>`;
 }
 
 export function sanitizeAiTrendBriefingHtml(value: string) {
@@ -252,6 +301,26 @@ export function toAiTrendBriefingView(
     sourceCount: sourceSignals.length,
     signalTypes,
     ...(includeFullHtml ? { fullHtml: briefing.fullHtml } : {})
+  };
+}
+
+export function localizeAiTrendBriefingView(view: AiTrendBriefingView, locale: "zh" | "en") {
+  if (locale === "zh") return view;
+
+  return {
+    ...view,
+    title: hasCjk(view.title) ? buildEnglishTrendFallbackTitle(view.slug) : normalizeEnglishSentence(view.title),
+    summary: hasCjk(view.summary) ? buildEnglishTrendFallbackSummary(view.slug) : normalizeEnglishSentence(view.summary),
+    coreConclusion: hasCjk(view.coreConclusion)
+      ? buildEnglishTrendFallbackConclusion(view.slug)
+      : normalizeEnglishSentence(view.coreConclusion),
+    publicHighlights: view.publicHighlights.length
+      ? view.publicHighlights.map((item, index) =>
+          hasCjk(item) ? buildEnglishTrendFallbackHighlights(view.slug)[index] ?? "Practical demand signal captured in this briefing." : normalizeEnglishSentence(item)
+        )
+      : buildEnglishTrendFallbackHighlights(view.slug),
+    sourceSignals: view.sourceSignals.map(localizeAiTrendSourceSignal),
+    ...(view.fullHtml ? { fullHtml: hasCjk(view.fullHtml) ? buildLocalizedAiTrendHtml(view) : view.fullHtml } : {})
   };
 }
 

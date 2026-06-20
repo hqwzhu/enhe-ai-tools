@@ -20,6 +20,9 @@ describe("AI trend briefing source contracts", () => {
     expect(exists("src/app/(zh-public)/ai-trends/page.tsx")).toBe(true);
     expect(exists("src/app/(zh-public)/ai-trends/daily/page.tsx")).toBe(true);
     expect(exists("src/app/(zh-public)/ai-trends/daily/[date]/page.tsx")).toBe(true);
+    expect(exists("src/app/en/ai-trends/page.tsx")).toBe(true);
+    expect(exists("src/app/en/ai-trends/daily/page.tsx")).toBe(true);
+    expect(exists("src/app/en/ai-trends/daily/[date]/page.tsx")).toBe(true);
   });
 
   it("keeps only the evergreen topic page indexable in sitemap", () => {
@@ -50,7 +53,7 @@ describe("AI trend briefing source contracts", () => {
     expect(detailShell).toContain("getCurrentUser");
     expect(detailShell).toContain("const isLoggedIn = Boolean(user)");
     expect(detailShell).toContain("toAiTrendBriefingView(briefing, isLoggedIn)");
-    expect(detailShell).toContain("buildAiTrendLoginUrl(date)");
+    expect(detailShell).toContain("buildAiTrendLoginUrl(date, forceLocale)");
     expect(detailShell).toContain("buildAiTrendReportSrcDoc");
     expect(detailShell).toContain("sandbox=");
     expect(detailShell).toContain("view.fullHtml");

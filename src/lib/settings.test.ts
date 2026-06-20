@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getEffectiveHomeHeroIntro,
   getEffectiveLocalizedHomeHeroIntro,
+  getEffectiveLocalizedSiteName,
   getEffectiveLocalizedHomeHeroSubtitle,
   getEffectiveHomeHeroSubtitle,
   getEffectiveHomeHeroTitle,
@@ -80,6 +81,24 @@ describe("public site settings", () => {
 
     expect(getEffectiveLocalizedHomeHeroSubtitle(settings, "en", "fallback")).toBe("Custom English subtitle");
     expect(getEffectiveLocalizedHomeHeroIntro(settings, "en", "fallback")).toBe("Custom English intro");
+  });
+
+  it("does not leak a Chinese site name into the English public chrome", () => {
+    const settings = {
+      site_name: "恩禾 ENHE AI"
+    };
+
+    expect(getEffectiveLocalizedSiteName(settings, "en", "ENHE AI")).toBe("ENHE AI");
+    expect(getEffectiveLocalizedSiteName(settings, "zh", "恩禾 ENHE AI")).toBe("恩禾 ENHE AI");
+  });
+
+  it("uses an explicit English site name when configured", () => {
+    const settings = {
+      site_name: "恩禾 ENHE AI",
+      site_name_en: "ENHE AI"
+    };
+
+    expect(getEffectiveLocalizedSiteName(settings, "en", "fallback")).toBe("ENHE AI");
   });
 
   it("resolves payment QR code settings with default fallbacks", () => {

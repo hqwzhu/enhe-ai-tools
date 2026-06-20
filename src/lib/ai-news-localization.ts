@@ -38,12 +38,17 @@ const categoryMappings: Array<[RegExp, string]> = [
 ];
 
 const tagMappings: Array<[RegExp, string]> = [
+  [/ai资讯|news/i, "AI News"],
   [/自动化|automation/i, "Automation"],
+  [/自动发布|auto(?:mated)? publishing/i, "Auto Publishing"],
   [/效率|办公|productivity/i, "Productivity"],
   [/教程|guide|tutorial/i, "AI Tutorials"],
   [/趋势|trend/i, "AI Trends"],
   [/工具|tool/i, "AI Tools"],
-  [/代理|agent/i, "Agent"],
+  [/智能体|代理|agent/i, "AI Agents"],
+  [/工作流自动化|workflow automation/i, "Workflow Automation"],
+  [/本地部署ai|local ai|private ai/i, "Local AI"],
+  [/账号安全|account security/i, "Account Security"],
   [/账号|service|account/i, "Account Service"],
 ];
 
@@ -76,6 +81,17 @@ function mapByRules(value: string | null | undefined, rules: Array<[RegExp, stri
   }
 
   return "";
+}
+
+export function localizeAiNewsDiscoveryLabel(value: string | null | undefined, locale: Locale, fallback: string) {
+  const normalized = normalizeText(value);
+  if (!normalized) return fallback;
+  if (locale === "zh") return normalized;
+
+  return (
+    mapByRules(normalized, [...categoryMappings, ...tagMappings]) ||
+    (!hasCjk(normalized) ? normalized : fallback)
+  );
 }
 
 function splitKeywordList(value: string | null | undefined) {

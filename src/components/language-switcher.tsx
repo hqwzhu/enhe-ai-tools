@@ -25,7 +25,7 @@ export function LanguageSwitcher({
             document.cookie = `enhe_locale=${item}; path=/; max-age=31536000; samesite=lax`;
           }}
         >
-          {labels[item]}
+          {locale === "en" && item === "zh" ? "ZH" : labels[item]}
         </Link>
       ))}
     </div>

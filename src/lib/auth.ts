@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { headerUserCookieName } from "@/lib/header-user-cookie";
+import { getCurrentLocale, type Locale } from "@/lib/i18n";
 import {
   createSessionToken,
   getAuthSecret,
@@ -14,6 +15,7 @@ import {
   verifyHeaderUserCookieValue,
   verifySessionCookieValue
 } from "@/lib/auth-security";
+import { buildLocalePath } from "@/lib/seo";
 
 const cookieName = process.env.AUTH_COOKIE_NAME ?? "enhe_session";
 const sessionDays = 30;
@@ -128,15 +130,21 @@ export async function getHeaderUserSnapshot(): Promise<HeaderUserSnapshot | null
   }
 }
 
-export async function requireUser() {
+export async function requireUser(localeOverride?: Locale) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    const locale = localeOverride ?? (await getCurrentLocale());
+    redirect(buildLocalePath("/login", locale));
+  }
   return user;
 }
 
-export async function requireAdmin() {
-  const user = await requireUser();
-  if (user.role !== "admin") redirect("/");
+export async function requireAdmin(localeOverride?: Locale) {
+  const user = await requireUser(localeOverride);
+  if (user.role !== "admin") {
+    const locale = localeOverride ?? (await getCurrentLocale());
+    redirect(buildLocalePath("/", locale));
+  }
   return user;
 }
 

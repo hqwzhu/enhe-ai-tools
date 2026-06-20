@@ -120,6 +120,9 @@ export function stripLocalePrefix(path: string) {
 
 export function buildLocalePath(path: string, locale: Locale) {
   const normalized = stripLocalePrefix(path);
+  if (/^\/(?:admin|orders)(?:\/|$)/.test(normalized)) {
+    return normalized;
+  }
   if (locale === "en") {
     return normalized === "/" ? "/en" : `/en${normalized}`;
   }
@@ -128,6 +131,9 @@ export function buildLocalePath(path: string, locale: Locale) {
 
 const localizedPublicRoutePatterns = [
   /^\/$/,
+  /^\/login$/,
+  /^\/register$/,
+  /^\/user$/,
   /^\/software$/,
   /^\/software\/.+$/,
   /^\/account-services$/,
@@ -136,6 +142,9 @@ const localizedPublicRoutePatterns = [
   /^\/skill-learning\/.+$/,
   /^\/ai-news$/,
   /^\/ai-news\/.+$/,
+  /^\/ai-trends$/,
+  /^\/ai-trends\/daily$/,
+  /^\/ai-trends\/daily\/.+$/,
   /^\/pricing$/,
   /^\/tutorials$/,
   /^\/tools\/.+$/,
@@ -148,6 +157,10 @@ export function isLocalizedPublicPath(path: string) {
 }
 
 export function buildLanguageSwitcherHref(path: string, locale: Locale) {
+  const normalized = stripLocalePrefix(path);
+  if (/^\/(?:admin|orders)(?:\/|$)/.test(normalized)) {
+    return normalized;
+  }
   if (!isLocalizedPublicPath(path)) {
     return buildLocalePath("/", locale);
   }
