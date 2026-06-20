@@ -14,7 +14,7 @@ describe("global night glass page adoption source contract", () => {
   });
 
   it("uses shared surface and form classes on auth pages", () => {
-    for (const pagePath of ["../app/(auth)/login/page.tsx", "../app/(auth)/register/page.tsx"]) {
+    for (const pagePath of ["../app/(auth)/login/page-shell.tsx", "../app/(auth)/register/page-shell.tsx"]) {
       const page = readFileSync(new URL(pagePath, import.meta.url), "utf8");
       expect(page).toContain("surface-panel");
       expect(page).toContain("form-control-dark");
@@ -24,7 +24,7 @@ describe("global night glass page adoption source contract", () => {
   });
 
   it("uses shared surface classes on user and order pages", () => {
-    const user = readFileSync(new URL("../app/user/page.tsx", import.meta.url), "utf8");
+    const user = readFileSync(new URL("../app/user/page-shell.tsx", import.meta.url), "utf8");
     const order = readFileSync(new URL("../app/orders/[id]/page.tsx", import.meta.url), "utf8");
     const pay = readFileSync(new URL("../app/orders/[id]/pay/page.tsx", import.meta.url), "utf8");
 

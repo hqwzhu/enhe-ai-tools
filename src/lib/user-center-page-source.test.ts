@@ -6,7 +6,7 @@ const root = resolve(__dirname, "../..");
 
 describe("user center page source", () => {
   it("does not render the downloadable software panel in the account center", () => {
-    const source = readFileSync(resolve(root, "src/app/user/page.tsx"), "utf8");
+    const source = readFileSync(resolve(root, "src/app/user/page-shell.tsx"), "utf8");
 
     expect(source).not.toContain("t.userCenter.availableSoftware");
     expect(source).not.toContain("downloadableSoftware");

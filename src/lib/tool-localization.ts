@@ -68,6 +68,28 @@ function normalizeText(value: string | null | undefined) {
   return value?.replace(/\s+/g, " ").trim() ?? "";
 }
 
+function normalizeRichText(value: string | null | undefined) {
+  return (
+    value
+      ?.replace(/\r\n?/g, "\n")
+      .replace(/\u00a0/g, " ")
+      .split("\n")
+      .map((line) => line.replace(/[ \t]+/g, " ").trim())
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim() ?? ""
+  );
+}
+
+function sanitizeAccountServiceRichCopy(value: string | null | undefined, locale: Locale) {
+  const richText = normalizeRichText(value);
+  if (!richText) return "";
+
+  const compactText = normalizeText(value);
+  const sanitized = sanitizeAccountServiceCopy(compactText, locale);
+  return sanitized === compactText ? richText : sanitized;
+}
+
 function getDefaultToolLabel(type: ToolType, locale: Locale) {
   if (locale === "en") {
     if (type === "online") return "AI Account Service";
@@ -319,8 +341,8 @@ export function buildLocalizedToolSummary(tool: LocalizedToolInput, locale: Loca
 }
 
 export function buildLocalizedToolLongContent(tool: LocalizedToolInput, locale: Locale) {
-  const content = normalizeText(tool.content);
-  if (locale === "zh") return tool.type === "online" ? sanitizeAccountServiceCopy(content || tool.shortDescription, "zh") : content;
+  const content = normalizeRichText(tool.content);
+  if (locale === "zh") return tool.type === "online" ? sanitizeAccountServiceRichCopy(content || tool.shortDescription, "zh") : content;
   if (isLocalizedEnglishCopy(content, 8)) return content;
 
   const summary = buildLocalizedToolSummary(tool, locale);

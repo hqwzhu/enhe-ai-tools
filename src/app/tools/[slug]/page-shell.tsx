@@ -7,6 +7,7 @@ import { FormSubmitButton } from "@/components/form-submit-button";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
+import { ToolRichContent } from "@/components/tool-rich-content";
 import { buildSeoFriendlySlug } from "@/lib/admin-form";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -499,7 +500,7 @@ export async function ToolDetailPageShell({
               </div>
             ) : null}
             <div className="tool-detail-copy-card rounded-2xl border border-white/10 bg-white/8 p-5">
-              <div style={{ whiteSpace: "pre-line" }} className="text-base leading-8 text-[#C5D0E2]">{localizedLongContent}</div>
+              <ToolRichContent content={localizedLongContent} />
             </div>
           </div>
         </section>
@@ -515,7 +516,7 @@ export async function ToolDetailPageShell({
               {visibleTutorials.map((tutorial) => (
                 <div key={tutorial.id} className="rounded-2xl border border-white/10 bg-white/8 p-5">
                   <h3 className="mt-2 text-xl font-semibold">{tutorial.title}</h3>
-                  <div style={{ whiteSpace: "pre-line" }} className="mt-3 leading-7 text-[#8F9DB2]">{tutorial.content}</div>
+                  <ToolRichContent content={tutorial.content} tone="muted" className="mt-3 text-sm leading-7" />
                   {tutorial.notes ? (
                     <div className="mt-4 rounded-xl border border-[#5EF1C7]/20 bg-[#5EF1C7]/8 p-4">
                       <p className="text-sm font-semibold text-[#5EF1C7]">{td.notes}</p>

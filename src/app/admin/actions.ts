@@ -45,7 +45,7 @@ import {
   parseCosFilePath,
   saveUploadedFile
 } from "@/lib/storage";
-import { parseTagNames, tagSlug } from "@/lib/tool-content";
+import { normalizeToolContentForStorage, normalizeToolSummaryForStorage, parseTagNames, tagSlug } from "@/lib/tool-content";
 import { canOpenProtectedDownloadEntry } from "@/lib/tool-download-link";
 import { getPrimaryToolPriceSpec, parseToolPriceSpecsFromFormData, type ToolPriceSpecDraft } from "@/lib/tool-price-specs";
 import { mergeToolProductImages } from "@/lib/tool-product-images";
@@ -1054,8 +1054,8 @@ export async function upsertToolAction(formData: FormData) {
       slug: resolvedSlug,
       type,
       categoryId: parseOptionalString(formData.get("categoryId")),
-      shortDescription: z.string().min(1).parse(formData.get("shortDescription")),
-      content: z.string().min(1).parse(formData.get("content")),
+      shortDescription: normalizeToolSummaryForStorage(z.string().min(1).parse(formData.get("shortDescription"))),
+      content: normalizeToolContentForStorage(z.string().min(1).parse(formData.get("content"))),
       coverImage: uploadedCoverImage ?? parseOptionalString(formData.get("coverImage")),
       screenshots: mergeToolProductImages(existingProductImages, uploadedProductImages),
       version: parseOptionalString(formData.get("version")),
@@ -1243,7 +1243,7 @@ export async function upsertTutorialAction(formData: FormData) {
   const data = {
     toolId,
     title: z.string().min(1).parse(formData.get("title")),
-    content: z.string().min(1).parse(formData.get("content")),
+    content: normalizeToolContentForStorage(z.string().min(1).parse(formData.get("content"))),
     imageUrl: parseOptionalString(formData.get("imageUrl")),
     videoUrl: parseOptionalString(formData.get("videoUrl")),
     notes: parseOptionalString(formData.get("notes")),

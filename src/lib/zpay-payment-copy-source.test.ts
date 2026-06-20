@@ -25,7 +25,7 @@ describe("zpay payment page copy", () => {
   });
 
   it("shows a purchase success hint when mobile payment returns to login", () => {
-    const loginPage = readFileSync(resolve(root, "src/app/(auth)/login/page.tsx"), "utf8");
+    const loginPage = readFileSync(resolve(root, "src/app/(auth)/login/page-shell.tsx"), "utf8");
 
     expect(loginPage).toContain('params.payment === "success"');
     expect(loginPage).toContain("t.auth.loginSuccessPayment");

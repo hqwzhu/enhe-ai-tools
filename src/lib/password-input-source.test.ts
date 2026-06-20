@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 
 describe("password visibility input", () => {
   it("uses the shared password input on login and register pages", () => {
-    const loginPage = readFileSync(new URL("../app/(auth)/login/page.tsx", import.meta.url), "utf8");
-    const registerPage = readFileSync(new URL("../app/(auth)/register/page.tsx", import.meta.url), "utf8");
+    const loginPage = readFileSync(new URL("../app/(auth)/login/page-shell.tsx", import.meta.url), "utf8");
+    const registerPage = readFileSync(new URL("../app/(auth)/register/page-shell.tsx", import.meta.url), "utf8");
 
     expect(loginPage).toContain("<PasswordInput");
     expect(registerPage).toContain("<PasswordInput");
