@@ -2,7 +2,7 @@ export type ToolContentBlock =
   | { type: "heading"; text: string }
   | { type: "paragraph"; text: string }
   | { type: "unordered-list"; items: string[] }
-  | { type: "ordered-list"; items: string[] };
+  | { type: "ordered-list"; items: string[]; start?: number };
 
 const unorderedListPattern = /^\s*(?:[-*]|\u2022)\s+(.+)$/;
 const orderedListPattern = /^\s*(?:(\d+)[.)\u3001]|[\uFF08(](\d+)[\uFF09)])\s*(.+)$/;
@@ -104,7 +104,11 @@ function parseListLine(line: string) {
   if (unordered) return { type: "unordered-list" as const, text: normalizeInlineSpace(unordered[1]) };
 
   const ordered = line.match(orderedListPattern);
-  if (ordered) return { type: "ordered-list" as const, text: normalizeInlineSpace(ordered[3] ?? "") };
+  if (ordered) {
+    const marker = Number.parseInt(ordered[1] ?? ordered[2] ?? "1", 10);
+    const start = Number.isFinite(marker) && marker > 0 ? marker : 1;
+    return { type: "ordered-list" as const, text: normalizeInlineSpace(ordered[3] ?? ""), start };
+  }
 
   return null;
 }
@@ -115,8 +119,19 @@ function pushParagraphBlock(blocks: ToolContentBlock[], lines: string[]) {
   lines.length = 0;
 }
 
-function pushListBlock(blocks: ToolContentBlock[], listType: "unordered-list" | "ordered-list" | null, items: string[]) {
-  if (listType && items.length) blocks.push({ type: listType, items: [...items] });
+function pushListBlock(
+  blocks: ToolContentBlock[],
+  listType: "unordered-list" | "ordered-list" | null,
+  items: string[],
+  orderedListStart?: number
+) {
+  if (listType && items.length) {
+    if (listType === "ordered-list" && orderedListStart && orderedListStart !== 1) {
+      blocks.push({ type: listType, start: orderedListStart, items: [...items] });
+    } else {
+      blocks.push({ type: listType, items: [...items] });
+    }
+  }
   items.length = 0;
 }
 
@@ -128,20 +143,23 @@ export function buildToolContentBlocks(value: string): ToolContentBlock[] {
   const paragraphLines: string[] = [];
   const listItems: string[] = [];
   let listType: "unordered-list" | "ordered-list" | null = null;
+  let orderedListStart: number | undefined;
 
   for (const rawLine of content.split("\n")) {
     const line = normalizeInlineSpace(rawLine);
     if (!line) {
       pushParagraphBlock(blocks, paragraphLines);
-      pushListBlock(blocks, listType, listItems);
+      pushListBlock(blocks, listType, listItems, orderedListStart);
       listType = null;
+      orderedListStart = undefined;
       continue;
     }
 
     if (isHeadingLine(line)) {
       pushParagraphBlock(blocks, paragraphLines);
-      pushListBlock(blocks, listType, listItems);
+      pushListBlock(blocks, listType, listItems, orderedListStart);
       listType = null;
+      orderedListStart = undefined;
       blocks.push({ type: "heading", text: parseHeadingLine(line) });
       continue;
     }
@@ -150,20 +168,26 @@ export function buildToolContentBlocks(value: string): ToolContentBlock[] {
     if (listLine) {
       pushParagraphBlock(blocks, paragraphLines);
       if (listType && listType !== listLine.type) {
-        pushListBlock(blocks, listType, listItems);
+        pushListBlock(blocks, listType, listItems, orderedListStart);
+        listType = null;
+        orderedListStart = undefined;
+      }
+      if (!listType && listLine.type === "ordered-list") {
+        orderedListStart = listLine.start;
       }
       listType = listLine.type;
       listItems.push(listLine.text);
       continue;
     }
 
-    pushListBlock(blocks, listType, listItems);
+    pushListBlock(blocks, listType, listItems, orderedListStart);
     listType = null;
+    orderedListStart = undefined;
     paragraphLines.push(line);
   }
 
   pushParagraphBlock(blocks, paragraphLines);
-  pushListBlock(blocks, listType, listItems);
+  pushListBlock(blocks, listType, listItems, orderedListStart);
 
   return blocks;
 }

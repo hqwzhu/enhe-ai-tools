@@ -40,12 +40,14 @@ export function ToolRichContent({
         }
 
         if (block.type === "ordered-list") {
+          const startNumber = block.start ?? 1;
+
           return (
             <ol key={`${block.type}-${index}`} className="space-y-3 border-l border-white/10 pl-5">
               {block.items.map((item, itemIndex) => (
                 <li key={`${item}-${itemIndex}`} className="grid grid-cols-[1.75rem_1fr] gap-3">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/12 bg-white/8 text-xs font-semibold text-[var(--marketing-accent)]">
-                    {itemIndex + 1}
+                    {startNumber + itemIndex}
                   </span>
                   <span>{item}</span>
                 </li>

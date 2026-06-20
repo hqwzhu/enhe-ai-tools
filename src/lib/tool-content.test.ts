@@ -53,6 +53,32 @@ describe("tool content helpers", () => {
     ]);
   });
 
+  it("keeps ordered-list start numbers when descriptions split items into separate blocks", () => {
+    expect(
+      buildToolContentBlocks(
+        [
+          "Features:",
+          "1. Text to speech",
+          "Generate audio from text.",
+          "",
+          "2. Voice cloning",
+          "Clone a voice from an authorized sample.",
+          "",
+          "3. Voice design",
+          "Describe a voice style."
+        ].join("\n")
+      )
+    ).toEqual([
+      { type: "heading", text: "Features" },
+      { type: "ordered-list", items: ["Text to speech"] },
+      { type: "paragraph", text: "Generate audio from text." },
+      { type: "ordered-list", start: 2, items: ["Voice cloning"] },
+      { type: "paragraph", text: "Clone a voice from an authorized sample." },
+      { type: "ordered-list", start: 3, items: ["Voice design"] },
+      { type: "paragraph", text: "Describe a voice style." }
+    ]);
+  });
+
   it("keeps short descriptions compact instead of turning them into article content", () => {
     expect(normalizeToolSummaryForStorage("  Fast cleanup.\n\nWorks locally.  ")).toBe("Fast cleanup. Works locally.");
   });
