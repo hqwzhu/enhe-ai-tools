@@ -26,6 +26,13 @@ const copy = {
       "完整报告包含视觉化 HTML、需求热度排行、方向分析、来源链接和机会优先级建议。这里不要求付费会员，登录账户即可查看。",
     loginButton: "登录看全文",
     sourceSignals: "来源信号",
+    scenarioRankings: "细分场景排行",
+    scenarioIntro: "公开摘要会展示方向下的高优先级任务，帮助判断下一步开发计划；完整 HTML 分析仍需登录查看。",
+    typicalUsers: "典型用户",
+    scenarios: "代表场景",
+    aiValue: "AI 价值",
+    opportunity: "产品/创业机会",
+    developmentPriority: "开发优先级",
     openSource: "打开来源",
     noSources: "本期暂无结构化来源信号。",
     trendOverview: "查看趋势总览"
@@ -41,6 +48,13 @@ const copy = {
       "The full report includes visual HTML, demand heat rankings, directional analysis, source links, and opportunity priority notes. No paid membership is required here. A signed-in account is enough.",
     loginButton: "Log in for full access",
     sourceSignals: "Source signals",
+    scenarioRankings: "Scenario rankings",
+    scenarioIntro: "The public summary shows high-priority tasks under each direction for product planning. The full HTML analysis still requires sign-in.",
+    typicalUsers: "Typical users",
+    scenarios: "Representative scenarios",
+    aiValue: "AI value",
+    opportunity: "Product opportunity",
+    developmentPriority: "Development priority",
     openSource: "Open source",
     noSources: "No structured source signals are available for this issue yet.",
     trendOverview: "View trend overview"
@@ -129,6 +143,77 @@ export async function AiTrendDailyDetailPageShell({
                 </div>
               ) : null}
             </section>
+
+            {view.demandBreakdowns.length ? (
+              <section className="surface-panel-soft p-6">
+                <SectionTitle title={text.scenarioRankings} intro={text.scenarioIntro} />
+                <div className="grid gap-5">
+                  {view.demandBreakdowns.map((breakdown) => (
+                    <section key={breakdown.direction} className="rounded-2xl border border-white/10 bg-white/7 p-5">
+                      <div className="flex flex-col gap-3 border-b border-white/10 pb-4 md:flex-row md:items-start md:justify-between">
+                        <div>
+                          <h2 className="text-2xl font-black leading-snug text-[var(--marketing-text)]">{breakdown.direction}</h2>
+                          {breakdown.summary ? <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">{breakdown.summary}</p> : null}
+                        </div>
+                        <span className="inline-flex shrink-0 items-center justify-center rounded-full border border-[var(--marketing-accent)]/35 px-4 py-2 text-sm font-black text-[var(--marketing-accent)]">
+                          {breakdown.heat}
+                        </span>
+                      </div>
+
+                      <div className="mt-5 grid gap-4">
+                        {breakdown.scenarios.map((scenario, index) => (
+                          <article key={`${breakdown.direction}-${scenario.name}`} className="rounded-xl border border-white/10 bg-black/10 p-4">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                              <div>
+                                <p className="text-xs font-black text-[var(--marketing-accent)]">#{index + 1}</p>
+                                <h3 className="mt-1 text-xl font-black leading-snug text-[var(--marketing-text)]">{scenario.name}</h3>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge className="text-[var(--marketing-accent)]">{scenario.heat}</Badge>
+                                {scenario.developmentPriority || scenario.urgency ? <Badge>{scenario.developmentPriority || scenario.urgency}</Badge> : null}
+                              </div>
+                            </div>
+
+                            <p className="mt-4 text-sm leading-7 text-[var(--marketing-muted)]">{scenario.painPoint}</p>
+
+                            <div className="mt-4 grid gap-3 md:grid-cols-2">
+                              {scenario.typicalUsers.length ? (
+                                <div className="rounded-lg border border-white/10 bg-white/7 p-3">
+                                  <p className="text-xs font-black text-[var(--marketing-accent)]">{text.typicalUsers}</p>
+                                  <p className="mt-2 text-sm leading-6 text-[var(--marketing-text)]">{scenario.typicalUsers.join(" / ")}</p>
+                                </div>
+                              ) : null}
+                              {scenario.representativeScenarios.length ? (
+                                <div className="rounded-lg border border-white/10 bg-white/7 p-3">
+                                  <p className="text-xs font-black text-[var(--marketing-accent)]">{text.scenarios}</p>
+                                  <p className="mt-2 text-sm leading-6 text-[var(--marketing-text)]">
+                                    {scenario.representativeScenarios.join(" / ")}
+                                  </p>
+                                </div>
+                              ) : null}
+                              <div className="rounded-lg border border-white/10 bg-white/7 p-3">
+                                <p className="text-xs font-black text-[var(--marketing-accent)]">{text.aiValue}</p>
+                                <p className="mt-2 text-sm leading-6 text-[var(--marketing-text)]">{scenario.aiValue}</p>
+                              </div>
+                              <div className="rounded-lg border border-white/10 bg-white/7 p-3">
+                                <p className="text-xs font-black text-[var(--marketing-accent)]">{text.opportunity}</p>
+                                <p className="mt-2 text-sm leading-6 text-[var(--marketing-text)]">{scenario.productOpportunity}</p>
+                              </div>
+                            </div>
+
+                            {scenario.developmentPriority || scenario.urgency ? (
+                              <p className="mt-4 text-xs font-bold leading-6 text-[var(--marketing-muted)]">
+                                {text.developmentPriority}: {scenario.developmentPriority || scenario.urgency}
+                              </p>
+                            ) : null}
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             {view.fullHtml ? (
               <section className="surface-panel-soft overflow-hidden p-4 md:p-6">

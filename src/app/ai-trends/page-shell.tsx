@@ -39,6 +39,9 @@ const content = {
     demandTitle: "需求热度排行",
     demandIntro:
       "热度不是单一搜索量，而是综合公开趋势信号、产品更新密度、创作者和开发者讨论、商业化成熟度后的判断。",
+    scenarioTitle: "工作效率细分场景排行",
+    scenarioIntro: "当工作效率位居最高热度时，下一步开发不应只停留在泛效率工具，而要优先看具体任务的频次、痛感、付费意愿和接入难度。",
+    scenarioPriority: "开发优先级",
     prioritiesTitle: "机会优先级建议",
     prioritiesIntro: "优先做高频、低合规风险、能明确节省时间或增加收入的任务型产品。",
     recentTitle: "近期分析",
@@ -60,6 +63,9 @@ const content = {
     demandTitle: "Demand heat ranking",
     demandIntro:
       "Heat is not just search volume. It combines public demand signals, release cadence, creator discussion, developer momentum, and commercial maturity.",
+    scenarioTitle: "Work productivity scenario ranking",
+    scenarioIntro: "When productivity leads demand, planning should move beyond generic efficiency tools and rank concrete tasks by frequency, pain, willingness to pay, and integration difficulty.",
+    scenarioPriority: "Development priority",
     prioritiesTitle: "Opportunity priorities",
     prioritiesIntro:
       "Prioritize task-shaped products with frequent use, lower compliance risk, and clear time-saving or revenue impact.",
@@ -158,6 +164,68 @@ const demandDirections = [
   }
 ] as const;
 
+const workProductivityScenarioRanking = [
+  {
+    zhName: "会议纪要与行动项追踪",
+    enName: "Meeting notes and action follow-up",
+    heat: 94,
+    priority: "A",
+    zhPain: "会后信息散落、责任人不清、CRM 和项目管理系统需要重复录入。",
+    enPain: "Meeting context is scattered, owners are unclear, and CRM or project systems need duplicate updates.",
+    zhOpportunity: "会议助手、销售跟进插件、项目管理自动同步。",
+    enOpportunity: "Meeting assistants, sales follow-up plugins, and automatic project-management sync."
+  },
+  {
+    zhName: "文档和报告初稿",
+    enName: "Document and report drafting",
+    heat: 90,
+    priority: "A",
+    zhPain: "空白页启动慢，资料整理和结构化表达耗时。",
+    enPain: "Blank-page starts are slow, and turning raw material into structured writing takes time.",
+    zhOpportunity: "行业模板、知识库写作、周报和方案生成。",
+    enOpportunity: "Industry templates, knowledge-base writing, weekly reports, and proposal generation."
+  },
+  {
+    zhName: "表格整理与数据清洗",
+    enName: "Spreadsheet cleanup and data preparation",
+    heat: 87,
+    priority: "A",
+    zhPain: "大量运营、财务、销售表格需要去重、归类、补字段和解释异常。",
+    enPain: "Operations, finance, and sales sheets need deduplication, grouping, field completion, and anomaly explanation.",
+    zhOpportunity: "表格助手、批量清洗、自动图表和经营摘要。",
+    enOpportunity: "Spreadsheet assistants, batch cleanup, auto charts, and business summaries."
+  },
+  {
+    zhName: "邮件和客户回复草拟",
+    enName: "Email and customer reply drafting",
+    heat: 84,
+    priority: "A-",
+    zhPain: "客服、销售和运营需要快速回复但又要保持语气、事实和上下文一致。",
+    enPain: "Support, sales, and operations teams need fast replies while keeping tone, facts, and context consistent.",
+    zhOpportunity: "客服知识库回复、销售邮件、售后解释和多语言回复。",
+    enOpportunity: "Support knowledge-base replies, sales emails, after-sales explanations, and multilingual responses."
+  },
+  {
+    zhName: "搜索研究与资料汇总",
+    enName: "Research synthesis and source collection",
+    heat: 82,
+    priority: "B+",
+    zhPain: "信息源多、可信度参差、人工整理引用链路耗时。",
+    enPain: "Sources are scattered, credibility varies, and manual citation trails take time.",
+    zhOpportunity: "可信来源研究包、竞品监控、市场摘要和引用可复核报告。",
+    enOpportunity: "Trusted research packs, competitor monitoring, market summaries, and verifiable cited reports."
+  },
+  {
+    zhName: "跨应用流程自动化",
+    enName: "Cross-app workflow automation",
+    heat: 78,
+    priority: "B",
+    zhPain: "数据在聊天、表格、邮件、CRM 和网盘之间来回搬运。",
+    enPain: "Data keeps moving manually across chat, sheets, email, CRM, and cloud drives.",
+    zhOpportunity: "轻量 RPA、个人办公代理、自动填表和状态同步。",
+    enOpportunity: "Lightweight RPA, personal office agents, form filling, and status sync."
+  }
+] as const;
 const opportunityPriorities = [
   {
     level: "A",
@@ -290,6 +358,39 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
               <div className="mt-4 h-2 rounded-full bg-white/8">
                 <div className="h-full rounded-full bg-[var(--marketing-accent)]" style={{ width: `${item.heat}%` }} />
               </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <SectionTitle title={copy.scenarioTitle} intro={copy.scenarioIntro} />
+        <div className="grid gap-4 lg:grid-cols-3">
+          {workProductivityScenarioRanking.map((scenario, index) => (
+            <article key={scenario.zhName} className="surface-panel-soft p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <Badge className="text-[var(--marketing-accent)]">#{index + 1}</Badge>
+                  <h2 className="mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">
+                    {forceLocale === "en" ? scenario.enName : scenario.zhName}
+                  </h2>
+                </div>
+                <div className="text-right">
+                  <strong className="block text-2xl font-black text-[var(--marketing-accent)]">{scenario.heat}</strong>
+                  <span className="mt-1 block text-xs font-bold text-[var(--marketing-muted)]">
+                    {copy.scenarioPriority} {scenario.priority}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 h-2 rounded-full bg-white/8">
+                <div className="h-full rounded-full bg-[var(--marketing-accent)]" style={{ width: `${scenario.heat}%` }} />
+              </div>
+              <p className="mt-4 text-sm leading-7 text-[var(--marketing-muted)]">
+                {forceLocale === "en" ? scenario.enPain : scenario.zhPain}
+              </p>
+              <p className="mt-3 text-sm font-bold leading-7 text-[var(--marketing-text)]">
+                {forceLocale === "en" ? scenario.enOpportunity : scenario.zhOpportunity}
+              </p>
             </article>
           ))}
         </div>

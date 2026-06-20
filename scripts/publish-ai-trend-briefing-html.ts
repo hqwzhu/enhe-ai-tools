@@ -71,7 +71,9 @@ async function main() {
 
   console.log(`Validated AI trend briefing: ${data.slug}`);
   console.log(`Title: ${data.title}`);
+  const scenarioCount = data.demandBreakdowns.reduce((count, breakdown) => count + breakdown.scenarios.length, 0);
   console.log(`Sources: ${data.sourceSignals.length}`);
+  console.log(`Demand breakdowns: ${data.demandBreakdowns.length} directions / ${scenarioCount} scenarios`);
 
   if (hasFlag("--dry-run")) {
     console.log("Dry run: database upsert skipped.");
@@ -88,7 +90,7 @@ async function main() {
       coreConclusion: data.coreConclusion,
       publicHighlights: data.publicHighlights,
       fullHtml: data.fullHtml,
-      sourceSignals: data.sourceSignals,
+      sourceSignals: data.sourcePayload,
       status: data.status,
       publishedAt: data.publishedAt,
       isIncludedInTopicPage: data.isIncludedInTopicPage
@@ -100,7 +102,7 @@ async function main() {
       coreConclusion: data.coreConclusion,
       publicHighlights: data.publicHighlights,
       fullHtml: data.fullHtml,
-      sourceSignals: data.sourceSignals,
+      sourceSignals: data.sourcePayload,
       status: data.status,
       publishedAt: data.publishedAt,
       isIncludedInTopicPage: data.isIncludedInTopicPage

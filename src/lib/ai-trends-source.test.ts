@@ -59,6 +59,20 @@ describe("AI trend briefing source contracts", () => {
     expect(detailShell).toContain("view.fullHtml");
   });
 
+
+  it("renders structured demand breakdowns on topic, archive, and detail pages", () => {
+    const topicPage = read("src/app/ai-trends/page-shell.tsx");
+    const archiveShell = read("src/app/ai-trends/daily/page-shell.tsx");
+    const detailShell = read("src/app/ai-trends/daily/[date]/page-shell.tsx");
+
+    expect(topicPage).toContain("workProductivityScenarioRanking");
+    expect(topicPage).toContain("copy.scenarioTitle");
+    expect(archiveShell).toContain("briefing.demandBreakdowns");
+    expect(archiveShell).toContain("scenario.developmentPriority");
+    expect(detailShell).toContain("view.demandBreakdowns");
+    expect(detailShell).toContain("scenario.productOpportunity");
+    expect(detailShell).toContain("scenario.aiValue");
+  });
   it("adds the publishing script for automation upserts", () => {
     expect(exists("scripts/publish-ai-trend-briefing-html.ts")).toBe(true);
     expect(exists("scripts/publish-ai-trend-briefing-html.test.ts")).toBe(true);

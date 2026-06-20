@@ -29,6 +29,27 @@ async function createFiles({
         sourceType: "search trend",
         observedSignal: "AI demand remains visible."
       }
+    ],
+    demandBreakdowns: [
+      {
+        direction: "工作效率",
+        heat: 96,
+        summary: "高频工作流需求最急迫。",
+        scenarios: [
+          {
+            name: "会议纪要与行动项追踪",
+            heat: 94,
+            urgency: "A",
+            typicalUsers: ["团队负责人", "销售"],
+            painPoint: "会后行动项散落。",
+            representativeScenarios: ["会议转写", "待办同步"],
+            aiValue: "把讨论变成可执行任务。",
+            productOpportunity: "会议助手和项目管理插件。",
+            developmentPriority: "A",
+            evidenceSignals: ["search trend"]
+          }
+        ]
+      }
     ]
   }
 } = {}) {
@@ -74,7 +95,8 @@ describe("publish-ai-trend-briefing-html script", () => {
         summary: "公开摘要",
         coreConclusion: "核心结论",
         publicHighlights: [],
-        sourceSignals: []
+        sourceSignals: [],
+        demandBreakdowns: []
       }
     });
 
@@ -91,6 +113,8 @@ describe("publish-ai-trend-briefing-html script", () => {
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("Validated AI trend briefing: 2026-06-19");
+    expect(result.stdout).toContain("Sources: 1");
+    expect(result.stdout).toContain("Demand breakdowns: 1 directions / 1 scenarios");
     expect(result.stdout).toContain("Dry run: database upsert skipped.");
     expect(result.stdout).not.toContain("\uFEFF");
   });

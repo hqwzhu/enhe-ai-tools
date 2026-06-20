@@ -4,6 +4,7 @@ import {
   buildAiTrendLoginUrl,
   isValidAiTrendDateSlug,
   localizeAiTrendBriefingView,
+  normalizeAiTrendDemandBreakdowns,
   normalizeAiTrendSourceSignals,
   sanitizeAiTrendBriefingHtml,
   toAiTrendBriefingView,
@@ -20,6 +21,40 @@ const validSourceSignals = [
   }
 ];
 
+
+const validDemandBreakdowns = [
+  {
+    direction: "工作效率",
+    heat: 96,
+    summary: "高频、耗时、跨工具的知识工作最需要 AI 先落地。",
+    scenarios: [
+      {
+        name: "会议纪要与行动项追踪",
+        heat: 94,
+        urgency: "A",
+        typicalUsers: ["团队负责人", "销售", "项目经理"],
+        painPoint: "会议后信息散落，行动项没人持续追踪。",
+        representativeScenarios: ["录音转纪要", "自动提取待办", "会后邮件同步"],
+        aiValue: "把会议内容变成可执行任务和可复盘记录。",
+        productOpportunity: "会议助手、CRM 跟进插件、项目管理自动同步。",
+        developmentPriority: "A",
+        evidenceSignals: ["search trend", "SaaS releases"]
+      },
+      {
+        name: "文档和报告初稿",
+        heat: 89,
+        urgency: "A",
+        typicalUsers: ["运营", "咨询顾问"],
+        painPoint: "空白页启动慢，资料整理耗时。",
+        representativeScenarios: ["周报", "方案", "复盘"],
+        aiValue: "从素材直接生成可编辑初稿。",
+        productOpportunity: "行业报告模板和知识库写作工作流。",
+        developmentPriority: "A",
+        evidenceSignals: ["creator discussion"]
+      }
+    ]
+  }
+];
 const validInput = {
   date: "2026-06-19",
   title: "AI 需求趋势分析",
@@ -28,6 +63,7 @@ const validInput = {
   publicHighlights: ["工作效率仍是最强需求", "视频生成和内容创作保持高热度"],
   fullHtml: "<article><h1>AI 需求趋势分析</h1><p>完整报告正文。</p></article>",
   sourceSignals: validSourceSignals,
+  demandBreakdowns: validDemandBreakdowns,
   status: "published" as const
 };
 
@@ -40,7 +76,10 @@ const validBriefing: AiTrendBriefingRecord = {
   coreConclusion: "核心结论",
   publicHighlights: ["亮点一", "亮点二"],
   fullHtml: "<article><p>完整 HTML</p></article>",
-  sourceSignals: validSourceSignals,
+  sourceSignals: {
+    sources: validSourceSignals,
+    demandBreakdowns: validDemandBreakdowns
+  },
   status: "published",
   publishedAt: new Date("2026-06-19T00:00:00.000Z"),
   isIncludedInTopicPage: true,
@@ -90,11 +129,34 @@ describe("AI trend briefing helpers", () => {
     ).toEqual(validSourceSignals);
   });
 
+
+  it("normalizes structured demand breakdowns for second-level scenario ranking", () => {
+    expect(
+      normalizeAiTrendDemandBreakdowns([
+        ...validDemandBreakdowns,
+        { direction: "", scenarios: validDemandBreakdowns[0].scenarios },
+        { direction: "空场景", scenarios: [] }
+      ])
+    ).toEqual(validDemandBreakdowns);
+  });
   it("keeps full HTML out of public views and includes it for logged-in users", () => {
-    expect(toAiTrendBriefingView(validBriefing, false)).not.toHaveProperty("fullHtml");
+    const publicView = toAiTrendBriefingView(validBriefing, false);
+    expect(publicView).not.toHaveProperty("fullHtml");
+    expect(publicView.sourceSignals).toEqual(validSourceSignals);
+    expect(publicView.demandBreakdowns).toEqual(validDemandBreakdowns);
     expect(toAiTrendBriefingView(validBriefing, true)).toHaveProperty("fullHtml", validBriefing.fullHtml);
   });
 
+
+  it("accepts demand breakdowns in publish input without requiring a database migration", () => {
+    const data = validateAiTrendBriefingInput(validInput);
+
+    expect(data.demandBreakdowns).toEqual(validDemandBreakdowns);
+    expect(data.sourcePayload).toEqual({
+      sources: validSourceSignals,
+      demandBreakdowns: validDemandBreakdowns
+    });
+  });
   it("builds login URLs that return to the requested daily report", () => {
     expect(buildAiTrendLoginUrl("2026-06-19")).toBe("/login?next=%2Fai-trends%2Fdaily%2F2026-06-19");
     expect(buildAiTrendLoginUrl("2026-06-19", "en")).toBe("/en/login?next=%2Fen%2Fai-trends%2Fdaily%2F2026-06-19");

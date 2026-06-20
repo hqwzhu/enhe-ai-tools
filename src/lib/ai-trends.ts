@@ -11,6 +11,31 @@ export type AiTrendSourceSignal = {
   credibilityNote?: string;
 };
 
+export type AiTrendDemandScenario = {
+  name: string;
+  heat: number;
+  urgency: string;
+  typicalUsers: string[];
+  painPoint: string;
+  representativeScenarios: string[];
+  aiValue: string;
+  productOpportunity: string;
+  developmentPriority: string;
+  evidenceSignals: string[];
+};
+
+export type AiTrendDemandBreakdown = {
+  direction: string;
+  heat: number;
+  summary: string;
+  scenarios: AiTrendDemandScenario[];
+};
+
+export type AiTrendSourcePayload = {
+  sources: AiTrendSourceSignal[];
+  demandBreakdowns: AiTrendDemandBreakdown[];
+};
+
 export type AiTrendBriefingPublishInput = {
   date: string;
   title: string;
@@ -19,6 +44,7 @@ export type AiTrendBriefingPublishInput = {
   publicHighlights?: string[];
   fullHtml: string;
   sourceSignals?: unknown;
+  demandBreakdowns?: unknown;
   status?: AiTrendBriefingStatus;
   isIncludedInTopicPage?: boolean;
   publishedAt?: string | Date | null;
@@ -33,6 +59,8 @@ export type AiTrendBriefingPublishData = {
   publicHighlights: string[];
   fullHtml: string;
   sourceSignals: AiTrendSourceSignal[];
+  demandBreakdowns: AiTrendDemandBreakdown[];
+  sourcePayload: AiTrendSourcePayload;
   status: AiTrendBriefingStatus;
   isIncludedInTopicPage: boolean;
   publishedAt: Date | null;
@@ -59,6 +87,7 @@ export type AiTrendBriefingView = Omit<AiTrendBriefingRecord, "sourceSignals" | 
   sourceSignals: AiTrendSourceSignal[];
   sourceCount: number;
   signalTypes: string[];
+  demandBreakdowns: AiTrendDemandBreakdown[];
   fullHtml?: string;
 };
 
@@ -66,6 +95,17 @@ export const aiTrendBriefingCacheSeconds = 300;
 
 function normalizeText(value: unknown) {
   return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeNumber(value: unknown, fallback = 0) {
+  const number = typeof value === "number" ? value : Number.parseFloat(String(value ?? ""));
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(100, Math.max(0, Math.round(number)));
+}
+
+function normalizeTextList(value: unknown, limit = 8) {
+  if (!Array.isArray(value)) return [];
+  return value.map(normalizeText).filter(Boolean).slice(0, limit);
 }
 
 function stripUtf8Bom(value: string) {
@@ -192,8 +232,14 @@ export function sanitizeAiTrendBriefingHtml(value: string) {
   return html;
 }
 
+function extractAiTrendSources(value: unknown): AiTrendSourceSignal[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+  const row = value as Record<string, unknown>;
+  return normalizeAiTrendSourceSignals(row.sources);
+}
+
 export function normalizeAiTrendSourceSignals(value: unknown): AiTrendSourceSignal[] {
-  if (!Array.isArray(value)) return [];
+  if (!Array.isArray(value)) return extractAiTrendSources(value);
 
   return value
     .map((item) => {
@@ -220,6 +266,75 @@ export function normalizeAiTrendSourceSignals(value: unknown): AiTrendSourceSign
     .filter((item): item is AiTrendSourceSignal => Boolean(item));
 }
 
+
+function extractAiTrendDemandBreakdowns(value: unknown): AiTrendDemandBreakdown[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+  const row = value as Record<string, unknown>;
+  return normalizeAiTrendDemandBreakdowns(row.demandBreakdowns);
+}
+
+export function normalizeAiTrendDemandBreakdowns(value: unknown): AiTrendDemandBreakdown[] {
+  if (!Array.isArray(value)) return extractAiTrendDemandBreakdowns(value);
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const direction = normalizeText(row.direction);
+      const summary = normalizeText(row.summary);
+      const scenarios = Array.isArray(row.scenarios)
+        ? row.scenarios
+            .map((scenario) => {
+              if (!scenario || typeof scenario !== "object") return null;
+              const scenarioRow = scenario as Record<string, unknown>;
+              const name = normalizeText(scenarioRow.name);
+              const painPoint = normalizeText(scenarioRow.painPoint);
+              const aiValue = normalizeText(scenarioRow.aiValue);
+              const productOpportunity = normalizeText(scenarioRow.productOpportunity);
+
+              if (!name || !painPoint || !aiValue || !productOpportunity) return null;
+
+              return {
+                name,
+                heat: normalizeNumber(scenarioRow.heat),
+                urgency: normalizeText(scenarioRow.urgency),
+                typicalUsers: normalizeTextList(scenarioRow.typicalUsers, 6),
+                painPoint,
+                representativeScenarios: normalizeTextList(scenarioRow.representativeScenarios, 8),
+                aiValue,
+                productOpportunity,
+                developmentPriority: normalizeText(scenarioRow.developmentPriority),
+                evidenceSignals: normalizeTextList(scenarioRow.evidenceSignals, 8)
+              } satisfies AiTrendDemandScenario;
+            })
+            .filter((scenario): scenario is AiTrendDemandScenario => Boolean(scenario))
+            .sort((left, right) => right.heat - left.heat)
+            .slice(0, 12)
+        : [];
+
+      if (!direction || !scenarios.length) return null;
+
+      return {
+        direction,
+        heat: normalizeNumber(row.heat),
+        summary,
+        scenarios
+      } satisfies AiTrendDemandBreakdown;
+    })
+    .filter((item): item is AiTrendDemandBreakdown => Boolean(item))
+    .sort((left, right) => right.heat - left.heat)
+    .slice(0, 12);
+}
+
+export function buildAiTrendSourcePayload(
+  sourceSignals: AiTrendSourceSignal[],
+  demandBreakdowns: AiTrendDemandBreakdown[]
+): AiTrendSourcePayload {
+  return {
+    sources: sourceSignals,
+    demandBreakdowns
+  };
+}
 export function validateAiTrendBriefingInput(input: AiTrendBriefingPublishInput): AiTrendBriefingPublishData {
   const slug = normalizeText(input.date);
   const title = normalizeText(input.title);
@@ -227,6 +342,8 @@ export function validateAiTrendBriefingInput(input: AiTrendBriefingPublishInput)
   const coreConclusion = normalizeText(input.coreConclusion);
   const status = input.status ?? "draft";
   const sourceSignals = normalizeAiTrendSourceSignals(input.sourceSignals);
+  const demandBreakdowns = normalizeAiTrendDemandBreakdowns(input.demandBreakdowns ?? input.sourceSignals);
+  const sourcePayload = buildAiTrendSourcePayload(sourceSignals, demandBreakdowns);
   const fullHtml = sanitizeAiTrendBriefingHtml(input.fullHtml);
 
   if (!isValidAiTrendDateSlug(slug)) {
@@ -271,6 +388,8 @@ export function validateAiTrendBriefingInput(input: AiTrendBriefingPublishInput)
     publicHighlights: (input.publicHighlights ?? []).map(normalizeText).filter(Boolean).slice(0, 8),
     fullHtml,
     sourceSignals,
+    demandBreakdowns,
+    sourcePayload,
     status,
     isIncludedInTopicPage: Boolean(input.isIncludedInTopicPage),
     publishedAt
@@ -282,6 +401,7 @@ export function toAiTrendBriefingView(
   includeFullHtml: boolean
 ): AiTrendBriefingView {
   const sourceSignals = normalizeAiTrendSourceSignals(briefing.sourceSignals);
+  const demandBreakdowns = normalizeAiTrendDemandBreakdowns(briefing.sourceSignals);
   const signalTypes = Array.from(new Set(sourceSignals.map((source) => source.sourceType)));
 
   return {
@@ -300,6 +420,7 @@ export function toAiTrendBriefingView(
     sourceSignals,
     sourceCount: sourceSignals.length,
     signalTypes,
+    demandBreakdowns,
     ...(includeFullHtml ? { fullHtml: briefing.fullHtml } : {})
   };
 }

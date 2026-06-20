@@ -23,6 +23,8 @@ const copy = {
     emptyTitle: "暂无分析",
     emptyText: "自动化发布第一份 AI 需求趋势分析后，这里会显示公开摘要。",
     sources: "个来源信号",
+    scenarioTitle: "细分场景",
+    developmentPriority: "开发优先级",
     loginHint: "登录后看全文"
   },
   en: {
@@ -40,6 +42,8 @@ const copy = {
     emptyTitle: "No analysis yet",
     emptyText: "Public summaries will appear here after the first automated AI demand analysis is published.",
     sources: "source signals",
+    scenarioTitle: "Scenarios",
+    developmentPriority: "Development priority",
     loginHint: "Log in for full text"
   }
 } as const;
@@ -124,6 +128,23 @@ export async function AiTrendDailyArchivePageShell({ forceLocale = "zh" }: { for
                       <div className="mt-4 flex flex-wrap gap-2">
                         {briefing.publicHighlights.slice(0, 5).map((highlight) => (
                           <Badge key={highlight}>{highlight}</Badge>
+                        ))}
+                      </div>
+                    ) : null}
+                    {briefing.demandBreakdowns.length ? (
+                      <div className="mt-5 grid gap-2 md:grid-cols-3">
+                        {briefing.demandBreakdowns[0].scenarios.slice(0, 3).map((scenario) => (
+                          <div key={`${briefing.id}-${scenario.name}`} className="rounded-xl border border-white/10 bg-white/7 p-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <p className="text-sm font-bold leading-6 text-[var(--marketing-text)]">{scenario.name}</p>
+                              <span className="shrink-0 text-sm font-black text-[var(--marketing-accent)]">{scenario.heat}</span>
+                            </div>
+                            {scenario.developmentPriority || scenario.urgency ? (
+                              <p className="mt-2 text-xs leading-5 text-[var(--marketing-muted)]">
+                                {text.developmentPriority} {scenario.developmentPriority || scenario.urgency}
+                              </p>
+                            ) : null}
+                          </div>
                         ))}
                       </div>
                     ) : null}
