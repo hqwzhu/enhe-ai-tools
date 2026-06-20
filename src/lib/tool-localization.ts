@@ -124,6 +124,11 @@ function hasAccountServiceRiskCopy(value: string | null | undefined) {
   return Boolean(normalized) && sanitizeAccountServiceCopy(normalized, "zh") !== normalized;
 }
 
+function hasAccountServiceCategoryRisk(value: string | null | undefined) {
+  const normalized = normalizeText(value);
+  return /账号购买|账号代充|代充|官方代充|低价|永久可用|共享账号|破解|绕过限制|保证不封号|黑卡|免风控/i.test(normalized);
+}
+
 function extractAccountServiceProductName(value: string | null | undefined, fallback: string) {
   const normalized = normalizeText(value);
   const productMatch = normalized.match(/(?:ChatGPT|Gemini|Claude|Midjourney|OpenAI|Google AI|Perplexity|Sora|Runway|Kling|Grok)(?:\s+(?:Plus|Pro|Team|Enterprise|API|Studio|Ultra|Max|Advanced|AI|Google AI Pro|3 Flash))*|[A-Za-z][A-Za-z0-9.+-]*(?:\s+[A-Za-z0-9.+-]+){0,3}/i);
@@ -195,6 +200,7 @@ export function resolveLocalizedToolCategoryName(name: string | null | undefined
   const normalized = normalizeText(name);
   if (!normalized) return getDefaultToolLabel(type, locale);
   if (locale === "zh") {
+    if (type === "online" && hasAccountServiceCategoryRisk(normalized)) return "AI账号服务咨询";
     if (type === "online" && hasAccountServiceRiskCopy(normalized)) return "AI账号服务咨询";
     return normalized;
   }

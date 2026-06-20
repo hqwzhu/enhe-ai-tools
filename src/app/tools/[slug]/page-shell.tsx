@@ -219,6 +219,18 @@ export async function ToolDetailPageShell({
   });
   const tutorialVideos = visibleTutorials.filter((tutorial) => tutorial.videoUrl);
   const supportEmail = td.supportEmailValue;
+  const publicChangelogFallback =
+    forceLocale === "en"
+      ? "Important version notes will be added when availability, delivery details, or usage guidance changes. Review the current page information before purchase or use."
+      : "当版本、交付说明或使用建议发生变化时，ENHE AI 会在这里同步重要更新。使用或购买前，请以当前页面说明为准。";
+  const publicDemoVideoFallback =
+    forceLocale === "en"
+      ? "Start with the written guide below to confirm the suitable scenario, access conditions, and practical usage steps."
+      : "可先阅读下方图文说明，按步骤确认适用场景、使用条件和实际操作方式。";
+  const publicFaqFallback =
+    forceLocale === "en"
+      ? "Before using this page, review the suitable scenario, delivery boundary, platform rules, and support contact. ENHE AI will continue adding common questions as the page evolves."
+      : "使用前请先确认适用场景、交付边界、平台规则和支持方式；页面会随产品与课程内容持续补充常见问题。";
   const introTitle = isAccountService ? td.serviceIntroTitle : td.introTitle;
   const productImagesIntro = isAccountService ? td.serviceProductImagesIntro : td.productImagesIntro;
   const schemaType = tool.type === "software" ? "SoftwareApplication" : tool.type === "online" ? "Service" : "Course";
@@ -413,7 +425,7 @@ export async function ToolDetailPageShell({
                     </div>
                   ))
                 ) : (
-                  <p className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm leading-6 text-[#8F9DB2]">{td.noChangelogs}</p>
+                  <p className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm leading-6 text-[#8F9DB2]">{publicChangelogFallback}</p>
                 )}
               </div>
             </div>
@@ -435,7 +447,7 @@ export async function ToolDetailPageShell({
                   ))}
                 </div>
               ) : (
-                <p className="text-sm leading-6 text-[#8F9DB2]">{td.demoVideoFallback}</p>
+                <p className="text-sm leading-6 text-[#8F9DB2]">{publicDemoVideoFallback}</p>
               )}
             </TrustItem>
             <TrustItem label={isAccountService ? td.serviceType : td.systemRequirement}>
@@ -536,7 +548,7 @@ export async function ToolDetailPageShell({
                 </details>
               ))
             ) : (
-              <p className="rounded-2xl border border-white/10 bg-white/8 p-5 text-sm leading-6 text-[#8F9DB2]">{td.noFaqs}</p>
+              <p className="rounded-2xl border border-white/10 bg-white/8 p-5 text-sm leading-6 text-[#8F9DB2]">{publicFaqFallback}</p>
             )}
           </div>
         </section>

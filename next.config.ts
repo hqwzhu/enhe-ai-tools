@@ -57,6 +57,8 @@ const nextConfig: NextConfig = {
       { source: "/en/tutorials", headers: enPublicCacheHeaders },
       { source: "/ai-news", headers: zhPublicCacheHeaders },
       { source: "/en/ai-news", headers: enPublicCacheHeaders },
+      { source: "/ai-trends", headers: zhPublicCacheHeaders },
+      { source: "/en/ai-trends", headers: enPublicCacheHeaders },
       { source: "/ai-news/:slug*", headers: zhPublicCacheHeaders },
       { source: "/en/ai-news/:slug*", headers: enPublicCacheHeaders },
       { source: "/legal/:slug*", headers: zhPublicCacheHeaders },

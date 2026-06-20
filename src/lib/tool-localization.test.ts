@@ -67,6 +67,12 @@ describe("tool localization helpers", () => {
     expect(resolveLocalizedToolCategoryName("账号购买服务", "online", "en")).toBe("AI Account Service");
   });
 
+  it("replaces Chinese account-purchase category wording with compliance-safe public labels", () => {
+    expect(resolveLocalizedToolCategoryName("账号购买服务", "online", "zh")).toBe("AI账号服务咨询");
+    expect(resolveLocalizedToolCategoryName("AI账号购买服务", "online", "zh")).toBe("AI账号服务咨询");
+    expect(resolveLocalizedToolCategoryName("账号订阅支持", "online", "zh")).toBe("账号订阅支持");
+  });
+
   it("builds english summaries without surfacing raw chinese descriptions", () => {
     const summary = buildLocalizedToolSummary(
       {
