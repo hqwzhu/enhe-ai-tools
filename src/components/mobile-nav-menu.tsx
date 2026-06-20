@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { LayoutDashboard, Menu } from "lucide-react";
+import { PrefetchLink } from "@/components/prefetch-link";
 
 type MobileNavMenuProps = {
   labels: {
@@ -29,23 +29,23 @@ export function MobileNavMenu({
       </summary>
       <div className="mobile-nav-panel absolute right-0 top-12 z-50 w-64 overflow-hidden p-2">
         {navItems.map(({ label, href }) => (
-          <Link key={href} href={href} className="mobile-nav-link">
+          <PrefetchLink key={href} href={href} className="mobile-nav-link">
             {label}
-          </Link>
+          </PrefetchLink>
         ))}
         {loginItem ? (
-          <Link href={loginItem[1]} className="mobile-nav-link">
+          <PrefetchLink href={loginItem[1]} className="mobile-nav-link">
             {loginItem[0]}
-          </Link>
+          </PrefetchLink>
         ) : null}
-        <Link href={userCenterItem[1]} className="mobile-nav-link mobile-nav-user-center">
+        <PrefetchLink href={userCenterItem[1]} className="mobile-nav-link mobile-nav-user-center">
           {userCenterItem[0]}
-        </Link>
+        </PrefetchLink>
         {showAdmin ? (
-          <Link href="/admin" className="mobile-nav-link mobile-nav-admin">
+          <PrefetchLink href="/admin" className="mobile-nav-link mobile-nav-admin">
             <LayoutDashboard size={16} />
             {labels.admin ?? "Admin"}
-          </Link>
+          </PrefetchLink>
         ) : null}
       </div>
     </details>

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { PrefetchLink } from "@/components/prefetch-link";
 import type { Locale } from "@/lib/dictionaries";
 import { type HeaderSessionUser, useHeaderSessionUser } from "@/components/header-session";
 
@@ -18,8 +18,8 @@ export function HeaderAdminNavLink({
   if (user?.role !== "admin") return null;
 
   return (
-    <Link href="/admin" className="site-nav-link">
+    <PrefetchLink href="/admin" className="site-nav-link">
       {label}
-    </Link>
+    </PrefetchLink>
   );
 }

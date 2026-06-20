@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { UserRound } from "lucide-react";
+import { PrefetchLink } from "@/components/prefetch-link";
 import type { Locale } from "@/lib/dictionaries";
 import { buildLocalePath } from "@/lib/seo";
 import { type HeaderSessionUser, useHeaderSessionUser } from "@/components/header-session";
@@ -28,18 +28,18 @@ export function HeaderAccountControls({
 
   if (!user) {
     return (
-      <Link href={loginPath} className="site-login-link hidden sm:inline-flex">
+      <PrefetchLink href={loginPath} className="site-login-link hidden sm:inline-flex">
         {labels.login}
-      </Link>
+      </PrefetchLink>
     );
   }
 
   return (
     <>
-      <Link href={userPath} className="site-user-chip hidden sm:inline-flex">
+      <PrefetchLink href={userPath} className="site-user-chip hidden sm:inline-flex">
         <UserRound size={16} />
         <span className="truncate">{user.nickname ?? user.email ?? labels.userFallback}</span>
-      </Link>
+      </PrefetchLink>
     </>
   );
 }

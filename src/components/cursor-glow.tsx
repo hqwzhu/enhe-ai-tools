@@ -25,6 +25,7 @@ export function CursorGlow() {
   const [visible, setVisible] = useState(false);
   const shellRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
+  const idleTimerRef = useRef<number | null>(null);
   const enabledRef = useRef(false);
   const visibleRef = useRef(false);
   const targetRef = useRef({ x: INITIAL_COORDINATE, y: INITIAL_COORDINATE });
@@ -38,9 +39,51 @@ export function CursorGlow() {
     const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+    const stopFrameLoop = () => {
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
+    };
+
+    const tick = () => {
+      if (enabledRef.current && visibleRef.current && shellRef.current) {
+        const dx = targetRef.current.x - currentRef.current.x;
+        const dy = targetRef.current.y - currentRef.current.y;
+
+        currentRef.current.x += dx * EASE;
+        currentRef.current.y += dy * EASE;
+        shellRef.current.style.transform = `translate3d(${currentRef.current.x}px, ${currentRef.current.y}px, 0)`;
+        frameRef.current = window.requestAnimationFrame(tick);
+        return;
+      }
+
+      frameRef.current = null;
+    };
+
+    const startFrameLoop = () => {
+      if (
+        !enabledRef.current ||
+        !visibleRef.current ||
+        document.visibilityState === "hidden" ||
+        frameRef.current !== null
+      ) {
+        return;
+      }
+
+      frameRef.current = window.requestAnimationFrame(tick);
+    };
+
     const hideGlow = () => {
       visibleRef.current = false;
       setVisible(false);
+
+      if (idleTimerRef.current !== null) {
+        window.clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+
+      stopFrameLoop();
     };
 
     const syncEnabled = () => {
@@ -50,27 +93,7 @@ export function CursorGlow() {
 
       if (!nextEnabled) {
         hideGlow();
-
-        if (frameRef.current !== null) {
-          window.cancelAnimationFrame(frameRef.current);
-          frameRef.current = null;
-        }
-      } else if (frameRef.current === null) {
-        frameRef.current = window.requestAnimationFrame(tick);
       }
-    };
-
-    const tick = () => {
-      if (enabledRef.current && shellRef.current) {
-        const dx = targetRef.current.x - currentRef.current.x;
-        const dy = targetRef.current.y - currentRef.current.y;
-
-        currentRef.current.x += dx * EASE;
-        currentRef.current.y += dy * EASE;
-        shellRef.current.style.transform = `translate3d(${currentRef.current.x}px, ${currentRef.current.y}px, 0)`;
-      }
-
-      frameRef.current = window.requestAnimationFrame(tick);
     };
 
     const handlePointerMove = (event: PointerEvent) => {
@@ -89,11 +112,30 @@ export function CursorGlow() {
           shellRef.current.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
         }
       }
+
+      if (idleTimerRef.current !== null) {
+        window.clearTimeout(idleTimerRef.current);
+      }
+
+      idleTimerRef.current = window.setTimeout(() => {
+        idleTimerRef.current = null;
+        stopFrameLoop();
+      }, 1400);
+
+      startFrameLoop();
     };
 
     const handlePointerOut = (event: PointerEvent) => {
       if (event.relatedTarget === null) {
         hideGlow();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        stopFrameLoop();
+      } else {
+        startFrameLoop();
       }
     };
 
@@ -104,6 +146,7 @@ export function CursorGlow() {
 
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     document.addEventListener("pointerout", handlePointerOut);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", hideGlow);
 
     return () => {
@@ -111,11 +154,14 @@ export function CursorGlow() {
       unbindReducedMotion();
       window.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerout", handlePointerOut);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", hideGlow);
 
-      if (frameRef.current !== null) {
-        window.cancelAnimationFrame(frameRef.current);
+      if (idleTimerRef.current !== null) {
+        window.clearTimeout(idleTimerRef.current);
       }
+
+      stopFrameLoop();
     };
   }, []);
 

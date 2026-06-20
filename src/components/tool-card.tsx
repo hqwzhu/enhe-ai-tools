@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowUpRight, Check, Download, MousePointer2, UserRound } from "lucide-react";
+import { PrefetchLink } from "@/components/prefetch-link";
 import { Badge } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
@@ -58,7 +58,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
   const showPrice = (tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0) || tool.type === "skill_learning";
 
   return (
-    <Link href={buildCanonicalToolPath(tool, locale)} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
+    <PrefetchLink href={buildCanonicalToolPath(tool, locale)} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
       <div className="relative aspect-[16/9] overflow-hidden border-b border-white/14 bg-[#202229]">
         {coverImage ? (
           <Image
@@ -125,7 +125,7 @@ export function ToolCard({ tool, locale = "zh" }: ToolCardProps) {
           <span className="font-semibold text-[var(--marketing-accent)]">{t.toolCard.viewDetails}</span>
         </div>
       </div>
-    </Link>
+    </PrefetchLink>
   );
 }
 

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { PrefetchLink } from "@/components/prefetch-link";
 import { Container } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getCurrentLocale } from "@/lib/i18n";
@@ -52,23 +52,23 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
           </div>
           <div className="flex max-w-3xl flex-col gap-5 lg:items-end">
             <nav className="flex flex-wrap gap-x-5 gap-y-3 lg:justify-end">
-              <Link href={buildLocalePath("/legal/user-agreement", locale)} className="transition hover:text-[var(--marketing-accent)]">
+              <PrefetchLink href={buildLocalePath("/legal/user-agreement", locale)} className="transition hover:text-[var(--marketing-accent)]">
                 {t.footer.helpSupport}
-              </Link>
-              <Link href={buildLocalePath("/#updates", locale)} className="transition hover:text-[var(--marketing-accent)]">
+              </PrefetchLink>
+              <PrefetchLink href={buildLocalePath("/#updates", locale)} className="transition hover:text-[var(--marketing-accent)]">
                 {t.nav.updates}
-              </Link>
-              <Link href={buildLocalePath("/ai-trends", locale)} className="transition hover:text-[var(--marketing-accent)]">
+              </PrefetchLink>
+              <PrefetchLink href={buildLocalePath("/ai-trends", locale)} className="transition hover:text-[var(--marketing-accent)]">
                 {t.nav.aiTrends}
-              </Link>
+              </PrefetchLink>
               {legalPages.map((page) => (
-                <Link
+                <PrefetchLink
                   key={page.slug}
                   href={buildLocalePath(`/legal/${page.slug}`, locale)}
                   className="transition hover:text-[var(--marketing-accent)]"
                 >
                   {t.footer.legal[page.slug as keyof typeof t.footer.legal]}
-                </Link>
+                </PrefetchLink>
               ))}
             </nav>
             <address className="grid gap-1 not-italic text-xs leading-6 text-[var(--marketing-muted)] lg:text-right">

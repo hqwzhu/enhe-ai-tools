@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PrefetchLink } from "@/components/prefetch-link";
 import { cn } from "@/lib/utils";
 
 export function Container({ className, children }: React.PropsWithChildren<{ className?: string }>) {
@@ -20,7 +20,7 @@ export function ButtonLink({
   className
 }: React.PropsWithChildren<{ href: string; variant?: "primary" | "ghost"; className?: string }>) {
   return (
-    <Link
+    <PrefetchLink
       className={cn(
         "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-bold transition duration-200 hover:-translate-y-0.5",
         variant === "primary"
@@ -31,7 +31,7 @@ export function ButtonLink({
       href={href}
     >
       <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
-    </Link>
+    </PrefetchLink>
   );
 }
 
