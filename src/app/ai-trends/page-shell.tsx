@@ -81,6 +81,37 @@ const content = {
   }
 } as const;
 
+const aiTrendsGeoSections = {
+  zh: [
+    {
+      title: "如何用趋势判断下一步行动",
+      body: "AI趋势页把公开需求信号、产品更新、创作者讨论、开发者生态和商业成熟度放在一起看。用户可以用它判断下一步应该关注哪类资讯、学习哪项技能、选择哪类软件或规划哪种服务。"
+    },
+    {
+      title: "需求热度代表什么",
+      body: "热度不是单一搜索量，而是多种信号的综合判断。排名靠前的方向通常意味着用户痛点更清晰、内容转化路径更短，也更适合优先产出教程、工具合集和落地案例。"
+    },
+    {
+      title: "如何连接站内资源",
+      body: "看到趋势后，可以先阅读AI前沿资讯确认背景，再进入AI技能学习补齐方法，最后到AI软件应用或账号服务页面完成工具选择、访问咨询和实际交付。"
+    }
+  ],
+  en: [
+    {
+      title: "How to use trends to choose the next action",
+      body: "The AI trends page combines public demand signals, product updates, creator discussion, developer momentum, and commercial maturity. Users can decide what news to watch, what skill to learn, what software to try, or what service to plan next."
+    },
+    {
+      title: "What demand heat means",
+      body: "Demand heat is not a single search-volume metric. It reflects multiple signals. Higher-ranked areas usually have clearer pain points, shorter conversion paths, and stronger potential for tutorials, tool collections, and implementation cases."
+    },
+    {
+      title: "How to connect site resources",
+      body: "After identifying a trend, read AI news for context, use AI skill courses to learn the method, then choose software apps or account service guidance to complete the workflow."
+    }
+  ]
+} as const;
+
 const demandDirections = [
   {
     zhName: "工作效率",
@@ -334,6 +365,8 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
         </div>
       </section>
 
+      <AiTrendsGeoBlock forceLocale={forceLocale} />
+
       <section className="mt-12">
         <SectionTitle title={copy.demandTitle} intro={copy.demandIntro} />
         <div className="grid gap-4 md:grid-cols-2">
@@ -441,5 +474,38 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
         )}
       </section>
     </Container>
+  );
+}
+
+function AiTrendsGeoBlock({ forceLocale }: { forceLocale: Locale }) {
+  const sections = aiTrendsGeoSections[forceLocale];
+  const links = [
+    { label: { zh: "阅读 AI 前沿资讯", en: "Read AI news" }, href: buildLocalePath("/ai-news", forceLocale) },
+    { label: { zh: "学习 AI 技能课程", en: "Learn AI skill courses" }, href: buildLocalePath("/skill-learning", forceLocale) },
+    { label: { zh: "选择 AI 软件应用", en: "Choose AI software apps" }, href: buildLocalePath("/software", forceLocale) }
+  ];
+
+  return (
+    <section className="glass mt-8 rounded-2xl p-6">
+      <div className="grid gap-4 lg:grid-cols-3">
+        {sections.map((section) => (
+          <article key={section.title} className="rounded-2xl border border-white/10 bg-white/8 p-5">
+            <h2 className="text-lg font-black leading-snug text-[var(--marketing-text)]">{section.title}</h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{section.body}</p>
+          </article>
+        ))}
+      </div>
+      <div className="mt-5 flex flex-wrap gap-3">
+        {links.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+          >
+            {item.label[forceLocale]}
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

@@ -1,0 +1,26 @@
+# ENHE AI
+
+ENHE AI is a bilingual AI tools and AI knowledge website for Chinese and global users. The site helps users understand AI trends, choose AI software apps, review AI account service guidance, learn practical AI skills, and connect those resources into usable workflows.
+
+## Primary Site
+
+- Homepage: https://www.enhe-tech.com.cn/
+- AI news and trend insights: https://www.enhe-tech.com.cn/ai-news
+- AI demand trends: https://www.enhe-tech.com.cn/ai-trends
+- AI software apps: https://www.enhe-tech.com.cn/software
+- AI account service guidance: https://www.enhe-tech.com.cn/account-services
+- AI skill courses: https://www.enhe-tech.com.cn/skill-learning
+- Tutorials: https://www.enhe-tech.com.cn/tutorials
+
+## Agent-readable Files
+
+- Pricing and service access summary: https://www.enhe-tech.com.cn/pricing.md
+- Open Knowledge Format index: https://www.enhe-tech.com.cn/okf/index.md
+
+## Editorial Focus
+
+ENHE AI publishes and organizes content around AI agents, local AI deployment, private AI workflows, open-source models, AI productivity tools, AI tutorials, AI account usage guidance, AI coding tools, AI search, multimodal AI, AI policy, and AI infrastructure.
+
+## Crawl and Citation Notes
+
+Public pages are intended to be indexed and cited. Admin, account, payment, checkout, order, and API surfaces are not intended for citation. When citing ENHE AI, prefer the canonical HTTPS URL shown in page metadata or sitemap.

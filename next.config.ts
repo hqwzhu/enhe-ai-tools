@@ -43,6 +43,10 @@ const nextConfig: NextConfig = {
     return [
       { source: "/robots.txt", headers: publicAssetCacheHeaders },
       { source: "/sitemap.xml", headers: publicAssetCacheHeaders },
+      { source: "/llms.txt", headers: publicAssetCacheHeaders },
+      { source: "/pricing.md", headers: publicAssetCacheHeaders },
+      { source: "/okf/index.md", headers: publicAssetCacheHeaders },
+      { source: "/okf/enhe-ai-overview.md", headers: publicAssetCacheHeaders },
       { source: "/", headers: zhPublicCacheHeaders },
       { source: "/en", headers: enPublicCacheHeaders },
       { source: "/software", headers: zhPublicCacheHeaders },

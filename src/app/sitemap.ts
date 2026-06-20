@@ -7,7 +7,8 @@ import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
-const aiTrendTopicPath = "/ai-trends";
+const aiTrendTopicPaths = ["/ai-trends", "/en/ai-trends"] as const;
+const geoMachineReadableRoutes = ["/llms.txt", "/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md"] as const;
 
 const staticRoutes = [
   "/",
@@ -73,6 +74,12 @@ function getPriority(path: string) {
   return 0.7;
 }
 
+function getMachineReadablePriority(path: string) {
+  if (path === "/llms.txt") return 0.68;
+  if (path === "/okf/index.md") return 0.66;
+  return 0.64;
+}
+
 function getCanonicalSourcePath(path: string) {
   return path.startsWith("/en/") ? path.slice(3) : path === "/en" ? "/" : path;
 }
@@ -101,12 +108,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: path === "/" || path === "/en" ? ("daily" as const) : ("weekly" as const),
       priority: getPriority(path)
     })),
-    {
-      url: absoluteUrl(aiTrendTopicPath),
+    ...aiTrendTopicPaths.map((path) => ({
+      url: absoluteUrl(path),
       lastModified: new Date("2026-06-19T00:00:00.000Z"),
+      alternates: {
+        languages: buildLanguageAlternates("/ai-trends")
+      },
       changeFrequency: "weekly" as const,
       priority: 0.76
-    },
+    })),
+    ...geoMachineReadableRoutes.map((path) => ({
+      url: absoluteUrl(path),
+      lastModified: new Date("2026-06-21T00:00:00.000Z"),
+      changeFrequency: "weekly" as const,
+      priority: getMachineReadablePriority(path)
+    })),
     ...tools.flatMap((tool) => {
       const canonicalPath = buildCanonicalToolPath(tool, "zh");
       const localizedRoutes = [
