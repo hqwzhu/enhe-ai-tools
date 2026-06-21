@@ -24,6 +24,7 @@ import { getAdminUserDeleteBlockReason } from "@/lib/admin-user-rules";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
 import { buildAiNewsImportPayloadFromHtml } from "@/lib/ai-news-html-import";
 import { importAiNewsArticle } from "@/lib/ai-news-import";
+import { notifyBaiduSearch } from "@/lib/baidu-push";
 import { notifyIndexNow } from "@/lib/indexnow";
 import { revokeEntitlementsForRefundedOrder } from "@/lib/membership";
 import { createLicenseCode, isUnlimitedLicenseKeyValid, parseLicenseCode } from "@/lib/license-generator";
@@ -1124,7 +1125,9 @@ export async function upsertToolAction(formData: FormData) {
     revalidatePath(canonicalToolPath);
     if (data.status === "published") {
       const indexNowUrls = [listingPath, canonicalToolPath];
+      const baiduPushUrls = [listingPath, canonicalToolPath];
       await notifyIndexNow(indexNowUrls);
+      await notifyBaiduSearch(baiduPushUrls, { source: "admin-tool-upsert", toolId: savedToolId, type });
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存失败，请检查表单内容。";
@@ -1289,6 +1292,7 @@ export async function upsertTutorialAction(formData: FormData) {
     });
     const indexNowUrls = ["/tutorials", tool ? buildCanonicalToolPath(tool, "zh") : null];
     await notifyIndexNow(indexNowUrls);
+    await notifyBaiduSearch(indexNowUrls, { source: "admin-tutorial-upsert", tutorialId, toolId });
   }
   redirect(`/admin/tutorials/${tutorialId}?saved=1`);
 }
@@ -1615,6 +1619,7 @@ export async function importNewsArticleHtmlAction(formData: FormData) {
       revalidatePath(`/en/ai-news/${result.canonicalSlug}`);
       const indexNowUrls = ["/ai-news", result.publicUrl];
       await notifyIndexNow(indexNowUrls);
+      await notifyBaiduSearch([result.publicUrl], { source: "admin-ai-news-html-import", articleId: result.articleId });
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "HTML 导入失败，请检查文章内容。";
@@ -1758,6 +1763,7 @@ export async function upsertNewsArticleAction(formData: FormData) {
         )
       ];
       await notifyIndexNow(indexNowUrls);
+      await notifyBaiduSearch(indexNowUrls, { source: "admin-ai-news-upsert", articleId: savedId });
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存失败，请检查资讯表单。";

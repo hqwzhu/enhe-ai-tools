@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { ZodError } from "zod";
 import { buildAiNewsImportPayloadFromHtml } from "@/lib/ai-news-html-import";
 import { DuplicateAiNewsCoverImageError, importAiNewsArticle, verifyAiNewsImportToken } from "@/lib/ai-news-import";
+import { notifyBaiduSearch } from "@/lib/baidu-push";
 import { notifyIndexNow } from "@/lib/indexnow";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
       revalidatePath(`/ai-news/${result.canonicalSlug}`);
       revalidatePath(`/en/ai-news/${result.canonicalSlug}`);
       await notifyIndexNow([result.publicUrl]);
+      await notifyBaiduSearch([result.publicUrl]);
     }
 
     return NextResponse.json({
