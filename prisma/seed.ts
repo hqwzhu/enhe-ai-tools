@@ -104,8 +104,14 @@ async function main() {
     categoryId: softwareCategory.id,
     shortDescription: "一键批量重命名文件，支持规则模板与预览。",
     content: "面向资料整理、素材归档、项目交付场景的 Windows 桌面工具。",
-    coverImage: "/images/tool-software.svg",
-    screenshots: ["/images/tool-software.svg"],
+    coverImage: "/images/products/enhe-visuals/enhe-batch-renamer/cover.png",
+    screenshots: [
+      "/images/products/enhe-visuals/enhe-batch-renamer/detail-01-benefit.png",
+      "/images/products/enhe-visuals/enhe-batch-renamer/detail-02-mechanism.png",
+      "/images/products/enhe-visuals/enhe-batch-renamer/detail-03-scenario.png",
+      "/images/products/enhe-visuals/enhe-batch-renamer/detail-04-included.png",
+      "/images/products/enhe-visuals/enhe-batch-renamer/detail-05-specs.png"
+    ],
     version: "1.0.0",
     systemRequirement: "Windows 10/11",
     isVipRequired: true,
@@ -136,8 +142,14 @@ async function main() {
     categoryId: onlineCategory.id,
     shortDescription: "清理多余空格、换行和特殊符号，适合内容整理。",
     content: "把杂乱文本整理为适合发布、归档或二次处理的标准格式。",
-    coverImage: "/images/tool-online.svg",
-    screenshots: ["/images/tool-online.svg"],
+    coverImage: "/images/products/enhe-visuals/enhe-copy-cleaner/cover.png",
+    screenshots: [
+      "/images/products/enhe-visuals/enhe-copy-cleaner/detail-01-benefit.png",
+      "/images/products/enhe-visuals/enhe-copy-cleaner/detail-02-mechanism.png",
+      "/images/products/enhe-visuals/enhe-copy-cleaner/detail-03-scenario.png",
+      "/images/products/enhe-visuals/enhe-copy-cleaner/detail-04-included.png",
+      "/images/products/enhe-visuals/enhe-copy-cleaner/detail-05-specs.png"
+    ],
     onlineUrl: "https://example.com/tools/copy-cleaner",
     isVipRequired: true,
     status: "published" as const,

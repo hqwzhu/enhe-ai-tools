@@ -81,7 +81,7 @@ function absoluteSitemapUrl(path: string) {
   return path === "/" ? absoluteUrl("/").replace(/\/$/, "") : absoluteUrl(path);
 }
 
-function buildSitemapLanguageAlternates(path: string) {
+function buildLanguageAlternates(path: string) {
   const canonicalSourcePath = stripLocalePrefix(path);
   return {
     "x-default": absoluteSitemapUrl(canonicalSourcePath),
@@ -118,7 +118,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteSitemapUrl(path),
       lastModified: staticRouteLastModified[path],
       alternates: {
-        languages: buildSitemapLanguageAlternates(getCanonicalSourcePath(path))
+        languages: buildLanguageAlternates(getCanonicalSourcePath(path))
       },
       changeFrequency: path === "/" || path === "/en" ? ("daily" as const) : ("weekly" as const),
       priority: getPriority(path)
@@ -127,7 +127,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteSitemapUrl(path),
       lastModified: new Date("2026-06-19T00:00:00.000Z"),
       alternates: {
-        languages: buildSitemapLanguageAlternates("/ai-trends")
+        languages: buildLanguageAlternates("/ai-trends")
       },
       changeFrequency: "weekly" as const,
       priority: 0.76
