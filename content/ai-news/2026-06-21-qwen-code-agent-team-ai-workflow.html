@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Qwen Code 推出 Agent Team，多智能体协作进入编码工作流</title>
+  <meta name="description" content="Qwen Code 6月18日周报显示，Agent Team、持久化 /loop 和会话内 /cd 等能力上线，多智能体协作开始更深进入 AI 编程与工作流自动化场景。">
+  <meta name="keywords" content="Qwen Code Agent Team,AI智能体,AI编程,多智能体协作,AI工作流自动化,AI软件应用,AI技能教程">
+  <link rel="canonical" href="https://www.enhe-tech.com.cn/ai-news/qwen-code-agent-team-ai-workflow">
+</head>
+<body>
+  <article>
+    <header>
+      <h1>Qwen Code 推出 Agent Team，多智能体协作进入编码工作流</h1>
+      <p>作者：恩禾ENHE AI · 发布日期：<time datetime="2026-06-21">2026年6月21日</time></p>
+      <img src="https://images.unsplash.com/photo-1484417894907-623942c8ee29?auto=format&fit=crop&w=1600&q=80" alt="Qwen Code Agent Team 多智能体协作与 AI 编程工具链">
+    </header>
+
+    <nav aria-label="文章目录">
+      <h2>文章目录</h2>
+      <ol>
+        <li><a href="#overview">事实概述</a></li>
+        <li><a href="#background">背景与原因</a></li>
+        <li><a href="#why-it-matters">为什么值得关注</a></li>
+        <li><a href="#user-impact">对 AI 工具用户的影响</a></li>
+        <li><a href="#enhe-angle">对 ENHE 用户的实际启发</a></li>
+        <li><a href="#summary">总结</a></li>
+        <li><a href="#sources">来源</a></li>
+      </ol>
+    </nav>
+
+    <section id="overview">
+      <h2>事实概述</h2>
+      <p>Qwen Code 官方文档在 2026年6月18日发布周报，称本周发布 v0.18.0 至 v0.18.3 四个正式版本，合并超过 100 个 PR，重点包括 Agent Team 多智能体并行协作、可跨重启恢复的 /loop 计划任务，以及不重启 CLI 即可切换目录的 /cd 命令。对持续关注 <a href="/ai-news">AI前沿资讯</a> 的用户来说，这条新闻的重点不是单一模型更新，而是 AI 编程智能体正在从“单个助手”走向“可组织、可分工、可汇总”的工作流系统。</p>
+    </section>
+
+    <section id="background">
+      <h2>背景与原因</h2>
+      <p>官方说明显示，Agent Team 仍为实验性、需主动开启的能力。启用后，模型可以创建命名团队，拉起多个长期存在的队友并行处理任务，队友之间可以发送消息、共享任务列表，最后由 leader 汇总统一报告。Qwen Code 的 GitHub 主页也将 SubAgents、Agent Teams、Dynamic Workflows、Auto-Memory、Auto-Skills 和 MCP 列为核心能力。对正在比较 <a href="/software">AI软件应用</a> 的团队而言，这意味着 AI 编程工具的竞争点开始转向任务调度、上下文管理、权限与结果汇总，而不只是补全代码。</p>
+    </section>
+
+    <section id="why-it-matters">
+      <h2>为什么值得关注</h2>
+      <p>Agent Team 的典型用法包括让三个 reviewer 并行检查错误处理、竞态条件和边界场景，再生成一份合并报告；也可以协调多个智能体构建小型应用。这个变化贴近真实软件开发流程，因为复杂任务往往需要探索、实现、测试和复核并行推进。学习 <a href="/skill-learning">AI技能教程</a> 时，用户也需要从“如何写提示词”扩展到“如何拆任务、设角色、审查输出和保留证据”。</p>
+      <figure>
+        <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&w=1200&q=80" alt="AI编程智能体在代码审查和工作流自动化中的多窗口协作">
+        <figcaption>多智能体协作的实用价值在于把代码审查、任务拆解、上下文传递和最终汇总放进同一套 AI 工作流自动化过程。</figcaption>
+      </figure>
+    </section>
+
+    <section id="user-impact">
+      <h2>对 AI 工具用户的影响</h2>
+      <p>同一周报还提到，持久化 /loop 可以把需要持续执行的计划任务保存到项目级文件中，并在下次启动时恢复；错过的周期任务会补跑一次后恢复正常节奏。/cd 命令则允许用户在会话内切换项目目录，并刷新工作区上下文。对管理 <a href="/account-services">AI账号服务</a> 的团队来说，这类能力也带来新的治理要求：哪些自动任务可以长期运行、哪些项目级 MCP 配置必须审批、后台智能体申请权限时如何冒泡到主会话，都需要明确边界。</p>
+    </section>
+
+    <section id="enhe-angle">
+      <h2>对 ENHE 用户的实际启发</h2>
+      <p>ENHE 用户如果正在评估 AI 编程或自动化工具，可以把这次更新作为观察样本：第一，工具是否支持并行智能体，而不是只能串行聊天；第二，任务、记忆、计划和权限是否可恢复、可审计；第三，是否能在本地仓库、云端 API 和团队流程之间保持清晰边界。对于需要私有化或受控环境的团队，类似能力还应与 <a href="/software">本地部署AI工具</a> 的权限、日志、沙箱和密钥管理一起评估。</p>
+    </section>
+
+    <section id="summary">
+      <h2>总结</h2>
+      <p>Qwen Code 的 Agent Team 更新说明，AI 编程智能体正在进入更接近团队协作的阶段。短期内，普通用户不一定需要立刻启用实验功能；更实际的做法是先梳理高频开发任务，判断哪些适合交给多个智能体并行探索、审查或执行。长期看，AI 工具的差异会越来越多地来自工作流组织、权限控制、上下文恢复和结果整合能力，而不仅是单次回答质量。</p>
+    </section>
+
+    <section id="cms-fields" aria-label="CMS 字段">
+      <h2>CMS 字段</h2>
+
+      <section data-field="subtitle">
+        <h3>副标题</h3>
+        <p>Qwen Code 6月18日周报披露 Agent Team、持久化 /loop 和会话内 /cd 等能力，多智能体协作正在进入 AI 编程与自动化工具链。</p>
+      </section>
+
+      <section data-field="keyTakeaways">
+        <h3>核心要点</h3>
+        <ul>
+          <li>Qwen Code 在 2026年6月18日周报中称，本周发布 v0.18.0 至 v0.18.3 四个正式版本，合并超过 100 个 PR。</li>
+          <li>Agent Team 是实验性、需主动开启的能力，可让多个命名智能体并行协作、互发消息、共享任务并由 leader 汇总结果。</li>
+          <li>持久化 /loop 支持计划任务跨重启恢复；/cd 支持在同一会话内切换工作目录。</li>
+          <li>这类更新显示 AI 编程工具正从单点问答走向多智能体工作流、权限治理和任务编排。</li>
+        </ul>
+      </section>
+
+      <section data-field="impactNotes">
+        <h3>影响说明</h3>
+        <p>对 ENHE 用户而言，Qwen Code 的更新提示团队评估 AI 编程工具时，应关注并行智能体、计划任务恢复、项目权限审批、后台任务确认和结果汇总能力。对于本地部署或企业受控环境，还要同步检查日志、密钥、沙箱和 MCP 配置审批机制。</p>
+      </section>
+
+      <section data-field="conclusion">
+        <h3>总结</h3>
+        <p>Agent Team 让 AI 编程智能体更接近真实团队协作模式。它的价值不只在于更多智能体同时运行，而在于任务拆解、上下文共享、权限处理和最终报告整合是否可控。</p>
+      </section>
+
+      <section data-field="videoUrl">
+        <h3>视频 URL</h3>
+        <p></p>
+      </section>
+
+      <section data-field="videoTitle">
+        <h3>视频标题</h3>
+        <p></p>
+      </section>
+
+      <section data-field="videoDescription">
+        <h3>视频说明</h3>
+        <p></p>
+      </section>
+
+      <section data-field="seoTitle">
+        <h3>SEO 标题</h3>
+        <p>Qwen Code Agent Team：多智能体协作进入 AI 编程</p>
+      </section>
+
+      <section data-field="canonicalUrl">
+        <h3>Canonical URL</h3>
+        <p>https://www.enhe-tech.com.cn/ai-news/qwen-code-agent-team-ai-workflow</p>
+      </section>
+
+      <section data-field="seoDescription">
+        <h3>SEO 描述</h3>
+        <p>Qwen Code 6月18日周报发布 Agent Team、持久化 /loop 和 /cd 等能力。本文梳理多智能体协作对 AI 编程、AI工作流自动化、AI软件应用和本地部署工具评估的影响。</p>
+      </section>
+
+      <section data-field="seoKeywords">
+        <h3>SEO 关键词</h3>
+        <p>Qwen Code Agent Team,AI智能体,多智能体协作,AI编程,AI工作流自动化,AI软件应用,AI技能教程,本地部署AI工具</p>
+      </section>
+
+      <section data-field="englishTitle">
+        <h3>English title</h3>
+        <p>Qwen Code Adds Agent Team for Multi-Agent Coding Workflows</p>
+      </section>
+
+      <section data-field="englishSubtitle">
+        <h3>English subtitle</h3>
+        <p>The June 18 Qwen Code weekly update introduces experimental Agent Team collaboration, durable /loop tasks and in-session /cd workspace switching.</p>
+      </section>
+
+      <section data-field="englishSummary">
+        <h3>English summary</h3>
+        <p>Qwen Code's June 18, 2026 weekly update says four official versions, v0.18.0 to v0.18.3, were released that week with more than 100 PRs merged. The main update is Agent Team, an experimental opt-in feature for multi-agent collaboration inside coding workflows.</p>
+      </section>
+
+      <section data-field="englishContent">
+        <h3>English content</h3>
+        <p>Qwen Code published a weekly update on June 18, 2026, saying it released v0.18.0 to v0.18.3 during the week and merged more than 100 PRs. Key updates include Agent Team, durable /loop tasks, and an in-session /cd command.</p>
+        <p>Agent Team is experimental and opt-in. When enabled, the model can create named teams, spawn long-lived teammates, exchange messages, share task lists and consolidate a final report through a leader. This moves coding agents closer to structured team workflows rather than isolated one-shot subagents.</p>
+        <p>For ENHE users, the practical takeaway is to evaluate AI coding tools by workflow orchestration, permission handling, context recovery, logging and result consolidation, not only by model quality or code completion speed.</p>
+      </section>
+
+      <section data-field="englishKeyTakeaways">
+        <h3>English takeaways</h3>
+        <ul>
+          <li>Qwen Code published the weekly update on June 18, 2026.</li>
+          <li>The update says v0.18.0 to v0.18.3 were released that week with more than 100 PRs merged.</li>
+          <li>Agent Team enables named, long-lived teammates that can collaborate, message each other and share tasks.</li>
+          <li>Durable /loop and /cd add persistence and workspace switching to coding workflows.</li>
+        </ul>
+      </section>
+
+      <section data-field="englishImpactNotes">
+        <h3>English impact notes</h3>
+        <p>The update shows AI coding tools moving toward multi-agent orchestration. Teams should review task persistence, project permissions, audit trails, API key handling and local deployment boundaries before adopting agentic coding workflows.</p>
+      </section>
+
+      <section data-field="englishConclusion">
+        <h3>English conclusion</h3>
+        <p>Qwen Code's Agent Team feature is a practical signal that coding agents are becoming workflow systems. Its value depends on controlled task splitting, shared context, permission handling and final result consolidation.</p>
+      </section>
+
+      <section data-field="englishSeoTitle">
+        <h3>English SEO title</h3>
+        <p>Qwen Code Agent Team for AI Coding Workflows</p>
+      </section>
+
+      <section data-field="englishKeywords">
+        <h3>English keywords</h3>
+        <p>Qwen Code Agent Team,AI agents,multi-agent collaboration,AI coding,AI workflow automation,AI tools,local AI deployment</p>
+      </section>
+
+      <section data-field="englishSeoDescription">
+        <h3>English SEO description</h3>
+        <p>Qwen Code's June 18 update adds experimental Agent Team collaboration, durable /loop and /cd, showing how AI coding agents are moving into structured workflows.</p>
+      </section>
+
+      <section data-field="tags">
+        <h3>标签</h3>
+        <p>AI资讯, 自动发布, AI智能体, AI编程, AI工作流自动化, 开源模型工具</p>
+      </section>
+
+      <section data-field="relatedArticleIds">
+        <h3>相关资讯 ID</h3>
+        <p></p>
+      </section>
+
+      <section data-field="relatedToolIds">
+        <h3>相关工具 ID</h3>
+        <p></p>
+      </section>
+
+      <section data-field="relatedTutorialIds">
+        <h3>相关教程 ID</h3>
+        <p></p>
+      </section>
+    </section>
+
+    <section id="sources">
+      <h2>来源</h2>
+      <ul>
+        <li><a href="https://qwenlm.github.io/qwen-code-docs/en/blog/weekly-update-2026-06-18/" target="_blank" rel="nofollow noopener noreferrer">Qwen Code Docs：Qwen Code Weekly: Agent Team Parallel Collaboration, Durable /loop Survives Restart, /cd Switch Directory，2026-06-18</a></li>
+        <li><a href="https://github.com/QwenLM/qwen-code" target="_blank" rel="nofollow noopener noreferrer">GitHub：QwenLM/qwen-code 官方仓库</a></li>
+        <li><a href="https://github.com/QwenLM/qwen-code/releases/tag/v0.18.4" target="_blank" rel="nofollow noopener noreferrer">GitHub Releases：Qwen Code v0.18.4，2026-06-20</a></li>
+      </ul>
+    </section>
+  </article>
+</body>
+</html>

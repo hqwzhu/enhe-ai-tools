@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>阿里云百炼CLI开源，AI Agent可从终端调用全模态能力</title>
+  <meta name="description" content="阿里云百炼Model Studio CLI面向AI Agent开源，支持在终端调用模型、搜索、多模态、记忆和工作流能力，为AI工具链和工作流自动化提供新的集成入口。">
+  <meta name="keywords" content="Model Studio CLI,阿里云百炼CLI,AI Agent,AI智能体,AI工作流自动化,全模态AI工具,AI技能教程,自动发布">
+  <link rel="canonical" href="https://www.enhe-tech.com.cn/ai-news/alibaba-model-studio-cli-ai-agent">
+</head>
+<body>
+  <article>
+    <header>
+      <h1>阿里云百炼CLI开源，AI Agent可从终端调用全模态能力</h1>
+      <p>作者：恩禾ENHE AI｜发布日期：<time datetime="2026-06-20">2026年6月20日</time></p>
+      <img src="https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1600&q=80" alt="阿里云百炼CLI和AI Agent终端工作流相关的开发者代码屏幕">
+    </header>
+
+    <nav aria-label="文章目录">
+      <h2>文章目录</h2>
+      <ol>
+        <li><a href="#overview">事实概述</a></li>
+        <li><a href="#capabilities">CLI能力与接入方式</a></li>
+        <li><a href="#workflow">对AI工作流的意义</a></li>
+        <li><a href="#enhe-view">对ENHE用户的启发</a></li>
+        <li><a href="#sources">来源</a></li>
+      </ol>
+    </nav>
+
+    <section id="overview">
+      <h2>事实概述</h2>
+      <p>阿里云社区在2026年6月8日发布文章称，阿里云百炼Model Studio推出面向AI Agent的开源命令行工具Model Studio CLI。对关注<a href="/ai-news">AI前沿资讯</a>的读者来说，这条消息的重点不是单一模型参数，而是AI智能体开始通过终端工具直接接入模型、搜索、多模态和工作流能力。</p>
+      <p>同一篇文章还提到，阿里巴巴发布Qwen3.7-Plus多模态智能体模型，并与牧原集团推出基于Qwen的猪病诊断助手；但从ENHE用户的实际使用角度看，Model Studio CLI更贴近日常工具链，因为它把平台能力包装成可被Agent调用的结构化工具。</p>
+    </section>
+
+    <section id="capabilities">
+      <h2>CLI能力与接入方式</h2>
+      <p>阿里云百炼CLI官网说明，命令bl覆盖文本、全模态对话、图像与视频生成、语音合成与识别、联网搜索、知识库检索、长期记忆、智能体与工作流等能力。对于正在比较<a href="/software">AI软件应用</a>的团队，这意味着模型平台不只提供网页控制台，也开始进入开发者和Agent常用的命令行环境。</p>
+      <figure>
+        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80" alt="AI Agent通过命令行调用模型和工作流工具的代码示意图">
+        <figcaption>命令行工具把模型、搜索、记忆和工作流能力变成可组合的调用入口，是AI工作流自动化从聊天窗口走向工具链的一步。</figcaption>
+      </figure>
+      <p>GitHub仓库介绍称，Model Studio CLI是阿里云百炼官方命令行接口，面向AI Agent框架，把模型、搜索、多模态和工作流能力暴露为结构化工具调用。仓库说明还列出网页搜索、知识库与记忆、App调用和MCP集成等能力。</p>
+      <p>阿里云社区文章称，该CLI可与Claude Code、OpenCode、Cursor、Cline、Qoder、Qwen Code等Agent工具配合使用；配置时需要在终端安装命令并使用Model Studio API Key。学习<a href="/skill-learning">AI技能教程</a>时，这类工具也提示用户把API Key、权限和成本边界当作基础配置，而不是只学习提示词写法。</p>
+    </section>
+
+    <section id="workflow">
+      <h2>对AI工作流的意义</h2>
+      <p>Model Studio CLI的直接价值在于把平台能力放进Agent循环：智能体可以在同一任务中调用文本模型、图像或视频生成、语音处理、搜索、知识库和工作流，而不是让用户在多个网页界面之间手动切换。对需要构建<a href="/software">本地部署AI工具</a>或私有化流程的小团队来说，这也提供了一个观察点：本地工具不一定要替代云端能力，但需要清楚哪些环节走本地、哪些环节走API。</p>
+      <p>这类CLI同时会带来治理问题。账号、API Key、访问密钥和知识库权限一旦进入Agent工具链，就需要更明确的使用记录、最小权限和预算控制。评估<a href="/account-services">AI账号服务</a>时，用户不应只看是否能调用模型，还要看密钥管理、团队权限、失败回滚和生成内容留痕。</p>
+    </section>
+
+    <section id="enhe-view">
+      <h2>对ENHE用户的启发</h2>
+      <p>短期看，Model Studio CLI更适合开发者、自动化团队和正在试用Agent工具的小团队；普通用户未必需要立刻安装命令行工具。但它说明AI工具正在从“打开一个网页产品”转向“把模型能力接入自己的工作环境”。</p>
+      <p>对ENHE读者而言，更实际的做法是先梳理自己的高频任务：素材生成、文档检索、客服知识库、代码辅助、视频脚本或数据整理。再判断这些任务是否适合由Agent调用模型、搜索和工作流工具串联完成，而不是把每个AI工具当作孤立入口。</p>
+    </section>
+
+    <section id="cms-fields" aria-label="CMS 字段">
+      <h2>CMS 字段</h2>
+
+      <section data-field="subtitle">
+        <h3>副标题</h3>
+        <p>阿里云百炼Model Studio CLI面向AI Agent开源，把模型、搜索、多模态、记忆和工作流能力放进终端工具链。</p>
+      </section>
+
+      <section data-field="keyTakeaways">
+        <h3>核心要点</h3>
+        <ul>
+          <li>阿里云社区在2026年6月8日发布文章，介绍Qwen3.7-Plus、牧原猪病诊断助手和Model Studio CLI。</li>
+          <li>Model Studio CLI是面向AI Agent的开源命令行工具，可从终端接入阿里云百炼模型与多模态能力。</li>
+          <li>官方页面显示，百炼CLI覆盖文本、全模态对话、图像与视频生成、语音、联网搜索、知识库、长期记忆、智能体和工作流。</li>
+          <li>对小团队来说，CLI形态让AI工作流自动化更接近真实工具链，但也提高了API Key、权限和成本治理要求。</li>
+        </ul>
+      </section>
+
+      <section data-field="impactNotes">
+        <h3>影响说明</h3>
+        <p>这条新闻对ENHE用户的价值在于提醒团队关注AI Agent的工具接入层。模型能力正在通过CLI、MCP、搜索、知识库和工作流进入实际生产环境；评估方案时，应同时检查可调用能力、密钥权限、日志留存、成本预算和与本地部署工具的分工。</p>
+      </section>
+
+      <section data-field="conclusion">
+        <h3>总结</h3>
+        <p>阿里云百炼CLI不是单纯的新模型发布，而是AI Agent工具链的一次接口扩展。它把多模态模型和平台能力放到终端与Agent环境中，有利于复杂任务编排，也要求用户更严肃地管理账号、权限和工作流边界。</p>
+      </section>
+
+      <section data-field="videoUrl">
+        <h3>视频 URL</h3>
+        <p></p>
+      </section>
+
+      <section data-field="videoTitle">
+        <h3>视频标题</h3>
+        <p></p>
+      </section>
+
+      <section data-field="videoDescription">
+        <h3>视频说明</h3>
+        <p></p>
+      </section>
+
+      <section data-field="seoTitle">
+        <h3>SEO 标题</h3>
+        <p>阿里云百炼CLI开源：AI Agent工作流新入口</p>
+      </section>
+
+      <section data-field="canonicalUrl">
+        <h3>Canonical URL</h3>
+        <p>https://www.enhe-tech.com.cn/ai-news/alibaba-model-studio-cli-ai-agent</p>
+      </section>
+
+      <section data-field="seoDescription">
+        <h3>SEO 描述</h3>
+        <p>阿里云百炼Model Studio CLI面向AI Agent开源，支持模型、搜索、多模态、记忆和工作流调用。本文梳理它对AI工具、工作流自动化和账号治理的影响。</p>
+      </section>
+
+      <section data-field="seoKeywords">
+        <h3>SEO 关键词</h3>
+        <p>Model Studio CLI,阿里云百炼CLI,AI Agent,AI智能体,AI工作流自动化,全模态AI工具,AI技能教程,AI账号服务</p>
+      </section>
+
+      <section data-field="englishTitle">
+        <h3>English title</h3>
+        <p>Alibaba Cloud Open-Sources Model Studio CLI for AI Agent Workflows</p>
+      </section>
+
+      <section data-field="englishSubtitle">
+        <h3>English subtitle</h3>
+        <p>The official Bailian Model Studio CLI brings models, search, multimodal generation, memory and workflow capabilities into terminal-based AI agent toolchains.</p>
+      </section>
+
+      <section data-field="englishSummary">
+        <h3>English summary</h3>
+        <p>Alibaba Cloud Community said on June 8, 2026 that Model Studio released an open-source CLI for AI agents. The tool lets agents call model, search, multimodal and workflow capabilities from terminal-based environments, making governance of API keys, permissions and costs more important.</p>
+      </section>
+
+      <section data-field="englishContent">
+        <h3>English content</h3>
+        <p>Alibaba Cloud Community reported on June 8, 2026 that Model Studio released an open-source command-line interface for AI agents. The CLI gives terminal-based agent tools access to text, image, video, audio, search, knowledge, memory, agent and workflow capabilities.</p>
+        <p>The update matters because AI agent adoption is moving beyond standalone chat windows. Teams can now evaluate how models and platform services fit into existing developer tools, automation scripts and content workflows.</p>
+        <p>For ENHE users, the practical lesson is to look at both capability and governance. API keys, access scopes, logs, cost controls and the split between local tools and cloud APIs should be reviewed before putting agentic workflows into routine use.</p>
+      </section>
+
+      <section data-field="englishKeyTakeaways">
+        <h3>English takeaways</h3>
+        <ul>
+          <li>Alibaba Cloud Community published the update on June 8, 2026.</li>
+          <li>Model Studio CLI is an open-source command-line tool for AI agent frameworks.</li>
+          <li>The official Bailian page lists text, multimodal chat, image, video, speech, search, knowledge, memory, agent and workflow capabilities.</li>
+          <li>Teams should pair agent workflow adoption with key management, permissions, logging and budget controls.</li>
+        </ul>
+      </section>
+
+      <section data-field="englishImpactNotes">
+        <h3>English impact notes</h3>
+        <p>The update shows that AI agent tooling is moving into the integration layer. ENHE users should evaluate not only model quality, but also how tools expose capabilities, manage credentials, connect to workflows and handle operational risk.</p>
+      </section>
+
+      <section data-field="englishConclusion">
+        <h3>English conclusion</h3>
+        <p>Model Studio CLI is a practical signal for AI agent infrastructure: multimodal models and platform services are becoming callable tools inside terminal workflows, creating new productivity options and new governance responsibilities.</p>
+      </section>
+
+      <section data-field="englishSeoTitle">
+        <h3>English SEO title</h3>
+        <p>Model Studio CLI for AI Agent Workflows</p>
+      </section>
+
+      <section data-field="englishKeywords">
+        <h3>English keywords</h3>
+        <p>Model Studio CLI,Alibaba Cloud Bailian CLI,AI Agent,AI workflow automation,multimodal AI tools,agent toolchain,AI account governance</p>
+      </section>
+
+      <section data-field="englishSeoDescription">
+        <h3>English SEO description</h3>
+        <p>Alibaba Cloud's Model Studio CLI gives AI agents terminal access to models, search, multimodal generation, memory and workflows. Here is what it means for AI toolchains and governance.</p>
+      </section>
+
+      <section data-field="tags">
+        <h3>标签</h3>
+        <p>AI资讯, 自动发布, AI智能体, AI工具, AI工作流自动化, 阿里云百炼</p>
+      </section>
+
+      <section data-field="relatedArticleIds">
+        <h3>相关资讯 ID</h3>
+        <p></p>
+      </section>
+
+      <section data-field="relatedToolIds">
+        <h3>相关工具 ID</h3>
+        <p></p>
+      </section>
+
+      <section data-field="relatedTutorialIds">
+        <h3>相关教程 ID</h3>
+        <p></p>
+      </section>
+    </section>
+
+    <section id="sources">
+      <h2>来源</h2>
+      <ul>
+        <li><a href="https://www.alibabacloud.com/blog/alibaba-launches-qwen3-7-plus-ai-swine-diagnosis-assistant-and-model-studio-cli_603230" target="_blank" rel="nofollow noopener noreferrer">Alibaba Cloud Community：Alibaba Launches Qwen3.7-Plus, AI Swine Diagnosis Assistant and Model Studio CLI，2026年6月8日</a></li>
+        <li><a href="https://bailian.console.aliyun.com/cli?source_channel=cn-beijing-cli" target="_blank" rel="nofollow noopener noreferrer">阿里云百炼CLI官网：一行指令调用阿里云百炼全模态AI能力</a></li>
+        <li><a href="https://github.com/modelstudioai/cli" target="_blank" rel="nofollow noopener noreferrer">GitHub：modelstudioai/cli 官方Model Studio CLI仓库</a></li>
+        <li><a href="https://github.com/QwenLM/qwen-code" target="_blank" rel="nofollow noopener noreferrer">GitHub：QwenLM/qwen-code 开源AI编码智能体</a></li>
+      </ul>
+    </section>
+  </article>
+</body>
+</html>

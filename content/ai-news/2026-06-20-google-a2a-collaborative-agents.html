@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google A2A一周年：AI智能体协作从接口走向任务交接</title>
+  <meta name="description" content="Google Developers Blog在2026年6月18日回顾A2A协议一周年，展示AI智能体如何通过安全边界、任务交接和多智能体协作进入企业工作流。">
+  <meta name="keywords" content="A2A协议,AI智能体协作,Agent2Agent,AI工作流自动化,多智能体系统,AI软件应用,AI技能教程,自动发布">
+  <link rel="canonical" href="https://www.enhe-tech.com.cn/ai-news/google-a2a-ai-agent-collaboration">
+</head>
+<body>
+  <article>
+    <header>
+      <h1>Google A2A一周年：AI智能体协作从接口走向任务交接</h1>
+      <p>作者：恩禾ENHE AI｜发布日期：<time datetime="2026-06-20">2026年6月20日</time></p>
+      <img src="https://images.unsplash.com/photo-1665690399857-9de8bbbeb108?auto=format&fit=crop&w=1600&q=80" alt="A2A协议和AI智能体协作相关的神经网络服务器示意图">
+    </header>
+
+    <nav aria-label="文章目录">
+      <h2>文章目录</h2>
+      <ol>
+        <li><a href="#overview">事实概述</a></li>
+        <li><a href="#architecture">协作架构重点</a></li>
+        <li><a href="#ecosystem">生态与标准化进展</a></li>
+        <li><a href="#enhe-view">对ENHE用户的启发</a></li>
+        <li><a href="#sources">来源</a></li>
+      </ol>
+    </nav>
+
+    <section id="overview">
+      <h2>事实概述</h2>
+      <p>Google Developers Blog在2026年6月18日发布文章，回顾Agent2Agent协议一周年，并用A2A说明AI智能体如何从单个工具调用走向跨系统任务协作。对关注<a href="/ai-news">AI前沿资讯</a>的读者来说，这条消息的核心不在于又出现一个新模型，而在于智能体之间的协作方式开始被标准化描述。</p>
+      <p>Google在文章中称，A2A的目标是让智能体使用共同语言安全交接任务，同时保留各自内部状态、工具和业务逻辑。官方示例把传统API式集成与智能体式安全交接进行对比，强调接收任务的智能体可以理解意图、处理长任务，并在信息不足时继续追问。</p>
+    </section>
+
+    <section id="architecture">
+      <h2>协作架构重点</h2>
+      <p>A2A协议规格显示，它面向由不同框架、语言或供应商构建的独立智能体系统，支持能力发现、交互方式协商、协作任务管理，以及不暴露内部记忆和工具的安全信息交换。这使A2A更接近<a href="/software">AI软件应用</a>之间的协作层，而不是单个聊天机器人的提示词包装。</p>
+      <figure>
+        <img src="https://storage.googleapis.com/gweb-developer-goog-blog-assets/images/Agent_Collaboration_Architecuture_image.original.png" alt="Google A2A协议展示AI智能体安全交接任务的协作架构图">
+        <figcaption>Google示意图把数据暴露式集成与安全交接式协作分开，A2A协议的重点是让AI智能体在保留内部环境的同时完成任务委派。</figcaption>
+      </figure>
+      <p>这也是A2A与MCP经常被放在一起讨论的原因。A2A官方规格将二者定位为互补协议：MCP偏向让智能体连接工具、API和数据源，A2A偏向让独立智能体作为对等方发现、协商和委派任务。学习<a href="/skill-learning">AI技能教程</a>时，二者不应简单互相替代，而应放在同一个工作流架构里理解。</p>
+    </section>
+
+    <section id="ecosystem">
+      <h2>生态与标准化进展</h2>
+      <p>Linux Foundation在2026年4月9日发布的新闻稿称，A2A项目已由其托管，并在一周年节点获得超过150个组织支持，还提到Google、Microsoft和AWS等云平台的集成进展。该基金会同时表示，A2A用于跨框架、跨供应商和跨平台的智能体发现、通信和交易。</p>
+      <p>Google在2025年6月23日曾宣布将A2A捐赠给Linux Foundation，并把协议规格、SDK和开发者工具转入中立治理。这个背景说明，A2A正在从单一公司倡议转向更开放的协议生态；团队评估<a href="/account-services">AI账号服务</a>和企业权限时，也需要把智能体身份、授权范围、审计和数据边界纳入同一套治理问题。</p>
+    </section>
+
+    <section id="enhe-view">
+      <h2>对ENHE用户的启发</h2>
+      <p>对普通AI工具用户、小团队和创作者来说，A2A一周年的实际信号是：AI智能体落地不只是选择哪个模型更强，还包括任务如何拆分、哪个智能体有权访问什么数据、结果如何回传、失败时由谁继续追问。构建<a href="/software">本地部署AI工具</a>或私有化工作流时，这些边界比单次生成效果更影响长期稳定性。</p>
+      <p>短期看，A2A更适合开发者、企业IT和自动化团队关注；普通用户不一定马上需要部署协议。但当AI工作流自动化从“一个助手做所有事”转向“多个专门智能体协同工作”时，A2A、MCP、权限管理和日志审计会成为理解AI智能体产品的重要基础。</p>
+    </section>
+
+    <section id="cms-fields" aria-label="CMS 字段">
+      <h2>CMS 字段</h2>
+
+      <section data-field="subtitle">
+        <h3>副标题</h3>
+        <p>Google Developers Blog在2026年6月18日回顾A2A协议一周年，强调AI智能体通过安全边界、任务委派和多智能体协作，开始从单点工具调用走向企业级工作流交接。</p>
+      </section>
+
+      <section data-field="keyTakeaways">
+        <h3>核心要点</h3>
+        <ul>
+          <li>Google在2026年6月18日发布A2A一周年文章，展示AI智能体协作的企业场景。</li>
+          <li>A2A协议用于让独立智能体发现能力、协商交互方式、管理协作任务并安全交换信息。</li>
+          <li>Linux Foundation称A2A在2026年4月一周年节点已获得超过150个组织支持，并进入主要云平台集成。</li>
+          <li>A2A与MCP定位互补：A2A关注智能体之间的协作，MCP关注智能体连接工具和数据源。</li>
+        </ul>
+      </section>
+
+      <section data-field="impactNotes">
+        <h3>影响说明</h3>
+        <p>对ENHE用户来说，A2A一周年的价值在于提醒团队把AI智能体当成可治理的工作流组件，而不是单个聊天窗口。评估多智能体方案时，应同时检查任务拆分、权限边界、数据暴露、日志审计、失败处理和与MCP等工具协议的配合方式。</p>
+      </section>
+
+      <section data-field="conclusion">
+        <h3>总结</h3>
+        <p>A2A协议的进展说明，AI智能体生态正在从功能演示进入协作标准和治理设计阶段。它不会替代模型能力或具体业务工具，但会影响未来多智能体系统如何发现彼此、委派任务并控制安全边界。</p>
+      </section>
+
+      <section data-field="videoUrl">
+        <h3>视频 URL</h3>
+        <p></p>
+      </section>
+
+      <section data-field="videoTitle">
+        <h3>视频标题</h3>
+        <p></p>
+      </section>
+
+      <section data-field="videoDescription">
+        <h3>视频说明</h3>
+        <p></p>
+      </section>
+
+      <section data-field="seoTitle">
+        <h3>SEO 标题</h3>
+        <p>Google A2A协议推动AI智能体协作标准化</p>
+      </section>
+
+      <section data-field="canonicalUrl">
+        <h3>Canonical URL</h3>
+        <p>https://www.enhe-tech.com.cn/ai-news/google-a2a-ai-agent-collaboration</p>
+      </section>
+
+      <section data-field="seoDescription">
+        <h3>SEO 描述</h3>
+        <p>Google A2A协议一周年文章显示，AI智能体协作正在从API调用走向安全任务交接。本文梳理A2A协议、MCP关系、多智能体工作流和ENHE用户的实际启发。</p>
+      </section>
+
+      <section data-field="seoKeywords">
+        <h3>SEO 关键词</h3>
+        <p>A2A协议,AI智能体协作,Agent2Agent,多智能体系统,MCP协议,AI工作流自动化,AI软件应用,本地部署AI工具,AI技能教程</p>
+      </section>
+
+      <section data-field="englishTitle">
+        <h3>English title</h3>
+        <p>Google A2A Turns AI Agent Collaboration into a Workflow Standard</p>
+      </section>
+
+      <section data-field="englishSubtitle">
+        <h3>English subtitle</h3>
+        <p>Google's June 18, 2026 A2A anniversary post shows how agent-to-agent handoff is becoming a practical layer for secure multi-agent workflows.</p>
+      </section>
+
+      <section data-field="englishSummary">
+        <h3>English summary</h3>
+        <p>Google Developers Blog published an A2A anniversary article on June 18, 2026, explaining how the Agent2Agent protocol supports secure handoff between independent AI agents. The story matters to ENHE users because it connects agent design with workflow automation, governance and tool selection.</p>
+      </section>
+
+      <section data-field="englishContent">
+        <h3>English content</h3>
+        <p>On June 18, 2026, Google Developers Blog published a one-year update on the Agent2Agent protocol. The post explains why autonomous agents need a common language for secure collaboration, not just rigid API calls.</p>
+        <p>The A2A specification describes an open standard for communication and interoperability between independent AI agent systems. It supports capability discovery, interaction negotiation, collaborative task management and secure information exchange without requiring agents to expose internal memory, tools or business logic.</p>
+        <p>For ENHE users, the practical message is that AI agent adoption is moving from individual assistants to governed multi-agent workflows. Teams evaluating AI tools should consider task delegation, permissions, auditability, data boundaries and how A2A complements MCP-based tool access.</p>
+      </section>
+
+      <section data-field="englishKeyTakeaways">
+        <h3>English takeaways</h3>
+        <ul>
+          <li>Google published an A2A anniversary article on June 18, 2026.</li>
+          <li>A2A helps independent agents discover capabilities, negotiate interactions and manage shared tasks.</li>
+          <li>The Linux Foundation said A2A had support from more than 150 organizations by April 2026.</li>
+          <li>A2A and MCP are complementary: A2A is for agent collaboration, while MCP is for tool and data access.</li>
+        </ul>
+      </section>
+
+      <section data-field="englishImpactNotes">
+        <h3>English impact notes</h3>
+        <p>For ENHE users, A2A highlights the need to treat agents as governed workflow components. Multi-agent systems should be evaluated by task boundaries, permissions, logging, failure handling and integration with tool protocols such as MCP.</p>
+      </section>
+
+      <section data-field="englishConclusion">
+        <h3>English conclusion</h3>
+        <p>A2A's progress shows that the AI agent ecosystem is moving toward collaboration standards and operational governance. It does not replace model quality or business tools, but it shapes how future agents will discover peers, delegate tasks and preserve secure boundaries.</p>
+      </section>
+
+      <section data-field="englishSeoTitle">
+        <h3>English SEO title</h3>
+        <p>Google A2A Protocol and AI Agent Collaboration</p>
+      </section>
+
+      <section data-field="englishKeywords">
+        <h3>English keywords</h3>
+        <p>A2A protocol,AI agent collaboration,Agent2Agent,multi-agent systems,MCP protocol,AI workflow automation,AI software tools,local AI deployment</p>
+      </section>
+
+      <section data-field="englishSeoDescription">
+        <h3>English SEO description</h3>
+        <p>Google's A2A anniversary update shows how AI agents can securely hand off tasks across systems. Learn what it means for multi-agent workflows, MCP and AI tool governance.</p>
+      </section>
+
+      <section data-field="tags">
+        <h3>标签</h3>
+        <p>AI资讯, 自动发布, AI智能体, A2A协议, AI工作流自动化, 多智能体系统</p>
+      </section>
+
+      <section data-field="relatedArticleIds">
+        <h3>相关文章 ID</h3>
+        <p></p>
+      </section>
+
+      <section data-field="relatedToolIds">
+        <h3>相关工具 ID</h3>
+        <p></p>
+      </section>
+
+      <section data-field="relatedTutorialIds">
+        <h3>相关教程 ID</h3>
+        <p></p>
+      </section>
+    </section>
+
+    <section id="sources">
+      <h2>来源</h2>
+      <ul>
+        <li><a href="https://developers.googleblog.com/how-a2a-is-building-a-world-of-collaborative-agents/" target="_blank" rel="nofollow noopener noreferrer">Google Developers Blog：How A2A is Building a World of Collaborative Agents，2026年6月18日</a></li>
+        <li><a href="https://a2a-protocol.org/latest/specification/" target="_blank" rel="nofollow noopener noreferrer">A2A Protocol Specification：Agent2Agent Protocol Specification 1.0.0</a></li>
+        <li><a href="https://www.linuxfoundation.org/press/a2a-protocol-surpasses-150-organizations-lands-in-major-cloud-platforms-and-sees-enterprise-production-use-in-first-year" target="_blank" rel="nofollow noopener noreferrer">Linux Foundation：A2A Protocol Surpasses 150 Organizations，2026年4月9日</a></li>
+        <li><a href="https://developers.googleblog.com/en/google-cloud-donates-a2a-to-linux-foundation/" target="_blank" rel="nofollow noopener noreferrer">Google Developers Blog：Google Cloud donates A2A to Linux Foundation，2025年6月23日</a></li>
+      </ul>
+    </section>
+  </article>
+</body>
+</html>

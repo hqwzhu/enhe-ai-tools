@@ -1,0 +1,61 @@
+<h2>B 方案细化：公开摘要 + 登录/会员全文</h2>
+<p class="subtitle">这个结构把 SEO 页面、公开分享、登录权益、会员价值分开，避免自动日报影响主站权重和核心功能。</p>
+
+<div class="mockup">
+  <div class="mockup-header">推荐信息架构</div>
+  <div class="mockup-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div class="placeholder" style="min-height:120px">
+        <strong>/ai-trends</strong><br>
+        可收录专题页<br>
+        长期稳定内容<br>
+        手动/周度更新
+      </div>
+      <div class="placeholder" style="min-height:120px">
+        <strong>/ai-trends/daily</strong><br>
+        noindex 归档列表<br>
+        公开显示摘要<br>
+        登录后显示更多
+      </div>
+      <div class="placeholder" style="min-height:120px">
+        <strong>/ai-trends/daily/YYYY-MM-DD</strong><br>
+        noindex 详情页<br>
+        公开摘要 + 来源概览<br>
+        会员/登录全文
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">公开访客视角</div>
+    <div class="mockup-body">
+      <div class="mock-nav">AI趋势专题 / 今日摘要 / 登录查看全文</div>
+      <div class="placeholder" style="height:80px">标题 + 一句话核心结论</div>
+      <div class="placeholder">需求热度 Top 5 摘要</div>
+      <div class="placeholder">3 条趋势判断</div>
+      <button class="mock-button">登录/开通会员查看完整报告</button>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">登录/会员视角</div>
+    <div class="mockup-body">
+      <div class="mock-nav">完整晨报 / 收藏 / 分享 / 邮件订阅</div>
+      <div class="placeholder" style="height:80px">完整视觉化 HTML 报告</div>
+      <div class="placeholder">全部方向分析 + 产品机会</div>
+      <div class="placeholder">来源链接 + 趋势优先级</div>
+      <button class="mock-button">保存到我的趋势库</button>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>SEO 保护规则</h3>
+  <ul>
+    <li>专题页 `/ai-trends`：index，进 sitemap，使用 Article/CollectionPage 结构化数据。</li>
+    <li>日报列表和日报详情：noindex, follow，不进 sitemap，但允许用户分享和站内访问。</li>
+    <li>每周/月精选版：人工或半自动编辑后发布到 `/ai-news/[slug]`，才允许 index。</li>
+    <li>公开摘要避免重复堆叠，每篇日报摘要控制在可读但不抢专题页关键词的长度。</li>
+  </ul>
+</div>

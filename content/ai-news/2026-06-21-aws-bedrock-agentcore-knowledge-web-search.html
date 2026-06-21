@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWS扩展Bedrock AgentCore，智能体知识检索进入托管阶段</title>
+  <meta name="description" content="AWS在2026年6月17日发布Amazon Bedrock AgentCore新能力，包括托管知识库、Web Search、AgentCore harness正式可用和策略集成，推动AI智能体从原型走向可治理的生产应用。">
+  <meta name="keywords" content="Amazon Bedrock AgentCore,AI智能体知识检索,托管知识库,Web Search,AI工作流自动化,本地部署AI工具,企业RAG,自动发布">
+  <link rel="canonical" href="https://www.enhe-tech.com.cn/ai-news/aws-bedrock-agentcore-ai">
+</head>
+<body>
+  <article>
+    <header>
+      <h1>AWS扩展Bedrock AgentCore，智能体知识检索进入托管阶段</h1>
+      <p>作者：恩禾ENHE AI；发布日期：<time datetime="2026-06-21">2026年6月21日</time></p>
+      <img src="https://images.unsplash.com/photo-1698668975271-2ba9a323be6b?auto=format&fit=crop&w=1600&q=80" alt="Amazon Bedrock AgentCore与AI智能体知识检索相关的企业网络设备">
+    </header>
+
+    <nav aria-label="文章目录">
+      <h2>文章目录</h2>
+      <ol>
+        <li><a href="#overview">事实概述</a></li>
+        <li><a href="#knowledge">知识库与Web Search</a></li>
+        <li><a href="#governance">生产运行与治理</a></li>
+        <li><a href="#impact">对AI工具用户的影响</a></li>
+        <li><a href="#enhe-view">对ENHE用户的实际启发</a></li>
+        <li><a href="#summary">总结</a></li>
+        <li><a href="#sources">来源</a></li>
+      </ol>
+    </nav>
+
+    <section id="overview">
+      <h2>事实概述</h2>
+      <p>AWS在2026年6月17日AWS Summit New York期间发布多项Amazon Bedrock AgentCore更新，核心包括Amazon Bedrock Managed Knowledge Base、AgentCore Web Search、AgentCore harness正式可用，以及新的策略和优化能力。对关注<a href="/ai-news">AI前沿资讯</a>的读者来说，这条新闻的重点不是单个模型升级，而是云厂商把智能体所需的知识检索、工具调用、权限、观测和持续优化进一步托管化。</p>
+      <p>AWS官方新闻博客称，Managed Knowledge Base面向企业级生成式AI应用，试图把RAG管道中的连接器、解析、存储、检索、嵌入、重排和模型选择封装成托管能力。同期发布的Web Search on Bedrock AgentCore则让智能体可以在AWS环境内检索当前网页信息，并返回摘要、来源链接、标题和发布日期，供模型进行有出处的回答。</p>
+    </section>
+
+    <section id="knowledge">
+      <h2>知识库与Web Search</h2>
+      <p>Managed Knowledge Base的直接价值在于降低企业知识接入门槛。AWS列出的首批原生连接器包括Amazon S3、SharePoint、Confluence、Web Crawler、Google Drive和OneDrive，并提供Smart Parsing与Agentic Retriever，用于处理多格式文档和复杂多步查询。对正在比较<a href="/software">AI软件应用</a>的团队来说，知识库能力已经从“能否上传文档”转向“能否保留权限、解析结构并支持复杂检索”。</p>
+      <figure>
+        <img src="https://images.unsplash.com/photo-1667264501379-c1537934c7ab?auto=format&fit=crop&w=1200&q=80" alt="AI工作流自动化中的企业数据中心与知识检索基础设施">
+        <figcaption>企业级AI智能体知识检索通常需要同时处理内部文档、实时网页信息、权限控制和运行日志，而不是只连接一个向量库。</figcaption>
+      </figure>
+      <p>Web Search on AgentCore补上的是外部世界知识。AWS称该工具基于Amazon搜索基础设施，并通过AgentCore Gateway以MCP目标方式接入；智能体可以检索当前网页信息，同时避免把查询发送到外部搜索API提供商。对学习<a href="/skill-learning">AI技能教程</a>的用户来说，这意味着未来教程会更多围绕“内部知识库+外部实时信息+工具执行”的组合，而不只是单轮提示词。</p>
+    </section>
+
+    <section id="governance">
+      <h2>生产运行与治理</h2>
+      <p>同一轮更新中，AgentCore harness也正式可用。AWS机器学习博客称，开发者可以通过CreateHarness和InvokeHarness定义并运行智能体；harness会处理运行环境、记忆、存储、身份、观测、浏览器、代码解释器和工具网关等底层能力。对评估<a href="/software">本地部署AI工具</a>或云端Agent平台的团队来说，这类托管封装会改变选型重点：是否能安全运行多步任务，比单次回答效果更关键。</p>
+      <p>治理方面，Amazon新闻稿提到AgentCore已集成Amazon Bedrock Guardrails，用于评估智能体动作中的提示注入、有害内容和敏感数据暴露；AWS还提到未来将接入Check Point、Zscaler、Rubrik、Netskope和SentinelOne等安全供应商的检测信号。对使用<a href="/account-services">AI账号服务</a>和企业订阅的团队来说，这提示账号、权限、审计和费用边界需要与智能体能力一起规划。</p>
+    </section>
+
+    <section id="impact">
+      <h2>对AI工具用户的影响</h2>
+      <p>这组更新反映出一个趋势：AI智能体正在从“能调用工具”进入“能被企业持续管理”的阶段。知识库、Web Search、harness、策略、观测和A/B测试被放在同一平台叙事中，说明生产级智能体需要同时解决知识新鲜度、内部数据权限、执行环境隔离、失败分析和持续优化。</p>
+      <p>对中小团队而言，短期内不一定需要采用完整的AWS方案，但可以借此形成检查清单：知识来源是否可追溯，网页检索是否保留来源，工具调用是否有审批，账号密钥是否隔离，日志是否能回放，成本是否可控，失败后是否能恢复。这些问题会影响客服、销售线索整理、内容生产、研发辅助、合规监测和市场研究等AI工作流自动化场景。</p>
+    </section>
+
+    <section id="enhe-view">
+      <h2>对ENHE用户的实际启发</h2>
+      <p>对ENHE用户来说，AWS这次发布更适合作为智能体选型框架，而不是简单的云服务推荐。规划Agent应用时，可以先把需求拆成三层：知识层负责内部文档和外部实时信息，执行层负责工具、浏览器和代码环境，治理层负责权限、日志、策略和成本。更多相关实践可继续关注恩禾ENHE AI的<a href="/ai-news">全球AI资讯</a>栏目。</p>
+      <p>如果团队偏向轻量级或私有化方案，也可以借鉴同样的判断标准。一个可落地的智能体系统不只需要强模型，还需要稳定的知识接入、明确的工具边界、可追踪的执行记录和面向业务结果的持续优化机制。</p>
+    </section>
+
+    <section id="summary">
+      <h2>总结</h2>
+      <p>AWS在2026年6月17日集中扩展Bedrock AgentCore，说明主流平台正在把AI智能体的竞争重点从模型调用推向知识、执行、治理和优化的一体化基础设施。对普通工具用户和小团队来说，真正值得关注的是：未来选择智能体工具时，不能只看演示效果，也要看它如何接入数据、引用来源、控制权限、记录过程并管理成本。</p>
+    </section>
+
+    <section id="cms-fields" aria-label="CMS 字段">
+      <h2>CMS 字段</h2>
+
+      <section data-field="subtitle">
+        <h3>副标题</h3>
+        <p>AWS在2026年6月17日发布Bedrock AgentCore托管知识库、Web Search和harness正式可用等更新，推动AI智能体从工具调用走向生产治理。</p>
+      </section>
+
+      <section data-field="keyTakeaways">
+        <h3>核心要点</h3>
+        <ul>
+          <li>AWS在AWS Summit New York 2026期间发布多项Amazon Bedrock AgentCore更新。</li>
+          <li>Managed Knowledge Base封装企业RAG所需的连接器、解析、检索、嵌入、重排和模型选择能力。</li>
+          <li>Web Search on AgentCore让智能体在AWS环境内检索当前网页信息，并返回可引用来源。</li>
+          <li>AgentCore harness正式可用，重点覆盖运行环境、记忆、身份、观测、工具调用和安全执行。</li>
+          <li>这些更新显示AI智能体落地正在从功能演示转向知识接入、权限治理和持续优化。</li>
+        </ul>
+      </section>
+
+      <section data-field="impactNotes">
+        <h3>影响说明</h3>
+        <p>对ENHE用户来说，这条新闻提供了智能体平台选型清单。无论使用云端Agent、本地部署AI工具还是轻量工作流自动化方案，都应检查知识来源、网页检索引用、工具权限、账号密钥隔离、日志审计、成本边界和失败恢复能力。</p>
+      </section>
+
+      <section data-field="conclusion">
+        <h3>结论</h3>
+        <p>Amazon Bedrock AgentCore的新能力表明，生产级AI智能体的关键不再只是模型能力，而是围绕知识、执行、治理和优化建立稳定基础设施。</p>
+      </section>
+
+      <section data-field="videoUrl">
+        <h3>视频 URL</h3>
+        <p></p>
+      </section>
+
+      <section data-field="videoTitle">
+        <h3>视频标题</h3>
+        <p></p>
+      </section>
+
+      <section data-field="videoDescription">
+        <h3>视频说明</h3>
+        <p></p>
+      </section>
+
+      <section data-field="seoTitle">
+        <h3>SEO 标题</h3>
+        <p>Amazon Bedrock AgentCore更新：AI智能体知识检索进入托管阶段</p>
+      </section>
+
+      <section data-field="canonicalUrl">
+        <h3>Canonical URL</h3>
+        <p>https://www.enhe-tech.com.cn/ai-news/aws-bedrock-agentcore-ai</p>
+      </section>
+
+      <section data-field="seoDescription">
+        <h3>SEO 描述</h3>
+        <p>AWS扩展Amazon Bedrock AgentCore，推出托管知识库、Web Search和AgentCore harness正式可用等能力。本文梳理AI智能体知识检索、企业RAG、AI工作流自动化和生产治理的实际影响。</p>
+      </section>
+
+      <section data-field="seoKeywords">
+        <h3>SEO 关键词</h3>
+        <p>Amazon Bedrock AgentCore,AI智能体知识检索,托管知识库,Web Search,企业RAG,AI工作流自动化,本地部署AI工具,AI智能体治理,AI软件应用</p>
+      </section>
+
+      <section data-field="englishTitle">
+        <h3>English title</h3>
+        <p>AWS Expands Bedrock AgentCore as Agent Knowledge Retrieval Becomes Managed Infrastructure</p>
+      </section>
+
+      <section data-field="englishSubtitle">
+        <h3>English subtitle</h3>
+        <p>AWS announced Managed Knowledge Base, Web Search on AgentCore and AgentCore harness general availability on June 17, 2026.</p>
+      </section>
+
+      <section data-field="englishSummary">
+        <h3>English summary</h3>
+        <p>AWS announced several Amazon Bedrock AgentCore updates at AWS Summit New York on June 17, 2026. The releases include Managed Knowledge Base, Web Search on AgentCore, AgentCore harness general availability, policy integrations and optimization capabilities, showing that production AI agents are becoming managed infrastructure around knowledge, execution and governance.</p>
+      </section>
+
+      <section data-field="englishContent">
+        <h3>English content</h3>
+        <p>AWS announced multiple Amazon Bedrock AgentCore updates during AWS Summit New York on June 17, 2026. The main releases include Amazon Bedrock Managed Knowledge Base, Web Search on AgentCore, AgentCore harness general availability and new policy and optimization capabilities.</p>
+        <p>Managed Knowledge Base is designed to reduce the work required to build enterprise RAG pipelines. It brings together connectors, parsing, storage, retrieval, embeddings, reranking and model selection as a managed capability. Web Search on AgentCore lets agents retrieve current web information inside the AWS environment and return source URLs, snippets, titles and publication dates.</p>
+        <p>For ENHE AI readers, the practical lesson is that agent selection should include knowledge access, source traceability, permission controls, account isolation, observability, cost management and recovery options. Production AI agents are becoming infrastructure, not just model prompts.</p>
+      </section>
+
+      <section data-field="englishKeyTakeaways">
+        <h3>English takeaways</h3>
+        <ul>
+          <li>AWS announced new Amazon Bedrock AgentCore capabilities on June 17, 2026.</li>
+          <li>Managed Knowledge Base packages enterprise RAG infrastructure into a managed capability.</li>
+          <li>Web Search on AgentCore gives agents current web grounding while keeping queries inside the AWS environment.</li>
+          <li>AgentCore harness is generally available and wraps runtime, memory, identity, observability and tool access.</li>
+          <li>The update shows production AI agents shifting toward governed knowledge and execution infrastructure.</li>
+        </ul>
+      </section>
+
+      <section data-field="englishImpactNotes">
+        <h3>English impact notes</h3>
+        <p>ENHE users should use this as an AI agent platform checklist. Cloud, local and workflow automation tools should be evaluated by source traceability, knowledge connectors, tool permissions, account security, observability, cost controls and failure recovery.</p>
+      </section>
+
+      <section data-field="englishConclusion">
+        <h3>English conclusion</h3>
+        <p>Amazon Bedrock AgentCore's new capabilities show that production AI agents need managed knowledge, execution, governance and optimization infrastructure, not only stronger models.</p>
+      </section>
+
+      <section data-field="englishSeoTitle">
+        <h3>English SEO title</h3>
+        <p>Amazon Bedrock AgentCore Update: Managed AI Agent Knowledge Retrieval</p>
+      </section>
+
+      <section data-field="englishKeywords">
+        <h3>English keywords</h3>
+        <p>Amazon Bedrock AgentCore,AI agent knowledge retrieval,managed knowledge base,Web Search,enterprise RAG,AI workflow automation,local AI deployment,AI agent governance</p>
+      </section>
+
+      <section data-field="englishSeoDescription">
+        <h3>English SEO description</h3>
+        <p>AWS expanded Amazon Bedrock AgentCore with Managed Knowledge Base, Web Search and AgentCore harness GA, showing how AI agents are becoming governed production infrastructure.</p>
+      </section>
+
+      <section data-field="tags">
+        <h3>标签</h3>
+        <p>AI资讯, 自动发布, AI前沿, AI智能体, AI工作流自动化, 企业RAG, AI工具, AI治理</p>
+      </section>
+
+      <section data-field="relatedArticleIds">
+        <h3>相关资讯 ID</h3>
+        <p></p>
+      </section>
+
+      <section data-field="relatedToolIds">
+        <h3>相关工具 ID</h3>
+        <p></p>
+      </section>
+
+      <section data-field="relatedTutorialIds">
+        <h3>相关教程 ID</h3>
+        <p></p>
+      </section>
+    </section>
+
+    <section id="sources">
+      <h2>来源</h2>
+      <ul>
+        <li><a href="https://aws.amazon.com/blogs/aws/introducing-amazon-bedrock-managed-knowledge-base-for-faster-more-accurate-enterprise-ai-applications/" target="_blank" rel="nofollow noopener noreferrer">AWS News Blog：Introducing Amazon Bedrock Managed Knowledge Base，2026年6月17日</a></li>
+        <li><a href="https://aws.amazon.com/blogs/aws/announcing-web-search-on-amazon-bedrock-agentcore-ground-your-ai-agents-in-current-accurate-web-knowledge/" target="_blank" rel="nofollow noopener noreferrer">AWS News Blog：Announcing Web Search on Amazon Bedrock AgentCore，2026年6月17日</a></li>
+        <li><a href="https://aws.amazon.com/blogs/machine-learning/amazon-bedrock-agentcore-harness-is-now-generally-available-go-from-idea-to-production-grade-agent-in-minutes/" target="_blank" rel="nofollow noopener noreferrer">AWS Machine Learning Blog：Amazon Bedrock AgentCore harness is now generally available，2026年6月18日</a></li>
+        <li><a href="https://aws.amazon.com/blogs/machine-learning/new-in-amazon-bedrock-agentcore-build-agents-with-broader-knowledge-and-continuous-learning/" target="_blank" rel="nofollow noopener noreferrer">AWS Machine Learning Blog：New in Amazon Bedrock AgentCore，2026年6月17日</a></li>
+        <li><a href="https://www.aboutamazon.com/news/aws/aws-summit-nyc-2026-ai-agents" target="_blank" rel="nofollow noopener noreferrer">About Amazon：AWS Summit New York 2026 AI agent innovations，2026年6月18日</a></li>
+      </ul>
+    </section>
+  </article>
+</body>
+</html>
