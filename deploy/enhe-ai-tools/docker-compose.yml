@@ -35,10 +35,13 @@ services:
       - ../../zpay.env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@enhe-ai-tools-db:5432/${POSTGRES_DB}?schema=public
+      APP_URL: ${APP_URL}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
       AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME}
       AUTH_SECRET: ${AUTH_SECRET}
       UPLOAD_DIR: /app/public/uploads
+      BAIDU_PUSH_TOKEN: ${BAIDU_PUSH_TOKEN:-}
+      BAIDU_PUSH_SITE_URL: ${BAIDU_PUSH_SITE_URL:-https://www.enhe-tech.com.cn}
       TENCENT_COS_SECRET_ID: ${TENCENT_COS_SECRET_ID}
       TENCENT_COS_SECRET_KEY: ${TENCENT_COS_SECRET_KEY}
       TENCENT_COS_BUCKET: ${TENCENT_COS_BUCKET}
