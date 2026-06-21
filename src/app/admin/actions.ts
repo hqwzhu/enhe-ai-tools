@@ -2,7 +2,7 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { Prisma, Order, PaymentTransaction } from "@prisma/client";
@@ -24,6 +24,7 @@ import { getAdminUserDeleteBlockReason } from "@/lib/admin-user-rules";
 import { getAdminToolBasePath, getAdminToolEditPath } from "@/lib/admin-tool-routes";
 import { buildAiNewsImportPayloadFromHtml } from "@/lib/ai-news-html-import";
 import { importAiNewsArticle } from "@/lib/ai-news-import";
+import { notifyIndexNow } from "@/lib/indexnow";
 import { revokeEntitlementsForRefundedOrder } from "@/lib/membership";
 import { createLicenseCode, isUnlimitedLicenseKeyValid, parseLicenseCode } from "@/lib/license-generator";
 import type { LicenseGeneratorActionState } from "@/lib/license-generator-action-state";
@@ -49,7 +50,7 @@ import { normalizeToolContentForStorage, normalizeToolSummaryForStorage, parseTa
 import { canOpenProtectedDownloadEntry } from "@/lib/tool-download-link";
 import { getPrimaryToolPriceSpec, parseToolPriceSpecsFromFormData, type ToolPriceSpecDraft } from "@/lib/tool-price-specs";
 import { mergeToolProductImages } from "@/lib/tool-product-images";
-import { buildCanonicalToolPath } from "@/lib/public-slugs";
+import { buildCanonicalAiNewsPath, buildCanonicalToolPath } from "@/lib/public-slugs";
 import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
 import { refundZpayTransactionForOrder } from "@/lib/zpay-orders";
@@ -183,6 +184,12 @@ async function resolvePaymentQrCodeInput(urlValue: FormDataEntryValue | null, fi
 
 function parseDownloadFileUrl(value: FormDataEntryValue | null) {
   return parseOptionalString(value);
+}
+
+function getToolListingPath(type: "software" | "online" | "skill_learning") {
+  if (type === "skill_learning") return "/skill-learning";
+  if (type === "software") return "/software";
+  return "/account-services";
 }
 
 function deriveDownloadFileName(downloadUrl: string, fallbackName: string) {
@@ -1101,19 +1108,24 @@ export async function upsertToolAction(formData: FormData) {
     });
     revalidatePath(adminPath);
     revalidatePath("/admin/files");
+    revalidateTag("public-tools");
     revalidatePath("/");
-    revalidatePath(type === "skill_learning" ? "/skill-learning" : type === "software" ? "/software" : "/account-services");
-    revalidatePath(
-      buildCanonicalToolPath(
-        {
-          slug: data.slug,
-          name,
-          englishName,
-          type
-        },
-        "zh"
-      )
+    const listingPath = getToolListingPath(type);
+    const canonicalToolPath = buildCanonicalToolPath(
+      {
+        slug: data.slug,
+        name,
+        englishName,
+        type
+      },
+      "zh"
     );
+    revalidatePath(listingPath);
+    revalidatePath(canonicalToolPath);
+    if (data.status === "published") {
+      const indexNowUrls = [listingPath, canonicalToolPath];
+      await notifyIndexNow(indexNowUrls);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存失败，请检查表单内容。";
     const returnTo = parseOptionalString(formData.get("returnTo")) ?? adminPath;
@@ -1270,6 +1282,14 @@ export async function upsertTutorialAction(formData: FormData) {
   });
   revalidatePath("/admin/tutorials");
   revalidatePath("/tutorials");
+  if (data.status === "active") {
+    const tool = await prisma.tool.findFirst({
+      where: { id: toolId, status: "published" },
+      select: { slug: true, name: true, englishName: true, type: true }
+    });
+    const indexNowUrls = ["/tutorials", tool ? buildCanonicalToolPath(tool, "zh") : null];
+    await notifyIndexNow(indexNowUrls);
+  }
   redirect(`/admin/tutorials/${tutorialId}?saved=1`);
 }
 
@@ -1593,6 +1613,8 @@ export async function importNewsArticleHtmlAction(formData: FormData) {
       revalidatePath("/en/ai-news");
       revalidatePath(`/ai-news/${result.canonicalSlug}`);
       revalidatePath(`/en/ai-news/${result.canonicalSlug}`);
+      const indexNowUrls = ["/ai-news", result.publicUrl];
+      await notifyIndexNow(indexNowUrls);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "HTML 导入失败，请检查文章内容。";
@@ -1723,6 +1745,20 @@ export async function upsertNewsArticleAction(formData: FormData) {
     });
     revalidatePath(`/ai-news/${canonicalNewsSlug}`);
     revalidatePath(`/en/ai-news/${canonicalNewsSlug}`);
+    if (status === "published") {
+      const indexNowUrls = [
+        "/ai-news",
+        buildCanonicalAiNewsPath(
+          {
+            slug,
+            title,
+            englishTitle: data.englishTitle
+          },
+          "zh"
+        )
+      ];
+      await notifyIndexNow(indexNowUrls);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存失败，请检查资讯表单。";
     redirect(`${returnTo}?error=${encodeURIComponent(message)}`);

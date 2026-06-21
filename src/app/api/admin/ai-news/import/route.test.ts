@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZodError, z } from "zod";
 import { DuplicateAiNewsCoverImageError, importAiNewsArticle } from "@/lib/ai-news-import";
+import { notifyIndexNow } from "@/lib/indexnow";
 import { POST } from "./route";
 
 vi.mock("next/cache", () => ({
@@ -18,7 +19,12 @@ vi.mock("@/lib/ai-news-import", async (importOriginal) => {
   };
 });
 
+vi.mock("@/lib/indexnow", () => ({
+  notifyIndexNow: vi.fn()
+}));
+
 const importAiNewsArticleMock = vi.mocked(importAiNewsArticle);
+const notifyIndexNowMock = vi.mocked(notifyIndexNow);
 const revalidatePathMock = vi.mocked(revalidatePath);
 
 const originalImportToken = process.env.AI_NEWS_IMPORT_TOKEN;
@@ -159,6 +165,7 @@ describe("POST /api/admin/ai-news/import", () => {
     });
     expect(revalidatePathMock).toHaveBeenCalledTimes(1);
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin/ai-news");
+    expect(notifyIndexNowMock).not.toHaveBeenCalled();
   });
 
   it("converts HTML import requests before importing", async () => {
@@ -311,5 +318,6 @@ describe("POST /api/admin/ai-news/import", () => {
     expect(revalidatePathMock).toHaveBeenCalledWith("/ai-news/published-story-canonical");
     expect(revalidatePathMock).toHaveBeenCalledWith("/en/ai-news/published-story-canonical");
     expect(revalidatePathMock).not.toHaveBeenCalledWith("/custom-public-url");
+    expect(notifyIndexNowMock).toHaveBeenCalledWith(["/custom-public-url"]);
   });
 });
