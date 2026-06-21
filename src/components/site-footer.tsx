@@ -103,7 +103,7 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
             <div className="site-footer-socials" aria-label={locale === "en" ? "ENHE AI social channels" : "ENHE AI 社交渠道"}>
               {footerSocialLinks.map(({ label, href, icon: Icon }) =>
                 href ? (
-                  <a key={label} href={href} className="site-footer-social-link" aria-label={label}>
+                  <a key={label} href={href} className="site-footer-social-link cursor-target" aria-label={label}>
                     <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
                   </a>
                 ) : (
@@ -117,7 +117,7 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
 
           <div className="site-footer-newsletter" aria-label={locale === "en" ? "Contact ENHE AI" : "联系 ENHE AI"}>
             <p className="site-footer-kicker">{locale === "en" ? "Contact" : "联系咨询"}</p>
-            <a href={companyContact.emailHref} className="site-footer-contact-button">
+            <a href={companyContact.emailHref} className="site-footer-contact-button cursor-target">
               {companyContact.email}
             </a>
           </div>
@@ -130,7 +130,7 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
               <ul className="site-footer-link-list">
                 {group.links.map((link) => (
                   <li key={link.href}>
-                    <PrefetchLink href={link.href} className="site-footer-link">
+                    <PrefetchLink href={link.href} className="site-footer-link cursor-target">
                       {link.label}
                     </PrefetchLink>
                   </li>
@@ -147,10 +147,10 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
             <span>
               {contactLabels.address}: {companyAddress}
             </span>
-            <a href={companyContact.phoneHref} className="site-footer-link">
+            <a href={companyContact.phoneHref} className="site-footer-link cursor-target">
               {contactLabels.phone}: {companyContact.phone}
             </a>
-            <a href={companyContact.emailHref} className="site-footer-link">
+            <a href={companyContact.emailHref} className="site-footer-link cursor-target">
               {contactLabels.email}: {companyContact.email}
             </a>
           </address>
@@ -175,12 +175,12 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
               href="https://beian.mps.gov.cn/#/query/webSearch?code=35030302900035"
               target="_blank"
               rel="noreferrer"
-              className="site-footer-filing-link"
+              className="site-footer-filing-link cursor-target"
             >
               <Image src="/images/beian-icon.png" alt={filingCopy.publicSecurityAlt} width={18} height={20} unoptimized />
               <span>{filingCopy.publicSecurity}</span>
             </a>
-            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" className="site-footer-filing-link">
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" className="site-footer-filing-link cursor-target">
               {filingCopy.icp}
             </a>
           </div>

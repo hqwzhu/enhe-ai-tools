@@ -32,7 +32,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
   return (
     <header className="site-header-transparent sticky top-0 z-50">
       <Container className="site-header-inner flex max-w-none items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
-        <PrefetchLink href={buildLocalePath("/", locale)} className="site-brand group" aria-label={brand}>
+        <PrefetchLink href={buildLocalePath("/", locale)} className="site-brand cursor-target group" aria-label={brand}>
           <span className="site-brand-mark" aria-hidden="true">
             <Image
               src="/images/brand/enhe-icon-gradient-transparent-cropped.png"
@@ -49,7 +49,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
 
         <nav className="site-primary-nav hidden items-center lg:flex" aria-label="Primary navigation">
           {navItems.map(({ label, href }) => (
-            <PrefetchLink key={href} href={href} className="site-nav-link">
+            <PrefetchLink key={href} href={href} className="site-nav-link cursor-target">
               {label}
             </PrefetchLink>
           ))}
@@ -65,7 +65,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
           <PrefetchLink href={buildLocalePath("/login", locale)} className="sr-only">
             {t.nav.login}
           </PrefetchLink>
-          <PrefetchLink href={buildLocalePath("/user", locale)} className="site-user-center-cta">
+          <PrefetchLink href={buildLocalePath("/user", locale)} className="site-user-center-cta cursor-target">
             {t.nav.user}
           </PrefetchLink>
           <LanguageSwitcher locale={locale} labels={t.language} />

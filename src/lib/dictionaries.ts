@@ -36,7 +36,8 @@ export const dictionaries = {
     home: {
       eyebrow: "Symbiosis · Awakening · Creation",
       title: "ENHE AI",
-      titleSecondLine: "重塑你的人生",
+      titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来",
+      titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future",
       intro: "与 AI 共生，在时代中觉醒，用创造定义未来。",
       softwareButton: "AI软件应用",
       onlineButton: "AI账号服务",
@@ -379,7 +380,8 @@ export const dictionaries = {
     home: {
       eyebrow: "Symbiosis · Awakening · Creation",
       title: "ENHE AI",
-      titleSecondLine: "Reshape Your Life",
+      titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来",
+      titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future",
       intro: "Live in symbiosis with AI, awaken in this era, and define the future through creation.",
       softwareButton: "AI Software Apps",
       onlineButton: "AI Account Services",

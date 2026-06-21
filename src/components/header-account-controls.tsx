@@ -28,7 +28,7 @@ export function HeaderAccountControls({
 
   if (!user) {
     return (
-      <PrefetchLink href={loginPath} className="site-login-link hidden sm:inline-flex">
+      <PrefetchLink href={loginPath} className="site-login-link cursor-target hidden sm:inline-flex">
         {labels.login}
       </PrefetchLink>
     );
@@ -36,7 +36,7 @@ export function HeaderAccountControls({
 
   return (
     <>
-      <PrefetchLink href={userPath} className="site-user-chip hidden sm:inline-flex">
+      <PrefetchLink href={userPath} className="site-user-chip cursor-target hidden sm:inline-flex">
         <UserRound size={16} />
         <span className="truncate">{user.nickname ?? user.email ?? labels.userFallback}</span>
       </PrefetchLink>

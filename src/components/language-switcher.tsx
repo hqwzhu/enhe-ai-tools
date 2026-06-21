@@ -20,7 +20,7 @@ export function LanguageSwitcher({
         <Link
           key={item}
           href={buildLanguageSwitcherHref(pathname, item)}
-          className={locale === item ? "is-active" : ""}
+          className={locale === item ? "is-active cursor-target" : "cursor-target"}
           onClick={() => {
             document.cookie = `enhe_locale=${item}; path=/; max-age=31536000; samesite=lax`;
           }}

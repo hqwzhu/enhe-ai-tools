@@ -22,7 +22,7 @@ export function ButtonLink({
   return (
     <PrefetchLink
       className={cn(
-        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-bold transition duration-200 hover:-translate-y-0.5",
+        "cursor-target inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-bold transition duration-200 hover:-translate-y-0.5",
         variant === "primary"
           ? "border border-[#050505] bg-[#050505] text-white shadow-[0_14px_34px_rgba(0,0,0,0.22)] hover:bg-[#161616]"
           : "surface-panel-soft border-white/14 text-[var(--marketing-text)] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]",

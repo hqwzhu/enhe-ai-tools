@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
+import { ScrollVelocity } from "@/components/scroll-velocity";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
@@ -28,6 +29,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const heroIntro = getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro);
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
   const heroTitleWordmark = /^ENHE\s+AI$/i.test(heroTitle.trim());
+  const heroVelocityTexts = [t.home.titleSecondLine, t.home.titleSecondLineEn];
 
   return (
     <main className="home-page-shell">
@@ -54,9 +56,16 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                     heroTitle
                   )}
                 </span>
-                {" "}
-                <span className="home-hero-title-emphasis">{t.home.titleSecondLine}</span>
+                <span className="sr-only"> {heroVelocityTexts.join(" ")}</span>
               </h1>
+              <div className="home-hero-title-emphasis" aria-hidden="true">
+                <ScrollVelocity
+                  texts={heroVelocityTexts}
+                  className="home-hero-velocity-copy"
+                  parallaxClassName="home-hero-velocity-parallax"
+                  scrollerClassName="home-hero-velocity-scroller"
+                />
+              </div>
               <p className="home-hero-intro">{heroIntro}</p>
 
               <div className="home-hero-actions">
@@ -90,7 +99,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
             {recommendedTools.length > 0 ? (
               <div className="home-recommended-tool-grid">
                 {recommendedTools.map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} locale={forceLocale} />
+                  <ToolCard key={tool.id} tool={tool} locale={forceLocale} variant="homeFeatured" />
                 ))}
               </div>
             ) : (
