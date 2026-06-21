@@ -77,6 +77,10 @@ function getCanonicalSourcePath(path: string) {
   return path.startsWith("/en/") ? path.slice(3) : path === "/en" ? "/" : path;
 }
 
+function absoluteSitemapUrl(path: string) {
+  return path === "/" ? absoluteUrl("/").replace(/\/$/, "") : absoluteUrl(path);
+}
+
 function buildAvailableLanguageAlternates(path: string, locales: Array<"zh" | "en">) {
   const canonicalSourcePath = stripLocalePrefix(path);
   return {
@@ -102,7 +106,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes.map((path) => ({
-      url: absoluteUrl(path),
+      url: absoluteSitemapUrl(path),
       lastModified: staticRouteLastModified[path],
       alternates: {
         languages: buildLanguageAlternates(getCanonicalSourcePath(path))
@@ -111,7 +115,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: getPriority(path)
     })),
     ...aiTrendTopicPaths.map((path) => ({
-      url: absoluteUrl(path),
+      url: absoluteSitemapUrl(path),
       lastModified: new Date("2026-06-19T00:00:00.000Z"),
       alternates: {
         languages: buildLanguageAlternates("/ai-trends")

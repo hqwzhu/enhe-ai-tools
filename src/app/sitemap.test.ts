@@ -66,7 +66,7 @@ describe("sitemap canonical URL contract", () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
 
-    expect(urls).toContain("https://www.enhe-tech.com.cn/");
+    expect(urls).toContain("https://www.enhe-tech.com.cn");
     expect(urls).toContain("https://www.enhe-tech.com.cn/ai-news");
     expect(urls).toContain("https://www.enhe-tech.com.cn/software");
     expect(urls).toContain("https://www.enhe-tech.com.cn/account-services");
