@@ -15,7 +15,9 @@ describe("Baidu push source wiring", () => {
 
     expect(envExample).toContain("BAIDU_PUSH_TOKEN=");
     expect(envExample).toMatch(/^BAIDU_PUSH_TOKEN=""$/m);
+    expect(envExample).toContain("BAIDU_PUSH_SITE_URL=");
     expect(baiduPush).toContain("process.env.BAIDU_PUSH_TOKEN");
+    expect(baiduPush).toContain("process.env.BAIDU_PUSH_SITE_URL");
     expect(baiduPush).not.toContain("NEXT_PUBLIC_BAIDU");
   });
 

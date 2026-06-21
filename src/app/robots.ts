@@ -42,6 +42,11 @@ export default function robots(): MetadataRoute.Robots {
         disallow: privateDisallow
       },
       {
+        userAgent: "Baiduspider",
+        allow: ["/"],
+        disallow: privateDisallow
+      },
+      {
         userAgent: "*",
         allow: ["/", "/api/uploads/"],
         disallow: ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"]

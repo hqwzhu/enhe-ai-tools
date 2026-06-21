@@ -61,6 +61,7 @@ describe("Google Search Console SEO source contract", () => {
     const robots = read("src/app/robots.ts");
 
     expect(robots).toContain('absoluteUrl("/sitemap.xml")');
+    expect(robots).toContain('"Baiduspider"');
     for (const blockedPath of ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"]) {
       expect(robots).toContain(blockedPath);
     }

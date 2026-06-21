@@ -9,6 +9,7 @@ import {
 
 const originalToken = process.env.BAIDU_PUSH_TOKEN;
 const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+const originalBaiduSiteUrl = process.env.BAIDU_PUSH_SITE_URL;
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -22,12 +23,27 @@ afterEach(() => {
   } else {
     process.env.NEXT_PUBLIC_APP_URL = originalAppUrl;
   }
+  if (originalBaiduSiteUrl === undefined) {
+    delete process.env.BAIDU_PUSH_SITE_URL;
+  } else {
+    process.env.BAIDU_PUSH_SITE_URL = originalBaiduSiteUrl;
+  }
 });
 
 describe("Baidu ordinary URL push", () => {
   it("builds the official ordinary collection endpoint from server env", () => {
     process.env.BAIDU_PUSH_TOKEN = "server-only-token";
     process.env.NEXT_PUBLIC_APP_URL = "https://www.enhe-tech.com.cn/";
+
+    expect(buildBaiduPushEndpoint()).toBe(
+      "http://data.zz.baidu.com/urls?site=https://www.enhe-tech.com.cn&token=server-only-token"
+    );
+  });
+
+  it("lets Baidu's site parameter override the public app URL when configured", () => {
+    process.env.BAIDU_PUSH_TOKEN = "server-only-token";
+    process.env.NEXT_PUBLIC_APP_URL = "https://localhost:3000";
+    process.env.BAIDU_PUSH_SITE_URL = "https://www.enhe-tech.com.cn/";
 
     expect(buildBaiduPushEndpoint()).toBe(
       "http://data.zz.baidu.com/urls?site=https://www.enhe-tech.com.cn&token=server-only-token"
