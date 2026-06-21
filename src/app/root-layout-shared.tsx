@@ -17,6 +17,11 @@ export const sharedRootMetadata: Metadata = {
     index: true,
     follow: true
   },
+  verification: {
+    other: {
+      "baidu-site-verification": "codeva-LZTyTXt0Fq"
+    }
+  },
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
