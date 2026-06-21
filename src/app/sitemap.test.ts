@@ -85,6 +85,23 @@ describe("sitemap canonical URL contract", () => {
     }
   });
 
+  it("keeps root sitemap loc and hreflang alternates on the same canonical URL", async () => {
+    prismaMock.tool.findMany.mockResolvedValue([]);
+    prismaMock.newsArticle.findMany.mockResolvedValue([]);
+
+    const { default: sitemap } = await import("@/app/sitemap");
+    const entries = await sitemap();
+    const byUrl = new Map(entries.map((entry) => [entry.url, entry]));
+    const root = byUrl.get("https://www.enhe-tech.com.cn");
+    const englishRoot = byUrl.get("https://www.enhe-tech.com.cn/en");
+
+    expect(root).toBeDefined();
+    expect(root?.alternates?.languages?.["x-default"]).toBe(root?.url);
+    expect(root?.alternates?.languages?.["zh-CN"]).toBe(root?.url);
+    expect(englishRoot?.alternates?.languages?.["x-default"]).toBe(root?.url);
+    expect(englishRoot?.alternates?.languages?.["zh-CN"]).toBe(root?.url);
+  });
+
   it("only emits hreflang alternates for detail pages that have indexable localized content", async () => {
     prismaMock.tool.findMany.mockResolvedValue([
       {

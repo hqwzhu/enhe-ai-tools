@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import { prisma } from "@/lib/db";
 import { buildCanonicalToolPath, getCanonicalAiNewsSlug } from "@/lib/public-slugs";
-import { absoluteUrl, buildLanguageAlternates, buildLocalePath, stripLocalePrefix } from "@/lib/seo";
+import { absoluteUrl, buildLocalePath, stripLocalePrefix } from "@/lib/seo";
 import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 
 export const dynamic = "force-dynamic";
@@ -81,12 +81,21 @@ function absoluteSitemapUrl(path: string) {
   return path === "/" ? absoluteUrl("/").replace(/\/$/, "") : absoluteUrl(path);
 }
 
+function buildSitemapLanguageAlternates(path: string) {
+  const canonicalSourcePath = stripLocalePrefix(path);
+  return {
+    "x-default": absoluteSitemapUrl(canonicalSourcePath),
+    "zh-CN": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "zh")),
+    "en-US": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "en"))
+  };
+}
+
 function buildAvailableLanguageAlternates(path: string, locales: Array<"zh" | "en">) {
   const canonicalSourcePath = stripLocalePrefix(path);
   return {
-    "x-default": absoluteUrl(canonicalSourcePath),
-    ...(locales.includes("zh") ? { "zh-CN": absoluteUrl(buildLocalePath(canonicalSourcePath, "zh")) } : {}),
-    ...(locales.includes("en") ? { "en-US": absoluteUrl(buildLocalePath(canonicalSourcePath, "en")) } : {})
+    "x-default": absoluteSitemapUrl(canonicalSourcePath),
+    ...(locales.includes("zh") ? { "zh-CN": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "zh")) } : {}),
+    ...(locales.includes("en") ? { "en-US": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "en")) } : {})
   };
 }
 
@@ -109,7 +118,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteSitemapUrl(path),
       lastModified: staticRouteLastModified[path],
       alternates: {
-        languages: buildLanguageAlternates(getCanonicalSourcePath(path))
+        languages: buildSitemapLanguageAlternates(getCanonicalSourcePath(path))
       },
       changeFrequency: path === "/" || path === "/en" ? ("daily" as const) : ("weekly" as const),
       priority: getPriority(path)
@@ -118,7 +127,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteSitemapUrl(path),
       lastModified: new Date("2026-06-19T00:00:00.000Z"),
       alternates: {
-        languages: buildLanguageAlternates("/ai-trends")
+        languages: buildSitemapLanguageAlternates("/ai-trends")
       },
       changeFrequency: "weekly" as const,
       priority: 0.76
