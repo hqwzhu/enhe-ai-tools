@@ -852,14 +852,74 @@ select option:disabled {
   line-height: 1.02;
 }
 
-.home-hero-title span {
+.home-hero-title > span {
   display: block;
 }
 
 .home-hero-title-glitch {
   position: relative;
   color: var(--marketing-text);
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.58),
+    0 18px 62px rgba(240, 90, 53, 0.18);
   isolation: isolate;
+}
+
+.home-hero-title-glitch-wordmark {
+  width: max-content;
+  white-space: nowrap;
+  font-family: var(--font-heading-en);
+  font-stretch: condensed;
+  transform: skewX(-3deg) scaleX(1.035);
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.66),
+    0 18px 58px rgba(240, 90, 53, 0.24);
+}
+
+.home-hero-title-glitch > span {
+  display: inline-block;
+}
+
+.home-hero-title-wordmark-letter {
+  color: var(--marketing-text);
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 0;
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.6),
+    0 16px 58px rgba(240, 90, 53, 0.2);
+}
+
+.home-hero-title-wordmark-accent {
+  color: var(--marketing-accent);
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 0;
+  text-shadow:
+    0 0 18px rgba(240, 90, 53, 0.34),
+    0 0 54px rgba(240, 90, 53, 0.22),
+    5px 0 rgba(240, 90, 53, 0.3);
+}
+
+.home-hero-title-wordmark-slice {
+  position: relative;
+}
+
+.home-hero-title-wordmark-slice::after {
+  content: "";
+  position: absolute;
+  right: 0.08em;
+  top: 0.03em;
+  width: 0.07em;
+  height: 0.78em;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(240, 90, 53, 0), rgba(240, 90, 53, 0.92), rgba(240, 90, 53, 0));
+  box-shadow:
+    0 0 18px rgba(240, 90, 53, 0.58),
+    0 0 36px rgba(240, 90, 53, 0.22);
+  transform: skewX(-16deg);
+  pointer-events: none;
 }
 
 .home-hero-title-glitch::before,
@@ -871,16 +931,26 @@ select option:disabled {
   opacity: 0;
   pointer-events: none;
   mix-blend-mode: screen;
+  overflow: hidden;
+  will-change: clip-path, opacity, transform;
 }
 
 .home-hero-title-glitch::before {
-  text-shadow: 5px 0 rgba(0, 229, 255, 0.58);
-  animation: hero-title-glitch-before 6.8s steps(1, end) infinite;
+  left: -7px;
+  color: rgba(245, 242, 238, 0.92);
+  text-shadow:
+    9px 0 rgba(0, 229, 255, 0.78),
+    -2px 0 rgba(255, 255, 255, 0.36);
+  animation: hero-title-glitch-before 2.9s steps(1, end) infinite;
 }
 
 .home-hero-title-glitch::after {
-  text-shadow: -5px 0 rgba(240, 90, 53, 0.7);
-  animation: hero-title-glitch-after 7.4s steps(1, end) infinite;
+  left: 7px;
+  color: rgba(245, 242, 238, 0.9);
+  text-shadow:
+    -10px 0 rgba(240, 90, 53, 0.86),
+    2px 0 rgba(255, 255, 255, 0.28);
+  animation: hero-title-glitch-after 3.4s steps(1, end) infinite reverse;
 }
 
 .home-hero-title-emphasis {
@@ -1632,28 +1702,56 @@ select option:disabled {
 
 @keyframes hero-title-glitch-before {
   0%,
-  82%,
+  5%,
+  20%,
+  38%,
+  54%,
+  72%,
+  88%,
   100% {
     clip-path: inset(0 0 0 0);
     opacity: 0;
     transform: translate3d(0, 0, 0);
   }
-  83% {
-    clip-path: inset(12% 0 58% 0);
-    opacity: 0.64;
-    transform: translate3d(-2px, 0, 0);
+  6% {
+    clip-path: inset(10% 0 64% 0);
+    opacity: 0.74;
+    transform: translate3d(-6px, -1px, 0) skewX(-4deg);
   }
-  84% {
-    clip-path: inset(44% 0 30% 0);
-    opacity: 0.44;
-    transform: translate3d(2px, 0, 0);
+  7% {
+    clip-path: inset(48% 0 28% 0);
+    opacity: 0.62;
+    transform: translate3d(5px, 1px, 0) skewX(3deg);
   }
-  85% {
-    clip-path: inset(66% 0 12% 0);
-    opacity: 0.54;
-    transform: translate3d(-1px, 0, 0);
+  8% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
   }
-  86% {
+  39% {
+    clip-path: inset(68% 0 10% 0);
+    opacity: 0.68;
+    transform: translate3d(-4px, 0, 0);
+  }
+  40% {
+    clip-path: inset(18% 0 56% 0);
+    opacity: 0.48;
+    transform: translate3d(3px, 0, 0);
+  }
+  41% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  73% {
+    clip-path: inset(30% 0 44% 0);
+    opacity: 0.74;
+    transform: translate3d(-7px, 1px, 0) skewX(-5deg);
+  }
+  74% {
+    clip-path: inset(4% 0 76% 0);
+    opacity: 0.56;
+    transform: translate3d(4px, -1px, 0);
+  }
+  75% {
     opacity: 0;
     transform: translate3d(0, 0, 0);
   }
@@ -1661,28 +1759,56 @@ select option:disabled {
 
 @keyframes hero-title-glitch-after {
   0%,
-  58%,
+  10%,
+  28%,
+  46%,
+  64%,
+  82%,
+  96%,
   100% {
     clip-path: inset(0 0 0 0);
     opacity: 0;
     transform: translate3d(0, 0, 0);
   }
-  59% {
-    clip-path: inset(24% 0 52% 0);
-    opacity: 0.48;
-    transform: translate3d(2px, 0, 0);
+  11% {
+    clip-path: inset(22% 0 50% 0);
+    opacity: 0.56;
+    transform: translate3d(6px, 0, 0) skewX(3deg);
   }
-  60% {
-    clip-path: inset(56% 0 22% 0);
+  12% {
+    clip-path: inset(58% 0 18% 0);
+    opacity: 0.78;
+    transform: translate3d(-5px, 1px, 0) skewX(-4deg);
+  }
+  13% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  47% {
+    clip-path: inset(6% 0 70% 0);
     opacity: 0.58;
-    transform: translate3d(-2px, 0, 0);
+    transform: translate3d(5px, -1px, 0);
   }
-  61% {
-    clip-path: inset(8% 0 72% 0);
-    opacity: 0.42;
-    transform: translate3d(1px, 0, 0);
+  48% {
+    clip-path: inset(42% 0 34% 0);
+    opacity: 0.64;
+    transform: translate3d(-6px, 0, 0);
   }
-  62% {
+  49% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  83% {
+    clip-path: inset(72% 0 8% 0);
+    opacity: 0.72;
+    transform: translate3d(7px, 1px, 0) skewX(4deg);
+  }
+  84% {
+    clip-path: inset(16% 0 62% 0);
+    opacity: 0.5;
+    transform: translate3d(-4px, -1px, 0);
+  }
+  85% {
     opacity: 0;
     transform: translate3d(0, 0, 0);
   }

@@ -27,6 +27,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const t = getDictionary(forceLocale);
   const heroIntro = getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro);
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
+  const heroTitleWordmark = /^ENHE\s+AI$/i.test(heroTitle.trim());
 
   return (
     <main className="home-page-shell">
@@ -36,7 +37,23 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
             <div className="home-hero-centered">
               <p className="home-hero-eyebrow">{t.home.eyebrow}</p>
               <h1 className="home-hero-title">
-                <span className="home-hero-title-glitch" data-text={heroTitle}>{heroTitle}</span>
+                <span
+                  className={`home-hero-title-glitch${heroTitleWordmark ? " home-hero-title-glitch-wordmark" : ""}`}
+                  data-text={heroTitle}
+                >
+                  {heroTitleWordmark ? (
+                    <>
+                      <span className="home-hero-title-wordmark-accent">E</span>
+                      <span className="home-hero-title-wordmark-letter">N</span>
+                      <span className="home-hero-title-wordmark-letter home-hero-title-wordmark-slice">H</span>
+                      <span className="home-hero-title-wordmark-letter">E</span>{" "}
+                      <span className="home-hero-title-wordmark-accent">A</span>
+                      <span className="home-hero-title-wordmark-letter">I</span>
+                    </>
+                  ) : (
+                    heroTitle
+                  )}
+                </span>
                 {" "}
                 <span className="home-hero-title-emphasis">{t.home.titleSecondLine}</span>
               </h1>
