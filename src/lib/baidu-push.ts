@@ -1,5 +1,4 @@
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/db";
 import { buildCanonicalAiNewsPath, buildCanonicalToolPath } from "@/lib/public-slugs";
 import { fallbackSiteBaseUrl, getSiteBaseUrl } from "@/lib/seo";
 
@@ -174,6 +173,7 @@ export async function recordBaiduPushResult(result: BaiduPushResult, context?: R
   if (process.env.NODE_ENV === "test") return;
 
   try {
+    const { prisma } = await import("@/lib/db");
     const metadata = JSON.parse(
       JSON.stringify({
         ...context,
@@ -227,6 +227,7 @@ function pushMaybeEnglishPath(urls: string[], path: string, includeEnglish?: boo
 }
 
 export async function getCoreBaiduSitemapUrls(options: CoreSitemapUrlOptions = {}) {
+  const { prisma } = await import("@/lib/db");
   const urls: string[] = [];
   const staticPaths = ["/", "/ai-news", "/software", "/account-services", "/skill-learning", "/tutorials", "/ai-trends"];
 

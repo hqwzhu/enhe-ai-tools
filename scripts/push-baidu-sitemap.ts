@@ -5,9 +5,9 @@ import {
   recordBaiduPushResult,
   submitBaiduUrls
 } from "@/lib/baidu-push";
-import { prisma } from "@/lib/db";
 
 const defaultSitemapUrl = "https://www.enhe-tech.com.cn/sitemap.xml";
+let didUseDatabase = false;
 
 function getArgValue(name: string) {
   const index = process.argv.indexOf(name);
@@ -23,6 +23,7 @@ async function main() {
   const sitemapUrl = getArgValue("--sitemap") ?? defaultSitemapUrl;
   const limit = limitValue ? Number.parseInt(limitValue, 10) : undefined;
   const limitOptions = Number.isFinite(limit) && limit && limit > 0 ? { limit } : {};
+  didUseDatabase = fromDb;
   const urls = fromDb
     ? await getCoreBaiduSitemapUrls({
         includeEnglish,
@@ -71,5 +72,8 @@ main()
     process.exitCode = 1;
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    if (didUseDatabase) {
+      const { prisma } = await import("@/lib/db");
+      await prisma.$disconnect();
+    }
   });

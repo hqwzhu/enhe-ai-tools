@@ -35,12 +35,15 @@ describe("Baidu push source wiring", () => {
     const scriptPath = "scripts/push-baidu-sitemap.ts";
     const packageJson = read("package.json");
     const script = read(scriptPath);
+    const baiduPush = read("src/lib/baidu-push.ts");
 
     expect(existsSync(join(root, scriptPath))).toBe(true);
     expect(packageJson).toContain('"baidu:push:sitemap"');
     expect(script).toContain("getCoreBaiduSitemapUrls");
     expect(script).toContain("submitBaiduUrls");
     expect(script).toContain("recordBaiduPushResult");
+    expect(script).not.toContain('from "@/lib/db"');
+    expect(baiduPush).not.toContain('import { prisma } from "@/lib/db";');
     expect(script).toContain("--dry-run");
   });
 });
