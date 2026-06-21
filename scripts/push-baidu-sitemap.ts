@@ -1,3 +1,5 @@
+import { appendFile, mkdir, readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import {
   buildBaiduPushUrls,
   extractBaiduUrlsFromSitemapXml,
@@ -7,6 +9,7 @@ import {
 } from "@/lib/baidu-push";
 
 const defaultSitemapUrl = "https://www.enhe-tech.com.cn/sitemap.xml";
+const defaultLogPath = join(process.cwd(), "logs", "baidu-push.jsonl");
 let didUseDatabase = false;
 
 function getArgValue(name: string) {
@@ -15,7 +18,40 @@ function getArgValue(name: string) {
   return process.argv[index + 1] ?? null;
 }
 
+function parseEnvLine(line: string) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith("#")) return null;
+  const separatorIndex = trimmed.indexOf("=");
+  if (separatorIndex <= 0) return null;
+
+  const key = trimmed.slice(0, separatorIndex).trim();
+  let value = trimmed.slice(separatorIndex + 1).trim();
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    value = value.slice(1, -1);
+  }
+  return { key, value };
+}
+
+async function loadLocalEnvFile(path = join(process.cwd(), ".env")) {
+  try {
+    const content = await readFile(path, "utf8");
+    for (const line of content.split(/\r?\n/)) {
+      const parsed = parseEnvLine(line);
+      if (!parsed || process.env[parsed.key]) continue;
+      process.env[parsed.key] = parsed.value;
+    }
+  } catch {
+    // Manual pushes can still use already-exported environment variables.
+  }
+}
+
+async function appendBaiduPushFileLog(entry: Record<string, unknown>, path = defaultLogPath) {
+  await mkdir(dirname(path), { recursive: true });
+  await appendFile(path, `${JSON.stringify({ checkedAt: new Date().toISOString(), ...entry })}\n`, "utf8");
+}
+
 async function main() {
+  await loadLocalEnvFile();
   const dryRun = process.argv.includes("--dry-run");
   const includeEnglish = process.argv.includes("--include-en");
   const fromDb = process.argv.includes("--from-db");
@@ -37,13 +73,23 @@ async function main() {
   }
 
   const result = await submitBaiduUrls(urls);
-  await recordBaiduPushResult(result, {
+  await appendBaiduPushFileLog({
     source: "manual-sitemap-script",
     mode: fromDb ? "database" : "remote-sitemap",
     sitemapUrl: fromDb ? null : sitemapUrl,
     includeEnglish,
-    limit: limit ?? null
+    limit: limit ?? null,
+    result
   });
+  if (fromDb) {
+    await recordBaiduPushResult(result, {
+      source: "manual-sitemap-script",
+      mode: "database",
+      sitemapUrl: null,
+      includeEnglish,
+      limit: limit ?? null
+    });
+  }
   console.log(JSON.stringify(result, null, 2));
 
   if (!result.ok) {

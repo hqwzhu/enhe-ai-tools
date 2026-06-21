@@ -42,6 +42,8 @@ describe("Baidu push source wiring", () => {
     expect(script).toContain("getCoreBaiduSitemapUrls");
     expect(script).toContain("submitBaiduUrls");
     expect(script).toContain("recordBaiduPushResult");
+    expect(script).toContain("loadLocalEnvFile");
+    expect(script).toContain("appendBaiduPushFileLog");
     expect(script).not.toContain('from "@/lib/db"');
     expect(baiduPush).not.toContain('import { prisma } from "@/lib/db";');
     expect(script).toContain("--dry-run");
