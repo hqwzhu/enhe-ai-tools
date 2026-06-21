@@ -7,6 +7,15 @@ type ToolRow = Awaited<ReturnType<typeof loadTools>>[number];
 
 const assetRoot = path.join(process.cwd(), "public", "images", "products", "enhe-visuals");
 const publicRoot = "/images/products/enhe-visuals";
+const args = process.argv.slice(2);
+const shouldUpdateDatabase = !args.includes("--no-db-update");
+const migrationPath = getArgValue("--migration");
+
+function getArgValue(name: string) {
+  const index = args.indexOf(name);
+  if (index === -1) return null;
+  return args[index + 1] ?? null;
+}
 
 const typeLabels = {
   software: {
@@ -90,6 +99,25 @@ function escapeHtml(value: string) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function sqlLiteral(value: string) {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+function buildMigrationSql(manifest: Array<{ slug: string; coverImage: string; screenshots: string[] }>) {
+  return `${manifest
+    .map(
+      (item) => `UPDATE "tools"
+SET
+  "cover_image" = ${sqlLiteral(item.coverImage)},
+  "screenshots" = ARRAY[
+${item.screenshots.map((screenshot) => `    ${sqlLiteral(screenshot)}`).join(",\n")}
+  ]::TEXT[]
+WHERE "slug" = ${sqlLiteral(item.slug)};
+`
+    )
+    .join("\n")}`;
 }
 
 function sanitizeSegment(value: string) {
@@ -845,16 +873,23 @@ async function main() {
     }
 
     const coverImage = `${publicRoot}/${segment}/cover.png`;
-    await prisma.tool.update({
-      where: { id: tool.id },
-      data: { coverImage, screenshots }
-    });
+    if (shouldUpdateDatabase) {
+      await prisma.tool.update({
+        where: { id: tool.id },
+        data: { coverImage, screenshots }
+      });
+    }
     manifest.push({ slug: tool.slug, coverImage, screenshots });
     console.log(`Updated ${tool.slug}: ${coverImage}`);
   }
 
   await browser.close();
   await writeFile(path.join(assetRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+
+  if (migrationPath) {
+    await mkdir(path.dirname(migrationPath), { recursive: true });
+    await writeFile(migrationPath, buildMigrationSql(manifest), "utf8");
+  }
 }
 
 main()
