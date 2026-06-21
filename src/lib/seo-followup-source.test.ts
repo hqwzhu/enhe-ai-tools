@@ -49,6 +49,7 @@ describe("SEO follow-up source contracts", () => {
     const skillLearning = read("src/app/skill-learning/page-shell.tsx");
     const aiNews = read("src/app/ai-news/page-shell.tsx");
     const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
+    const legalDetail = read("src/app/legal/[slug]/page-shell.tsx");
 
     for (const source of [
       software,
@@ -56,6 +57,7 @@ describe("SEO follow-up source contracts", () => {
       skillLearning,
       aiNews,
       toolDetail,
+      legalDetail,
     ]) {
       expect(source).toContain("<main");
     }

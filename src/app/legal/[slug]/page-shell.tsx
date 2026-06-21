@@ -88,29 +88,31 @@ export async function LegalPageShell({
   });
 
   return (
-    <Container className="py-14">
-      <StructuredData data={breadcrumbSchema} />
-      <article className="mx-auto max-w-4xl">
-        <p className="mb-4 text-sm font-semibold text-[var(--marketing-accent)]">
-          ENHE Compliance
-        </p>
-        <h1 className="text-4xl font-semibold text-white">{page.title}</h1>
-        <p className="mt-5 leading-8 text-[#8B95A7]">{page.summary}</p>
-        <div className="mt-10 space-y-8">
-          {page.sections.map((section) => (
-            <section key={section.title} className="glass rounded-2xl p-6">
-              <h2 className="text-xl font-semibold text-[#E8EEF8]">
-                {section.title}
-              </h2>
-              <div className="mt-4 space-y-4 text-sm leading-8 text-[#A7B0C2]">
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      </article>
-    </Container>
+    <main>
+      <Container className="py-14">
+        <StructuredData data={breadcrumbSchema} />
+        <article className="mx-auto max-w-4xl">
+          <p className="mb-4 text-sm font-semibold text-[var(--marketing-accent)]">
+            ENHE Compliance
+          </p>
+          <h1 className="text-4xl font-semibold text-white">{page.title}</h1>
+          <p className="mt-5 leading-8 text-[#8B95A7]">{page.summary}</p>
+          <div className="mt-10 space-y-8">
+            {page.sections.map((section) => (
+              <section key={section.title} className="glass rounded-2xl p-6">
+                <h2 className="text-xl font-semibold text-[#E8EEF8]">
+                  {section.title}
+                </h2>
+                <div className="mt-4 space-y-4 text-sm leading-8 text-[#A7B0C2]">
+                  {section.paragraphs.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </article>
+      </Container>
+    </main>
   );
 }
