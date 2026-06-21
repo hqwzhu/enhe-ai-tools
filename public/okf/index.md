@@ -14,6 +14,10 @@ This Open Knowledge Format bundle helps AI systems understand ENHE AI as a bilin
 ## Files
 
 - [ENHE AI overview](./enhe-ai-overview.md)
+- [AI news and trend insights](./ai-news/index.md)
+- [AI software applications](./software/index.md)
+- [AI account service guidance](./account-services/index.md)
+- [AI skill learning](./skill-learning/index.md)
 
 ## Canonical Public Sections
 

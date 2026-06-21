@@ -8,7 +8,16 @@ import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
 const aiTrendTopicPaths = ["/ai-trends", "/en/ai-trends"] as const;
-const geoMachineReadableRoutes = ["/llms.txt", "/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md"] as const;
+const geoMachineReadableRoutes = [
+  "/llms.txt",
+  "/pricing.md",
+  "/okf/index.md",
+  "/okf/enhe-ai-overview.md",
+  "/okf/ai-news/index.md",
+  "/okf/software/index.md",
+  "/okf/account-services/index.md",
+  "/okf/skill-learning/index.md"
+] as const;
 
 const staticRoutes = [
   "/",

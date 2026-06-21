@@ -131,6 +131,36 @@ enum AiTrendBriefingStatus {
   archived
 }
 
+enum GeoPlatformRegion {
+  global
+  china
+}
+
+enum GeoProviderMode {
+  api
+  manual_browser
+  search_console
+  bing_webmaster
+}
+
+enum GeoQueryStatus {
+  active
+  paused
+}
+
+enum GeoRunStatus {
+  pending
+  completed
+  failed
+}
+
+enum GeoRecommendationStatus {
+  open
+  planned
+  done
+  dismissed
+}
+
 model User {
   id              String          @id @default(cuid())
   email           String?         @unique
@@ -883,4 +913,102 @@ model AiTrendBriefing {
   @@index([status, publishedAt])
   @@index([isIncludedInTopicPage, publishedAt])
   @@map("ai_trend_briefings")
+}
+
+model GeoQuery {
+  id          String          @id @default(cuid())
+  query       String
+  locale      String          @default("zh")
+  intent      String
+  topic       String
+  targetPath  String          @map("target_path")
+  tags        String[]        @default([])
+  status      GeoQueryStatus  @default(active)
+  sortOrder   Int             @default(0) @map("sort_order")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  results     GeoVisibilityResult[]
+  recommendations GeoRecommendation[]
+
+  @@unique([query, locale])
+  @@index([status, sortOrder])
+  @@map("geo_queries")
+}
+
+model GeoProvider {
+  id          String            @id @default(cuid())
+  providerKey String            @unique @map("provider_key")
+  name        String
+  region      GeoPlatformRegion
+  mode        GeoProviderMode
+  officialUrl String            @map("official_url")
+  description String?
+  status      GeoQueryStatus    @default(active)
+  sortOrder   Int               @default(0) @map("sort_order")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  results     GeoVisibilityResult[]
+
+  @@index([region, status, sortOrder])
+  @@map("geo_providers")
+}
+
+model GeoVisibilityRun {
+  id          String          @id @default(cuid())
+  title       String
+  status      GeoRunStatus    @default(pending)
+  startedAt   DateTime        @default(now()) @map("started_at")
+  completedAt DateTime?       @map("completed_at")
+  notes       String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  results     GeoVisibilityResult[]
+
+  @@index([status, startedAt])
+  @@map("geo_visibility_runs")
+}
+
+model GeoVisibilityResult {
+  id              String            @id @default(cuid())
+  runId           String?           @map("run_id")
+  queryId         String?           @map("query_id")
+  providerId      String?           @map("provider_id")
+  queryText       String            @map("query_text")
+  providerKey     String            @map("provider_key")
+  answerSummary   String?           @map("answer_summary")
+  isBrandMentioned Boolean          @default(false) @map("is_brand_mentioned")
+  isDomainCited   Boolean           @default(false) @map("is_domain_cited")
+  citedUrls       String[]          @default([]) @map("cited_urls")
+  competitors     String[]          @default([])
+  sentiment       String?
+  screenshotUrl   String?           @map("screenshot_url")
+  checkedAt       DateTime          @default(now()) @map("checked_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  run             GeoVisibilityRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  query           GeoQuery?         @relation(fields: [queryId], references: [id], onDelete: SetNull)
+  provider        GeoProvider?      @relation(fields: [providerId], references: [id], onDelete: SetNull)
+
+  @@index([queryText, providerKey, checkedAt])
+  @@index([isBrandMentioned, isDomainCited])
+  @@map("geo_visibility_results")
+}
+
+model GeoRecommendation {
+  id          String                  @id @default(cuid())
+  queryId     String?                 @map("query_id")
+  type        String
+  priority    String
+  title       String
+  reason      String
+  action      String
+  targetPath  String                  @map("target_path")
+  status      GeoRecommendationStatus @default(open)
+  createdAt   DateTime                @default(now()) @map("created_at")
+  updatedAt   DateTime                @updatedAt @map("updated_at")
+  query       GeoQuery?               @relation(fields: [queryId], references: [id], onDelete: SetNull)
+
+  @@index([status, priority])
+  @@index([targetPath])
+  @@map("geo_recommendations")
 }
