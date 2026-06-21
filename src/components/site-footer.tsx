@@ -159,7 +159,7 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
         <div className="site-footer-gradient-mark" aria-hidden="true">
           <Image
             src="/images/brand/enhe-icon-gradient-transparent-cropped.png"
-            alt=""
+            alt={`${siteName} gradient logo`}
             width={96}
             height={64}
             className="site-footer-gradient-icon"
