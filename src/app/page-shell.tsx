@@ -36,7 +36,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
             <div className="home-hero-centered">
               <p className="home-hero-eyebrow">{t.home.eyebrow}</p>
               <h1 className="home-hero-title">
-                <span>{heroTitle}</span>
+                <span className="home-hero-title-glitch" data-text={heroTitle}>{heroTitle}</span>
                 {" "}
                 <span className="home-hero-title-emphasis">{t.home.titleSecondLine}</span>
               </h1>
