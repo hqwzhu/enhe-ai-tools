@@ -27,6 +27,8 @@ describe("sitemap canonical URL contract", () => {
         slug: "ai-ai",
         name: "AI Voice Generator Flexible Edition",
         englishName: "AI Voice Generator Flexible Edition",
+        shortDescription: "Generate voice content for production workflows.",
+        content: "This AI voice generator helps teams create voice content, review export options, and connect audio work with practical production workflows.",
         type: "software",
         updatedAt: new Date("2026-06-19T01:02:03.000Z")
       },
@@ -34,6 +36,8 @@ describe("sitemap canonical URL contract", () => {
         slug: "chatgpt-support",
         name: "ChatGPT Account Service",
         englishName: "ChatGPT Account Service",
+        shortDescription: "Account usage support and subscription guidance for ChatGPT.",
+        content: "This account service page explains access guidance, subscription support, delivery notes, and compliance reminders for ChatGPT users.",
         type: "online",
         updatedAt: new Date("2026-06-18T01:02:03.000Z")
       },
@@ -41,6 +45,8 @@ describe("sitemap canonical URL contract", () => {
         slug: "prompt-course",
         name: "Prompt Engineering Course",
         englishName: "Prompt Engineering Course",
+        shortDescription: "Learn prompt engineering through practical AI workflow lessons.",
+        content: "This skill course helps learners build prompt engineering habits, evaluate examples, and apply AI workflows to repeatable work outcomes.",
         type: "skill_learning",
         updatedAt: new Date("2026-06-17T01:02:03.000Z")
       }
@@ -73,6 +79,71 @@ describe("sitemap canonical URL contract", () => {
     for (const forbidden of ["/admin", "/dashboard", "/user-center", "/login", "/register", "/checkout", "/orders", "/payment", "/api", "/online-tools", "/tools/"]) {
       expect(urls.some((url) => url.includes(forbidden)), forbidden).toBe(false);
     }
+
+    for (const machineReadable of ["/llms.txt", "/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md", "/okf/ai-news/index.md"]) {
+      expect(urls.some((url) => url.endsWith(machineReadable)), machineReadable).toBe(false);
+    }
+  });
+
+  it("only emits hreflang alternates for detail pages that have indexable localized content", async () => {
+    prismaMock.tool.findMany.mockResolvedValue([
+      {
+        slug: "english-ready-app",
+        name: "English Ready App",
+        englishName: "English Ready App",
+        shortDescription: "A complete English summary for productivity workflows.",
+        content: "This complete English tool page explains practical AI workflows, use cases, access notes, pricing context, and how teams can evaluate the app before adding it to daily operations.",
+        type: "software",
+        updatedAt: new Date("2026-06-19T01:02:03.000Z")
+      },
+      {
+        slug: "zh-only-app",
+        name: "中文工具",
+        englishName: null,
+        shortDescription: "中文摘要",
+        content: "中文正文内容",
+        type: "software",
+        updatedAt: new Date("2026-06-19T01:02:03.000Z")
+      }
+    ]);
+    prismaMock.newsArticle.findMany.mockResolvedValue([
+      {
+        slug: "news-english-ready",
+        title: "AI agents reshape workplace automation",
+        englishTitle: "AI agents reshape workplace automation",
+        englishSummary: "A useful English summary that explains why this AI news matters for ENHE AI readers.",
+        englishContent: "AI agents are changing how teams connect tools, accounts, tutorials, and workflow automation. This article explains what changed, why it matters, and how readers can turn the signal into practical next steps for software, courses, and account service planning. ".repeat(2),
+        updatedAt: new Date("2026-06-16T01:02:03.000Z")
+      },
+      {
+        slug: "news-zh-only",
+        title: "Local AI deployment update",
+        englishTitle: "",
+        englishSummary: "",
+        englishContent: "",
+        updatedAt: new Date("2026-06-16T01:02:03.000Z")
+      }
+    ]);
+
+    const { default: sitemap } = await import("@/app/sitemap");
+    const entries = await sitemap();
+    const byUrl = new Map(entries.map((entry) => [entry.url, entry]));
+
+    const englishReadyTool = byUrl.get("https://www.enhe-tech.com.cn/software/english-ready-app");
+    expect(englishReadyTool?.alternates?.languages?.["en-US"]).toBe("https://www.enhe-tech.com.cn/en/software/english-ready-app");
+
+    const zhOnlyTool = byUrl.get("https://www.enhe-tech.com.cn/software/zh-only-app");
+    expect(zhOnlyTool?.alternates?.languages?.["zh-CN"]).toBe("https://www.enhe-tech.com.cn/software/zh-only-app");
+    expect(zhOnlyTool?.alternates?.languages?.["en-US"]).toBeUndefined();
+    expect(byUrl.has("https://www.enhe-tech.com.cn/en/software/zh-only-app")).toBe(false);
+
+    const englishReadyNews = byUrl.get("https://www.enhe-tech.com.cn/ai-news/ai-agents-reshape-workplace-automation");
+    expect(englishReadyNews?.alternates?.languages?.["en-US"]).toBe("https://www.enhe-tech.com.cn/en/ai-news/ai-agents-reshape-workplace-automation");
+
+    const zhOnlyNews = byUrl.get("https://www.enhe-tech.com.cn/ai-news/local-ai-deployment-update");
+    expect(zhOnlyNews?.alternates?.languages?.["zh-CN"]).toBe("https://www.enhe-tech.com.cn/ai-news/local-ai-deployment-update");
+    expect(zhOnlyNews?.alternates?.languages?.["en-US"]).toBeUndefined();
+    expect(byUrl.has("https://www.enhe-tech.com.cn/en/ai-news/local-ai-deployment-update")).toBe(false);
   });
 
   it("uses updatedAt as lastModified for database-backed tool and AI news URLs", async () => {
@@ -84,6 +155,8 @@ describe("sitemap canonical URL contract", () => {
         slug: "workflow-app",
         name: "Workflow AI App",
         englishName: "Workflow AI App",
+        shortDescription: "A complete English summary for workflow automation.",
+        content: "This workflow app page explains use cases, workflow fit, access notes, and practical evaluation guidance for teams adopting AI software.",
         type: "software",
         updatedAt: toolUpdatedAt
       }

@@ -67,7 +67,7 @@ describe("GEO monitoring source wiring", () => {
     expect(okfIndex).toContain("./skill-learning/index.md");
   });
 
-  it("keeps the new OKF concept pages in sitemap and public cache headers", () => {
+  it("keeps the new OKF concept pages publicly cached but out of the main search sitemap", () => {
     const sitemap = read("src/app/sitemap.ts");
     const nextConfig = read("next.config.ts");
 
@@ -77,7 +77,7 @@ describe("GEO monitoring source wiring", () => {
       "/okf/account-services/index.md",
       "/okf/skill-learning/index.md"
     ]) {
-      expect(sitemap).toContain(`"${path}"`);
+      expect(sitemap).not.toContain(`"${path}"`);
       expect(nextConfig).toContain(`source: "${path}"`);
     }
   });

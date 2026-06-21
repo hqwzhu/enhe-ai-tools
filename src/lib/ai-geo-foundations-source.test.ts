@@ -72,12 +72,12 @@ describe("AI GEO foundations", () => {
     expect(aiTrends).toContain('buildLocalePath("/skill-learning", forceLocale)');
   });
 
-  it("exposes machine-readable GEO files through sitemap and cache headers", () => {
+  it("keeps machine-readable GEO files publicly cached but out of the main search sitemap", () => {
     const sitemap = read("src/app/sitemap.ts");
     const nextConfig = read("next.config.ts");
 
     for (const path of ["/llms.txt", "/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md"]) {
-      expect(sitemap).toContain(`"${path}"`);
+      expect(sitemap).not.toContain(`"${path}"`);
       expect(nextConfig).toContain(`source: "${path}"`);
     }
 

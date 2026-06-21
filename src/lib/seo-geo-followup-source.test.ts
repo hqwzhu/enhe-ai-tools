@@ -7,13 +7,13 @@ function read(path: string) {
 }
 
 describe("SEO and GEO follow-up source contracts", () => {
-  it("keeps homepage orange CTA buttons contrast-safe while preserving the accent background", () => {
+  it("keeps homepage orange CTA buttons aligned with the updated white-label visual system", () => {
     const css = read("src/app/globals.css");
     const accentCta = css.match(/\.home-hero-cta-accent\s*\{[\s\S]*?\}/)?.[0] ?? "";
 
     expect(accentCta).toContain("background: var(--marketing-accent)");
-    expect(accentCta).toContain("color: #211410");
-    expect(accentCta).not.toContain("color: #ffffff");
+    expect(accentCta).toContain("color: #ffffff");
+    expect(accentCta).not.toContain("color: #211410");
   });
 
   it("adds public cache headers for AI Trends canonical listing pages", () => {

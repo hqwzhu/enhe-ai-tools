@@ -116,4 +116,33 @@ describe("homepage SaaS redesign source", () => {
 
     expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.448em;");
   });
+
+  it("polishes the hero label, CTA contrast, and footer while preserving SEO and GEO source contracts", () => {
+    const footer = readFileSync(new URL("../components/site-footer.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+    const publicChrome = readFileSync(new URL("../components/public-site-chrome.tsx", import.meta.url), "utf8");
+
+    expect(css).toContain(".home-hero-eyebrow {\n  display: inline-flex;");
+    expect(css).toContain("border: 1px solid rgba(255, 255, 255, 0.24)");
+    expect(css).toContain("backdrop-filter: blur(18px) saturate(150%)");
+    expect(css).toContain(".home-hero-cta-primary {\n  background: #ffffff");
+    expect(css).toContain("color: #050505");
+    expect(css).toContain(".home-hero-cta-accent {\n  background: var(--marketing-accent)");
+    expect(css).toContain("color: #ffffff");
+
+    expect(footer).toContain("footerGroups");
+    expect(footer).toContain("footerSocialLinks");
+    expect(footer).toContain('label: "Gmail"');
+    expect(footer).toContain('label: "小红书"');
+    expect(footer).toContain('label: "抖音"');
+    expect(footer).toContain('label: "YouTube"');
+    expect(footer).toContain("site-footer-gradient-mark");
+    expect(footer).toContain("buildLocalePath");
+    expect(footer).toContain("legalPages.map");
+
+    expect(page).toContain("generateHomePageMetadata");
+    expect(publicChrome).toContain("buildWebsiteSchema");
+    expect(publicChrome).toContain("buildOrganizationSchema");
+  });
 });

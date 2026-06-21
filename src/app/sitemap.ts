@@ -2,22 +2,12 @@ import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import { prisma } from "@/lib/db";
 import { buildCanonicalToolPath, getCanonicalAiNewsSlug } from "@/lib/public-slugs";
-import { absoluteUrl, buildLanguageAlternates } from "@/lib/seo";
+import { absoluteUrl, buildLanguageAlternates, buildLocalePath, stripLocalePrefix } from "@/lib/seo";
 import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
 const aiTrendTopicPaths = ["/ai-trends", "/en/ai-trends"] as const;
-const geoMachineReadableRoutes = [
-  "/llms.txt",
-  "/pricing.md",
-  "/okf/index.md",
-  "/okf/enhe-ai-overview.md",
-  "/okf/ai-news/index.md",
-  "/okf/software/index.md",
-  "/okf/account-services/index.md",
-  "/okf/skill-learning/index.md"
-] as const;
 
 const staticRoutes = [
   "/",
@@ -83,21 +73,24 @@ function getPriority(path: string) {
   return 0.7;
 }
 
-function getMachineReadablePriority(path: string) {
-  if (path === "/llms.txt") return 0.68;
-  if (path === "/okf/index.md") return 0.66;
-  return 0.64;
-}
-
 function getCanonicalSourcePath(path: string) {
   return path.startsWith("/en/") ? path.slice(3) : path === "/en" ? "/" : path;
+}
+
+function buildAvailableLanguageAlternates(path: string, locales: Array<"zh" | "en">) {
+  const canonicalSourcePath = stripLocalePrefix(path);
+  return {
+    "x-default": absoluteUrl(canonicalSourcePath),
+    ...(locales.includes("zh") ? { "zh-CN": absoluteUrl(buildLocalePath(canonicalSourcePath, "zh")) } : {}),
+    ...(locales.includes("en") ? { "en-US": absoluteUrl(buildLocalePath(canonicalSourcePath, "en")) } : {})
+  };
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const tools = await prisma.tool
     .findMany({
       where: { status: "published" },
-      select: { slug: true, name: true, englishName: true, updatedAt: true, type: true }
+      select: { slug: true, name: true, englishName: true, shortDescription: true, content: true, updatedAt: true, type: true }
     })
     .catch(() => []);
   const newsArticles = await prisma.newsArticle
@@ -126,24 +119,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.76
     })),
-    ...geoMachineReadableRoutes.map((path) => ({
-      url: absoluteUrl(path),
-      lastModified: new Date("2026-06-21T00:00:00.000Z"),
-      changeFrequency: "weekly" as const,
-      priority: getMachineReadablePriority(path)
-    })),
     ...tools.flatMap((tool) => {
       const canonicalPath = buildCanonicalToolPath(tool, "zh");
+      const hasEnglishPage = shouldIndexEnglishToolPage(tool);
       const localizedRoutes = [
         canonicalPath,
-        ...(shouldIndexEnglishToolPage(tool) ? [buildCanonicalToolPath(tool, "en")] : [])
+        ...(hasEnglishPage ? [buildCanonicalToolPath(tool, "en")] : [])
       ];
 
       return localizedRoutes.map((path) => ({
         url: absoluteUrl(path),
         lastModified: tool.updatedAt,
         alternates: {
-          languages: buildLanguageAlternates(canonicalPath)
+          languages: buildAvailableLanguageAlternates(canonicalPath, hasEnglishPage ? ["zh", "en"] : ["zh"])
         },
         changeFrequency: "weekly" as const,
         priority: tool.type === "software" ? 0.85 : 0.8
@@ -151,16 +139,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     ...newsArticles.flatMap((newsArticle) => {
       const canonicalSlug = getCanonicalAiNewsSlug(newsArticle);
+      const hasEnglishPage = isEnglishNewsArticleIndexable(newsArticle);
       const routes = [
         { path: `/ai-news/${canonicalSlug}`, priority: 0.78 },
-        ...(isEnglishNewsArticleIndexable(newsArticle) ? [{ path: `/en/ai-news/${canonicalSlug}`, priority: 0.72 }] : [])
+        ...(hasEnglishPage ? [{ path: `/en/ai-news/${canonicalSlug}`, priority: 0.72 }] : [])
       ];
 
       return routes.map((route) => ({
         url: absoluteUrl(route.path),
         lastModified: newsArticle.updatedAt,
         alternates: {
-          languages: buildLanguageAlternates(`/ai-news/${canonicalSlug}`)
+          languages: buildAvailableLanguageAlternates(`/ai-news/${canonicalSlug}`, hasEnglishPage ? ["zh", "en"] : ["zh"])
         },
         changeFrequency: "weekly" as const,
         priority: route.priority

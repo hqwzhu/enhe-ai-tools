@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Mail, Music2, NotebookText, Youtube, type LucideIcon } from "lucide-react";
 import { PrefetchLink } from "@/components/prefetch-link";
 import { Container } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
@@ -17,6 +18,13 @@ const companyContact = {
   email: "ENHEAI.life@protonmail.com",
   emailHref: "mailto:ENHEAI.life@protonmail.com"
 };
+
+const footerSocialLinks: { label: string; href?: string; icon: LucideIcon }[] = [
+  { label: "Gmail", href: companyContact.emailHref, icon: Mail },
+  { label: "小红书", icon: NotebookText },
+  { label: "抖音", icon: Music2 },
+  { label: "YouTube", icon: Youtube }
+];
 
 export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
   const [locale, settings] = await Promise.all([forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(), getSettingsMap()]);
@@ -41,70 +49,141 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
         };
   const companyName = locale === "en" ? companyContact.englishName : companyContact.name;
   const companyAddress = locale === "en" ? companyContact.englishAddress : companyContact.address;
+  const footerGroups = [
+    {
+      title: locale === "en" ? "Explore" : "平台入口",
+      links: [
+        { label: t.nav.home, href: buildLocalePath("/", locale) },
+        { label: t.nav.aiNews, href: buildLocalePath("/ai-news", locale) },
+        { label: t.nav.software, href: buildLocalePath("/software", locale) },
+        { label: t.nav.onlineTools, href: buildLocalePath("/account-services", locale) },
+        { label: t.nav.skillLearning, href: buildLocalePath("/skill-learning", locale) }
+      ]
+    },
+    {
+      title: locale === "en" ? "Resources" : "资源支持",
+      links: [
+        { label: t.nav.updates, href: buildLocalePath("/#updates", locale) },
+        { label: t.nav.aiTrends, href: buildLocalePath("/ai-trends", locale) },
+        { label: t.nav.pricing, href: buildLocalePath("/pricing", locale) },
+        { label: t.nav.tutorials, href: buildLocalePath("/tutorials", locale) },
+        { label: t.footer.helpSupport, href: buildLocalePath("/legal/user-agreement", locale) }
+      ]
+    },
+    {
+      title: locale === "en" ? "Security & Legal" : "合规条款",
+      links: legalPages.map((page) => ({
+        label: t.footer.legal[page.slug as keyof typeof t.footer.legal],
+        href: buildLocalePath(`/legal/${page.slug}`, locale)
+      }))
+    }
+  ];
 
   return (
-    <footer className="border-t border-white/14 py-10 text-sm text-[var(--marketing-muted)]">
-      <Container>
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <p className="font-semibold text-[var(--marketing-text)]">{siteName}</p>
-            <p className="mt-2">{copyright}</p>
+    <footer className="site-footer">
+      <Container className="site-footer-inner">
+        <div className="site-footer-top">
+          <div className="site-footer-brand-block">
+            <div className="site-footer-brand-row">
+              <Image
+                src="/images/brand/enhe-icon-gradient-transparent-cropped.png"
+                alt={`${siteName} logo`}
+                width={48}
+                height={32}
+                className="site-footer-logo"
+                unoptimized
+              />
+              <p className="site-footer-brand-name">{siteName}</p>
+            </div>
+            <p className="site-footer-summary">
+              {locale === "en"
+                ? "AI software, account services, skill learning, and frontier AI insight in one ENHE AI hub."
+                : "汇集AI前沿资讯、AI软件应用、AI账号服务与AI技能学习，让用户从信息判断走向可执行成果。"}
+            </p>
+            <div className="site-footer-socials" aria-label={locale === "en" ? "ENHE AI social channels" : "ENHE AI 社交渠道"}>
+              {footerSocialLinks.map(({ label, href, icon: Icon }) =>
+                href ? (
+                  <a key={label} href={href} className="site-footer-social-link" aria-label={label}>
+                    <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+                  </a>
+                ) : (
+                  <span key={label} className="site-footer-social-link is-muted" role="img" aria-label={label}>
+                    <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+                  </span>
+                )
+              )}
+            </div>
           </div>
-          <div className="flex max-w-3xl flex-col gap-5 lg:items-end">
-            <nav className="flex flex-wrap gap-x-5 gap-y-3 lg:justify-end">
-              <PrefetchLink href={buildLocalePath("/legal/user-agreement", locale)} className="transition hover:text-[var(--marketing-accent)]">
-                {t.footer.helpSupport}
-              </PrefetchLink>
-              <PrefetchLink href={buildLocalePath("/#updates", locale)} className="transition hover:text-[var(--marketing-accent)]">
-                {t.nav.updates}
-              </PrefetchLink>
-              <PrefetchLink href={buildLocalePath("/ai-trends", locale)} className="transition hover:text-[var(--marketing-accent)]">
-                {t.nav.aiTrends}
-              </PrefetchLink>
-              {legalPages.map((page) => (
-                <PrefetchLink
-                  key={page.slug}
-                  href={buildLocalePath(`/legal/${page.slug}`, locale)}
-                  className="transition hover:text-[var(--marketing-accent)]"
-                >
-                  {t.footer.legal[page.slug as keyof typeof t.footer.legal]}
-                </PrefetchLink>
-              ))}
-            </nav>
-            <address className="grid gap-1 not-italic text-xs leading-6 text-[var(--marketing-muted)] lg:text-right">
-              <span>
-                {contactLabels.company}: {companyName}
-              </span>
-              <span>
-                {contactLabels.address}: {companyAddress}
-              </span>
-              <a href={companyContact.phoneHref} className="transition hover:text-[var(--marketing-accent)]">
-                {contactLabels.phone}: {companyContact.phone}
-              </a>
-              <a href={companyContact.emailHref} className="transition hover:text-[var(--marketing-accent)]">
-                {contactLabels.email}: {companyContact.email}
-              </a>
-            </address>
+
+          <div className="site-footer-newsletter" aria-label={locale === "en" ? "Contact ENHE AI" : "联系 ENHE AI"}>
+            <p className="site-footer-kicker">{locale === "en" ? "Contact" : "联系咨询"}</p>
+            <a href={companyContact.emailHref} className="site-footer-contact-button">
+              {companyContact.email}
+            </a>
           </div>
         </div>
-        <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/10 pt-5 text-xs text-[var(--marketing-muted)]">
-          <a
-            href="https://beian.mps.gov.cn/#/query/webSearch?code=35030302900035"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 transition hover:text-[var(--marketing-accent)]"
-          >
-            <Image src="/images/beian-icon.png" alt={filingCopy.publicSecurityAlt} width={18} height={20} unoptimized />
-            <span>{filingCopy.publicSecurity}</span>
-          </a>
-          <a
-            href="https://beian.miit.gov.cn/"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center transition hover:text-[var(--marketing-accent)]"
-          >
-            {filingCopy.icp}
-          </a>
+
+        <div className="site-footer-grid">
+          {footerGroups.map((group) => (
+            <nav key={group.title} className="site-footer-group" aria-label={group.title}>
+              <h2 className="site-footer-group-title">{group.title}</h2>
+              <ul className="site-footer-link-list">
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <PrefetchLink href={link.href} className="site-footer-link">
+                      {link.label}
+                    </PrefetchLink>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+
+          <address id="footer-contact" className="site-footer-contact not-italic">
+            <h2 className="site-footer-group-title">{locale === "en" ? "Company" : "公司信息"}</h2>
+            <span>
+              {contactLabels.company}: {companyName}
+            </span>
+            <span>
+              {contactLabels.address}: {companyAddress}
+            </span>
+            <a href={companyContact.phoneHref} className="site-footer-link">
+              {contactLabels.phone}: {companyContact.phone}
+            </a>
+            <a href={companyContact.emailHref} className="site-footer-link">
+              {contactLabels.email}: {companyContact.email}
+            </a>
+          </address>
+        </div>
+
+        <div className="site-footer-gradient-mark" aria-hidden="true">
+          <Image
+            src="/images/brand/enhe-icon-gradient-transparent-cropped.png"
+            alt=""
+            width={96}
+            height={64}
+            className="site-footer-gradient-icon"
+            unoptimized
+          />
+          <span className="site-footer-gradient-word">ENHE AI</span>
+        </div>
+
+        <div className="site-footer-bottom">
+          <p>{copyright}</p>
+          <div className="site-footer-filings">
+            <a
+              href="https://beian.mps.gov.cn/#/query/webSearch?code=35030302900035"
+              target="_blank"
+              rel="noreferrer"
+              className="site-footer-filing-link"
+            >
+              <Image src="/images/beian-icon.png" alt={filingCopy.publicSecurityAlt} width={18} height={20} unoptimized />
+              <span>{filingCopy.publicSecurity}</span>
+            </a>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" className="site-footer-filing-link">
+              {filingCopy.icp}
+            </a>
+          </div>
         </div>
       </Container>
     </footer>
