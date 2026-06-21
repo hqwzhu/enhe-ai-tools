@@ -12,11 +12,8 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("home-hero-shell");
     expect(page).toContain("home-hero-stage");
     expect(page).toContain("home-hero-centered");
-    expect(page).toContain('className="home-hero-background" aria-hidden="true"');
-    expect(page).toContain('className="home-hero-background-video" autoPlay muted loop playsInline preload="metadata"');
-    expect(page).toContain('poster="/images/home/hero-unicorn-remix-poster.jpg"');
-    expect(page).toContain('src="/videos/home-hero-unicorn-remix.webm" type="video/webm"');
-    expect(page).toContain('src="/videos/home-hero-unicorn-remix.mp4" type="video/mp4"');
+    expect(page).not.toContain("home-hero-background");
+    expect(page).not.toContain("home-hero-unicorn-remix");
     expect(page).toContain('id="updates" className="home-featured-shell"');
     expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-hero-actions"));
     expect(page).toContain("t.home.eyebrow");
@@ -150,10 +147,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("generateHomePageMetadata");
     expect(publicChrome).toContain("buildWebsiteSchema");
     expect(publicChrome).toContain("buildOrganizationSchema");
-    expect(css).toContain(".home-hero-background");
-    expect(css).toContain("pointer-events: none");
-    expect(css).toContain(".home-hero-background-video");
-    expect(css).toContain("object-fit: cover");
-    expect(css).toContain(".home-hero-background-video {\n    display: none;");
+    expect(css).not.toContain(".home-hero-background");
+    expect(css).not.toContain("home-hero-unicorn-remix");
   });
 });

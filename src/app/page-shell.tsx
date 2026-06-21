@@ -31,12 +31,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   return (
     <main className="home-page-shell">
       <section className="home-hero-shell">
-        <div className="home-hero-background" aria-hidden="true">
-          <video className="home-hero-background-video" autoPlay muted loop playsInline preload="metadata" poster="/images/home/hero-unicorn-remix-poster.jpg">
-            <source src="/videos/home-hero-unicorn-remix.webm" type="video/webm" />
-            <source src="/videos/home-hero-unicorn-remix.mp4" type="video/mp4" />
-          </video>
-        </div>
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
             <div className="home-hero-centered">
