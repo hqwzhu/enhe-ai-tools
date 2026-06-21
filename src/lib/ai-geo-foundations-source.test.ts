@@ -41,12 +41,29 @@ describe("AI GEO foundations", () => {
   it("allows AI answer-engine crawlers while keeping private surfaces blocked", () => {
     const robots = read("src/app/robots.ts");
 
-    for (const bot of ["GPTBot", "ChatGPT-User", "PerplexityBot", "ClaudeBot", "anthropic-ai", "Google-Extended", "Bingbot"]) {
-      expect(robots).toContain(`userAgent: "${bot}"`);
+    for (const bot of [
+      "GPTBot",
+      "OAI-SearchBot",
+      "ChatGPT-User",
+      "PerplexityBot",
+      "ClaudeBot",
+      "anthropic-ai",
+      "Googlebot",
+      "GoogleOther",
+      "Google-Extended",
+      "Bingbot",
+      "Applebot",
+      "Baiduspider",
+      "Bytespider",
+      "Doubaobot",
+    ]) {
+      expect(robots).toContain(`"${bot}"`);
     }
 
     expect(robots).toContain('allow: ["/"]');
-    expect(robots).toContain('disallow: ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"]');
+    for (const privatePath of ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"]) {
+      expect(robots).toContain(`"${privatePath}"`);
+    }
   });
 
   it("adds answer-style GEO sections and internal links to core listing pages", () => {
@@ -58,13 +75,19 @@ describe("AI GEO foundations", () => {
 
     expect(software).toContain("softwareGeoSections");
     expect(software).toContain("如何选择AI软件应用");
-    expect(software).toContain('buildLocalePath("/skill-learning", forceLocale)');
+    expect(software).toContain(
+      'buildLocalePath("/skill-learning", forceLocale)',
+    );
     expect(software).toContain('buildLocalePath("/ai-news", forceLocale)');
 
     expect(accountServices).toContain("accountServicesGeoSections");
     expect(accountServices).toContain("AI账号服务如何合规使用");
-    expect(accountServices).toContain('buildLocalePath("/software", forceLocale)');
-    expect(accountServices).toContain('buildLocalePath("/skill-learning", forceLocale)');
+    expect(accountServices).toContain(
+      'buildLocalePath("/software", forceLocale)',
+    );
+    expect(accountServices).toContain(
+      'buildLocalePath("/skill-learning", forceLocale)',
+    );
 
     expect(aiNews).toContain("aiNewsGeoSections");
     expect(aiNews).toContain("AI资讯对用户有什么用");
@@ -74,7 +97,9 @@ describe("AI GEO foundations", () => {
     expect(aiTrends).toContain("aiTrendsGeoSections");
     expect(aiTrends).toContain("如何用趋势判断下一步行动");
     expect(aiTrends).toContain('buildLocalePath("/ai-news", forceLocale)');
-    expect(aiTrends).toContain('buildLocalePath("/skill-learning", forceLocale)');
+    expect(aiTrends).toContain(
+      'buildLocalePath("/skill-learning", forceLocale)',
+    );
 
     expect(skillLearning).toContain("skillLearningOutcomeSections");
     expect(skillLearning).toContain("skillLearningFaqItems");
@@ -86,7 +111,12 @@ describe("AI GEO foundations", () => {
     const sitemap = read("src/app/sitemap.ts");
     const nextConfig = read("next.config.ts");
 
-    for (const path of ["/llms.txt", "/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md"]) {
+    for (const path of [
+      "/llms.txt",
+      "/pricing.md",
+      "/okf/index.md",
+      "/okf/enhe-ai-overview.md",
+    ]) {
       expect(sitemap).not.toContain(`"${path}"`);
       expect(nextConfig).toContain(`source: "${path}"`);
     }

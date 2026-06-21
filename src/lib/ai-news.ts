@@ -18,13 +18,19 @@ export type NewsTocItem = {
   title: string;
 };
 
-export type NewsInlinePart = { type: "text"; text: string } | { type: "link"; href: string; text: string };
+export type NewsInlinePart =
+  | { type: "text"; text: string }
+  | { type: "link"; href: string; text: string };
 
 export type NewsContentBlock =
   | { type: "heading"; level: 2 | 3; id: string; text: string }
   | { type: "paragraph"; text?: string; parts?: NewsInlinePart[] }
   | { type: "image"; src: string; alt: string; caption?: string }
-  | { type: "list"; ordered: boolean; items: Array<string | { parts: NewsInlinePart[] }> }
+  | {
+      type: "list";
+      ordered: boolean;
+      items: Array<string | { parts: NewsInlinePart[] }>;
+    }
   | { type: "quote"; text: string }
   | { type: "code"; language?: string; code: string };
 
@@ -33,7 +39,7 @@ const newsPageSize = 9;
 export function resolveNewsSlug({
   title,
   slugInput,
-  fallbackSeed
+  fallbackSeed,
 }: {
   title: string;
   slugInput?: string | null;
@@ -51,7 +57,7 @@ export function resolveNewsSlug({
 export function resolveAiNewsCanonicalSlug({
   slug,
   title,
-  englishTitle
+  englishTitle,
 }: {
   slug: string;
   title: string;
@@ -80,9 +86,14 @@ function normalizeStringParam(value: string | undefined) {
   return text || undefined;
 }
 
-export function parseNewsSearchParams(params: Record<string, string | undefined>): NewsSearchFilters {
+export function parseNewsSearchParams(
+  params: Record<string, string | undefined>,
+): NewsSearchFilters {
   const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
-  const sort = params.sort === "hot" || params.sort === "featured" ? params.sort : "latest";
+  const sort =
+    params.sort === "hot" || params.sort === "featured"
+      ? params.sort
+      : "latest";
 
   return {
     q: normalizeStringParam(params.q),
@@ -91,7 +102,7 @@ export function parseNewsSearchParams(params: Record<string, string | undefined>
     sort,
     page,
     pageSize: newsPageSize,
-    skip: (page - 1) * newsPageSize
+    skip: (page - 1) * newsPageSize,
   };
 }
 
@@ -119,7 +130,7 @@ export function extractNewsTableOfContents(content: string): NewsTocItem[] {
       return {
         id: `section-${count}`,
         level: match[1] === "###" ? 3 : 2,
-        title: stripHeadingPrefix(line)
+        title: stripHeadingPrefix(line),
       } satisfies NewsTocItem;
     })
     .filter((item): item is NewsTocItem => Boolean(item));
@@ -131,7 +142,11 @@ function pushParagraph(lines: string[], blocks: NewsContentBlock[]) {
   lines.length = 0;
 }
 
-function pushList(items: string[], ordered: boolean, blocks: NewsContentBlock[]) {
+function pushList(
+  items: string[],
+  ordered: boolean,
+  blocks: NewsContentBlock[],
+) {
   if (!items.length) return;
   blocks.push({ type: "list", ordered, items: items.map(inlineListItem) });
   items.length = 0;
@@ -154,7 +169,7 @@ function parseMarkdownImage(line: string) {
     type: "image" as const,
     src,
     alt,
-    ...(caption ? { caption: escapeNewsText(caption) } : {})
+    ...(caption ? { caption: escapeNewsText(caption) } : {}),
   };
 }
 
@@ -197,14 +212,20 @@ function hasInlineLink(parts: NewsInlinePart[]) {
   return parts.some((part) => part.type === "link");
 }
 
-function inlineTextBlock(value: string): Extract<NewsContentBlock, { type: "paragraph" }> {
+function inlineTextBlock(
+  value: string,
+): Extract<NewsContentBlock, { type: "paragraph" }> {
   const parts = parseInlineParts(value);
-  return hasInlineLink(parts) ? { type: "paragraph", parts } : { type: "paragraph", text: parts.map((part) => part.text).join("") };
+  return hasInlineLink(parts)
+    ? { type: "paragraph", parts }
+    : { type: "paragraph", text: parts.map((part) => part.text).join("") };
 }
 
 function inlineListItem(value: string): string | { parts: NewsInlinePart[] } {
   const parts = parseInlineParts(value);
-  return hasInlineLink(parts) ? { parts } : parts.map((part) => part.text).join("");
+  return hasInlineLink(parts)
+    ? { parts }
+    : parts.map((part) => part.text).join("");
 }
 
 export function renderNewsContentBlocks(content: string): NewsContentBlock[] {
@@ -222,7 +243,11 @@ export function renderNewsContentBlocks(content: string): NewsContentBlock[] {
     const codeFence = line.match(/^```(.*)$/);
     if (codeFence) {
       if (inCode) {
-        blocks.push({ type: "code", language: codeLanguage || undefined, code: codeLines.join("\n") });
+        blocks.push({
+          type: "code",
+          language: codeLanguage || undefined,
+          code: codeLines.join("\n"),
+        });
         codeLines.length = 0;
         codeLanguage = "";
         inCode = false;
@@ -255,7 +280,7 @@ export function renderNewsContentBlocks(content: string): NewsContentBlock[] {
         type: "heading",
         level: heading[1] === "###" ? 3 : 2,
         id: `section-${headingCount}`,
-        text: escapeNewsText(stripHeadingPrefix(line))
+        text: escapeNewsText(stripHeadingPrefix(line)),
       });
       continue;
     }
@@ -294,7 +319,11 @@ export function renderNewsContentBlocks(content: string): NewsContentBlock[] {
   }
 
   if (inCode) {
-    blocks.push({ type: "code", language: codeLanguage || undefined, code: codeLines.join("\n") });
+    blocks.push({
+      type: "code",
+      language: codeLanguage || undefined,
+      code: codeLines.join("\n"),
+    });
   }
   pushParagraph(paragraphLines, blocks);
   pushList(listItems, currentListOrdered, blocks);
@@ -302,16 +331,45 @@ export function renderNewsContentBlocks(content: string): NewsContentBlock[] {
   return blocks;
 }
 
+const cjkTextPattern = /[\u3400-\u9fff]/;
+const englishWordPattern = /[A-Za-z][A-Za-z0-9'+-]*/g;
+
+function normalizeEnglishCandidate(value: string | null | undefined) {
+  return String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function countEnglishWords(value: string) {
+  return value.match(englishWordPattern)?.length ?? 0;
+}
+
+export function isUsableEnglishNewsText(
+  value: string | null | undefined,
+  minimumWords: number,
+) {
+  const normalized = normalizeEnglishCandidate(value);
+  if (!normalized || cjkTextPattern.test(normalized)) return false;
+  return countEnglishWords(normalized) >= minimumWords;
+}
+
 export function isEnglishNewsArticleIndexable(article: {
   englishTitle?: string | null;
   englishSummary?: string | null;
   englishContent?: string | null;
 }) {
-  const title = String(article.englishTitle ?? "").trim();
-  const summary = String(article.englishSummary ?? "").trim();
-  const content = String(article.englishContent ?? "").replace(/\s+/g, " ").trim();
+  const title = normalizeEnglishCandidate(article.englishTitle);
+  const summary = normalizeEnglishCandidate(article.englishSummary);
+  const content = normalizeEnglishCandidate(article.englishContent);
 
-  return title.length >= 12 && summary.length >= 24 && content.length >= 180;
+  return (
+    title.length >= 12 &&
+    summary.length >= 24 &&
+    content.length >= 180 &&
+    isUsableEnglishNewsText(title, 3) &&
+    isUsableEnglishNewsText(summary, 8) &&
+    isUsableEnglishNewsText(content, 45)
+  );
 }
 
 function looksLikeDateOnlyDescription(value: string) {
@@ -326,7 +384,8 @@ function looksLikeDateOnlyDescription(value: string) {
 function looksLikeGenericAiNewsDescription(value: string) {
   const text = value.toLowerCase().replace(/\s+/g, " ").trim();
   return (
-    text === "live in symbiosis with ai, awaken in this era, and define the future through creation." ||
+    text ===
+      "live in symbiosis with ai, awaken in this era, and define the future through creation." ||
     text.includes("live in symbiosis with ai, awaken in this era") ||
     text.includes("define the future through creation")
   );
@@ -347,20 +406,31 @@ function normalizeAiNewsMetaCandidate(value: string | null | undefined) {
 export function resolveAiNewsMetaDescription(
   candidates: Array<string | null | undefined>,
   fallback: string,
-  minLength = 24
+  minLength = 24,
 ) {
   const validCandidate = candidates
     .map((candidate) => normalizeAiNewsMetaCandidate(candidate))
-    .find((candidate) => candidate.length >= minLength && !looksLikeDateOnlyDescription(candidate) && !looksLikeGenericAiNewsDescription(candidate));
+    .find(
+      (candidate) =>
+        candidate.length >= minLength &&
+        !looksLikeDateOnlyDescription(candidate) &&
+        !looksLikeGenericAiNewsDescription(candidate),
+    );
   const normalizedFallback = normalizeAiNewsMetaCandidate(fallback);
 
-  return validCandidate || (looksLikeDateOnlyDescription(normalizedFallback) || looksLikeGenericAiNewsDescription(normalizedFallback) ? "" : normalizedFallback);
+  return (
+    validCandidate ||
+    (looksLikeDateOnlyDescription(normalizedFallback) ||
+    looksLikeGenericAiNewsDescription(normalizedFallback)
+      ? ""
+      : normalizedFallback)
+  );
 }
 
 export function buildAiNewsDescriptionFallback({
   title,
   categoryName,
-  locale
+  locale,
 }: {
   title: string;
   categoryName?: string | null;
@@ -370,7 +440,9 @@ export function buildAiNewsDescriptionFallback({
   const normalizedCategory = normalizeAiNewsMetaCandidate(categoryName);
 
   if (locale === "en") {
-    const topic = normalizedCategory ? `${normalizedCategory} topic` : "AI trend";
+    const topic = normalizedCategory
+      ? `${normalizedCategory} topic`
+      : "AI trend";
     return `Read ENHE AI's analysis of ${normalizedTitle || topic}, including the key facts, practical impact, related tools, tutorials, and next steps for AI workflows.`;
   }
 
@@ -391,13 +463,22 @@ export function parseNewsRelationIds(value: string | null | undefined) {
     });
 }
 
-const genericRelatedKeywordSet = new Set(["ai", "ai资讯", "ai快讯", "自动发布", "ai前沿", "enhe", "恩禾", "恩禾enhe ai"]);
+const genericRelatedKeywordSet = new Set([
+  "ai",
+  "ai资讯",
+  "ai快讯",
+  "自动发布",
+  "ai前沿",
+  "enhe",
+  "恩禾",
+  "恩禾enhe ai",
+]);
 
 export function buildAiNewsRelatedKeywords({
   keywords,
   seoKeywords,
   categoryName,
-  tagNames
+  tagNames,
 }: {
   title?: string | null;
   keywords?: string | null;
@@ -406,7 +487,12 @@ export function buildAiNewsRelatedKeywords({
   tagNames?: string[];
 }) {
   const seen = new Set<string>();
-  return [...(tagNames ?? []), keywords ?? "", seoKeywords ?? "", categoryName ?? ""]
+  return [
+    ...(tagNames ?? []),
+    keywords ?? "",
+    seoKeywords ?? "",
+    categoryName ?? "",
+  ]
     .flatMap((value) => String(value).split(/[,\n，、|]/))
     .map((item) => item.trim())
     .filter((item) => item.length >= 3)
@@ -419,7 +505,10 @@ export function buildAiNewsRelatedKeywords({
     .slice(0, 8);
 }
 
-export function mergeAiNewsRelatedItems<T extends { id: string }>(groups: T[][], limit: number) {
+export function mergeAiNewsRelatedItems<T extends { id: string }>(
+  groups: T[][],
+  limit: number,
+) {
   const seen = new Set<string>();
   const merged: T[] = [];
 
@@ -441,7 +530,7 @@ export function resolveNewsVideo(
     videoTitle?: string | null;
     videoDescription?: string | null;
   },
-  fallbackTitle: string
+  fallbackTitle: string,
 ) {
   const url = String(article.videoUrl ?? "").trim();
   if (!isHttpNewsMediaUrl(url)) return null;
@@ -451,10 +540,12 @@ export function resolveNewsVideo(
   return {
     url,
     title,
-    ...(description ? { description } : {})
+    ...(description ? { description } : {}),
   };
 }
 
 export function toNewsIsoDate(value: Date | string) {
-  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+  return value instanceof Date
+    ? value.toISOString()
+    : new Date(value).toISOString();
 }

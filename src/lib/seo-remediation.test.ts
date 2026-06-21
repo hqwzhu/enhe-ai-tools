@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { buildAiNewsDescriptionFallback, resolveAiNewsMetaDescription } from "@/lib/ai-news";
+import {
+  buildAiNewsDescriptionFallback,
+  resolveAiNewsMetaDescription,
+} from "@/lib/ai-news";
 import {
   buildHomeMetaDescription,
   buildToolMetaDescription,
   buildToolMetadataTitle,
-  sanitizeAccountServiceCopy
+  sanitizeAccountServiceCopy,
 } from "@/lib/seo";
 import {
   buildLocalizedToolFaqItems,
@@ -15,14 +18,14 @@ import {
   buildLocalizedToolPreviewText,
   resolveLocalizedToolCategoryName,
   buildLocalizedToolSummary,
-  resolveLocalizedToolIdentity
+  resolveLocalizedToolIdentity,
 } from "@/lib/tool-localization";
 
 describe("SEO remediation helpers", () => {
   it("does not fall back to the generic ENHE brand sentence for AI news descriptions", () => {
     const description = resolveAiNewsMetaDescription(
       [null, "", "2026-06-19"],
-      "OpenAI workspace agents connect ChatGPT with team workflows, showing how AI agents can move from chat into practical execution."
+      "OpenAI workspace agents connect ChatGPT with team workflows, showing how AI agents can move from chat into practical execution.",
     );
 
     expect(description).toContain("OpenAI workspace agents");
@@ -31,8 +34,10 @@ describe("SEO remediation helpers", () => {
 
   it("skips generic brand-slogan candidates when resolving AI news descriptions", () => {
     const description = resolveAiNewsMetaDescription(
-      ["Live in symbiosis with AI, awaken in this era, and define the future through creation."],
-      "OpenAI workspace agents connect ChatGPT with team workflows, showing how AI agents can move from chat into practical execution."
+      [
+        "Live in symbiosis with AI, awaken in this era, and define the future through creation.",
+      ],
+      "OpenAI workspace agents connect ChatGPT with team workflows, showing how AI agents can move from chat into practical execution.",
     );
 
     expect(description).toContain("OpenAI workspace agents");
@@ -43,11 +48,13 @@ describe("SEO remediation helpers", () => {
     const fallback = buildAiNewsDescriptionFallback({
       title: "OpenAI workspace agents connect ChatGPT with team workflows",
       categoryName: "AI Agent",
-      locale: "en"
+      locale: "en",
     });
     const description = resolveAiNewsMetaDescription(
-      ["Live in symbiosis with AI, awaken in this era, and define the future through creation."],
-      fallback
+      [
+        "Live in symbiosis with AI, awaken in this era, and define the future through creation.",
+      ],
+      fallback,
     );
 
     expect(description).toContain("OpenAI workspace agents");
@@ -58,9 +65,12 @@ describe("SEO remediation helpers", () => {
     const fallback = buildAiNewsDescriptionFallback({
       title: "OpenAI workspace agents connect ChatGPT with team workflows",
       categoryName: "AI Agent",
-      locale: "en"
+      locale: "en",
     });
-    const description = resolveAiNewsMetaDescription([null, "", "2026-06-19"], fallback);
+    const description = resolveAiNewsMetaDescription(
+      [null, "", "2026-06-19"],
+      fallback,
+    );
 
     expect(description).toContain("OpenAI workspace agents");
     expect(description).toContain("ENHE AI");
@@ -80,10 +90,18 @@ describe("SEO remediation helpers", () => {
   });
 
   it("sanitizes account-service compliance risk copy before rendering or using it in metadata", () => {
-    const unsafe = "提供账号 + 密码，低价稳定，永久可用，目前无封号、无掉订阅反馈，可充值。";
+    const unsafe =
+      "提供账号 + 密码，低价稳定，永久可用，目前无封号、无掉订阅反馈，可充值。";
     const safe = sanitizeAccountServiceCopy(unsafe);
 
-    for (const risky of ["账号 + 密码", "低价稳定", "永久可用", "无封号", "掉订阅", "充值"]) {
+    for (const risky of [
+      "账号 + 密码",
+      "低价稳定",
+      "永久可用",
+      "无封号",
+      "掉订阅",
+      "充值",
+    ]) {
       expect(safe).not.toContain(risky);
     }
     expect(safe).toContain("AI工具订阅与账号使用支持");
@@ -98,7 +116,7 @@ describe("SEO remediation helpers", () => {
       shortDescription: "提供账号 + 密码，低价稳定，目前无封号、无掉订阅反馈。",
       content: "这是一个共享账号服务，承诺永久可用，可充值。",
       type: "online" as const,
-      categoryName: "AI账号服务"
+      categoryName: "AI账号服务",
     };
 
     const outputs = [
@@ -111,13 +129,21 @@ describe("SEO remediation helpers", () => {
         englishName: tool.englishName,
         description: buildLocalizedToolMetaDescription(tool, "zh"),
         type: "online",
-        locale: "zh"
-      })
+        locale: "zh",
+      }),
     ];
 
     for (const output of outputs) {
       expect(output).toContain("AI工具订阅与账号使用支持");
-      for (const risky of ["账号 + 密码", "低价稳定", "共享账号", "永久可用", "无封号", "掉订阅", "充值"]) {
+      for (const risky of [
+        "账号 + 密码",
+        "低价稳定",
+        "共享账号",
+        "永久可用",
+        "无封号",
+        "掉订阅",
+        "充值",
+      ]) {
         expect(output).not.toContain(risky);
       }
     }
@@ -127,16 +153,22 @@ describe("SEO remediation helpers", () => {
     const tool = {
       slug: "chatgpt-plus-100",
       name: "ChatGPT Plus 官方代充稳定不封号 100% 低价稳定",
-      englishName: "Subscription Recharge Service - Legitimate Channel, Warranty Included, Stable Membership Access",
+      englishName:
+        "Subscription Recharge Service - Legitimate Channel, Warranty Included, Stable Membership Access",
       shortDescription: "提供账号 + 密码，低价稳定，目前无封号、无掉订阅反馈。",
       content: "这是一个共享账号服务，承诺永久可用，可充值。",
       type: "online" as const,
-      categoryName: "AI账号服务"
+      categoryName: "AI账号服务",
     };
 
     const identity = resolveLocalizedToolIdentity(tool, "zh");
     const heading = buildLocalizedToolMetaHeading(tool, "zh");
-    const offerName = buildLocalizedToolOfferName("官方代充充值套餐，保证不封号", "online", "zh", 0);
+    const offerName = buildLocalizedToolOfferName(
+      "官方代充充值套餐，保证不封号",
+      "online",
+      "zh",
+      0,
+    );
 
     expect(identity.primaryName).toBe("ChatGPT Plus AI账号服务咨询");
     expect(identity.secondaryName).toBe("");
@@ -144,7 +176,14 @@ describe("SEO remediation helpers", () => {
     expect(offerName).toBe("AI账号服务咨询方案 1");
 
     for (const output of [identity.primaryName, heading, offerName]) {
-      for (const risky of ["官方代充", "代充", "充值", "不封号", "低价稳定", "Recharge"]) {
+      for (const risky of [
+        "官方代充",
+        "代充",
+        "充值",
+        "不封号",
+        "低价稳定",
+        "Recharge",
+      ]) {
         expect(output).not.toContain(risky);
       }
     }
@@ -158,11 +197,15 @@ describe("SEO remediation helpers", () => {
       shortDescription: "AI工具订阅与账号使用支持。",
       content: "AI工具订阅与账号使用支持。",
       type: "online" as const,
-      categoryName: "账号代充服务"
+      categoryName: "账号代充服务",
     };
 
     const identity = resolveLocalizedToolIdentity(tool, "zh");
-    const category = resolveLocalizedToolCategoryName(tool.categoryName, tool.type, "zh");
+    const category = resolveLocalizedToolCategoryName(
+      tool.categoryName,
+      tool.type,
+      "zh",
+    );
 
     expect(identity.primaryName).toBe("Gemini Pro AI账号服务咨询");
     expect(identity.secondaryName).toBe("Gemini Pro");
@@ -170,6 +213,37 @@ describe("SEO remediation helpers", () => {
 
     for (const output of [identity.primaryName, category]) {
       for (const risky of ["质保", "成品号", "学生", "非学生", "代充"]) {
+        expect(output).not.toContain(risky);
+      }
+    }
+  });
+
+  it("sanitizes visible account-service titles with official, exclusive, and stability claims", () => {
+    const outputs = [
+      resolveLocalizedToolIdentity(
+        {
+          slug: "gmail-google",
+          name: "Gmail 邮箱 | 稳定收发邮件 | 支持Google生态通用",
+          englishName: null,
+          type: "online",
+        },
+        "zh",
+      ).primaryName,
+      resolveLocalizedToolIdentity(
+        {
+          slug: "gemini-pro",
+          name: "官方Gemini Pro（Google AI Pro）独享账号 | 3个月",
+          englishName: null,
+          type: "online",
+        },
+        "zh",
+      ).primaryName,
+      resolveLocalizedToolCategoryName("官方账号与稳定服务", "online", "zh"),
+    ];
+
+    for (const output of outputs) {
+      expect(output).toContain("AI");
+      for (const risky of ["官方", "独享", "稳定收发", "稳定"]) {
         expect(output).not.toContain(risky);
       }
     }
@@ -185,9 +259,9 @@ describe("SEO remediation helpers", () => {
         shortDescription: "AI工具订阅与账号使用支持。",
         content: "",
         type: "online",
-        categoryName: "AI账号服务"
+        categoryName: "AI账号服务",
       },
-      "zh"
+      "zh",
     );
 
     expect(faqs.length).toBeGreaterThanOrEqual(2);
@@ -201,8 +275,8 @@ describe("SEO remediation helpers", () => {
         {
           id: "faq-unsafe",
           question: "Service stability?",
-          answer: "Shared account, guaranteed no ban, recharge supported."
-        }
+          answer: "Shared account, guaranteed no ban, recharge supported.",
+        },
       ],
       {
         slug: "gemini-pro",
@@ -211,9 +285,9 @@ describe("SEO remediation helpers", () => {
         shortDescription: "AI account support.",
         content: "",
         type: "online",
-        categoryName: "AI account service"
+        categoryName: "AI account service",
       },
-      "zh"
+      "zh",
     );
 
     expect(faqs[0].answer).toContain("AI工具订阅与账号使用支持");
@@ -226,7 +300,7 @@ describe("SEO remediation helpers", () => {
     const title = buildToolMetadataTitle({
       name: "Mobile Chat Screenshot Maker No Code Required, Easy to Use Ultimate Version - AI Software App",
       brand: "ENHE AI",
-      locale: "en"
+      locale: "en",
     });
 
     expect(title.length).toBeLessThanOrEqual(62);

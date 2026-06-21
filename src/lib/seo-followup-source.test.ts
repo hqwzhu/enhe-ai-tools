@@ -18,7 +18,7 @@ describe("SEO follow-up source contracts", () => {
     expect(mobileNav).toContain("showAdmin");
     expect(header).toContain("HeaderSessionGate");
     expect(sessionGate).toContain('showAdmin={user?.role === "admin"}');
-    expect(adminNav).toContain('className="site-nav-link"');
+    expect(adminNav).toContain("site-nav-link");
     expect(accountControls).toContain("site-user-chip");
   });
 
@@ -41,5 +41,36 @@ describe("SEO follow-up source contracts", () => {
     expect(toolDetail).toContain("permanentRedirect(");
     expect(newsDetail).toContain("getCanonicalAiNewsSlug");
     expect(newsDetail).toContain("redirect(");
+  });
+
+  it("keeps public listing and tool detail content inside semantic main landmarks", () => {
+    const software = read("src/app/software/page-shell.tsx");
+    const accountServices = read("src/app/account-services/page-shell.tsx");
+    const skillLearning = read("src/app/skill-learning/page-shell.tsx");
+    const aiNews = read("src/app/ai-news/page-shell.tsx");
+    const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
+
+    for (const source of [
+      software,
+      accountServices,
+      skillLearning,
+      aiNews,
+      toolDetail,
+    ]) {
+      expect(source).toContain("<main");
+    }
+  });
+
+  it("only emits English AI news alternates when the English article is indexable", () => {
+    const newsDetail = read("src/app/ai-news/[slug]/page-shell.tsx");
+    const publicContent = read("src/lib/public-content.ts");
+
+    expect(newsDetail).toContain("hasIndexableEnglishPage");
+    expect(newsDetail).toContain("buildAvailableLanguageAlternates");
+    expect(newsDetail).toContain(
+      'hasIndexableEnglishPage ? ["zh", "en"] : ["zh"]',
+    );
+    expect(publicContent).toContain('filters.locale === "en"');
+    expect(publicContent).toContain("isEnglishNewsArticleIndexable");
   });
 });

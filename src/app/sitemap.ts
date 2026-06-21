@@ -1,8 +1,16 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import { prisma } from "@/lib/db";
-import { buildCanonicalToolPath, getCanonicalAiNewsSlug } from "@/lib/public-slugs";
-import { absoluteUrl, buildLocalePath, stripLocalePrefix } from "@/lib/seo";
+import {
+  buildCanonicalToolPath,
+  getCanonicalAiNewsSlug,
+} from "@/lib/public-slugs";
+import {
+  absoluteUrl,
+  buildLocalePath,
+  stripLocalePrefix,
+  buildAvailableLanguageAlternates as buildSeoAvailableLanguageAlternates,
+} from "@/lib/seo";
 import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +43,7 @@ const staticRoutes = [
   "/legal/copyright-complaint",
   "/en/legal/copyright-complaint",
   "/legal/minor-protection",
-  "/en/legal/minor-protection"
+  "/en/legal/minor-protection",
 ] as const;
 
 const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
@@ -64,7 +72,7 @@ const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
   "/legal/copyright-complaint": new Date("2026-06-17T00:00:00.000Z"),
   "/en/legal/copyright-complaint": new Date("2026-06-17T00:00:00.000Z"),
   "/legal/minor-protection": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/legal/minor-protection": new Date("2026-06-17T00:00:00.000Z")
+  "/en/legal/minor-protection": new Date("2026-06-17T00:00:00.000Z"),
 };
 
 function getPriority(path: string) {
@@ -86,30 +94,43 @@ function buildLanguageAlternates(path: string) {
   return {
     "x-default": absoluteSitemapUrl(canonicalSourcePath),
     "zh-CN": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "zh")),
-    "en-US": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "en"))
+    "en-US": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "en")),
   };
 }
 
-function buildAvailableLanguageAlternates(path: string, locales: Array<"zh" | "en">) {
-  const canonicalSourcePath = stripLocalePrefix(path);
-  return {
-    "x-default": absoluteSitemapUrl(canonicalSourcePath),
-    ...(locales.includes("zh") ? { "zh-CN": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "zh")) } : {}),
-    ...(locales.includes("en") ? { "en-US": absoluteSitemapUrl(buildLocalePath(canonicalSourcePath, "en")) } : {})
-  };
+function buildAvailableLanguageAlternates(
+  path: string,
+  locales: Array<"zh" | "en">,
+) {
+  return buildSeoAvailableLanguageAlternates(path, locales);
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const tools = await prisma.tool
     .findMany({
       where: { status: "published" },
-      select: { slug: true, name: true, englishName: true, shortDescription: true, content: true, updatedAt: true, type: true }
+      select: {
+        slug: true,
+        name: true,
+        englishName: true,
+        shortDescription: true,
+        content: true,
+        updatedAt: true,
+        type: true,
+      },
     })
     .catch(() => []);
   const newsArticles = await prisma.newsArticle
     .findMany({
       where: { status: "published" },
-      select: { slug: true, title: true, englishTitle: true, updatedAt: true, englishSummary: true, englishContent: true }
+      select: {
+        slug: true,
+        title: true,
+        englishTitle: true,
+        updatedAt: true,
+        englishSummary: true,
+        englishContent: true,
+      },
     })
     .catch(() => []);
 
@@ -118,36 +139,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteSitemapUrl(path),
       lastModified: staticRouteLastModified[path],
       alternates: {
-        languages: buildLanguageAlternates(getCanonicalSourcePath(path))
+        languages: buildLanguageAlternates(getCanonicalSourcePath(path)),
       },
-      changeFrequency: path === "/" || path === "/en" ? ("daily" as const) : ("weekly" as const),
-      priority: getPriority(path)
+      changeFrequency:
+        path === "/" || path === "/en"
+          ? ("daily" as const)
+          : ("weekly" as const),
+      priority: getPriority(path),
     })),
     ...aiTrendTopicPaths.map((path) => ({
       url: absoluteSitemapUrl(path),
       lastModified: new Date("2026-06-19T00:00:00.000Z"),
       alternates: {
-        languages: buildLanguageAlternates("/ai-trends")
+        languages: buildLanguageAlternates("/ai-trends"),
       },
       changeFrequency: "weekly" as const,
-      priority: 0.76
+      priority: 0.76,
     })),
     ...tools.flatMap((tool) => {
       const canonicalPath = buildCanonicalToolPath(tool, "zh");
       const hasEnglishPage = shouldIndexEnglishToolPage(tool);
       const localizedRoutes = [
         canonicalPath,
-        ...(hasEnglishPage ? [buildCanonicalToolPath(tool, "en")] : [])
+        ...(hasEnglishPage ? [buildCanonicalToolPath(tool, "en")] : []),
       ];
 
       return localizedRoutes.map((path) => ({
         url: absoluteUrl(path),
         lastModified: tool.updatedAt,
         alternates: {
-          languages: buildAvailableLanguageAlternates(canonicalPath, hasEnglishPage ? ["zh", "en"] : ["zh"])
+          languages: buildAvailableLanguageAlternates(
+            canonicalPath,
+            hasEnglishPage ? ["zh", "en"] : ["zh"],
+          ),
         },
         changeFrequency: "weekly" as const,
-        priority: tool.type === "software" ? 0.85 : 0.8
+        priority: tool.type === "software" ? 0.85 : 0.8,
       }));
     }),
     ...newsArticles.flatMap((newsArticle) => {
@@ -155,18 +182,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const hasEnglishPage = isEnglishNewsArticleIndexable(newsArticle);
       const routes = [
         { path: `/ai-news/${canonicalSlug}`, priority: 0.78 },
-        ...(hasEnglishPage ? [{ path: `/en/ai-news/${canonicalSlug}`, priority: 0.72 }] : [])
+        ...(hasEnglishPage
+          ? [{ path: `/en/ai-news/${canonicalSlug}`, priority: 0.72 }]
+          : []),
       ];
 
       return routes.map((route) => ({
         url: absoluteUrl(route.path),
         lastModified: newsArticle.updatedAt,
         alternates: {
-          languages: buildAvailableLanguageAlternates(`/ai-news/${canonicalSlug}`, hasEnglishPage ? ["zh", "en"] : ["zh"])
+          languages: buildAvailableLanguageAlternates(
+            `/ai-news/${canonicalSlug}`,
+            hasEnglishPage ? ["zh", "en"] : ["zh"],
+          ),
         },
         changeFrequency: "weekly" as const,
-        priority: route.priority
+        priority: route.priority,
       }));
-    })
+    }),
   ];
 }

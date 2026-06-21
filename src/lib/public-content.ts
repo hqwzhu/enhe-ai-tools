@@ -1,15 +1,19 @@
 import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
+import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import {
   buildAiNewsKeywordCloud,
   buildAiNewsTopicCollections,
   defaultAiNewsExternalSeoProvider,
   normalizeAiNewsKeyword,
   type AiNewsKeywordCandidate,
-  type AiNewsKeywordInterventionRule
+  type AiNewsKeywordInterventionRule,
 } from "@/lib/ai-news-discovery";
 import { prisma } from "@/lib/db";
-import { getCanonicalAiNewsSlug, getCanonicalToolSlug } from "@/lib/public-slugs";
+import {
+  getCanonicalAiNewsSlug,
+  getCanonicalToolSlug,
+} from "@/lib/public-slugs";
 
 const publicContentRevalidate = 300;
 
@@ -22,6 +26,7 @@ export type PublicNewsListingFilters = {
   sort?: "latest" | "hot" | "featured";
   skip?: number;
   take?: number;
+  locale?: "zh" | "en";
 };
 
 type PublicSlugMatch = {
@@ -37,7 +42,11 @@ function isRecoverablePublicReadError(error: unknown) {
   const code = typeof errorWithCode.code === "string" ? errorWithCode.code : "";
   const message = error.message;
 
-  return code === "P1001" || /Can't reach database server/i.test(message) || /ECONNREFUSED/i.test(message);
+  return (
+    code === "P1001" ||
+    /Can't reach database server/i.test(message) ||
+    /ECONNREFUSED/i.test(message)
+  );
 }
 
 const getCachedHomeRecommendedTools = unstable_cache(
@@ -45,9 +54,19 @@ const getCachedHomeRecommendedTools = unstable_cache(
     try {
       return await prisma.tool.findMany({
         where: { status: "published" },
-        include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
-        orderBy: [{ isHomeRecommended: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
-        take: 6
+        include: {
+          category: true,
+          priceSpecs: {
+            where: { status: "active" },
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          },
+        },
+        orderBy: [
+          { isHomeRecommended: "desc" },
+          { sortOrder: "asc" },
+          { createdAt: "desc" },
+        ],
+        take: 6,
       });
     } catch (error) {
       if (isRecoverablePublicReadError(error)) {
@@ -58,29 +77,53 @@ const getCachedHomeRecommendedTools = unstable_cache(
     }
   },
   ["public-home-recommended-tools"],
-  { revalidate: publicContentRevalidate, tags: ["public-home", "public-tools"] }
+  {
+    revalidate: publicContentRevalidate,
+    tags: ["public-home", "public-tools"],
+  },
 );
 
 const getCachedPublicToolListing = unstable_cache(
-  async (type: PublicToolType, categoryId?: string, keyword?: string, paid?: string, sort?: string) => {
+  async (
+    type: PublicToolType,
+    categoryId?: string,
+    keyword?: string,
+    paid?: string,
+    sort?: string,
+  ) => {
     try {
       return await prisma.tool.findMany({
         where: {
           type,
           status: "published",
           ...(categoryId ? { categoryId } : {}),
-          ...(type === "software" && paid === "paid" ? { isDownloadPaid: true } : type === "software" && paid === "free" ? { isDownloadPaid: false } : {}),
+          ...(type === "software" && paid === "paid"
+            ? { isDownloadPaid: true }
+            : type === "software" && paid === "free"
+              ? { isDownloadPaid: false }
+              : {}),
           ...(keyword
             ? {
                 OR: [
                   { name: { contains: keyword, mode: "insensitive" } },
                   { englishName: { contains: keyword, mode: "insensitive" } },
-                  { shortDescription: { contains: keyword, mode: "insensitive" } }
-                ]
+                  {
+                    shortDescription: {
+                      contains: keyword,
+                      mode: "insensitive",
+                    },
+                  },
+                ],
               }
-            : {})
+            : {}),
         },
-        include: { category: true, priceSpecs: { where: { status: "active" }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
+        include: {
+          category: true,
+          priceSpecs: {
+            where: { status: "active" },
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          },
+        },
         orderBy:
           type === "software"
             ? sort === "hot"
@@ -88,7 +131,7 @@ const getCachedPublicToolListing = unstable_cache(
               : { createdAt: "desc" }
             : sort === "hot"
               ? { usageCount: "desc" }
-              : { createdAt: "desc" }
+              : { createdAt: "desc" },
       });
     } catch (error) {
       if (isRecoverablePublicReadError(error)) {
@@ -99,7 +142,7 @@ const getCachedPublicToolListing = unstable_cache(
     }
   },
   ["public-tool-listing"],
-  { revalidate: publicContentRevalidate, tags: ["public-tools"] }
+  { revalidate: publicContentRevalidate, tags: ["public-tools"] },
 );
 
 const getCachedPublicTutorials = unstable_cache(
@@ -108,7 +151,7 @@ const getCachedPublicTutorials = unstable_cache(
       return await prisma.tutorial.findMany({
         where: { status: "active", tool: { status: "published" } },
         include: { tool: true },
-        orderBy: { sortOrder: "asc" }
+        orderBy: { sortOrder: "asc" },
       });
     } catch (error) {
       if (isRecoverablePublicReadError(error)) {
@@ -119,7 +162,7 @@ const getCachedPublicTutorials = unstable_cache(
     }
   },
   ["public-tutorials"],
-  { revalidate: publicContentRevalidate, tags: ["public-tutorials"] }
+  { revalidate: publicContentRevalidate, tags: ["public-tutorials"] },
 );
 
 const getCachedPublicToolCategories = unstable_cache(
@@ -127,7 +170,7 @@ const getCachedPublicToolCategories = unstable_cache(
     try {
       return await prisma.toolCategory.findMany({
         where: { type, status: "active" },
-        orderBy: { sortOrder: "asc" }
+        orderBy: { sortOrder: "asc" },
       });
     } catch (error) {
       if (isRecoverablePublicReadError(error)) {
@@ -138,7 +181,7 @@ const getCachedPublicToolCategories = unstable_cache(
     }
   },
   ["public-tool-categories"],
-  { revalidate: publicContentRevalidate, tags: ["public-tools"] }
+  { revalidate: publicContentRevalidate, tags: ["public-tools"] },
 );
 
 const getCachedPublicLegalPages = unstable_cache(
@@ -147,16 +190,20 @@ const getCachedPublicLegalPages = unstable_cache(
     return getLegalPage(slug, locale);
   },
   ["public-legal-pages"],
-  { revalidate: publicContentRevalidate, tags: ["public-legal-pages"] }
+  { revalidate: publicContentRevalidate, tags: ["public-legal-pages"] },
 );
 
-function buildNewsWhere(filters: PublicNewsListingFilters): Prisma.NewsArticleWhereInput {
+function buildNewsWhere(
+  filters: PublicNewsListingFilters,
+): Prisma.NewsArticleWhereInput {
   const keyword = filters.q?.trim();
 
   return {
     status: "published",
     ...(filters.category ? { categoryId: filters.category } : {}),
-    ...(filters.tag ? { tagLinks: { some: { tag: { slug: filters.tag } } } } : {}),
+    ...(filters.tag
+      ? { tagLinks: { some: { tag: { slug: filters.tag } } } }
+      : {}),
     ...(keyword
       ? {
           OR: [
@@ -165,10 +212,16 @@ function buildNewsWhere(filters: PublicNewsListingFilters): Prisma.NewsArticleWh
             { summary: { contains: keyword, mode: "insensitive" } },
             { description: { contains: keyword, mode: "insensitive" } },
             { keywords: { contains: keyword, mode: "insensitive" } },
-            { tagLinks: { some: { tag: { name: { contains: keyword, mode: "insensitive" } } } } }
-          ]
+            {
+              tagLinks: {
+                some: {
+                  tag: { name: { contains: keyword, mode: "insensitive" } },
+                },
+              },
+            },
+          ],
         }
-      : {})
+      : {}),
   };
 }
 
@@ -180,27 +233,52 @@ const getCachedPublicNewsListing = unstable_cache(
         filters.sort === "hot"
           ? [{ viewCount: "desc" }, { publishedAt: "desc" }]
           : filters.sort === "featured"
-            ? [{ isPinned: "desc" }, { isFeatured: "desc" }, { sortOrder: "asc" }, { publishedAt: "desc" }]
+            ? [
+                { isPinned: "desc" },
+                { isFeatured: "desc" },
+                { sortOrder: "asc" },
+                { publishedAt: "desc" },
+              ]
             : [{ isPinned: "desc" }, { publishedAt: "desc" }];
+      if (filters.locale === "en") {
+        const candidateArticles = await prisma.newsArticle.findMany({
+          where,
+          include: { category: true, tagLinks: { include: { tag: true } } },
+          orderBy,
+          take: Math.max((filters.skip ?? 0) + (filters.take ?? 9), 80),
+        });
+        const indexableArticles = candidateArticles.filter(
+          isEnglishNewsArticleIndexable,
+        );
+        const skip = filters.skip ?? 0;
+        const take = filters.take ?? 9;
+
+        return {
+          articles: indexableArticles.slice(skip, skip + take),
+          total: indexableArticles.length,
+        };
+      }
+
       const [articles, total] = await Promise.all([
         prisma.newsArticle.findMany({
           where,
           include: { category: true, tagLinks: { include: { tag: true } } },
           orderBy,
           skip: filters.skip ?? 0,
-          take: filters.take ?? 9
+          take: filters.take ?? 9,
         }),
-        prisma.newsArticle.count({ where })
+        prisma.newsArticle.count({ where }),
       ]);
 
       return { articles, total };
     } catch (error) {
-      if (isRecoverablePublicReadError(error)) return { articles: [], total: 0 };
+      if (isRecoverablePublicReadError(error))
+        return { articles: [], total: 0 };
       throw error;
     }
   },
   ["public-news-listing"],
-  { revalidate: publicContentRevalidate, tags: ["public-news"] }
+  { revalidate: publicContentRevalidate, tags: ["public-news"] },
 );
 
 const getCachedPublicNewsCategories = unstable_cache(
@@ -208,7 +286,7 @@ const getCachedPublicNewsCategories = unstable_cache(
     try {
       return await prisma.newsCategory.findMany({
         where: { status: "active" },
-        orderBy: [{ sortOrder: "asc" }, { name: "asc" }]
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
       });
     } catch (error) {
       if (isRecoverablePublicReadError(error)) return [];
@@ -216,7 +294,7 @@ const getCachedPublicNewsCategories = unstable_cache(
     }
   },
   ["public-news-categories"],
-  { revalidate: publicContentRevalidate, tags: ["public-news"] }
+  { revalidate: publicContentRevalidate, tags: ["public-news"] },
 );
 
 const getCachedPublicNewsTags = unstable_cache(
@@ -224,7 +302,7 @@ const getCachedPublicNewsTags = unstable_cache(
     try {
       return await prisma.newsTag.findMany({
         where: { status: "active" },
-        orderBy: [{ sortOrder: "asc" }, { name: "asc" }]
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
       });
     } catch (error) {
       if (isRecoverablePublicReadError(error)) return [];
@@ -232,7 +310,7 @@ const getCachedPublicNewsTags = unstable_cache(
     }
   },
   ["public-news-tags"],
-  { revalidate: publicContentRevalidate, tags: ["public-news"] }
+  { revalidate: publicContentRevalidate, tags: ["public-news"] },
 );
 
 const getCachedPublicNewsArticleBySlug = unstable_cache(
@@ -243,8 +321,10 @@ const getCachedPublicNewsArticleBySlug = unstable_cache(
         include: {
           category: true,
           tagLinks: { include: { tag: true } },
-          externalSources: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }
-        }
+          externalSources: {
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          },
+        },
       });
     } catch (error) {
       if (isRecoverablePublicReadError(error)) return null;
@@ -252,7 +332,7 @@ const getCachedPublicNewsArticleBySlug = unstable_cache(
     }
   },
   ["public-news-article-by-slug"],
-  { revalidate: publicContentRevalidate, tags: ["public-news"] }
+  { revalidate: publicContentRevalidate, tags: ["public-news"] },
 );
 
 const getCachedPublicToolSlugIndex = unstable_cache(
@@ -260,13 +340,13 @@ const getCachedPublicToolSlugIndex = unstable_cache(
     try {
       const tools = await prisma.tool.findMany({
         where: { status: "published" },
-        select: { id: true, slug: true, name: true, englishName: true }
+        select: { id: true, slug: true, name: true, englishName: true },
       });
 
       return tools.map((tool) => ({
         id: tool.id,
         slug: tool.slug,
-        canonicalSlug: getCanonicalToolSlug(tool)
+        canonicalSlug: getCanonicalToolSlug(tool),
       }));
     } catch (error) {
       if (isRecoverablePublicReadError(error)) return [];
@@ -274,7 +354,7 @@ const getCachedPublicToolSlugIndex = unstable_cache(
     }
   },
   ["public-tool-slug-index"],
-  { revalidate: publicContentRevalidate, tags: ["public-tools"] }
+  { revalidate: publicContentRevalidate, tags: ["public-tools"] },
 );
 
 const getCachedPublicNewsSlugIndex = unstable_cache(
@@ -282,13 +362,13 @@ const getCachedPublicNewsSlugIndex = unstable_cache(
     try {
       const articles = await prisma.newsArticle.findMany({
         where: { status: "published" },
-        select: { id: true, slug: true, title: true, englishTitle: true }
+        select: { id: true, slug: true, title: true, englishTitle: true },
       });
 
       return articles.map((article) => ({
         id: article.id,
         slug: article.slug,
-        canonicalSlug: getCanonicalAiNewsSlug(article)
+        canonicalSlug: getCanonicalAiNewsSlug(article),
       }));
     } catch (error) {
       if (isRecoverablePublicReadError(error)) return [];
@@ -296,11 +376,16 @@ const getCachedPublicNewsSlugIndex = unstable_cache(
     }
   },
   ["public-news-slug-index"],
-  { revalidate: publicContentRevalidate, tags: ["public-news"] }
+  { revalidate: publicContentRevalidate, tags: ["public-news"] },
 );
 
 function findSlugMatch(items: PublicSlugMatch[], requestedSlug: string) {
-  return items.find((item) => item.slug === requestedSlug || item.canonicalSlug === requestedSlug) ?? null;
+  return (
+    items.find(
+      (item) =>
+        item.slug === requestedSlug || item.canonicalSlug === requestedSlug,
+    ) ?? null
+  );
 }
 
 function splitNewsKeywordList(value: string | null | undefined) {
@@ -318,10 +403,16 @@ function getArticleHeat(article: {
   createdAt: Date;
 }) {
   const publishedTime = article.publishedAt ?? article.createdAt;
-  const freshnessDays = Math.max(0, Math.floor((Date.now() - publishedTime.getTime()) / 86400000));
+  const freshnessDays = Math.max(
+    0,
+    Math.floor((Date.now() - publishedTime.getTime()) / 86400000),
+  );
   return {
-    totalHeat: article.viewCount + (article.isPinned ? 20 : 0) + (article.isFeatured ? 10 : 0),
-    freshnessDays
+    totalHeat:
+      article.viewCount +
+      (article.isPinned ? 20 : 0) +
+      (article.isFeatured ? 10 : 0),
+    freshnessDays,
   };
 }
 
@@ -338,7 +429,7 @@ function buildKeywordCandidatesFromArticles(
     publishedAt: Date | null;
     createdAt: Date;
     tagLinks: Array<{ tag: { name: string } }>;
-  }>
+  }>,
 ) {
   const candidates = new Map<string, AiNewsKeywordCandidate>();
   const tagFallbacks = new Map<string, AiNewsKeywordCandidate>();
@@ -347,8 +438,14 @@ function buildKeywordCandidatesFromArticles(
     const { totalHeat, freshnessDays } = getArticleHeat(article);
     const keywordValues =
       locale === "en"
-        ? [...splitNewsKeywordList(article.englishKeywords), ...splitNewsKeywordList(article.englishSeoKeywords)]
-        : [...splitNewsKeywordList(article.keywords), ...splitNewsKeywordList(article.seoKeywords)];
+        ? [
+            ...splitNewsKeywordList(article.englishKeywords),
+            ...splitNewsKeywordList(article.englishSeoKeywords),
+          ]
+        : [
+            ...splitNewsKeywordList(article.keywords),
+            ...splitNewsKeywordList(article.seoKeywords),
+          ];
     const seenKeywords = new Set<string>();
 
     for (const keyword of keywordValues) {
@@ -356,12 +453,13 @@ function buildKeywordCandidatesFromArticles(
       const next: AiNewsKeywordCandidate = current
         ? {
             keyword,
-            articleCount: current.articleCount + (seenKeywords.has(keyword) ? 0 : 1),
+            articleCount:
+              current.articleCount + (seenKeywords.has(keyword) ? 0 : 1),
             searchCount30d: current.searchCount30d,
             totalHeat: current.totalHeat + totalHeat,
             freshnessDays: Math.min(current.freshnessDays, freshnessDays),
             tagHits: current.tagHits,
-            keywordFieldHits: current.keywordFieldHits + 1
+            keywordFieldHits: current.keywordFieldHits + 1,
           }
         : {
             keyword,
@@ -370,7 +468,7 @@ function buildKeywordCandidatesFromArticles(
             totalHeat,
             freshnessDays,
             tagHits: 0,
-            keywordFieldHits: 1
+            keywordFieldHits: 1,
           };
 
       candidates.set(keyword, next);
@@ -386,12 +484,13 @@ function buildKeywordCandidatesFromArticles(
       const next: AiNewsKeywordCandidate = current
         ? {
             keyword,
-            articleCount: current.articleCount + (seenTags.has(keyword) ? 0 : 1),
+            articleCount:
+              current.articleCount + (seenTags.has(keyword) ? 0 : 1),
             searchCount30d: current.searchCount30d,
             totalHeat: current.totalHeat + totalHeat,
             freshnessDays: Math.min(current.freshnessDays, freshnessDays),
             tagHits: current.tagHits + 1,
-            keywordFieldHits: current.keywordFieldHits
+            keywordFieldHits: current.keywordFieldHits,
           }
         : {
             keyword,
@@ -400,19 +499,23 @@ function buildKeywordCandidatesFromArticles(
             totalHeat,
             freshnessDays,
             tagHits: 1,
-            keywordFieldHits: 0
+            keywordFieldHits: 0,
           };
 
       const fallbackCurrent = tagFallbacks.get(keyword);
       const fallbackNext: AiNewsKeywordCandidate = fallbackCurrent
         ? {
             keyword,
-            articleCount: fallbackCurrent.articleCount + (seenTags.has(keyword) ? 0 : 1),
+            articleCount:
+              fallbackCurrent.articleCount + (seenTags.has(keyword) ? 0 : 1),
             searchCount30d: fallbackCurrent.searchCount30d,
             totalHeat: fallbackCurrent.totalHeat + totalHeat,
-            freshnessDays: Math.min(fallbackCurrent.freshnessDays, freshnessDays),
+            freshnessDays: Math.min(
+              fallbackCurrent.freshnessDays,
+              freshnessDays,
+            ),
             tagHits: fallbackCurrent.tagHits + 1,
-            keywordFieldHits: fallbackCurrent.keywordFieldHits
+            keywordFieldHits: fallbackCurrent.keywordFieldHits,
           }
         : {
             keyword,
@@ -421,7 +524,7 @@ function buildKeywordCandidatesFromArticles(
             totalHeat,
             freshnessDays,
             tagHits: 1,
-            keywordFieldHits: 0
+            keywordFieldHits: 0,
           };
 
       candidates.set(keyword, next);
@@ -432,15 +535,17 @@ function buildKeywordCandidatesFromArticles(
 
   return {
     candidates: Array.from(candidates.values()),
-    tagFallbacks: Array.from(tagFallbacks.values())
+    tagFallbacks: Array.from(tagFallbacks.values()),
   };
 }
 
 function mergeSearchSignalsIntoCandidates(
   candidates: AiNewsKeywordCandidate[],
-  searchQueries: string[]
+  searchQueries: string[],
 ) {
-  const map = new Map(candidates.map((candidate) => [candidate.keyword, { ...candidate }]));
+  const map = new Map(
+    candidates.map((candidate) => [candidate.keyword, { ...candidate }]),
+  );
 
   for (const rawQuery of searchQueries) {
     const keyword = normalizeAiNewsKeyword(rawQuery);
@@ -455,7 +560,7 @@ function mergeSearchSignalsIntoCandidates(
         totalHeat: 0,
         freshnessDays: 30,
         tagHits: 0,
-        keywordFieldHits: 0
+        keywordFieldHits: 0,
       });
       continue;
     }
@@ -476,7 +581,7 @@ function normalizeKeywordInterventions(
     isHidden: boolean;
     displayName: string | null;
     weightBoost: number;
-  }>
+  }>,
 ) {
   return rows
     .filter((row) => row.locale === locale)
@@ -488,15 +593,19 @@ function normalizeKeywordInterventions(
           isPinned: row.isPinned,
           isHidden: row.isHidden,
           displayName: row.displayName,
-          weightBoost: row.weightBoost
-        }) satisfies AiNewsKeywordInterventionRule
+          weightBoost: row.weightBoost,
+        }) satisfies AiNewsKeywordInterventionRule,
     );
 }
 
 function isMissingKeywordInterventionTableError(error: unknown) {
   if (!error || typeof error !== "object") return false;
   const candidate = error as { code?: unknown; meta?: { table?: unknown } };
-  return candidate.code === "P2021" && typeof candidate.meta?.table === "string" && candidate.meta.table.includes("news_keyword_interventions");
+  return (
+    candidate.code === "P2021" &&
+    typeof candidate.meta?.table === "string" &&
+    candidate.meta.table.includes("news_keyword_interventions")
+  );
 }
 
 const getCachedPublicAiNewsDiscovery = unstable_cache(
@@ -516,12 +625,12 @@ const getCachedPublicAiNewsDiscovery = unstable_cache(
             isFeatured: true,
             publishedAt: true,
             createdAt: true,
-            tagLinks: { select: { tag: { select: { name: true } } } }
-          }
+            tagLinks: { select: { tag: { select: { name: true } } } },
+          },
         }),
         prisma.analyticsEvent.findMany({
           where: { eventName: "search_ai_news", createdAt: { gte: since } },
-          select: { metadata: true }
+          select: { metadata: true },
         }),
         prisma.newsKeywordIntervention.findMany({
           select: {
@@ -530,25 +639,32 @@ const getCachedPublicAiNewsDiscovery = unstable_cache(
             isPinned: true,
             isHidden: true,
             displayName: true,
-            weightBoost: true
-          }
-        })
+            weightBoost: true,
+          },
+        }),
       ]);
 
-      const { candidates: articleCandidates, tagFallbacks } = buildKeywordCandidatesFromArticles(locale, articles);
+      const { candidates: articleCandidates, tagFallbacks } =
+        buildKeywordCandidatesFromArticles(locale, articles);
       const searchQueries = analyticsRows
         .map((row) => {
           const metadata = (row.metadata ?? {}) as Record<string, unknown>;
           return typeof metadata.query === "string" ? metadata.query : "";
         })
         .filter(Boolean);
-      const mergedCandidates = mergeSearchSignalsIntoCandidates(articleCandidates, searchQueries);
-      const interventions = normalizeKeywordInterventions(locale, interventionRows);
+      const mergedCandidates = mergeSearchSignalsIntoCandidates(
+        articleCandidates,
+        searchQueries,
+      );
+      const interventions = normalizeKeywordInterventions(
+        locale,
+        interventionRows,
+      );
       const keywordCloudItems = await buildAiNewsKeywordCloud({
         locale,
         candidates: mergedCandidates,
         interventions,
-        externalProvider: defaultAiNewsExternalSeoProvider
+        externalProvider: defaultAiNewsExternalSeoProvider,
       });
       const topicCollectionItems = buildAiNewsTopicCollections({
         locale,
@@ -560,13 +676,16 @@ const getCachedPublicAiNewsDiscovery = unstable_cache(
           articleCount: candidate.articleCount,
           searchCount30d: candidate.searchCount30d,
           totalHeat: candidate.totalHeat,
-          isPinned: false
-        }))
+          isPinned: false,
+        })),
       });
 
       return { keywordCloudItems, topicCollectionItems };
     } catch (error) {
-      if (isRecoverablePublicReadError(error) || isMissingKeywordInterventionTableError(error)) {
+      if (
+        isRecoverablePublicReadError(error) ||
+        isMissingKeywordInterventionTableError(error)
+      ) {
         return { keywordCloudItems: [], topicCollectionItems: [] };
       }
 
@@ -574,7 +693,7 @@ const getCachedPublicAiNewsDiscovery = unstable_cache(
     }
   },
   ["public-ai-news-discovery"],
-  { revalidate: publicContentRevalidate, tags: ["public-news"] }
+  { revalidate: publicContentRevalidate, tags: ["public-news"] },
 );
 
 export async function getHomeRecommendedTools() {
@@ -585,7 +704,13 @@ export async function getPublicToolCategories(type: PublicToolType) {
   return getCachedPublicToolCategories(type);
 }
 
-export async function getPublicToolListing(type: PublicToolType, categoryId?: string, keyword?: string, paid?: string, sort?: string) {
+export async function getPublicToolListing(
+  type: PublicToolType,
+  categoryId?: string,
+  keyword?: string,
+  paid?: string,
+  sort?: string,
+) {
   return getCachedPublicToolListing(type, categoryId, keyword, paid, sort);
 }
 

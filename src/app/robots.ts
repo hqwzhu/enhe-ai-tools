@@ -1,57 +1,54 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl } from "@/lib/seo";
 
-const privateDisallow = ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"];
+const privateDisallow = [
+  "/admin",
+  "/dashboard",
+  "/user-center",
+  "/checkout",
+  "/orders",
+  "/payment",
+  "/api",
+];
+const answerEngineUserAgents = [
+  "GPTBot",
+  "OAI-SearchBot",
+  "ChatGPT-User",
+  "PerplexityBot",
+  "ClaudeBot",
+  "anthropic-ai",
+  "Googlebot",
+  "GoogleOther",
+  "Google-Extended",
+  "Bingbot",
+  "Applebot",
+  "Baiduspider",
+  "Bytespider",
+  "Doubaobot",
+] as const;
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      {
-        userAgent: "GPTBot",
+      ...answerEngineUserAgents.map((userAgent) => ({
+        userAgent,
         allow: ["/"],
-        disallow: privateDisallow
-      },
-      {
-        userAgent: "ChatGPT-User",
-        allow: ["/"],
-        disallow: privateDisallow
-      },
-      {
-        userAgent: "PerplexityBot",
-        allow: ["/"],
-        disallow: privateDisallow
-      },
-      {
-        userAgent: "ClaudeBot",
-        allow: ["/"],
-        disallow: privateDisallow
-      },
-      {
-        userAgent: "anthropic-ai",
-        allow: ["/"],
-        disallow: privateDisallow
-      },
-      {
-        userAgent: "Google-Extended",
-        allow: ["/"],
-        disallow: privateDisallow
-      },
-      {
-        userAgent: "Bingbot",
-        allow: ["/"],
-        disallow: privateDisallow
-      },
-      {
-        userAgent: "Baiduspider",
-        allow: ["/"],
-        disallow: privateDisallow
-      },
+        disallow: privateDisallow,
+      })),
       {
         userAgent: "*",
         allow: ["/", "/api/uploads/"],
-        disallow: ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"]
-      }
+        disallow: [
+          "/admin",
+          "/dashboard",
+          "/user-center",
+          "/checkout",
+          "/orders",
+          "/payment",
+          "/api",
+        ],
+      },
     ],
-    sitemap: absoluteUrl("/sitemap.xml")
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }
