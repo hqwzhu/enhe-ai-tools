@@ -12,6 +12,7 @@ const adminNav = [
   ["dashboard", "/admin"],
   ["seoInsights", "/admin/seo-insights"],
   ["geoMonitoring", "/admin/geo-monitoring"],
+  ["manuals", "/admin/manuals"],
   ["messages", "/admin/messages"],
   ["development", "/admin/development"],
   ["releases", "/admin/releases"],

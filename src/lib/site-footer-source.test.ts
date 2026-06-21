@@ -15,7 +15,7 @@ describe("site footer source", () => {
     expect(css).toContain(".site-user-chip");
     expect(css).toContain("min-height: 32px");
     expect(css).toContain("padding: 0 13px");
-    expect(css).not.toMatch(/\.site-footer\s*\{[^}]*border-top:/s);
+    expect(css).not.toMatch(/\.site-footer\s*\{[^}]*border-top:/);
   });
 
   it("publishes company contact information in the footer", () => {
