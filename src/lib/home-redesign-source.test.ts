@@ -12,6 +12,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("home-hero-shell");
     expect(page).toContain("home-hero-stage");
     expect(page).toContain("home-hero-centered");
+    expect(page).not.toContain('className="home-hero-intro"');
     expect(page).not.toContain("home-hero-background");
     expect(page).not.toContain("home-hero-unicorn-remix");
     expect(page).toContain('id="updates" className="home-featured-shell"');
@@ -21,6 +22,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("t.home.titleSecondLine");
     expect(page).toContain("t.home.titleSecondLineEn");
     expect(page).not.toContain("home-hero-metrics");
+    expect(page).toContain('className="home-hero-eyebrow backdrop-blur-xl backdrop-saturate-150"');
     expect(page).not.toContain("t.home.metricsExploreTitle");
     expect(page).not.toContain("t.home.metricsExplore");
     expect(page).not.toContain("t.home.metricsOutcome");
@@ -28,6 +30,8 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("t.home.onlineButton");
     expect(page).toContain("t.home.aiNewsButton");
     expect(page).toContain("t.home.skillLearningButton");
+    expect(page).toContain('className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"');
+    expect(page).toContain('className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"');
     expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
@@ -36,6 +40,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("take: 40");
     expect(page).not.toContain("recommendedTools.slice(previewTools.length)");
     expect(page).toContain("getHomeRecommendedTools");
+    expect(page).toContain("getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro)");
     expect(page).not.toContain('href="/account-services" variant="ghost" className="home-preview-link"');
     expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
@@ -166,12 +171,20 @@ describe("homepage SaaS redesign source", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const publicChrome = readFileSync(new URL("../components/public-site-chrome.tsx", import.meta.url), "utf8");
 
-    expect(css).toContain(".home-hero-eyebrow {\n  display: inline-flex;");
-    expect(css).toContain("border: 1px solid rgba(255, 255, 255, 0.24)");
-    expect(css).toContain("backdrop-filter: blur(18px) saturate(150%)");
-    expect(css).toContain(".home-hero-cta-primary {\n  background: #ffffff");
+    expect(css).toContain(".home-hero-eyebrow {");
+    expect(css).toContain("display: inline-flex;");
+    expect(css).toContain("border: 1px solid rgba(255, 255, 255, 0.22)");
+    expect(css).toContain("background-color: rgba(255, 255, 255, 0.05)");
+    expect(css).toContain("--home-hero-eyebrow-filter: blur(18px) saturate(150%)");
+    expect(css).toContain("backdrop-filter: var(--home-hero-eyebrow-filter)");
+    expect(css).toContain("border-radius: 11px !important");
+    expect(css).toContain("--home-hero-cta-filter: blur(18px) saturate(145%)");
+    expect(css).toContain("backdrop-filter: var(--home-hero-cta-filter)");
+    expect(css).toContain(".home-hero-cta-primary {\n  background: rgba(255, 255, 255, 0.94)");
     expect(css).toContain("color: #050505");
     expect(css).toContain(".home-hero-cta-accent {\n  background: var(--marketing-accent)");
+    expect(css).toContain("background-color: rgba(240, 90, 53, 0.94)");
+    expect(css).toContain("background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.24)");
     expect(css).toContain("color: #ffffff");
 
     expect(footer).toContain("footerGroups");

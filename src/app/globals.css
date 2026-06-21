@@ -356,6 +356,116 @@ select option:disabled {
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
+:is(
+  .glass,
+  .evidence-card,
+  .dossier-card,
+  .surface-panel:not(.rounded-full),
+  .surface-panel-soft:not(.rounded-full),
+  .filter-surface,
+  .admin-shell-card,
+  .home-product-preview,
+  .home-product-preview-empty,
+  .home-fallback-link,
+  .tool-detail-copy-card
+) {
+  --edge-proximity: 0;
+  --cursor-angle: 110deg;
+  --border-glow-strength: 0;
+  --edge-sensitivity: 30;
+  --glow-padding: 40px;
+  --cone-spread: 25deg;
+  --fill-opacity: 0.5;
+  --glow-color: hsl(12deg 86% 58% / 92%);
+  --glow-color-60: hsl(12deg 86% 58% / 56%);
+  --glow-color-50: hsl(20deg 100% 70% / 46%);
+  --glow-color-40: hsl(0deg 0% 100% / 34%);
+  --glow-color-30: hsl(12deg 86% 58% / 28%);
+  --glow-color-20: hsl(36deg 100% 72% / 20%);
+  --glow-color-10: hsl(0deg 0% 100% / 10%);
+
+  position: relative;
+  isolation: isolate;
+}
+
+:is(
+  .glass,
+  .evidence-card,
+  .dossier-card,
+  .surface-panel:not(.rounded-full),
+  .surface-panel-soft:not(.rounded-full),
+  .filter-surface,
+  .admin-shell-card,
+  .home-product-preview,
+  .home-product-preview-empty,
+  .home-fallback-link,
+  .tool-detail-copy-card
+)::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  background:
+    conic-gradient(
+      from calc(var(--cursor-angle) - var(--cone-spread)),
+      transparent 0deg,
+      var(--glow-color-10) calc(var(--cone-spread) * 0.6),
+      var(--glow-color-60) calc(var(--cone-spread) * 1.3),
+      var(--glow-color) calc(var(--cone-spread) * 1.8),
+      var(--glow-color-40) calc(var(--cone-spread) * 2.35),
+      transparent calc(var(--cone-spread) * 3.1),
+      transparent 360deg
+    );
+  content: "";
+  filter: drop-shadow(0 0 calc(var(--glow-padding) * 0.72) var(--glow-color-20));
+  opacity: calc(0.18 + (var(--border-glow-strength) * 0.76));
+  padding: 1px;
+  pointer-events: none;
+  transition: opacity 180ms ease, filter 180ms ease;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+:is(
+  .glass,
+  .evidence-card,
+  .dossier-card,
+  .surface-panel:not(.rounded-full),
+  .surface-panel-soft:not(.rounded-full),
+  .filter-surface,
+  .admin-shell-card,
+  .home-product-preview,
+  .home-product-preview-empty,
+  .home-fallback-link,
+  .tool-detail-copy-card
+):is(:hover, :focus-within)::after {
+  opacity: calc(0.32 + (var(--border-glow-strength) * 0.68));
+}
+
+@supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  :is(
+    .glass,
+    .evidence-card,
+    .dossier-card,
+    .surface-panel:not(.rounded-full),
+    .surface-panel-soft:not(.rounded-full),
+    .filter-surface,
+    .admin-shell-card,
+    .home-product-preview,
+    .home-product-preview-empty,
+    .home-fallback-link,
+    .tool-detail-copy-card
+  )::after {
+    border: 1px solid rgba(240, 90, 53, 0.34);
+    background: none;
+    filter: none;
+    opacity: 1;
+    padding: 0;
+  }
+}
+
 .admin-nav-link {
   display: flex;
   align-items: center;
@@ -882,16 +992,20 @@ select option:disabled {
 }
 
 .home-hero-eyebrow {
+  --home-hero-eyebrow-filter: blur(18px) saturate(150%);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  background-color: rgba(255, 255, 255, 0.07);
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.045));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  background-color: rgba(255, 255, 255, 0.05);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 12px 30px rgba(0, 0, 0, 0.12);
+  backdrop-filter: var(--home-hero-eyebrow-filter);
+  -webkit-backdrop-filter: var(--home-hero-eyebrow-filter);
   margin: 0 0 26px;
   color: var(--marketing-muted);
   font-size: 13px;
@@ -1090,16 +1204,25 @@ select option:disabled {
 }
 
 .home-hero-cta {
+  --home-hero-cta-filter: blur(18px) saturate(145%);
+
+  position: relative;
+  overflow: hidden;
   min-width: 176px;
   min-height: 54px;
-  border: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 11px !important;
   padding: 0 28px !important;
   font-size: 15px !important;
   font-weight: 850 !important;
   line-height: 1 !important;
   letter-spacing: 0.03em;
   white-space: nowrap;
-  box-shadow: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 14px 34px rgba(0, 0, 0, 0.18) !important;
+  backdrop-filter: var(--home-hero-cta-filter);
+  -webkit-backdrop-filter: var(--home-hero-cta-filter);
 }
 
 .home-hero-cta::before,
@@ -1108,12 +1231,15 @@ select option:disabled {
 }
 
 .home-hero-cta-primary {
-  background: #ffffff !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 50%, rgba(0, 0, 0, 0.06)) !important;
   color: #050505 !important;
 }
 
 .home-hero-cta-accent {
   background: var(--marketing-accent) !important;
+  background-color: rgba(240, 90, 53, 0.94) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.055) 48%, rgba(0, 0, 0, 0.08)) !important;
   color: #ffffff !important;
 }
 
@@ -1605,6 +1731,25 @@ select option:disabled {
     display: none;
   }
 
+  :is(
+    .glass,
+    .evidence-card,
+    .dossier-card,
+    .surface-panel:not(.rounded-full),
+    .surface-panel-soft:not(.rounded-full),
+    .filter-surface,
+    .admin-shell-card,
+    .home-product-preview,
+    .home-product-preview-empty,
+    .home-fallback-link,
+    .tool-detail-copy-card
+  )::after {
+    background: rgba(240, 90, 53, 0.18);
+    filter: none;
+    opacity: 0.72;
+    transition: none;
+  }
+
   .site-footer::after {
     display: none;
   }
@@ -1743,6 +1888,25 @@ select option:disabled {
   .cursor-glow-shell,
   .target-cursor-wrapper {
     display: none !important;
+    transition: none !important;
+  }
+
+  :is(
+    .glass,
+    .evidence-card,
+    .dossier-card,
+    .surface-panel:not(.rounded-full),
+    .surface-panel-soft:not(.rounded-full),
+    .filter-surface,
+    .admin-shell-card,
+    .home-product-preview,
+    .home-product-preview-empty,
+    .home-fallback-link,
+    .tool-detail-copy-card
+  )::after {
+    background: rgba(240, 90, 53, 0.22);
+    filter: none;
+    opacity: 0.78;
     transition: none !important;
   }
 

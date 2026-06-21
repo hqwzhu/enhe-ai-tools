@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AnalyticsTracker } from "@/components/analytics-tracker";
+import { BorderGlowController } from "@/components/border-glow-controller";
 import { CursorGlow } from "@/components/cursor-glow";
 import { InteractiveBackground } from "@/components/interactive-background";
 import { TargetCursor } from "@/components/target-cursor";
@@ -45,6 +46,7 @@ export function RootDocument({
       <body>
         <InteractiveBackground />
         <CursorGlow />
+        <BorderGlowController />
         <TargetCursor cursorColorOnTarget="var(--marketing-accent)" />
         <AnalyticsTracker />
         {children}

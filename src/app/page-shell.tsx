@@ -26,7 +26,6 @@ export async function generateHomePageMetadata(forceLocale: Locale): Promise<Met
 export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const [recommendedTools, settings] = await Promise.all([getHomeRecommendedTools(), getSettingsMap()]);
   const t = getDictionary(forceLocale);
-  const heroIntro = getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro);
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
   const heroTitleWordmark = /^ENHE\s+AI$/i.test(heroTitle.trim());
   const heroVelocityTexts = [t.home.titleSecondLine, t.home.titleSecondLineEn];
@@ -37,7 +36,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
             <div className="home-hero-centered">
-              <p className="home-hero-eyebrow">{t.home.eyebrow}</p>
+              <p className="home-hero-eyebrow backdrop-blur-xl backdrop-saturate-150">{t.home.eyebrow}</p>
               <h1 className="home-hero-title">
                 <span
                   className={`home-hero-title-glitch${heroTitleWordmark ? " home-hero-title-glitch-wordmark" : ""}`}
@@ -66,19 +65,30 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                   scrollerClassName="home-hero-velocity-scroller"
                 />
               </div>
-              <p className="home-hero-intro">{heroIntro}</p>
 
               <div className="home-hero-actions">
-                <ButtonLink href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"} className="home-hero-cta home-hero-cta-primary">
+                <ButtonLink
+                  href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}
+                  className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"
+                >
                   {t.home.aiNewsButton}
                 </ButtonLink>
-                <ButtonLink href={forceLocale === "en" ? "/en/software" : "/software"} className="home-hero-cta home-hero-cta-accent">
+                <ButtonLink
+                  href={forceLocale === "en" ? "/en/software" : "/software"}
+                  className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"
+                >
                   {t.home.softwareButton}
                 </ButtonLink>
-                <ButtonLink href={forceLocale === "en" ? "/en/account-services" : "/account-services"} className="home-hero-cta home-hero-cta-primary">
+                <ButtonLink
+                  href={forceLocale === "en" ? "/en/account-services" : "/account-services"}
+                  className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"
+                >
                   {t.home.onlineButton}
                 </ButtonLink>
-                <ButtonLink href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"} className="home-hero-cta home-hero-cta-accent">
+                <ButtonLink
+                  href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}
+                  className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"
+                >
                   {t.home.skillLearningButton}
                 </ButtonLink>
               </div>
