@@ -296,7 +296,7 @@ const opportunityPriorities = [
 export function generateAiTrendTopicMetadata(locale: Locale = "zh"): Metadata {
   const copy = content[locale];
   const title = buildMetadataTitle({ pageTitle: copy.title, brand: siteName });
-  const description = buildMetaDescription(copy.description);
+  const description = buildMetaDescription(copy.description, undefined, 150);
   const canonicalPath = buildLocalePath(topicPath, locale);
 
   return {

@@ -35,6 +35,7 @@ describe("AI trend briefing source contracts", () => {
     expect(sitemap).not.toContain('`/ai-trends/daily/');
     expect(robots).not.toContain("/ai-trends/daily");
     expect(topicPage).toContain("buildLanguageAlternates(topicPath)");
+    expect(topicPage).toContain("buildMetaDescription(copy.description, undefined, 150)");
   });
 
   it("sets noindex follow metadata on daily archive and daily detail pages", () => {
