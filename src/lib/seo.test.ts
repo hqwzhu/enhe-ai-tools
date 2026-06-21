@@ -3,6 +3,7 @@ import {
   buildHomeMetadataTitle,
   buildMetaDescription,
   buildMetadataTitle,
+  buildPageMetadata,
   buildToolMetaDescription,
   buildToolMetadataTitle
 } from "@/lib/seo";
@@ -11,6 +12,19 @@ describe("seo helpers", () => {
   it("normalizes and truncates metadata descriptions", () => {
     expect(buildMetaDescription("  AI \n helper    for teams  ", "fallback", 17)).toBe("AI helper for...");
     expect(buildMetaDescription("   ", "fallback")).toBe("fallback");
+  });
+
+  it("keeps public page metadata descriptions concise", () => {
+    const metadata = buildPageMetadata({
+      title: "AI Software Apps",
+      description:
+        "Explore AI software apps for local deployment, productivity workflows, content creation, automation, audio, video, and daily work. Compare features, pricing, and access.",
+      path: "/software",
+      locale: "en_US",
+      localeKey: "en"
+    });
+
+    expect(String(metadata.description).length).toBeLessThanOrEqual(150);
   });
 
   it("builds page titles without duplicating the brand", () => {

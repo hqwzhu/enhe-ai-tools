@@ -420,7 +420,7 @@ export function buildPageMetadata({
   type = "website",
   localeKey = locale === "en_US" ? "en" : "zh"
 }: PageMetadataInput): Metadata {
-  const finalDescription = buildMetaDescription(description);
+  const finalDescription = buildMetaDescription(description, defaultSiteDescription, 150);
   const canonicalPath = buildLocalePath(path, localeKey);
   const canonical = absoluteUrl(canonicalPath);
   const imageUrl = absoluteUrl(image ?? defaultOgImage);
