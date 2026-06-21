@@ -65,7 +65,7 @@ function getBaiduSiteUrl() {
 }
 
 export function buildBaiduPushEndpoint() {
-  const site = encodeURIComponent(getBaiduSiteUrl());
+  const site = getBaiduSiteUrl();
   const token = encodeURIComponent(getBaiduPushToken());
   return `${baiduPushEndpointBase}?site=${site}&token=${token}`;
 }

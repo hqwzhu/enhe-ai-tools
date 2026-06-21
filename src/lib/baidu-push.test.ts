@@ -30,7 +30,7 @@ describe("Baidu ordinary URL push", () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://www.enhe-tech.com.cn/";
 
     expect(buildBaiduPushEndpoint()).toBe(
-      "http://data.zz.baidu.com/urls?site=https%3A%2F%2Fwww.enhe-tech.com.cn&token=server-only-token"
+      "http://data.zz.baidu.com/urls?site=https://www.enhe-tech.com.cn&token=server-only-token"
     );
   });
 
@@ -96,7 +96,7 @@ describe("Baidu ordinary URL push", () => {
       urls: ["https://www.enhe-tech.com.cn/ai-news/story", "https://www.enhe-tech.com.cn/software/tool"]
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://data.zz.baidu.com/urls?site=https%3A%2F%2Fwww.enhe-tech.com.cn&token=server-only-token",
+      "http://data.zz.baidu.com/urls?site=https://www.enhe-tech.com.cn&token=server-only-token",
       expect.objectContaining({
         method: "POST",
         headers: { "Content-Type": "text/plain" },
