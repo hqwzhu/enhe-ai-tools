@@ -880,7 +880,7 @@ select option:disabled {
   display: flex;
   justify-content: center;
   gap: clamp(3rem, 8vw, 6.8rem);
-  margin-top: 44px;
+  margin-top: 38px;
   color: var(--marketing-text);
 }
 
@@ -909,7 +909,7 @@ select option:disabled {
   display: flex;
   justify-content: center;
   gap: 18px;
-  margin-top: 46px;
+  margin-top: 42px;
 }
 
 .home-hero-cta {
@@ -1122,7 +1122,6 @@ select option:disabled {
 .site-footer {
   position: relative;
   overflow: hidden;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
   background:
     radial-gradient(circle at 9% 100%, rgba(240, 90, 53, 0.28), transparent 32rem),
     linear-gradient(180deg, rgba(32, 34, 41, 0.98) 0%, #17191f 58%, #15161b 100%);

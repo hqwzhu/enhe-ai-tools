@@ -42,17 +42,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               </h1>
               <p className="home-hero-intro">{heroIntro}</p>
 
-              <div className="home-hero-metrics" aria-label={t.home.metricsAriaLabel}>
-                <div>
-                  <strong>{t.home.metricsExploreTitle}</strong>
-                  <span>{t.home.metricsExplore}</span>
-                </div>
-                <div>
-                  <strong>{t.home.metricsOutcomeTitle}</strong>
-                  <span>{t.home.metricsOutcome}</span>
-                </div>
-              </div>
-
               <div className="home-hero-actions">
                 <ButtonLink href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"} className="home-hero-cta home-hero-cta-primary">
                   {t.home.aiNewsButton}
@@ -66,6 +55,17 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                 <ButtonLink href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"} className="home-hero-cta home-hero-cta-accent">
                   {t.home.skillLearningButton}
                 </ButtonLink>
+              </div>
+
+              <div className="home-hero-metrics" aria-label={t.home.metricsAriaLabel}>
+                <div>
+                  <strong>{t.home.metricsExploreTitle}</strong>
+                  <span>{t.home.metricsExplore}</span>
+                </div>
+                <div>
+                  <strong>{t.home.metricsOutcomeTitle}</strong>
+                  <span>{t.home.metricsOutcome}</span>
+                </div>
               </div>
             </div>
           </div>

@@ -24,6 +24,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("t.home.onlineButton");
     expect(page).toContain("t.home.aiNewsButton");
     expect(page).toContain("t.home.skillLearningButton");
+    expect(page.indexOf("home-hero-metrics")).toBeGreaterThan(page.indexOf("home-hero-actions"));
     expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
     expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
