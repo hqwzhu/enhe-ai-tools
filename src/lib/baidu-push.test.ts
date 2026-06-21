@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildBaiduPushEndpoint,
   buildBaiduPushUrls,
+  extractBaiduUrlsFromSitemapXml,
   notifyBaiduSearch,
   submitBaiduUrls
 } from "@/lib/baidu-push";
@@ -55,6 +56,23 @@ describe("Baidu ordinary URL push", () => {
         "notaurl"
       ])
     ).toEqual(["https://www.enhe-tech.com.cn/ai-news/story", "https://www.enhe-tech.com.cn/software/tool"]);
+  });
+
+  it("extracts sitemap loc URLs while keeping Baidu pushes focused on public Chinese canonical pages by default", () => {
+    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset>
+  <url><loc>https://www.enhe-tech.com.cn/ai-news</loc></url>
+  <url><loc>https://www.enhe-tech.com.cn/en/ai-news</loc></url>
+  <url><loc>https://www.enhe-tech.com.cn/software/tool</loc></url>
+  <url><loc>https://www.enhe-tech.com.cn/admin</loc></url>
+  <url><loc>https://www.enhe-tech.com.cn/online-tools/legacy</loc></url>
+</urlset>`;
+
+    expect(extractBaiduUrlsFromSitemapXml(sitemapXml)).toEqual([
+      "https://www.enhe-tech.com.cn/ai-news",
+      "https://www.enhe-tech.com.cn/software/tool"
+    ]);
+    expect(extractBaiduUrlsFromSitemapXml(sitemapXml, { includeEnglish: true })).toContain("https://www.enhe-tech.com.cn/en/ai-news");
   });
 
   it("posts newline separated URLs as text/plain and returns Baidu response fields", async () => {

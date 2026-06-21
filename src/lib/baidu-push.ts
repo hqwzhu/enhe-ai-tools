@@ -40,6 +40,10 @@ type CoreSitemapUrlOptions = {
   limit?: number;
 };
 
+type SitemapExtractionOptions = {
+  includeEnglish?: boolean;
+};
+
 function getBaiduPushToken() {
   return process.env.BAIDU_PUSH_TOKEN?.trim() ?? "";
 }
@@ -91,6 +95,32 @@ export function buildBaiduPushUrls(urls: Array<string | null | undefined>) {
   return Array.from(
     new Set(urls.flatMap((url) => (typeof url === "string" ? [normalizeBaiduPushUrl(url)] : [])).filter(Boolean) as string[])
   );
+}
+
+export function extractBaiduUrlsFromSitemapXml(xml: string, options: SitemapExtractionOptions = {}) {
+  const locPattern = /<loc>\s*([^<]+?)\s*<\/loc>/gi;
+  const urls: string[] = [];
+  let match: RegExpExecArray | null;
+
+  while ((match = locPattern.exec(xml))) {
+    const decodedUrl = match[1]
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+
+    try {
+      const pathname = new URL(decodedUrl).pathname;
+      if (!options.includeEnglish && (pathname === "/en" || pathname.startsWith("/en/"))) continue;
+    } catch {
+      continue;
+    }
+
+    urls.push(decodedUrl);
+  }
+
+  return buildBaiduPushUrls(urls);
 }
 
 async function parseBaiduResponse(response: Response) {
