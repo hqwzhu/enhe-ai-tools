@@ -28,3 +28,18 @@ ENHE AI skill learning pages turn AI tools and news into repeatable work outcome
 ## GEO Content Requirements
 
 Course and tutorial pages should include step-by-step instructions, examples, FAQ, related software, related news, and concise answer blocks for common user questions.
+
+## Answer Blocks To Include
+
+- What problem does this AI skill solve?
+- Who should learn this skill first?
+- What tools or account guidance are required before starting?
+- What deliverable should the learner complete?
+- What common mistakes should be avoided?
+
+## Internal Conversion Path
+
+1. Read AI news or AI trends to identify the change or opportunity.
+2. Choose the relevant AI software app or account service guidance.
+3. Follow a skill course to produce a document, asset, workflow, script, or reusable template.
+4. Revisit related tutorials and FAQ when the workflow is repeated.

@@ -28,6 +28,17 @@ ENHE AI software pages help users compare AI applications, understand practical 
 
 High-value software pages should include use cases, feature summary, deployment notes, pricing or access notes, FAQ, screenshots or product visuals, SoftwareApplication structured data, and internal links to relevant tutorials and AI news.
 
+## Software Detail Answer Pattern
+
+AI software detail pages should make the following information easy to extract:
+
+- Product or service name and category
+- Primary use cases and best-fit users
+- Local deployment or privacy notes when relevant
+- Pricing, access, and delivery notes where available
+- Related tutorials, related news, and next-step workflows
+- FAQ covering setup, usage, limitations, and support boundaries
+
 ## Related Concepts
 
 - AI news and trend context: https://www.enhe-tech.com.cn/ai-news

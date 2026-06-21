@@ -23,6 +23,8 @@ describe("AI GEO foundations", () => {
     expect(llms).toContain("ENHE AI");
     expect(llms).toContain("https://www.enhe-tech.com.cn/ai-news");
     expect(llms).toContain("https://www.enhe-tech.com.cn/okf/index.md");
+    expect(llms).toContain("AI agent tools recommendation");
+    expect(llms).toContain("AI account service compliance guidance");
 
     const pricing = read("public/pricing.md");
     expect(pricing).toContain("AI software apps");
@@ -32,6 +34,8 @@ describe("AI GEO foundations", () => {
     const okfIndex = read("public/okf/index.md");
     expect(okfIndex).toContain("type: KnowledgeBundle");
     expect(okfIndex).toContain("[ENHE AI overview](./enhe-ai-overview.md)");
+    expect(okfIndex).toContain("GEO Query Coverage");
+    expect(okfIndex).toContain("Content-to-Action Map");
   });
 
   it("allows AI answer-engine crawlers while keeping private surfaces blocked", () => {
@@ -50,6 +54,7 @@ describe("AI GEO foundations", () => {
     const accountServices = read("src/app/account-services/page-shell.tsx");
     const aiNews = read("src/app/ai-news/page-shell.tsx");
     const aiTrends = read("src/app/ai-trends/page-shell.tsx");
+    const skillLearning = read("src/app/skill-learning/page-shell.tsx");
 
     expect(software).toContain("softwareGeoSections");
     expect(software).toContain("如何选择AI软件应用");
@@ -70,6 +75,11 @@ describe("AI GEO foundations", () => {
     expect(aiTrends).toContain("如何用趋势判断下一步行动");
     expect(aiTrends).toContain('buildLocalePath("/ai-news", forceLocale)');
     expect(aiTrends).toContain('buildLocalePath("/skill-learning", forceLocale)');
+
+    expect(skillLearning).toContain("skillLearningOutcomeSections");
+    expect(skillLearning).toContain("skillLearningFaqItems");
+    expect(skillLearning).toContain("buildFaqSchema");
+    expect(skillLearning).toContain("From AI skills to repeatable workflows");
   });
 
   it("keeps machine-readable GEO files publicly cached but out of the main search sitemap", () => {

@@ -20,6 +20,7 @@ import { type Locale } from "@/lib/dictionaries";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
+  buildLanguageAlternates,
   buildLocalePath,
   buildMetaDescription,
   buildMetadataTitle,
@@ -302,7 +303,8 @@ export function generateAiTrendTopicMetadata(locale: Locale = "zh"): Metadata {
     title,
     description,
     alternates: {
-      canonical: absoluteUrl(canonicalPath)
+      canonical: absoluteUrl(canonicalPath),
+      languages: buildLanguageAlternates(topicPath)
     },
     robots: {
       index: true,

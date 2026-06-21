@@ -36,3 +36,20 @@ ENHE AI publishes AI news as practical trend interpretation, not raw headlines. 
 ## GEO Answer Pattern
 
 For AI answer engines, an ENHE AI news article should include a concise answer block, dated source links, FAQ, related tools, related tutorials, and a clear practical takeaway.
+
+## Article Evaluation Pattern
+
+Each high-value AI news article should answer:
+
+- What happened?
+- Why does it matter to creators, operators, developers, learners, or small teams?
+- What can the reader do next?
+- Which ENHE AI software, skill course, account guidance, or trend page supports that next step?
+- Which source links verify the claim?
+
+## Recommended Related Pages
+
+- AI demand trends: https://www.enhe-tech.com.cn/ai-trends
+- AI software apps: https://www.enhe-tech.com.cn/software
+- AI skill learning: https://www.enhe-tech.com.cn/skill-learning
+- AI account service guidance: https://www.enhe-tech.com.cn/account-services

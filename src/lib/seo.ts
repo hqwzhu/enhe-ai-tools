@@ -342,7 +342,7 @@ function resolveToolTypeLabel(type: ToolMetaDescriptionInput["type"], locale: Lo
 }
 
 export function buildToolMetadataTitle({ name, englishName, brand = siteName, maxLength, locale = "zh" }: BuildTitleInput) {
-  const targetMaxLength = maxLength ?? (locale === "en" ? 62 : 68);
+  const targetMaxLength = maxLength ?? (locale === "en" ? 58 : 62);
   const { primaryName, secondaryName } = resolveToolTitleNames(name, englishName, locale);
   const splitTitle = locale === "en" ? splitToolTypeFromName(primaryName) : { toolName: primaryName, typeName: "" };
 
@@ -377,25 +377,37 @@ export function buildToolMetaDescription({
   brand = siteName,
   locale = "zh",
   type = "software",
-  maxLength = 160
+  maxLength = 150
 }: ToolMetaDescriptionInput) {
   const normalizedDescription = type === "online" ? sanitizeAccountServiceCopy(description, locale) : normalizeWhitespace(description ?? "");
   const { primaryName } = resolveToolTitleNames(name, englishName, locale);
   const typeLabel = resolveToolTypeLabel(type, locale);
+  const targetMaxLength = Math.min(maxLength, locale === "en" ? 135 : 145);
 
   if (locale === "en") {
-    if (normalizedDescription) return buildMetaDescription(normalizedDescription, defaultSiteDescription, Math.min(maxLength, 140));
+    if (normalizedDescription) return buildMetaDescription(normalizedDescription, defaultSiteDescription, targetMaxLength);
 
-    return buildMetaDescription(`${primaryName}: ${typeLabel} on ${brand}. Review features, pricing, tutorials, and access.`, defaultSiteDescription, Math.min(maxLength, 140));
+    return buildMetaDescription(
+      `${primaryName}: ${typeLabel} on ${brand}. Review features, pricing, tutorials, and access.`,
+      defaultSiteDescription,
+      targetMaxLength
+    );
   }
 
-  const preferredDescription =
-    normalizedDescription || `在${brand}查看${primaryName}的功能亮点、价格、教程与使用方式，快速了解这款${typeLabel}。`;
+  if (normalizedDescription) {
+    const brandLower = normalizeWhitespace(brand).toLowerCase();
+    const descriptionLower = normalizedDescription.toLowerCase();
+    const compactDescription = descriptionLower.includes(brandLower)
+      ? normalizedDescription
+      : `${normalizedDescription} 在 ${brand} 查看使用建议。`;
+
+    return buildMetaDescription(compactDescription, defaultSiteDescription, targetMaxLength);
+  }
 
   return buildMetaDescription(
-    `${preferredDescription} 在${brand}查看功能亮点、价格、教程与使用方式。`,
+    `在 ${brand} 查看 ${primaryName} 的功能亮点、价格、教程与使用方式，快速了解这款${typeLabel}。`,
     defaultSiteDescription,
-    maxLength
+    targetMaxLength
   );
 }
 
