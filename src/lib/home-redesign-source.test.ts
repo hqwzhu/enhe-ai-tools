@@ -30,11 +30,12 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("t.home.onlineButton");
     expect(page).toContain("t.home.aiNewsButton");
     expect(page).toContain("t.home.skillLearningButton");
-    expect(page).toContain('className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"');
-    expect(page).toContain('className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
+    expect(page).toContain('import { HomeGooeyNav } from "@/components/home-gooey-nav";');
+    expect(page).toContain("const heroCtaItems = [");
+    expect(page).toContain('<HomeGooeyNav items={heroCtaItems} className="home-hero-actions"');
+    expect(page).toContain('href: forceLocale === "en" ? "/en/account-services" : "/account-services"');
+    expect(page).toContain('href: forceLocale === "en" ? "/en/ai-news" : "/ai-news"');
+    expect(page).toContain('href: forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"');
     expect(page).toContain("t.home.featuredContentTitle");
     expect(page).toContain("t.home.featuredContentIntro");
     expect(page).not.toContain("take: 40");
@@ -42,10 +43,10 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("getHomeRecommendedTools");
     expect(page).toContain("getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro)");
     expect(page).not.toContain('href="/account-services" variant="ghost" className="home-preview-link"');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
+    expect(page).toContain('href: forceLocale === "en" ? "/en/software" : "/software"');
+    expect(page).toContain('href: forceLocale === "en" ? "/en/account-services" : "/account-services"');
+    expect(page).toContain('href: forceLocale === "en" ? "/en/ai-news" : "/ai-news"');
+    expect(page).toContain('href: forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"');
     expect(page).toContain("home-product-preview backdrop-blur-xl backdrop-saturate-150");
     expect(page).not.toContain("HeroLogoMark");
     expect(page).not.toContain("enhe-orbital-system");
@@ -79,8 +80,10 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-hero-metrics");
     expect(css).toContain(".home-featured-shell");
     expect(css).toContain("scroll-margin-top: 96px");
-    expect(css).toContain(".home-hero-actions {\n    width: 100%;\n    flex-wrap: wrap;");
-    expect(css).toContain(".home-hero-cta {\n    flex: 1 1 42%;");
+    expect(css).toContain(".home-hero-actions {\n  --color-1: rgba(255, 255, 255, 0.96);");
+    expect(css).toContain(".home-gooey-nav-list");
+    expect(css).toContain(".home-gooey-nav-item {\n    flex: 1 1 42%;");
+    expect(css).toContain(".home-hero-cta {\n    width: 100%;");
     expect(css).toContain("white-space: pre-line");
     expect(css).toContain(".home-product-preview {\n  width: min(100%, 1040px);\n  margin: 0 auto;");
     expect(css).not.toContain(".enhe-orbital-system");
@@ -162,13 +165,16 @@ describe("homepage SaaS redesign source", () => {
   it("adds more breathing room between the two hero title lines", () => {
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
-    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.448em;");
+    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.672em;");
+    expect(css).toContain("margin: clamp(0.55rem, 1.05vw, 0.95rem) auto 0");
+    expect(css).toContain("gap: 0.51em;");
   });
 
   it("polishes the hero label, CTA contrast, and footer while preserving SEO and GEO source contracts", () => {
     const footer = readFileSync(new URL("../components/site-footer.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+    const gooeyNav = readFileSync(new URL("../components/home-gooey-nav.tsx", import.meta.url), "utf8");
     const publicChrome = readFileSync(new URL("../components/public-site-chrome.tsx", import.meta.url), "utf8");
 
     expect(css).toContain(".home-hero-eyebrow {");
@@ -178,14 +184,28 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("--home-hero-eyebrow-filter: blur(18px) saturate(150%)");
     expect(css).toContain("backdrop-filter: var(--home-hero-eyebrow-filter)");
     expect(css).toContain("border-radius: 11px !important");
-    expect(css).toContain("--home-hero-cta-filter: blur(18px) saturate(145%)");
-    expect(css).toContain("backdrop-filter: var(--home-hero-cta-filter)");
-    expect(css).toContain(".home-hero-cta-primary {\n  background: rgba(255, 255, 255, 0.94)");
-    expect(css).toContain("color: #050505");
-    expect(css).toContain(".home-hero-cta-accent {\n  background: var(--marketing-accent)");
-    expect(css).toContain("background-color: rgba(240, 90, 53, 0.94)");
-    expect(css).toContain("background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.24)");
+    expect(css).toContain("--home-hero-cta-filter: blur(20px) saturate(165%) contrast(1.04)");
+    expect(css).toContain("backdrop-filter: var(--home-hero-cta-filter) !important");
+    expect(css).toContain("border: 1px solid rgba(255, 255, 255, 0.24) !important");
+    expect(css).toContain("background-color: transparent !important");
+    expect(css).toContain("background-image: none !important");
+    expect(css).toContain(".home-hero-cta-primary,\n.home-hero-cta-accent {\n  background: transparent");
     expect(css).toContain("color: #ffffff");
+    expect(css).toContain(".home-gooey-effect.filter");
+    expect(css).toContain(".home-gooey-particle");
+    expect(css).toContain("@keyframes home-gooey-particle");
+    expect(css).toContain("--color-2: rgba(240, 90, 53, 0.96)");
+    expect(css).not.toContain("radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.24)");
+    expect(css).not.toContain(".home-hero-cta-accent {\n  background: var(--marketing-accent)");
+    expect(css).not.toContain("background-color: rgba(240, 90, 53, 0.94)");
+    expect(gooeyNav).toContain("Adapted from React Bits GooeyNav");
+    expect(gooeyNav).toContain("animationTime = 600");
+    expect(gooeyNav).toContain("particleCount = 15");
+    expect(gooeyNav).toContain("particleDistances = [90, 10]");
+    expect(gooeyNav).toContain("particleR = 100");
+    expect(gooeyNav).toContain("timeVariance = 300");
+    expect(gooeyNav).toContain("colors = [1, 2, 3, 1, 2, 3, 1, 4]");
+    expect(gooeyNav).toContain("<PrefetchLink");
 
     expect(footer).toContain("footerGroups");
     expect(footer).toContain("footerSocialLinks");

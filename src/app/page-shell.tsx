@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
+import { HomeGooeyNav } from "@/components/home-gooey-nav";
 import { ScrollVelocity } from "@/components/scroll-velocity";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
@@ -29,6 +30,20 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
   const heroTitleWordmark = /^ENHE\s+AI$/i.test(heroTitle.trim());
   const heroVelocityTexts = [t.home.titleSecondLine, t.home.titleSecondLineEn];
+  const heroCtaItems = [
+    { label: t.home.aiNewsButton, href: forceLocale === "en" ? "/en/ai-news" : "/ai-news", tone: "primary" as const },
+    { label: t.home.softwareButton, href: forceLocale === "en" ? "/en/software" : "/software", tone: "accent" as const },
+    {
+      label: t.home.onlineButton,
+      href: forceLocale === "en" ? "/en/account-services" : "/account-services",
+      tone: "primary" as const
+    },
+    {
+      label: t.home.skillLearningButton,
+      href: forceLocale === "en" ? "/en/skill-learning" : "/skill-learning",
+      tone: "accent" as const
+    }
+  ];
 
   return (
     <main className="home-page-shell">
@@ -66,32 +81,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                 />
               </div>
 
-              <div className="home-hero-actions">
-                <ButtonLink
-                  href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}
-                  className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"
-                >
-                  {t.home.aiNewsButton}
-                </ButtonLink>
-                <ButtonLink
-                  href={forceLocale === "en" ? "/en/software" : "/software"}
-                  className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"
-                >
-                  {t.home.softwareButton}
-                </ButtonLink>
-                <ButtonLink
-                  href={forceLocale === "en" ? "/en/account-services" : "/account-services"}
-                  className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"
-                >
-                  {t.home.onlineButton}
-                </ButtonLink>
-                <ButtonLink
-                  href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}
-                  className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"
-                >
-                  {t.home.skillLearningButton}
-                </ButtonLink>
-              </div>
+              <HomeGooeyNav items={heroCtaItems} className="home-hero-actions" ariaLabel={t.home.featuredContentTitle} />
             </div>
           </div>
         </Container>

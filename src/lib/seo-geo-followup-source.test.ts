@@ -7,12 +7,20 @@ function read(path: string) {
 }
 
 describe("SEO and GEO follow-up source contracts", () => {
-  it("keeps homepage orange CTA buttons aligned with the updated white-label visual system", () => {
+  it("keeps homepage CTA buttons as readable transparent glass without changing SEO or GEO copy", () => {
     const css = read("src/app/globals.css");
+    const baseCta = css.match(/\.home-hero-cta\s*\{[\s\S]*?\}/)?.[0] ?? "";
     const accentCta = css.match(/\.home-hero-cta-accent\s*\{[\s\S]*?\}/)?.[0] ?? "";
 
-    expect(accentCta).toContain("background: var(--marketing-accent)");
+    expect(baseCta).toContain("background-color: transparent !important");
+    expect(baseCta).toContain("background-image: none !important");
+    expect(baseCta).toContain("backdrop-filter: var(--home-hero-cta-filter) !important");
+    expect(accentCta).toContain("background: transparent");
     expect(accentCta).toContain("color: #ffffff");
+    expect(accentCta).not.toContain("radial-gradient");
+    expect(accentCta).not.toContain("linear-gradient");
+    expect(accentCta).not.toContain("background: var(--marketing-accent)");
+    expect(accentCta).not.toContain("background-color: rgba(240, 90, 53, 0.94)");
     expect(accentCta).not.toContain("color: #211410");
   });
 
