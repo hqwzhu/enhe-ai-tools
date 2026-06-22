@@ -180,7 +180,8 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-hero-eyebrow {");
     expect(css).toContain("display: inline-flex;");
     expect(css).toContain("border: 1px solid rgba(255, 255, 255, 0.22)");
-    expect(css).toContain("background-color: rgba(255, 255, 255, 0.05)");
+    expect(css).toContain("background-color: transparent");
+    expect(css).toContain("background-image: none");
     expect(css).toContain("--home-hero-eyebrow-filter: blur(18px) saturate(150%)");
     expect(css).toContain("backdrop-filter: var(--home-hero-eyebrow-filter)");
     expect(css).toContain("border-radius: 11px !important");
