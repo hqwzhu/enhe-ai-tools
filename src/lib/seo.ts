@@ -5,10 +5,8 @@ export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
 export const siteName = "ENHE AI";
 export const defaultSiteDescription =
   "Live in symbiosis with AI, awaken in this era, and define the future through creation.";
-export const defaultBrandIcon =
-  "/images/brand/enhe-icon-gradient-white-bg-cropped.png";
-export const defaultOgImage =
-  "/images/brand/enhe-icon-gradient-transparent-cropped.png";
+export const defaultBrandIcon = "/images/brand/enhe-icon-gradient-white-bg-cropped.png";
+export const defaultOgImage = "/images/brand/enhe-icon-gradient-transparent-cropped.png";
 
 type PageMetadataInput = {
   title: string;

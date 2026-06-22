@@ -86,7 +86,7 @@ function getCanonicalSourcePath(path: string) {
 }
 
 function absoluteSitemapUrl(path: string) {
-  return path === "/" ? absoluteUrl("/").replace(/\/$/, "") : absoluteUrl(path);
+  return absoluteUrl(path);
 }
 
 function buildLanguageAlternates(path: string) {

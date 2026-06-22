@@ -347,9 +347,10 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
   };
 
   return (
-    <Container className="py-14">
-      <StructuredData data={[breadcrumbSchema, collectionSchema]} />
-      <section className="surface-panel overflow-hidden p-7 md:p-10">
+    <main>
+      <Container className="py-14">
+        <StructuredData data={[breadcrumbSchema, collectionSchema]} />
+        <section className="surface-panel overflow-hidden p-7 md:p-10">
         <div className="max-w-4xl">
           <Badge className="text-[var(--marketing-accent)]">AI Demand Trends</Badge>
           <h1 className="mt-6 max-w-4xl text-4xl font-black leading-tight text-[var(--marketing-text)] md:text-6xl">
@@ -365,11 +366,11 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             </ButtonLink>
           </div>
         </div>
-      </section>
+        </section>
 
-      <AiTrendsGeoBlock forceLocale={forceLocale} />
+        <AiTrendsGeoBlock forceLocale={forceLocale} />
 
-      <section className="mt-12">
+        <section className="mt-12">
         <SectionTitle title={copy.demandTitle} intro={copy.demandIntro} />
         <div className="grid gap-4 md:grid-cols-2">
           {demandDirections.map((item) => (
@@ -396,9 +397,9 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             </article>
           ))}
         </div>
-      </section>
+        </section>
 
-      <section className="mt-12">
+        <section className="mt-12">
         <SectionTitle title={copy.scenarioTitle} intro={copy.scenarioIntro} />
         <div className="grid gap-4 lg:grid-cols-3">
           {workProductivityScenarioRanking.map((scenario, index) => (
@@ -429,9 +430,9 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             </article>
           ))}
         </div>
-      </section>
+        </section>
 
-      <section className="mt-12">
+        <section className="mt-12">
         <SectionTitle title={copy.prioritiesTitle} intro={copy.prioritiesIntro} />
         <div className="grid gap-4 lg:grid-cols-4">
           {opportunityPriorities.map((item) => (
@@ -446,9 +447,9 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             </article>
           ))}
         </div>
-      </section>
+        </section>
 
-      <section className="mt-12">
+        <section className="mt-12">
         <SectionTitle title={copy.recentTitle} intro={copy.recentIntro} />
         {recentBriefings.length ? (
           <div className="grid gap-4 md:grid-cols-3">
@@ -474,8 +475,9 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             <p className="text-sm leading-7 text-[var(--marketing-muted)]">{copy.emptyRecent}</p>
           </div>
         )}
-      </section>
-    </Container>
+        </section>
+      </Container>
+    </main>
   );
 }
 

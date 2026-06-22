@@ -48,6 +48,8 @@ describe("SEO follow-up source contracts", () => {
     const accountServices = read("src/app/account-services/page-shell.tsx");
     const skillLearning = read("src/app/skill-learning/page-shell.tsx");
     const aiNews = read("src/app/ai-news/page-shell.tsx");
+    const aiTrends = read("src/app/ai-trends/page-shell.tsx");
+    const pricing = read("src/app/pricing/page-shell.tsx");
     const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
     const legalDetail = read("src/app/legal/[slug]/page-shell.tsx");
 
@@ -56,6 +58,8 @@ describe("SEO follow-up source contracts", () => {
       accountServices,
       skillLearning,
       aiNews,
+      aiTrends,
+      pricing,
       toolDetail,
       legalDetail,
     ]) {

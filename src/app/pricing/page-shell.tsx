@@ -60,7 +60,8 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
   });
 
   return (
-    <Container className="py-14">
+    <main>
+      <Container className="py-14">
       <StructuredData data={breadcrumbSchema} />
       <SectionTitle as="h1" title={copy.title} intro={copy.intro} />
       <section className="surface-panel mt-8 p-7">
@@ -93,6 +94,7 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
           </article>
         ))}
       </section>
-    </Container>
+      </Container>
+    </main>
   );
 }
