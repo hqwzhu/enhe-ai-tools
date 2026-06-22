@@ -9,19 +9,18 @@ describe("home AI news label contracts", () => {
     expect(dictionaries.zh.aiNews.title).toBe("AI前沿资讯与趋势洞察");
   });
 
-  it("keeps the home hero wired to the AI news route through the GooeyNav CTA set", () => {
+  it("keeps the home hero wired to the AI news route through the standard CTA buttons", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
-    const gooeyNav = readFileSync(new URL("../components/home-gooey-nav.tsx", import.meta.url), "utf8");
 
     expect(page).toContain("t.home.aiNewsButton");
-    expect(page).toContain("label: t.home.aiNewsButton");
-    expect(page.indexOf("label: t.home.aiNewsButton")).toBeLessThan(page.indexOf("label: t.home.softwareButton"));
-    expect(page).toContain('href: forceLocale === "en" ? "/en/ai-news" : "/ai-news"');
-    expect(page).toContain('href: forceLocale === "en" ? "/en/software" : "/software"');
-    expect(page).toContain('href: forceLocale === "en" ? "/en/account-services" : "/account-services"');
-    expect(page).toContain('href: forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"');
-    expect(page).toContain("<HomeGooeyNav items={heroCtaItems}");
-    expect(gooeyNav).toContain("home-hero-cta-primary");
-    expect(gooeyNav).toContain("home-hero-cta-accent");
+    expect(page).toContain('{t.home.aiNewsButton}');
+    expect(page.indexOf("{t.home.aiNewsButton}")).toBeLessThan(page.indexOf("{t.home.softwareButton}"));
+    expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}\n                  className="home-hero-cta home-hero-cta-primary');
+    expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}\n                  className="home-hero-cta home-hero-cta-accent');
+    expect(page).not.toContain("HomeGooeyNav");
   });
 });
