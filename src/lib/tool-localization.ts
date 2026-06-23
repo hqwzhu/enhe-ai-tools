@@ -621,19 +621,203 @@ function buildChineseFaqFallback(
   ];
 }
 
+const minimumToolFaqCount = 5;
+
+function buildGeneratedFaqQuestion(
+  tool: LocalizedToolInput,
+  locale: Locale,
+  slot: number,
+) {
+  const zhName = normalizeText(tool.name || tool.englishName) || "该内容";
+  const enName =
+    resolveLocalizedToolIdentity(tool, "en").primaryName ||
+    getDefaultToolLabel(tool.type, "en");
+
+  if (locale === "en") {
+    if (tool.type === "skill_learning") {
+      return [
+        `What is ${enName} for?`,
+        `How do I access ${enName} after purchase?`,
+        `Who is ${enName} suitable for?`,
+        "Do I need prior experience before learning it?",
+        "What result should I expect after learning it?",
+      ][slot];
+    }
+
+    if (tool.type === "software") {
+      return [
+        `What is ${enName} used for?`,
+        `How do I access ${enName} after purchase?`,
+        "What should I check before using it?",
+        "How should I use it in a real workflow?",
+        "What support is available after purchase?",
+      ][slot];
+    }
+
+    return [
+      `What is this AI account service for?`,
+      "How do I access it after purchase?",
+      "What should I confirm before using it?",
+      "Can I get support if I have questions?",
+      "Will the service notes change over time?",
+    ][slot];
+  }
+
+  if (tool.type === "skill_learning") {
+    return [
+      `${zhName}主要学习什么？`,
+      "购买课程后如何开始学习？",
+      `${zhName}适合哪些用户？`,
+      "学习前需要具备基础吗？",
+      "学完后可以获得什么结果？",
+    ][slot];
+  }
+
+  if (tool.type === "software") {
+    return [
+      `${zhName}主要用来做什么？`,
+      "购买软件后如何获取下载内容？",
+      "使用前需要确认什么？",
+      `${zhName}如何融入实际工作流？`,
+      "遇到下载、安装或使用问题怎么办？",
+    ][slot];
+  }
+
+  return [
+    "这项AI账号服务主要提供什么支持？",
+    "购买后如何查看服务说明？",
+    "这类服务适合哪些使用场景？",
+    "使用账号服务时需要注意什么？",
+    "遇到访问或使用问题怎么办？",
+  ][slot];
+}
+
+function buildGeneratedFaqAnswer(
+  tool: LocalizedToolInput,
+  locale: Locale,
+  slot: number,
+) {
+  const zhName = normalizeText(tool.name || tool.englishName) || "该内容";
+  const enName =
+    resolveLocalizedToolIdentity(tool, "en").primaryName ||
+    getDefaultToolLabel(tool.type, "en");
+  const summary = buildLocalizedToolSummary(tool, locale);
+
+  if (locale === "en") {
+    if (slot === 0) return summary;
+
+    if (tool.type === "skill_learning") {
+      return [
+        summary,
+        `After purchase, ${enName} course content, practical materials, and learning notes become available in your account center after the order is reviewed.`,
+        "It is suitable for users who want to learn AI tools, prompts, automation workflows, and practical methods through a structured learning path.",
+        "Most lessons start from practical scenarios and operating steps. If the course involves specific software, accounts, or local deployment, review the preparation notes first.",
+        "Use the course to understand the workflow, practice the key steps, and turn the method into a repeatable work, learning, or content-production outcome.",
+      ][slot];
+    }
+
+    if (tool.type === "software") {
+      return [
+        summary,
+        `After payment review, ${enName} download-link content, version notes, and usage guidance become available in your account center.`,
+        "Check the system requirements, version notes, price, delivery scope, and whether the tool fits your device environment and current workflow.",
+        "Start from a clear task, review the tool detail page and related tutorials, then test the output quality before using it in repeated work.",
+        "You can review the current page notes and contact ENHE AI support for access, download, usage, or update-related guidance when needed.",
+      ][slot];
+    }
+
+    return [
+      summary,
+      "After purchase, the service access details become available in your account center.",
+      "Review the service scope, delivery notes, platform rules, and support boundary before purchase or use.",
+      "You can contact ENHE AI support for access guidance, usage suggestions, and service-boundary clarification.",
+      "ENHE AI may update page notes when platform policy, access conditions, delivery details, or support guidance changes.",
+    ][slot];
+  }
+
+  if (tool.type === "skill_learning") {
+    return [
+      `${zhName}围绕 AI 工具使用、流程方法和实战落地展开，帮助你把学习内容转化为可执行的工作步骤。`,
+      "完成购买并通过审核后，可在用户中心查看课程内容、学习资料、操作说明和相关补充信息。",
+      "适合希望系统学习 AI 工具、提示词、自动化流程和实战方法的用户。建议先阅读课程介绍和目录，再判断是否符合当前目标。",
+      "大多数内容会从实际场景和操作步骤切入。如果课程涉及特定软件、账号或本地部署环境，请先查看详情页中的适用条件和准备说明。",
+      "你可以把课程中的方法用于内容创作、运营提效、工具配置或工作流搭建，并形成可复用的实践步骤。",
+    ][slot];
+  }
+
+  if (tool.type === "software") {
+    return [
+      `${zhName}用于辅助完成 AI 工具应用、内容生产、流程处理或效率提升类任务。使用前建议结合详情页说明确认适用场景。`,
+      "完成购买并通过审核后，可在用户中心查看对应软件的下载链接、版本信息和使用说明。",
+      "请先查看系统要求、版本记录、工具介绍和使用教程，确认软件适合你的设备环境和工作流程。",
+      "建议先明确要完成的任务，再按照详情页和教程进行小范围测试，确认输出质量、操作步骤和成本后再用于高频工作。",
+      "可以先查看详情页、教程和版本说明；如果仍有问题，可联系 ENHE AI 客服获取下载、安装、使用或更新相关支持。",
+    ][slot];
+  }
+
+  return [
+    "该服务主要提供AI工具订阅与账号使用支持、访问建议、交付说明和售后边界说明。使用前请遵守对应平台规则。",
+    "完成购买并通过审核后，可在用户中心查看对应服务说明、交付范围、使用建议和支持入口。",
+    "适合需要了解AI工具访问、订阅方案、账号使用边界和合规注意事项的用户。涉及第三方平台时，请以对应平台官方政策为准。",
+    "请按对应平台规则合规使用，不承诺绕过平台限制，也不保证第三方平台政策长期不变。",
+    "可联系ENHE AI客服获取使用建议和服务边界说明。平台能力、订阅规则和访问条件可能变化，请以当前页面说明为准。",
+  ][slot];
+}
+
+function ensureMinimumLocalizedFaqItems(
+  faqs: LocalizedFaqInput[],
+  tool: LocalizedToolInput,
+  locale: Locale,
+) {
+  const existingQuestions = new Set(
+    faqs.map((faq) => normalizeText(faq.question).toLowerCase()),
+  );
+  const completed = [...faqs];
+
+  for (
+    let slot = 0;
+    completed.length < minimumToolFaqCount && slot < minimumToolFaqCount;
+    slot += 1
+  ) {
+    const question = buildGeneratedFaqQuestion(tool, locale, slot);
+    const answer = buildGeneratedFaqAnswer(tool, locale, slot);
+    const normalizedQuestion = normalizeText(question).toLowerCase();
+    if (!question || !answer || existingQuestions.has(normalizedQuestion))
+      continue;
+    existingQuestions.add(normalizedQuestion);
+    completed.push({
+      id: `localized-faq-generated-${slot + 1}`,
+      question,
+      answer,
+    });
+  }
+
+  return completed.slice(0, Math.max(completed.length, minimumToolFaqCount));
+}
+
 export function buildLocalizedToolFaqItems(
   faqs: LocalizedFaqInput[],
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
   if (locale === "zh") {
-    if (!faqs.length) return buildChineseFaqFallback(tool);
-    if (tool.type !== "online") return faqs;
+    if (!faqs.length)
+      return ensureMinimumLocalizedFaqItems(
+        buildChineseFaqFallback(tool),
+        tool,
+        locale,
+      );
+    if (tool.type !== "online")
+      return ensureMinimumLocalizedFaqItems(faqs, tool, locale);
 
-    return faqs.map((faq) => ({
-      ...faq,
-      answer: sanitizeAccountServiceCopy(faq.answer, "zh"),
-    }));
+    return ensureMinimumLocalizedFaqItems(
+      faqs.map((faq) => ({
+        ...faq,
+        answer: sanitizeAccountServiceCopy(faq.answer, "zh"),
+      })),
+      tool,
+      locale,
+    );
   }
 
   const localizedFaqs = faqs.filter(
@@ -642,7 +826,11 @@ export function buildLocalizedToolFaqItems(
       isVisibleInEnglishContent(faq.answer, 5),
   );
 
-  return localizedFaqs.length ? localizedFaqs : buildEnglishFaqFallback(tool);
+  return ensureMinimumLocalizedFaqItems(
+    localizedFaqs.length ? localizedFaqs : buildEnglishFaqFallback(tool),
+    tool,
+    locale,
+  );
 }
 
 function buildEnglishTutorialFallback(

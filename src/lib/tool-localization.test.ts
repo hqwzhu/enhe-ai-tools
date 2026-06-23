@@ -218,7 +218,7 @@ describe("tool localization helpers", () => {
       "en"
     );
 
-    expect(faqs).toHaveLength(2);
+    expect(faqs).toHaveLength(5);
     expect(faqs[0].question).toBe("What is this AI account service for?");
     expect(faqs[0].answer).not.toContain("登录后");
 
@@ -241,5 +241,42 @@ describe("tool localization helpers", () => {
     expect(tutorials[0].title).toBe("Access and usage guide");
     expect(tutorials[0].content).toContain("Review pricing, delivery notes, and access guidance");
     expect(tutorials[0].content).not.toContain("复制文本");
+  });
+  it("provides five Chinese fallback FAQs for software apps and skill courses", () => {
+    const softwareFaqs = buildLocalizedToolFaqItems(
+      [],
+      {
+        slug: "ai-video-studio",
+        name: "AI Video Studio",
+        englishName: "AI Video Studio",
+        shortDescription: "本地 AI 视频生成与增强工具。",
+        content: "",
+        type: "software",
+        categoryName: "AI视频工具"
+      },
+      "zh"
+    );
+    const courseFaqs = buildLocalizedToolFaqItems(
+      [],
+      {
+        slug: "prompt-engineering-course",
+        name: "AI 提示词实战课",
+        englishName: "Prompt Engineering Course",
+        shortDescription: "学习提示词、工作流和 AI 工具实战方法。",
+        content: "",
+        type: "skill_learning",
+        categoryName: "AI技能教程"
+      },
+      "zh"
+    );
+
+    expect(softwareFaqs).toHaveLength(5);
+    expect(courseFaqs).toHaveLength(5);
+    expect(softwareFaqs.map((item) => item.question).join(" ")).toContain(
+      "AI Video Studio",
+    );
+    expect(courseFaqs.map((item) => item.question).join(" ")).toContain(
+      "AI 提示词实战课",
+    );
   });
 });
