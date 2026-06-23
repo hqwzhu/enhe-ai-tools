@@ -177,7 +177,7 @@ async function saveAdminVideoUpload(file: FormDataEntryValue | null, safeToolKey
     accept: isLikelyUploadableVideo,
     invalidTypeMessage: "请上传 MP4、WebM 或 MOV 等视频文件。"
   });
-  return stored.fileUrl;
+  return stored.storage === "cos" ? stored.filePath : stored.fileUrl;
 }
 
 async function resolvePaymentQrCodeInput(urlValue: FormDataEntryValue | null, fileValue: FormDataEntryValue | null, method: "alipay" | "wechat") {

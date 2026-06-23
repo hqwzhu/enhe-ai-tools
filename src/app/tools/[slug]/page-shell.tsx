@@ -15,7 +15,8 @@ import { buildSeoFriendlySlug } from "@/lib/admin-form";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
-import { normalizeImageSrc, normalizeMediaSrc } from "@/lib/media";
+import { normalizeImageSrc } from "@/lib/media";
+import { resolveProductVideoSrc } from "@/lib/product-video";
 import {
   buildCanonicalToolPath,
   getCanonicalToolSlug,
@@ -253,7 +254,7 @@ export async function ToolDetailPageShell({
   );
   const isPurchasableAccountService = isAccountService && servicePrice > 0;
   const coverImage = normalizeImageSrc(tool.coverImage);
-  const productVideoSrc = normalizeMediaSrc(tool.videoUrl);
+  const productVideoSrc = resolveProductVideoSrc(tool.videoUrl);
   const hasDownloadPurchase = user
     ? await prisma.toolPurchase
         .findUnique({

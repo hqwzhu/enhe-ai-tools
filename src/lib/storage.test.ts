@@ -11,8 +11,10 @@ import {
   isRetryableStorageError,
   isUploadExtensionAllowed,
   parseCosFilePath,
+  parseCosPublicUrl,
   resolveDeletableLocalUploadPath
 } from "@/lib/storage";
+import { resolveProductVideoSrc } from "@/lib/product-video";
 
 describe("storage helpers", () => {
   it("detects whether Tencent COS is configured", () => {
@@ -48,6 +50,44 @@ describe("storage helpers", () => {
       key: "software/app.zip"
     });
     expect(parseCosFilePath("/uploads/app.zip")).toBeNull();
+  });
+
+  it("parses configured Tencent COS public URLs for legacy product videos", () => {
+    const env = {
+      TENCENT_COS_BUCKET: "enhe-ai-tools-1303691623",
+      TENCENT_COS_REGION: "ap-shanghai"
+    };
+
+    expect(
+      parseCosPublicUrl(
+        "https://enhe-ai-tools-1303691623.cos.ap-shanghai.myqcloud.com/tool-videos/ai-ai/demo.mp4",
+        env
+      )
+    ).toEqual({
+      bucket: "enhe-ai-tools-1303691623",
+      key: "tool-videos/ai-ai/demo.mp4"
+    });
+    expect(parseCosPublicUrl("https://example.com/tool-videos/demo.mp4", env)).toBeNull();
+  });
+
+  it("routes private COS product videos through the site proxy", () => {
+    const env = {
+      TENCENT_COS_BUCKET: "enhe-ai-tools-1303691623",
+      TENCENT_COS_REGION: "ap-shanghai"
+    };
+
+    expect(resolveProductVideoSrc("cos://enhe-ai-tools-1303691623/tool-videos/demo.mp4", env)).toBe(
+      "/api/tool-videos?src=cos%3A%2F%2Fenhe-ai-tools-1303691623%2Ftool-videos%2Fdemo.mp4"
+    );
+    expect(
+      resolveProductVideoSrc(
+        "https://enhe-ai-tools-1303691623.cos.ap-shanghai.myqcloud.com/tool-videos/demo.mp4",
+        env
+      )
+    ).toBe(
+      "/api/tool-videos?src=https%3A%2F%2Fenhe-ai-tools-1303691623.cos.ap-shanghai.myqcloud.com%2Ftool-videos%2Fdemo.mp4"
+    );
+    expect(resolveProductVideoSrc("uploads/tool-videos/demo.mp4")).toBe("/api/uploads/tool-videos/demo.mp4");
   });
 
   it("parses upload extension whitelists and blocks unsafe extensions", () => {

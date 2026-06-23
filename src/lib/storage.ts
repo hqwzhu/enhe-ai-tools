@@ -27,7 +27,7 @@ type DownloadFileRef = {
   fileUrl: string | null;
 };
 
-type CosFilePath = {
+export type CosFilePath = {
   bucket: string;
   key: string;
 };
@@ -165,6 +165,29 @@ export function parseCosFilePath(filePath: string): CosFilePath | null {
   return { bucket: match[1], key: match[2] };
 }
 
+export function parseCosPublicUrl(value: string, env: StorageEnv = process.env): CosFilePath | null {
+  const bucket = env.TENCENT_COS_BUCKET?.trim();
+  const region = env.TENCENT_COS_REGION?.trim();
+  if (!bucket || !region) return null;
+
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return null;
+  }
+
+  const allowedHosts = new Set([
+    `${bucket}.cos.${region}.myqcloud.com`,
+    `${bucket}.cos.${region}.tencentcos.cn`
+  ]);
+  if (!allowedHosts.has(url.hostname.toLowerCase())) return null;
+
+  const key = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+  if (!key) return null;
+  return { bucket, key };
+}
+
 export function getCosDeletePlan(filePath: string, env: StorageEnv = process.env): CosDeletePlan {
   const cosPath = parseCosFilePath(filePath);
   if (!cosPath) return { storage: "local", canDelete: false, missingEnvKeys: [] };
@@ -196,12 +219,19 @@ export function getCosSignedUrlExpiresSeconds(env: StorageEnv = process.env) {
 export async function getSecureFileDownloadUrl(file: DownloadFileRef, requestUrl: string, env: StorageEnv = process.env, cwd = process.cwd()) {
   const cosPath = parseCosFilePath(file.filePath);
   if (cosPath && isCosStorageConfigured(env)) {
-    return new URL(await createCosSignedDownloadUrl(cosPath, env));
+    return new URL(await createCosSignedObjectUrl(cosPath, env));
   }
 
   const publicUrl = file.fileUrl ?? derivePublicUploadUrlFromFilePath(file.filePath, env, cwd);
   if (!publicUrl) throw new Error("Download file URL is missing.");
   return new URL(publicUrl, requestUrl);
+}
+
+export async function getSecureCosMediaUrl(source: string, env: StorageEnv = process.env) {
+  const cosPath = parseCosFilePath(source) ?? parseCosPublicUrl(source, env);
+  const bucket = env.TENCENT_COS_BUCKET?.trim();
+  if (!cosPath || !bucket || cosPath.bucket !== bucket || !isCosStorageConfigured(env)) return null;
+  return new URL(await createCosSignedObjectUrl(cosPath, env));
 }
 
 export async function saveUploadedFile(file: File, options: SaveUploadOptions): Promise<StoredUpload> {
@@ -336,7 +366,7 @@ async function saveToCos(file: File, buffer: Buffer, objectKey: string, mimeType
   };
 }
 
-async function createCosSignedDownloadUrl(cosPath: CosFilePath, env: StorageEnv = process.env) {
+async function createCosSignedObjectUrl(cosPath: CosFilePath, env: StorageEnv = process.env) {
   const secretId = env.TENCENT_COS_SECRET_ID;
   const secretKey = env.TENCENT_COS_SECRET_KEY;
   const region = env.TENCENT_COS_REGION;

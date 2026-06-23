@@ -58,7 +58,7 @@ describe("tool product video source", () => {
   it("renders product video before the product image gallery on public detail pages", () => {
     const detail = readProjectFile("src/app/tools/[slug]/page-shell.tsx");
 
-    expect(detail).toContain("normalizeMediaSrc");
+    expect(detail).toContain("resolveProductVideoSrc");
     expect(detail).toContain("tool.videoUrl");
     expect(detail).toContain("tool-detail-product-video");
     expect(detail).toContain("<video");
@@ -67,6 +67,19 @@ describe("tool product video source", () => {
     expect(detail).toContain("muted");
     expect(detail).toContain('preload="auto"');
     expect(detail.indexOf("tool-detail-product-video")).toBeLessThan(detail.indexOf("tool-detail-product-gallery"));
+  });
+
+  it("proxies private COS product videos instead of rendering forbidden public URLs", () => {
+    const helper = readProjectFile("src/lib/product-video.ts");
+    const route = readProjectFile("src/app/api/tool-videos/route.ts");
+    const actions = readProjectFile("src/app/admin/actions.ts");
+
+    expect(helper).toContain("parseCosFilePath");
+    expect(helper).toContain("parseCosPublicUrl");
+    expect(helper).toContain("/api/tool-videos?src=");
+    expect(route).toContain("getSecureCosMediaUrl");
+    expect(route).toContain("NextResponse.redirect");
+    expect(actions).toContain('stored.storage === "cos" ? stored.filePath : stored.fileUrl');
   });
 
   it("serves uploaded videos with byte ranges for browser playback", () => {
