@@ -3,6 +3,7 @@ import { getHeaderUserSnapshot } from "@/lib/auth";
 import { HeaderAdminNavLink } from "@/components/header-admin-nav-link";
 import { HeaderAccountControls } from "@/components/header-account-controls";
 import { HeaderSessionGate } from "@/components/header-session-gate";
+import { BackNavigationBar } from "@/components/back-navigation-bar";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { PrefetchLink } from "@/components/prefetch-link";
 import { Container } from "@/components/ui";
@@ -30,53 +31,56 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
   ] as const;
 
   return (
-    <header className="site-header-transparent sticky top-0 z-50">
-      <Container className="site-header-inner flex max-w-none items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
-        <PrefetchLink href={buildLocalePath("/", locale)} className="site-brand cursor-target group" aria-label={brand}>
-          <span className="site-brand-mark" aria-hidden="true">
-            <Image
-              src="/images/brand/enhe-icon-gradient-transparent-cropped.png"
-              alt={`${brandWordmark} logo`}
-              width={92}
-              height={60}
-              className="site-brand-logo site-brand-logo-dark"
-              priority
-              unoptimized
+    <>
+      <header className="site-header-transparent sticky top-0 z-50">
+        <Container className="site-header-inner flex max-w-none items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
+          <PrefetchLink href={buildLocalePath("/", locale)} className="site-brand cursor-target group" aria-label={brand}>
+            <span className="site-brand-mark" aria-hidden="true">
+              <Image
+                src="/images/brand/enhe-icon-gradient-transparent-cropped.png"
+                alt={`${brandWordmark} logo`}
+                width={92}
+                height={60}
+                className="site-brand-logo site-brand-logo-dark"
+                priority
+                unoptimized
+              />
+            </span>
+            <span className="site-brand-wordmark">{brandWordmark}</span>
+          </PrefetchLink>
+
+          <nav className="site-primary-nav hidden items-center lg:flex" aria-label="Primary navigation">
+            {navItems.map(({ label, href }) => (
+              <PrefetchLink key={href} href={href} className="site-nav-link cursor-target">
+                {label}
+              </PrefetchLink>
+            ))}
+            <HeaderAdminNavLink locale={locale} label={t.nav.admin} initialUser={headerUser} />
+          </nav>
+
+          <div className="site-header-actions flex items-center gap-2">
+            <HeaderAccountControls
+              labels={{ login: t.nav.login, userFallback: t.nav.userFallback }}
+              locale={locale}
+              initialUser={headerUser}
             />
-          </span>
-          <span className="site-brand-wordmark">{brandWordmark}</span>
-        </PrefetchLink>
-
-        <nav className="site-primary-nav hidden items-center lg:flex" aria-label="Primary navigation">
-          {navItems.map(({ label, href }) => (
-            <PrefetchLink key={href} href={href} className="site-nav-link cursor-target">
-              {label}
+            <PrefetchLink href={buildLocalePath("/login", locale)} className="sr-only">
+              {t.nav.login}
             </PrefetchLink>
-          ))}
-          <HeaderAdminNavLink locale={locale} label={t.nav.admin} initialUser={headerUser} />
-        </nav>
-
-        <div className="site-header-actions flex items-center gap-2">
-          <HeaderAccountControls
-            labels={{ login: t.nav.login, userFallback: t.nav.userFallback }}
-            locale={locale}
-            initialUser={headerUser}
-          />
-          <PrefetchLink href={buildLocalePath("/login", locale)} className="sr-only">
-            {t.nav.login}
-          </PrefetchLink>
-          <PrefetchLink href={buildLocalePath("/user", locale)} className="site-user-center-cta cursor-target hidden sm:inline-flex">
-            {t.nav.user}
-          </PrefetchLink>
-          <LanguageSwitcher locale={locale} labels={t.language} />
-          <HeaderSessionGate
-            locale={locale}
-            labels={{ admin: t.nav.admin, login: t.nav.login, menu: t.nav.menu, user: t.nav.user, zh: t.language.zh, en: t.language.en }}
-            navItems={navItems}
-            initialUser={headerUser}
-          />
-        </div>
-      </Container>
-    </header>
+            <PrefetchLink href={buildLocalePath("/user", locale)} className="site-user-center-cta cursor-target hidden sm:inline-flex">
+              {t.nav.user}
+            </PrefetchLink>
+            <LanguageSwitcher locale={locale} labels={t.language} />
+            <HeaderSessionGate
+              locale={locale}
+              labels={{ admin: t.nav.admin, login: t.nav.login, menu: t.nav.menu, user: t.nav.user, zh: t.language.zh, en: t.language.en }}
+              navItems={navItems}
+              initialUser={headerUser}
+            />
+          </div>
+        </Container>
+      </header>
+      <BackNavigationBar locale={locale} />
+    </>
   );
 }

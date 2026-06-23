@@ -813,6 +813,54 @@ select option:disabled {
   justify-self: end;
 }
 
+.site-back-nav {
+  position: relative;
+  z-index: 30;
+  width: min(100% - 2rem, 80rem);
+  margin: -6px auto 0;
+  padding: 0 0 8px;
+  pointer-events: none;
+}
+
+.site-back-nav-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.055);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.035));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 14px 30px rgba(5, 5, 5, 0.12);
+  color: var(--marketing-text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0 14px;
+  pointer-events: auto;
+  white-space: nowrap;
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.site-back-nav-button:hover {
+  border-color: rgba(240, 90, 53, 0.55);
+  background-color: rgba(240, 90, 53, 0.1);
+  color: var(--marketing-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 16px 34px rgba(5, 5, 5, 0.16);
+  transform: translateY(-1px);
+}
+
+.site-back-nav-button:active {
+  transform: translateY(0);
+}
+
+.site-back-nav-button:focus-visible {
+  outline: 2px solid rgba(240, 90, 53, 0.85);
+  outline-offset: 3px;
+}
+
 .site-nav-link,
 .site-login-link,
 .site-admin-link {
