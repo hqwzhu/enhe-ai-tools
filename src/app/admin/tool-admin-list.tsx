@@ -24,6 +24,9 @@ type ToolItem = {
   content: string;
   coverImage: string | null;
   screenshots: string[];
+  videoUrl: string | null;
+  videoTitle: string | null;
+  videoDescription: string | null;
   version: string | null;
   systemRequirement: string | null;
   isVipRequired: boolean;
@@ -420,6 +423,31 @@ export function ToolEditor({
               <textarea name="content" required defaultValue={tool?.content ?? ""} className={textareaClass} />
             </Field>
             <div>
+              <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productVideo}</p>
+              <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label={copy.productVideoUrl}>
+                    <input name="videoUrl" defaultValue={tool?.videoUrl ?? ""} placeholder={copy.productVideoUrlPlaceholder} className={inputClass} />
+                  </Field>
+                  <Field label={copy.productVideoUpload}>
+                    <ToolMediaUploadGuard name="videoFile" inputClass={inputClass} />
+                  </Field>
+                  <Field label={copy.productVideoTitle}>
+                    <input name="videoTitle" defaultValue={tool?.videoTitle ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />
+                  </Field>
+                  <Field label={copy.productVideoDescription}>
+                    <textarea name="videoDescription" defaultValue={tool?.videoDescription ?? ""} placeholder={copy.productVideoDescriptionPlaceholder} className={textareaClass} />
+                  </Field>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{copy.productVideoHint}</p>
+                {tool?.videoUrl ? (
+                  <p className="mt-4 break-all rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#C5D0E2]">
+                    {copy.currentProductVideo}: {tool.videoUrl}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <div>
               <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productImages}</p>
               <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
                 <ToolMediaUploadGuard name="screenshotFiles" inputClass={inputClass} multiple />
@@ -543,7 +571,7 @@ const toolAdminCopy = {
     softwarePriceSpecIntro: "按授权规格设置购买价格。第一条启用且大于 0 的规格会作为列表和筛选中的主价格。",
     servicePriceSpecIntro: "按服务规格设置服务价格。可配置不同账号、时长或套餐规格。",
     detailSection: "详情内容",
-    detailSectionIntro: "维护简介、详细介绍、商品图和购买后可见的下载链接内容。",
+    detailSectionIntro: "维护简介、详细介绍、产品视频、商品图和购买后可见的下载链接内容。",
     priceSpecName: "规格名称",
     priceSpecNamePlaceholderA: "例如：单机授权",
     priceSpecNamePlaceholderB: "例如：终身授权",
@@ -574,6 +602,16 @@ const toolAdminCopy = {
     servicePrice: "服务价格",
     shortDescription: "简介",
     content: "详细介绍",
+    productVideo: "详细介绍产品视频",
+    productVideoUrl: "当前视频地址",
+    productVideoUrlPlaceholder: "/uploads/tool-videos/demo.mp4 或 https://...",
+    productVideoUpload: "本地上传视频",
+    productVideoTitle: "视频标题",
+    productVideoTitlePlaceholder: "例如：产品功能演示",
+    productVideoDescription: "视频说明",
+    productVideoDescriptionPlaceholder: "可简要说明视频内容、适用场景或观看重点",
+    productVideoHint: "支持 MP4/WebM/MOV，建议 500MB 以内。上传新视频会自动替换当前视频地址；不上传则保留已填写的视频地址。",
+    currentProductVideo: "当前视频",
     productImages: "详细介绍商品图",
     productImagesHint: "支持多张 JPG/PNG/WebP，建议 1200x900 或 4:3。图片会在工具详情页按电商图文格式展示；用上移/下移调整展示顺序，取消勾选后保存会移除。",
     productImageAlt: "商品图",
@@ -647,7 +685,7 @@ const toolAdminCopy = {
     softwarePriceSpecIntro: "Set purchase prices by authorization specification. The first active price above zero becomes the primary list price.",
     servicePriceSpecIntro: "Set service prices by account, duration, or package specification.",
     detailSection: "Detail content",
-    detailSectionIntro: "Maintain short description, detailed intro, product images, and post-purchase download-link content.",
+    detailSectionIntro: "Maintain short description, detailed intro, product video, product images, and post-purchase download-link content.",
     priceSpecName: "Specification name",
     priceSpecNamePlaceholderA: "e.g. Single-machine license",
     priceSpecNamePlaceholderB: "e.g. Lifetime license",
@@ -678,6 +716,16 @@ const toolAdminCopy = {
     servicePrice: "Service price",
     shortDescription: "Short description",
     content: "Detailed introduction",
+    productVideo: "Product video in detail intro",
+    productVideoUrl: "Current video URL",
+    productVideoUrlPlaceholder: "/uploads/tool-videos/demo.mp4 or https://...",
+    productVideoUpload: "Upload local video",
+    productVideoTitle: "Video title",
+    productVideoTitlePlaceholder: "e.g. Product feature demo",
+    productVideoDescription: "Video description",
+    productVideoDescriptionPlaceholder: "Briefly describe the video content, scenario, or viewing focus",
+    productVideoHint: "Supports MP4/WebM/MOV, under 500MB recommended. Uploading a new video replaces the current video URL; leaving it empty keeps the URL you entered.",
+    currentProductVideo: "Current video",
     productImages: "Product images in detail intro",
     productImagesHint: "Upload multiple JPG/PNG/WebP images. 1200x900 or 4:3 is recommended. Images appear in the tool detail page like an ecommerce product gallery; use move up/down to adjust display order, or uncheck images before saving to remove.",
     productImageAlt: "Product image",

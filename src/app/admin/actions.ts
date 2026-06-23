@@ -29,7 +29,7 @@ import { notifyIndexNow } from "@/lib/indexnow";
 import { revokeEntitlementsForRefundedOrder } from "@/lib/membership";
 import { createLicenseCode, createLumiLicenseCode, isUnlimitedLicenseKeyValid, normalizeLumiMachineCode, parseLicenseCode, parseLumiLicenseCodePayload } from "@/lib/license-generator";
 import type { LicenseGeneratorActionState } from "@/lib/license-generator-action-state";
-import { isLikelyUploadableImage } from "@/lib/media";
+import { isLikelyUploadableImage, isLikelyUploadableVideo } from "@/lib/media";
 import { buildRefundProcessedNotification } from "@/lib/notification-messages";
 import { createUserNotification } from "@/lib/notifications";
 import {
@@ -167,6 +167,17 @@ async function saveAdminImageUploads(files: FormDataEntryValue[], prefix: string
     if (uploaded) uploadedImages.push(uploaded);
   }
   return uploadedImages;
+}
+
+async function saveAdminVideoUpload(file: FormDataEntryValue | null, safeToolKey: string) {
+  if (!(file instanceof File) || file.size === 0) return null;
+  const stored = await saveUploadedFile(file, {
+    folder: `tool-videos/${safeToolKey}`,
+    maxBytes: adminFileUploadMaxBytes,
+    accept: isLikelyUploadableVideo,
+    invalidTypeMessage: "请上传 MP4、WebM 或 MOV 等视频文件。"
+  });
+  return stored.fileUrl;
 }
 
 async function resolvePaymentQrCodeInput(urlValue: FormDataEntryValue | null, fileValue: FormDataEntryValue | null, method: "alipay" | "wechat") {
@@ -1094,6 +1105,7 @@ export async function upsertToolAction(formData: FormData) {
     }
     const safeToolKey = resolvedSlug;
     const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `tool-cover-${safeToolKey}`);
+    const uploadedProductVideo = await saveAdminVideoUpload(formData.get("videoFile"), safeToolKey);
     const downloadFileUrl = parseDownloadFileUrl(formData.get("downloadFileUrl"));
     const selectedDownloadFileId = parseOptionalString(formData.get("downloadFileId"));
     const priceSpecs = parseToolPriceSpecsFromFormData(formData);
@@ -1114,6 +1126,9 @@ export async function upsertToolAction(formData: FormData) {
       content: normalizeToolContentForStorage(z.string().min(1).parse(formData.get("content"))),
       coverImage: uploadedCoverImage ?? parseOptionalString(formData.get("coverImage")),
       screenshots: mergeToolProductImages(existingProductImages, uploadedProductImages),
+      videoUrl: uploadedProductVideo ?? parseOptionalString(formData.get("videoUrl")),
+      videoTitle: parseOptionalString(formData.get("videoTitle")),
+      videoDescription: parseOptionalString(formData.get("videoDescription")),
       version: parseOptionalString(formData.get("version")),
       systemRequirement: parseOptionalString(formData.get("systemRequirement")),
       isVipRequired: parseBooleanField(formData.get("isVipRequired")),

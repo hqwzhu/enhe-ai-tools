@@ -15,7 +15,7 @@ import { buildSeoFriendlySlug } from "@/lib/admin-form";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
-import { normalizeImageSrc } from "@/lib/media";
+import { normalizeImageSrc, normalizeMediaSrc } from "@/lib/media";
 import {
   buildCanonicalToolPath,
   getCanonicalToolSlug,
@@ -253,6 +253,7 @@ export async function ToolDetailPageShell({
   );
   const isPurchasableAccountService = isAccountService && servicePrice > 0;
   const coverImage = normalizeImageSrc(tool.coverImage);
+  const productVideoSrc = normalizeMediaSrc(tool.videoUrl);
   const hasDownloadPurchase = user
     ? await prisma.toolPurchase
         .findUnique({
@@ -787,6 +788,35 @@ export async function ToolDetailPageShell({
           <section className="glass rounded-2xl p-7">
             <SectionTitle title={introTitle} intro={productImagesIntro} />
             <div className="mt-6 space-y-7">
+              {productVideoSrc ? (
+                <div className="tool-detail-product-video overflow-hidden rounded-2xl border border-white/10 bg-[#07101E]">
+                  <video
+                    className="aspect-video w-full bg-black object-contain"
+                    controls
+                    playsInline
+                    preload="metadata"
+                    src={productVideoSrc}
+                  >
+                    {forceLocale === "en"
+                      ? "Your browser does not support embedded video playback."
+                      : "您的浏览器不支持内嵌视频播放。"}
+                  </video>
+                  {tool.videoTitle || tool.videoDescription ? (
+                    <div className="border-t border-white/10 bg-white/6 p-5">
+                      {tool.videoTitle ? (
+                        <h2 className="text-lg font-semibold text-[#F6FAFF]">
+                          {tool.videoTitle}
+                        </h2>
+                      ) : null}
+                      {tool.videoDescription ? (
+                        <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#8F9DB2]">
+                          {tool.videoDescription}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
               {tool.screenshots.length ? (
                 <div className="tool-detail-product-gallery grid gap-5">
                   {tool.screenshots.map((screenshot, index) => {

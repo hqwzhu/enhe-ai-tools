@@ -258,6 +258,9 @@ model Tool {
   content           String
   coverImage        String?        @map("cover_image")
   screenshots       String[]       @default([])
+  videoUrl          String?        @map("video_url")
+  videoTitle        String?        @map("video_title")
+  videoDescription  String?        @map("video_description")
   version           String?
   systemRequirement String?        @map("system_requirement")
   isVipRequired     Boolean        @default(true) @map("is_vip_required")

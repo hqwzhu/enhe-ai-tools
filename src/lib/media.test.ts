@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isImagePath, normalizeImageSrc } from "@/lib/media";
+import { isImagePath, isLikelyUploadableVideo, normalizeImageSrc, normalizeMediaSrc } from "@/lib/media";
 
 describe("media helpers", () => {
   it("detects image paths so QR codes render as images instead of text", () => {
@@ -11,6 +11,25 @@ describe("media helpers", () => {
   it("normalizes runtime upload image paths through the upload API", () => {
     expect(normalizeImageSrc("uploads/proof.jpg")).toBe("/api/uploads/proof.jpg");
     expect(normalizeImageSrc("/uploads/proof.jpg")).toBe("/api/uploads/proof.jpg");
+  });
+
+  it("normalizes media URLs without stripping upload subdirectories", () => {
+    expect(normalizeMediaSrc("uploads/tool-videos/demo.mp4")).toBe("/api/uploads/tool-videos/demo.mp4");
+    expect(normalizeMediaSrc("/uploads/tool-videos/demo.mp4")).toBe("/api/uploads/tool-videos/demo.mp4");
+    expect(normalizeMediaSrc("videos/demo.mp4")).toBe("/videos/demo.mp4");
+    expect(normalizeMediaSrc("https://example.com/demo.mp4")).toBe("https://example.com/demo.mp4");
+  });
+
+  it("detects uploadable product video files", () => {
+    const mp4 = new File(["demo"], "demo.mp4", { type: "video/mp4" });
+    const webm = new File(["demo"], "demo.webm", { type: "video/webm" });
+    const mov = new File(["demo"], "demo.mov", { type: "video/quicktime" });
+    const text = new File(["demo"], "demo.txt", { type: "text/plain" });
+
+    expect(isLikelyUploadableVideo(mp4)).toBe(true);
+    expect(isLikelyUploadableVideo(webm)).toBe(true);
+    expect(isLikelyUploadableVideo(mov)).toBe(true);
+    expect(isLikelyUploadableVideo(text)).toBe(false);
   });
 
   it("normalizes bundled image paths for Next image rendering", () => {

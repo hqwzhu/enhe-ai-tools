@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createStorageObjectKey,
+  defaultAllowedUploadExtensions,
   getAllowedUploadExtensions,
   getCosDeletePlan,
   getCosSignedUrlExpiresSeconds,
@@ -53,6 +54,10 @@ describe("storage helpers", () => {
     expect(getAllowedUploadExtensions({ UPLOAD_ALLOWED_EXTENSIONS: ".zip, jpg, .PNG" })).toEqual([".zip", ".jpg", ".png"]);
     expect(isUploadExtensionAllowed("installer.EXE", [".exe"])).toBe(true);
     expect(isUploadExtensionAllowed("shell.php", [".zip", ".png"])).toBe(false);
+  });
+
+  it("allows product video upload extensions by default", () => {
+    expect(defaultAllowedUploadExtensions).toEqual(expect.arrayContaining([".mp4", ".webm", ".mov"]));
   });
 
   it("uses local or public URLs unless a COS private file is configured", async () => {

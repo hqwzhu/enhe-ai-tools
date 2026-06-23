@@ -3,32 +3,37 @@ import { extname } from "node:path";
 import { NextResponse } from "next/server";
 import { getUploadDiskPath } from "@/lib/upload-path";
 
-const imageMimeTypes: Record<string, string> = {
+const uploadMimeTypes: Record<string, string> = {
   ".gif": "image/gif",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".png": "image/png",
   ".svg": "image/svg+xml",
-  ".webp": "image/webp"
+  ".webp": "image/webp",
+  ".m4v": "video/mp4",
+  ".mov": "video/quicktime",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm"
 };
 
-function getImageContentType(fileName: string) {
-  return imageMimeTypes[extname(fileName).toLowerCase()] ?? "application/octet-stream";
+function getUploadContentType(fileName: string) {
+  return uploadMimeTypes[extname(fileName).toLowerCase()] ?? "application/octet-stream";
 }
 
-function isSafeUploadFileName(fileName: string) {
-  return Boolean(fileName && !fileName.includes("/") && !fileName.includes("\\") && fileName !== "." && fileName !== "..");
+function isSafeUploadPath(parts: string[]) {
+  return Boolean(parts.length && parts.every((part) => part && !part.includes("\\") && part !== "." && part !== ".."));
 }
 
-export async function GET(_: Request, { params }: { params: Promise<{ fileName: string }> }) {
+export async function GET(_: Request, { params }: { params: Promise<{ fileName: string[] }> }) {
   const { fileName } = await params;
-  const decodedFileName = decodeURIComponent(fileName);
+  const decodedParts = fileName.map((part) => decodeURIComponent(part));
 
-  if (!isSafeUploadFileName(decodedFileName)) {
+  if (!isSafeUploadPath(decodedParts)) {
     return NextResponse.json({ message: "Invalid upload file name." }, { status: 400 });
   }
 
-  const diskPath = getUploadDiskPath(`/uploads/${decodedFileName}`);
+  const uploadPath = decodedParts.join("/");
+  const diskPath = getUploadDiskPath(`/uploads/${uploadPath}`);
 
   try {
     const fileStat = await stat(diskPath);
@@ -39,7 +44,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ fileName: 
       headers: {
         "Cache-Control": "public, max-age=31536000, immutable",
         "Content-Length": String(fileStat.size),
-        "Content-Type": getImageContentType(decodedFileName)
+        "Content-Type": getUploadContentType(uploadPath)
       }
     });
   } catch (error) {
