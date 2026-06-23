@@ -27,7 +27,7 @@ import { importAiNewsArticle } from "@/lib/ai-news-import";
 import { notifyBaiduSearch } from "@/lib/baidu-push";
 import { notifyIndexNow } from "@/lib/indexnow";
 import { revokeEntitlementsForRefundedOrder } from "@/lib/membership";
-import { createLicenseCode, isUnlimitedLicenseKeyValid, parseLicenseCode } from "@/lib/license-generator";
+import { createLicenseCode, createLumiLicenseCode, isUnlimitedLicenseKeyValid, normalizeLumiMachineCode, parseLicenseCode, parseLumiLicenseCodePayload } from "@/lib/license-generator";
 import type { LicenseGeneratorActionState } from "@/lib/license-generator-action-state";
 import { isLikelyUploadableImage } from "@/lib/media";
 import { buildRefundProcessedNotification } from "@/lib/notification-messages";
@@ -265,12 +265,15 @@ export async function generateLicenseCodeAdminAction(
   formData: FormData
 ): Promise<LicenseGeneratorActionState> {
   const admin = await requireAdmin();
+  const licenseProduct = z.enum(["faceswap", "lumi-os"]).catch("faceswap").parse(formData.get("licenseProduct"));
   const licenseType = z.enum(["single", "unlimited"]).parse(formData.get("licenseType"));
   const machineId = parseOptionalString(formData.get("machineId"));
+  const licenseId = parseOptionalString(formData.get("licenseId"));
   const note = parseOptionalString(formData.get("note")) ?? "";
   const adminKey = parseOptionalString(formData.get("adminKey"));
+  const expiresAt = parseOptionalString(formData.get("expiresAt"));
 
-  if (licenseType === "unlimited" && !isUnlimitedLicenseKeyValid(adminKey)) {
+  if (licenseProduct === "faceswap" && licenseType === "unlimited" && !isUnlimitedLicenseKeyValid(adminKey)) {
     return {
       ok: false,
       message: "请先输入正确密钥解锁无限授权码。",
@@ -279,6 +282,49 @@ export async function generateLicenseCodeAdminAction(
   }
 
   try {
+    if (licenseProduct === "lumi-os") {
+      const machineCode = normalizeLumiMachineCode(machineId ?? "");
+      const code = createLumiLicenseCode({
+        machineCode,
+        licenseId,
+        note,
+        expiresAt
+      });
+      const payload = parseLumiLicenseCodePayload(code);
+
+      await writeAdminAuditLog({
+        adminId: admin.id,
+        action: "license.generate",
+        targetType: "license",
+        targetId: machineCode,
+        summary: "Generated Lumi OS one-machine license code.",
+        metadata: {
+          product: licenseProduct,
+          machineCode,
+          licenseId: payload.licenseId,
+          note,
+          expiresAt: payload.expiresAt ?? null
+        }
+      });
+
+      return {
+        ok: true,
+        message: "Lumi OS 授权码生成成功。",
+        code,
+        payload: {
+          product: "lumi-os",
+          license_type: "single",
+          machine_id: payload.machineCode,
+          machineCode: payload.machineCode,
+          licenseId: payload.licenseId,
+          issued_at: payload.issuedAt,
+          issuedAt: payload.issuedAt,
+          expiresAt: payload.expiresAt,
+          note
+        }
+      };
+    }
+
     const code = createLicenseCode({ licenseType, machineId, note });
     const parsed = parseLicenseCode(code);
     await writeAdminAuditLog({
@@ -288,6 +334,7 @@ export async function generateLicenseCodeAdminAction(
       targetId: parsed.payload?.machine_id ?? licenseType,
       summary: licenseType === "single" ? "Generated single-machine license code." : "Generated unlimited license code.",
       metadata: {
+        product: licenseProduct,
         licenseType,
         machineId: parsed.payload?.machine_id ?? null,
         note
@@ -300,6 +347,7 @@ export async function generateLicenseCodeAdminAction(
       code,
       payload: parsed.payload
         ? {
+            product: "faceswap",
             license_type: parsed.payload.license_type,
             machine_id: parsed.payload.machine_id,
             issued_at: parsed.payload.issued_at,
