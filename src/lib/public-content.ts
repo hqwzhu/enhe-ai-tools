@@ -742,6 +742,13 @@ export async function getPublicAiNewsDiscovery(locale: "zh" | "en") {
   return getCachedPublicAiNewsDiscovery(locale);
 }
 
+export {
+  filterAiNewsTopicArticles,
+  getPublicAiNewsTopic,
+  getPublicAiNewsTopicSlugs,
+  getPublicAiNewsTopics,
+} from "@/lib/ai-news-topic-config";
+
 export async function resolvePublicToolSlug(slug: string) {
   const items = await getCachedPublicToolSlugIndex();
   return findSlugMatch(items, slug);

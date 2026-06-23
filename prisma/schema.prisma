@@ -784,6 +784,37 @@ model NewsKeywordIntervention {
   @@map("news_keyword_interventions")
 }
 
+model NewsTopic {
+  id                    String        @id @default(cuid())
+  slug                  String        @unique
+  status                ContentStatus @default(active)
+  sortOrder             Int           @default(0) @map("sort_order")
+  title                 String
+  description           String
+  intro                 String
+  answer                String
+  searchQuery           String        @map("search_query")
+  keywords              String[]      @default([])
+  whyItMatters          String[]      @default([]) @map("why_it_matters")
+  actionLinks           Json          @default("[]") @map("action_links")
+  faqs                  Json          @default("[]")
+  sourceLinks           Json          @default("[]") @map("source_links")
+  englishTitle          String?       @map("english_title")
+  englishDescription    String?       @map("english_description")
+  englishIntro          String?       @map("english_intro")
+  englishAnswer         String?       @map("english_answer")
+  englishSearchQuery    String?       @map("english_search_query")
+  englishKeywords       String[]      @default([]) @map("english_keywords")
+  englishWhyItMatters   String[]      @default([]) @map("english_why_it_matters")
+  englishActionLinks    Json          @default("[]") @map("english_action_links")
+  englishFaqs           Json          @default("[]") @map("english_faqs")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  @@index([status, sortOrder])
+  @@map("news_topics")
+}
+
 model NewsArticle {
   id                    String               @id @default(cuid())
   title                 String

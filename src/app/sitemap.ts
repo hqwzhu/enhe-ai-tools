@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
-import { aiNewsTopics, getAiNewsTopicPath } from "@/lib/ai-news-topics";
+import { getAiNewsTopicPath } from "@/lib/ai-news-topics";
 import { prisma } from "@/lib/db";
+import { getPublicAiNewsTopics } from "@/lib/public-content";
 import {
   buildCanonicalToolPath,
   getCanonicalAiNewsSlug,
@@ -149,6 +150,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     })
     .catch(() => []);
+  const aiNewsTopics = await getPublicAiNewsTopics();
 
   return [
     ...staticRoutes.map((path) => ({

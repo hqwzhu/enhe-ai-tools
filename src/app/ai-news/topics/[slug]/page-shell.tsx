@@ -4,8 +4,6 @@ import { notFound } from "next/navigation";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import {
-  aiNewsTopicSlugs,
-  getAiNewsTopic,
   getAiNewsTopicCopy,
   getAiNewsTopicPath,
   type AiNewsTopic,
@@ -17,7 +15,12 @@ import {
 } from "@/lib/ai-news-localization";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { buildCanonicalAiNewsPath } from "@/lib/public-slugs";
-import { getPublicNewsListing } from "@/lib/public-content";
+import {
+  filterAiNewsTopicArticles,
+  getPublicAiNewsTopic,
+  getPublicAiNewsTopicSlugs,
+  getPublicNewsListing,
+} from "@/lib/public-content";
 import {
   absoluteUrl,
   buildAvailableLanguageAlternates,
@@ -30,15 +33,16 @@ import {
 
 export const aiNewsTopicPageRevalidate = 300;
 
-export function generateAiNewsTopicStaticParams() {
-  return aiNewsTopicSlugs.map((slug) => ({ slug }));
+export async function generateAiNewsTopicStaticParams() {
+  const slugs = await getPublicAiNewsTopicSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateAiNewsTopicMetadata(
   forceLocale: Locale,
   slug: string,
 ): Promise<Metadata> {
-  const topic = getAiNewsTopic(slug);
+  const topic = await getPublicAiNewsTopic(slug);
   const t = getDictionary(forceLocale);
   if (!topic) {
     return buildPageMetadata({
@@ -75,17 +79,23 @@ export async function AiNewsTopicPageShell({
   slug: string;
   forceLocale: Locale;
 }) {
-  const topic = getAiNewsTopic(slug);
+  const topic = await getPublicAiNewsTopic(slug);
   if (!topic) notFound();
 
   const t = getDictionary(forceLocale);
   const copy = getAiNewsTopicCopy(topic, forceLocale);
-  const related = await getPublicNewsListing({
+  const relatedCandidates = await getPublicNewsListing({
     q: copy.searchQuery,
     sort: "latest",
-    take: 6,
+    take: 24,
     locale: forceLocale,
   });
+  const relatedArticles = filterAiNewsTopicArticles(
+    relatedCandidates.articles,
+    topic,
+    forceLocale,
+    6,
+  );
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [
       { name: t.nav.home, path: buildLocalePath("/", forceLocale) },
@@ -201,9 +211,9 @@ export async function AiNewsTopicPageShell({
                   forceLocale === "en" ? "Related AI news" : "相关AI资讯"
                 }
               />
-              {related.articles.length ? (
+              {relatedArticles.length ? (
                 <div className="grid gap-4 md:grid-cols-2">
-                  {related.articles.map((article) => (
+                  {relatedArticles.map((article) => (
                     <Link
                       key={article.id}
                       href={buildCanonicalAiNewsPath(article, forceLocale)}

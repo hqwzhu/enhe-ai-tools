@@ -1,13 +1,6 @@
 import type { Locale } from "@/lib/dictionaries";
 
-export type AiNewsTopicSlug =
-  | "ai-agent"
-  | "local-ai"
-  | "open-source-models"
-  | "ai-tools"
-  | "ai-tutorials"
-  | "ai-account-service"
-  | "ai-regulation";
+export type AiNewsTopicSlug = string;
 
 type TopicCopy = {
   title: string;

@@ -10,7 +10,7 @@ describe("home AI news label contracts", () => {
   });
 
   it("keeps the home hero wired to the AI news route through the standard CTA buttons", () => {
-    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
     expect(page).toContain("t.home.aiNewsButton");
     expect(page).toContain('{t.home.aiNewsButton}');

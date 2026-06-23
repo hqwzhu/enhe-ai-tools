@@ -11,7 +11,6 @@ import {
 } from "@/components/ui";
 import { parseNewsSearchParams } from "@/lib/ai-news";
 import {
-  aiNewsTopics,
   getAiNewsTopicCopy,
   getAiNewsTopicPath,
 } from "@/lib/ai-news-topics";
@@ -27,6 +26,7 @@ import { normalizeImageSrc } from "@/lib/media";
 import { buildCanonicalAiNewsPath } from "@/lib/public-slugs";
 import {
   getPublicAiNewsDiscovery,
+  getPublicAiNewsTopics,
   getPublicNewsCategories,
   getPublicNewsListing,
   getPublicNewsTags,
@@ -108,7 +108,7 @@ export async function AiNewsPageShell({
   const params = await searchParams;
   const filters = parseNewsSearchParams(params);
   const t = getDictionary(forceLocale);
-  const [{ articles, total }, featured, hot, categories, tags, discovery] =
+  const [{ articles, total }, featured, hot, categories, tags, discovery, topics] =
     await Promise.all([
       getPublicNewsListing({
         ...(filters satisfies PublicNewsListingFilters),
@@ -119,6 +119,7 @@ export async function AiNewsPageShell({
       getPublicNewsCategories(),
       getPublicNewsTags(),
       getPublicAiNewsDiscovery(forceLocale),
+      getPublicAiNewsTopics(),
     ]);
   const pageCount = Math.max(1, Math.ceil(total / filters.pageSize));
   const breadcrumbSchema = buildBreadcrumbSchema({
@@ -220,6 +221,7 @@ export async function AiNewsPageShell({
             <TopicCollections
               locale={forceLocale}
               items={discovery.topicCollectionItems}
+              topics={topics}
             />
           </aside>
         </div>
@@ -562,12 +564,14 @@ const aiNewsTopicPathHints = [
 function TopicCollections({
   locale,
   items,
+  topics,
 }: {
   locale: Locale;
   items: TopicCollectionItem[];
+  topics: Awaited<ReturnType<typeof getPublicAiNewsTopics>>;
 }) {
   const t = getDictionary(locale);
-  const topicLinks = aiNewsTopics.map((topic) => {
+  const topicLinks = topics.map((topic) => {
     const copy = getAiNewsTopicCopy(topic, locale);
     return {
       key: topic.slug,

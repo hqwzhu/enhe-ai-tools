@@ -426,10 +426,7 @@ export function resolveLocalizedToolIdentity(
   const humanizedSlug = humanizeSlug(tool.slug);
   if (humanizedSlug) {
     return {
-      primaryName:
-        tool.type === "online"
-          ? buildAccountServiceEnglishName(humanizedSlug, "AI")
-          : humanizedSlug,
+      primaryName: humanizedSlug,
       secondaryName:
         name && name.toLowerCase() !== humanizedSlug.toLowerCase() ? name : "",
     };
@@ -472,7 +469,7 @@ function buildEnglishToolSentence(tool: LocalizedToolInput) {
       return `${localizedTool.primaryName} provides AI tool subscription guidance, delivery notes, access support, and compliance guidance on ENHE AI. Review the official platform policy before using any third-party service.`;
     }
 
-    return `${localizedTool.primaryName} provides ${categoryName.toLowerCase()} access support, delivery notes, and compliance guidance on ENHE AI. Review the official platform policy before using any third-party service.`;
+    return `${localizedTool.primaryName} is an AI account service for ${categoryName.toLowerCase()} access support, delivery notes, and compliance guidance on ENHE AI. Review the official platform policy before using any third-party service.`;
   }
 
   if (tool.type === "skill_learning") {
@@ -955,7 +952,7 @@ function buildEnglishTutorialFallback(
       ? "Check the version, system requirements, price, and download access before using it in your workflow."
       : tool.type === "skill_learning"
         ? "Check the course scope, purchase status, and lesson access before starting the learning path."
-        : "Check the pricing, delivery notes, and account access details before using the service.";
+        : "Review pricing, delivery notes, and access guidance before using the service.";
 
   return [
     {

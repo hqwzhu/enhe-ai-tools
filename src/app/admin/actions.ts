@@ -52,6 +52,7 @@ import { canOpenProtectedDownloadEntry } from "@/lib/tool-download-link";
 import { getPrimaryToolPriceSpec, parseToolPriceSpecsFromFormData, type ToolPriceSpecDraft } from "@/lib/tool-price-specs";
 import { mergeToolProductImages } from "@/lib/tool-product-images";
 import { buildCanonicalAiNewsPath, buildCanonicalToolPath } from "@/lib/public-slugs";
+import { parseTopicDelimitedRows } from "@/lib/ai-news-topic-config";
 import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
 import { refundZpayTransactionForOrder } from "@/lib/zpay-orders";
@@ -1603,6 +1604,138 @@ function parseExternalSources(value: FormDataEntryValue | null) {
       return { title, url, sourceType, description: description || null, sortOrder: index };
     })
     .filter((source) => source.title && /^https?:\/\//i.test(source.url));
+}
+
+function parseTopicJsonRows(
+  value: FormDataEntryValue | null,
+  kind: "faq" | "source" | "action"
+) {
+  const text = String(value ?? "");
+  if (kind === "faq") {
+    return JSON.parse(JSON.stringify(parseTopicDelimitedRows(text, "faq"))) as Prisma.InputJsonValue;
+  }
+  if (kind === "source") {
+    return JSON.parse(JSON.stringify(parseTopicDelimitedRows(text, "source"))) as Prisma.InputJsonValue;
+  }
+  return JSON.parse(JSON.stringify(parseTopicDelimitedRows(text, "action"))) as Prisma.InputJsonValue;
+}
+
+async function resolveUniqueNewsTopicSlug(input: {
+  title: string;
+  slugInput?: string | null;
+  fallbackSeed: string;
+  id?: string | null;
+}) {
+  let slug = resolveNewsSlug(input);
+  const baseSlug = slug;
+  let retry = 0;
+
+  while (
+    await prisma.newsTopic.findFirst({
+      where: { slug, ...(input.id ? { id: { not: input.id } } : {}) },
+      select: { id: true }
+    })
+  ) {
+    retry += 1;
+    slug = `${baseSlug}-${Math.random().toString(36).slice(2, 8)}`;
+    if (retry > 10) break;
+  }
+
+  return slug;
+}
+
+function revalidateAiNewsTopicPaths(slug: string) {
+  revalidateTag("public-news");
+  revalidateTag("public-ai-news-topics");
+  revalidatePath("/admin/ai-news/topics");
+  revalidatePath("/ai-news");
+  revalidatePath("/en/ai-news");
+  revalidatePath(`/ai-news/topics/${slug}`);
+  revalidatePath(`/en/ai-news/topics/${slug}`);
+  revalidatePath("/sitemap.xml");
+}
+
+export async function upsertNewsTopicAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const returnTo = parseOptionalString(formData.get("returnTo")) ?? "/admin/ai-news/topics";
+  let savedId = id;
+
+  try {
+    const title = z.string().min(1).parse(formData.get("title"));
+    const slug = await resolveUniqueNewsTopicSlug({
+      title,
+      slugInput: parseOptionalString(formData.get("slug")),
+      fallbackSeed: id ?? Date.now().toString(36),
+      id
+    });
+    const data = {
+      slug,
+      status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active"),
+      sortOrder: parseNumberField(formData.get("sortOrder"), 0),
+      title,
+      description: z.string().min(1).parse(formData.get("description")),
+      intro: z.string().min(1).parse(formData.get("intro")),
+      answer: z.string().min(1).parse(formData.get("answer")),
+      searchQuery: z.string().min(1).parse(formData.get("searchQuery")),
+      keywords: parseMultilineItems(formData.get("keywords")),
+      whyItMatters: parseMultilineItems(formData.get("whyItMatters")),
+      actionLinks: parseTopicJsonRows(formData.get("actionLinks"), "action"),
+      faqs: parseTopicJsonRows(formData.get("faqs"), "faq"),
+      sourceLinks: parseTopicJsonRows(formData.get("sourceLinks"), "source"),
+      englishTitle: parseOptionalString(formData.get("englishTitle")),
+      englishDescription: parseOptionalString(formData.get("englishDescription")),
+      englishIntro: parseOptionalString(formData.get("englishIntro")),
+      englishAnswer: parseOptionalString(formData.get("englishAnswer")),
+      englishSearchQuery: parseOptionalString(formData.get("englishSearchQuery")),
+      englishKeywords: parseMultilineItems(formData.get("englishKeywords")),
+      englishWhyItMatters: parseMultilineItems(formData.get("englishWhyItMatters")),
+      englishActionLinks: parseTopicJsonRows(formData.get("englishActionLinks"), "action"),
+      englishFaqs: parseTopicJsonRows(formData.get("englishFaqs"), "faq")
+    };
+
+    const saved = id
+      ? await prisma.newsTopic.update({ where: { id }, data })
+      : await prisma.newsTopic.create({ data });
+    savedId = saved.id;
+
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: id ? "news_topic.update" : "news_topic.create",
+      targetType: "news_topic",
+      targetId: saved.id,
+      summary: id ? "Updated AI news topic." : "Created AI news topic.",
+      metadata: { title, slug: saved.slug, status: saved.status }
+    });
+
+    revalidateAiNewsTopicPaths(saved.slug);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "保存 AI 资讯专题失败，请检查表单。";
+    redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(`/admin/ai-news/topics/${savedId}?saved=1`);
+}
+
+export async function deleteNewsTopicAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const topic = await prisma.newsTopic.delete({
+    where: { id },
+    select: { id: true, title: true, slug: true }
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "news_topic.delete",
+    targetType: "news_topic",
+    targetId: topic.id,
+    summary: "Deleted AI news topic.",
+    metadata: { title: topic.title, slug: topic.slug }
+  });
+
+  revalidateAiNewsTopicPaths(topic.slug);
+  redirect("/admin/ai-news/topics?deleted=1");
 }
 
 async function resolveUniqueNewsSlug(input: { title: string; slugInput?: string | null; fallbackSeed: string; id?: string | null }) {
