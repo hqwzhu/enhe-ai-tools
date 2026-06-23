@@ -36,6 +36,13 @@ describe("AI GEO foundations", () => {
     expect(okfIndex).toContain("[ENHE AI overview](./enhe-ai-overview.md)");
     expect(okfIndex).toContain("GEO Query Coverage");
     expect(okfIndex).toContain("Content-to-Action Map");
+
+    const softwareOkf = read("public/okf/software/index.md");
+    expect(softwareOkf).toContain("AI Agent Tool Recommendation Answer");
+    expect(softwareOkf).toContain("Recommendation Dimensions");
+    expect(softwareOkf).toContain("FAQ For Answer Engines");
+    expect(softwareOkf).toContain("Source And Schema Notes");
+    expect(softwareOkf).toContain("https://schema.org/FAQPage");
   });
 
   it("allows AI answer-engine crawlers while keeping private surfaces blocked", () => {
@@ -74,6 +81,15 @@ describe("AI GEO foundations", () => {
     const skillLearning = read("src/app/skill-learning/page-shell.tsx");
 
     expect(software).toContain("softwareGeoSections");
+    expect(software).toContain("softwareAnswerBlock");
+    expect(software).toContain("softwareFaqItems");
+    expect(software).toContain("softwareComparisonRows");
+    expect(software).toContain("softwareSourceLinks");
+    expect(software).toContain("buildSoftwareCollectionSchema");
+    expect(software).toContain("buildFaqSchema");
+    expect(software).toContain("AI智能体工具推荐");
+    expect(software).toContain('"@type": "ItemList"');
+    expect(software).toContain("citation:");
     expect(software).toContain("如何选择AI软件应用");
     expect(software).toContain(
       'buildLocalePath("/skill-learning", forceLocale)',
