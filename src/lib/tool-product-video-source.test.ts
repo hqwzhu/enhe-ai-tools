@@ -62,8 +62,21 @@ describe("tool product video source", () => {
     expect(detail).toContain("tool.videoUrl");
     expect(detail).toContain("tool-detail-product-video");
     expect(detail).toContain("<video");
+    expect(detail).toContain("autoPlay");
     expect(detail).toContain("controls");
-    expect(detail).toContain('preload="metadata"');
+    expect(detail).toContain("muted");
+    expect(detail).toContain('preload="auto"');
     expect(detail.indexOf("tool-detail-product-video")).toBeLessThan(detail.indexOf("tool-detail-product-gallery"));
+  });
+
+  it("serves uploaded videos with byte ranges for browser playback", () => {
+    const uploadRoute = readProjectFile("src/app/api/uploads/[...fileName]/route.ts");
+
+    expect(uploadRoute).toContain("parseRangeHeader");
+    expect(uploadRoute).toContain("createReadStream");
+    expect(uploadRoute).toContain("Accept-Ranges");
+    expect(uploadRoute).toContain("Content-Range");
+    expect(uploadRoute).toContain("status: 206");
+    expect(uploadRoute).toContain('".mp4": "video/mp4"');
   });
 });

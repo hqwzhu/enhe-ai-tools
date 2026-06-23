@@ -3,7 +3,6 @@ import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { BorderGlowController } from "@/components/border-glow-controller";
 import { CursorGlow } from "@/components/cursor-glow";
 import { InteractiveBackground } from "@/components/interactive-background";
-import { TargetCursor } from "@/components/target-cursor";
 import {
   defaultSiteDescription,
   getSiteBaseUrl,
@@ -47,7 +46,6 @@ export function RootDocument({
         <InteractiveBackground />
         <CursorGlow />
         <BorderGlowController />
-        <TargetCursor cursorColorOnTarget="var(--marketing-accent)" />
         <AnalyticsTracker />
         {children}
       </body>

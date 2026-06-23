@@ -792,9 +792,11 @@ export async function ToolDetailPageShell({
                 <div className="tool-detail-product-video overflow-hidden rounded-2xl border border-white/10 bg-[#07101E]">
                   <video
                     className="aspect-video w-full bg-black object-contain"
+                    autoPlay
                     controls
+                    muted
                     playsInline
-                    preload="metadata"
+                    preload="auto"
                     src={productVideoSrc}
                   >
                     {forceLocale === "en"
