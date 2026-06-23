@@ -450,6 +450,31 @@ export function buildAiNewsDescriptionFallback({
   return `阅读 ENHE AI 对${normalizedTitle ? `“${normalizedTitle}”` : topic}的资讯解读，了解核心信息、实际影响、相关工具、教程和下一步落地建议。`;
 }
 
+export function buildAiNewsSerpTitle({
+  title,
+  categoryName,
+  locale,
+  maxLength,
+}: {
+  title: string;
+  categoryName?: string | null;
+  locale: "zh" | "en";
+  maxLength: number;
+}) {
+  const normalizedTitle = normalizeAiNewsMetaCandidate(title);
+  const normalizedCategory = normalizeAiNewsMetaCandidate(categoryName);
+  const suffix = locale === "en" ? "Impact Analysis" : "影响解读";
+  const reservedLength = ` ${suffix}`.length;
+  const source = normalizedTitle || normalizedCategory || "AI";
+  const compactSource =
+    source.length + reservedLength <= maxLength
+      ? source
+      : source.slice(0, Math.max(12, maxLength - reservedLength - 3)).trimEnd() +
+        "...";
+
+  return `${compactSource} ${suffix}`;
+}
+
 export function parseNewsRelationIds(value: string | null | undefined) {
   const seen = new Set<string>();
   return String(value ?? "")

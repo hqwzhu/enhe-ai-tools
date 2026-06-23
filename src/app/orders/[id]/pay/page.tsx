@@ -147,7 +147,7 @@ export default async function PayPage({ params }: PayPageProps) {
                       <a
                         href={zpayPayment.payUrl ?? zpayPayment.qrcodeUrl ?? zpayPayment.displayUrl ?? "#"}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="nofollow noopener noreferrer"
                         className="rounded-full bg-[#050505] px-5 py-3 text-sm font-semibold text-white"
                       >
                         打开收银台
