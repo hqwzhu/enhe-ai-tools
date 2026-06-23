@@ -432,7 +432,7 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
           title={labels.comparisonTitle}
           intro={labels.comparisonIntro}
         />
-        <div className="mt-6 overflow-x-auto">
+        <div className="mt-6 hidden overflow-x-auto md:block">
           <table className="w-full min-w-[760px] border-separate border-spacing-0 overflow-hidden rounded-2xl border border-white/10 text-left text-sm">
             <thead>
               <tr className="bg-white/10 text-[var(--marketing-text)]">
@@ -469,6 +469,27 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="mt-6 grid gap-4 md:hidden">
+          {comparisonRows.map((row) => (
+            <article key={row.dimension} className="software-comparison-card">
+              <h3>{row.dimension}</h3>
+              <dl>
+                <div>
+                  <dt>{labels.localAi}</dt>
+                  <dd>{row.localAi}</dd>
+                </div>
+                <div>
+                  <dt>{labels.onlineAi}</dt>
+                  <dd>{row.onlineAi}</dd>
+                </div>
+                <div>
+                  <dt>{labels.nextStep}</dt>
+                  <dd>{row.enheNextStep}</dd>
+                </div>
+              </dl>
+            </article>
+          ))}
         </div>
       </section>
 

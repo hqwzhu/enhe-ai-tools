@@ -48,7 +48,7 @@ export async function LoginPageShell({
           wrapperClassName="mt-2"
           className="form-control-dark"
         />
-        <FormSubmitButton className="mt-8 w-full text-base" pendingLabel={t.auth.loggingIn}>
+        <FormSubmitButton className="login-submit-button mt-8 w-full text-base !text-[#050505]" pendingLabel={t.auth.loggingIn}>
           {t.auth.loginButton}
         </FormSubmitButton>
         <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">

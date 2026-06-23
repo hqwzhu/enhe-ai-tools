@@ -47,6 +47,7 @@ import {
 } from "@/lib/tool-localization";
 import { getPrimaryToolPrice } from "@/lib/tool-price-specs";
 import {
+  canOpenPublicDownloadEntry,
   canOpenProtectedDownloadEntry,
   canShowDownloadLinkArea,
   getDownloadLinkContent,
@@ -274,6 +275,13 @@ export async function ToolDetailPageShell({
   });
   const canOpenDownloadEntry =
     canOpenProtectedDownloadEntry(downloadLinkContent);
+  const publicDownloadHref = canOpenPublicDownloadEntry({
+    content: downloadLinkContent,
+    isDownloadPaid: tool.isDownloadPaid,
+    hasDownloadPurchase,
+  })
+    ? downloadLinkContent
+    : null;
   const protectedDownloadHref = `/api/tools/${tool.id}/download`;
   const softwareDownloadCtaHref = resolveSoftwareDownloadCtaHref({
     hasDownloadLink,
@@ -281,6 +289,7 @@ export async function ToolDetailPageShell({
     isDownloadPaid: tool.isDownloadPaid,
     hasDownloadPurchase,
     protectedDownloadHref,
+    publicDownloadHref,
   });
   const related = await prisma.tool.findMany({
     where: { type: tool.type, status: "published", id: { not: tool.id } },
@@ -309,6 +318,11 @@ export async function ToolDetailPageShell({
     forceLocale === "en"
       ? "Before using this page, review the suitable scenario, delivery boundary, platform rules, and support contact. ENHE AI will continue adding common questions as the page evolves."
       : "使用前请先确认适用场景、交付边界、平台规则和支持方式；页面会随产品与课程内容持续补充常见问题。";
+  const purchaseButtonLabel = isAccountService ? td.buyService : isSkillLearning
+    ? forceLocale === "en"
+      ? "Purchase now"
+      : "鐐瑰嚮璐拱"
+    : td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2));
   const introTitle = isAccountService ? td.serviceIntroTitle : td.introTitle;
   const productImagesIntro = isAccountService
     ? td.serviceProductImagesIntro

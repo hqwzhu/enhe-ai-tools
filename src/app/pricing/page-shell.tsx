@@ -28,9 +28,9 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
   const copy =
     forceLocale === "en"
       ? {
-          title: "Paid downloads are now purchased per tool",
+          title: "AI tool purchase guide",
           intro:
-            "ENHE AI now sells paid software downloads by individual tool. Open a software detail page, confirm the price, submit payment proof, and the download link will appear after review approval.",
+            "Paid downloads are now purchased per tool. Open a software detail page, confirm the price, submit payment proof, and the download link will appear after review approval.",
           cardTitle: "Buy from the software page",
           cardText: "Each paid desktop app has its own price and unlocks only that app's download-link content.",
           cta: "View AI software apps",
@@ -40,7 +40,7 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
           afterSalesBoundary: "Paid access follows the description on each detail page. Third-party platform services must follow the official rules of that platform, and support is limited to usage guidance and delivery assistance."
         }
       : {
-          title: "付费下载已改为按工具购买",
+          title: "AI 工具购买说明",
           intro:
             "ENHE AI 现在改为按具体软件付费下载。进入软件详情页确认价格，提交付款凭证，后台审核通过后即可查看该软件的下载链接内容。",
           cardTitle: "前往AI软件应用购买",
@@ -75,7 +75,7 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
           </div>
           <Link
             href={forceLocale === "en" ? "/en/software" : "/software"}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#050505] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#161616]"
+            className="purchase-guide-button inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold !text-[#050505] transition"
           >
             {copy.cta}
             <ArrowRight size={16} />

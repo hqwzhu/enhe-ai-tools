@@ -13,7 +13,7 @@ describe("site footer source", () => {
     expect(footer).toContain('buildLocalePath("/legal/user-agreement", locale)');
     expect(header).not.toContain("甯姪鏀寔");
     expect(css).toContain(".site-user-chip");
-    expect(css).toContain("min-height: 32px");
+    expect(css).toContain("min-height: 44px");
     expect(css).toContain("padding: 0 13px");
     expect(css).not.toMatch(/\.site-footer\s*\{[^}]*border-top:/);
   });

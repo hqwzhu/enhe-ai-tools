@@ -65,13 +65,13 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
           <PrefetchLink href={buildLocalePath("/login", locale)} className="sr-only">
             {t.nav.login}
           </PrefetchLink>
-          <PrefetchLink href={buildLocalePath("/user", locale)} className="site-user-center-cta cursor-target">
+          <PrefetchLink href={buildLocalePath("/user", locale)} className="site-user-center-cta cursor-target hidden sm:inline-flex">
             {t.nav.user}
           </PrefetchLink>
           <LanguageSwitcher locale={locale} labels={t.language} />
           <HeaderSessionGate
             locale={locale}
-            labels={{ admin: t.nav.admin, login: t.nav.login, menu: t.nav.menu, user: t.nav.user }}
+            labels={{ admin: t.nav.admin, login: t.nav.login, menu: t.nav.menu, user: t.nav.user, zh: t.language.zh, en: t.language.en }}
             navItems={navItems}
             initialUser={headerUser}
           />

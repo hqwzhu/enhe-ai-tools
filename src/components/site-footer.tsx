@@ -124,9 +124,11 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
         </div>
 
         <div className="site-footer-grid">
-          {footerGroups.map((group) => (
+          {footerGroups.map((group, index) => (
             <nav key={group.title} className="site-footer-group" aria-label={group.title}>
-              <h2 className="site-footer-group-title">{group.title}</h2>
+              <h2 className="site-footer-group-title site-footer-group-title-desktop">{group.title}</h2>
+              <details className="site-footer-disclosure" open={index < 2}>
+                <summary className="site-footer-group-title">{group.title}</summary>
               <ul className="site-footer-link-list">
                 {group.links.map((link) => (
                   <li key={link.href}>
@@ -136,23 +138,27 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
                   </li>
                 ))}
               </ul>
+              </details>
             </nav>
           ))}
 
           <address id="footer-contact" className="site-footer-contact not-italic">
-            <h2 className="site-footer-group-title">{locale === "en" ? "Company" : "公司信息"}</h2>
-            <span>
-              {contactLabels.company}: {companyName}
-            </span>
-            <span>
-              {contactLabels.address}: {companyAddress}
-            </span>
-            <a href={companyContact.phoneHref} className="site-footer-link cursor-target">
-              {contactLabels.phone}: {companyContact.phone}
-            </a>
-            <a href={companyContact.emailHref} className="site-footer-link cursor-target">
-              {contactLabels.email}: {companyContact.email}
-            </a>
+            <h2 className="site-footer-group-title site-footer-group-title-desktop">{locale === "en" ? "Company" : "公司信息"}</h2>
+            <details className="site-footer-disclosure">
+              <summary className="site-footer-group-title">{locale === "en" ? "Company" : "公司信息"}</summary>
+              <span>
+                {contactLabels.company}: {companyName}
+              </span>
+              <span>
+                {contactLabels.address}: {companyAddress}
+              </span>
+              <a href={companyContact.phoneHref} className="site-footer-link cursor-target">
+                {contactLabels.phone}: {companyContact.phone}
+              </a>
+              <a href={companyContact.emailHref} className="site-footer-link cursor-target">
+                {contactLabels.email}: {companyContact.email}
+              </a>
+            </details>
           </address>
         </div>
 

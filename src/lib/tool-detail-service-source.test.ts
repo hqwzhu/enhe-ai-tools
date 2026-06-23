@@ -18,8 +18,12 @@ describe("tool detail service purchase source", () => {
     const source = readFileSync(join(process.cwd(), "src/app/tools/[slug]/page-shell.tsx"), "utf8");
     const dictionary = readFileSync(join(process.cwd(), "src/lib/dictionaries.ts"), "utf8");
 
-    expect(source).toContain("isAccountService ? td.buyService : isSkillLearning");
-    expect(source).toContain('td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2))');
+    expect(source).toContain("isAccountService");
+    expect(source).toContain("? td.buyService");
+    expect(source).toContain(": isSkillLearning");
+    expect(source).toContain("td.buyDownload.replace(");
+    expect(source).toContain('"{price}"');
+    expect(source).toContain("Number(servicePrice).toFixed(2)");
     expect(source).not.toContain("(isAccountService ? td.buyService : td.buyDownload).replace");
     expect(dictionary).toContain('buyService: "Buy service"');
   });

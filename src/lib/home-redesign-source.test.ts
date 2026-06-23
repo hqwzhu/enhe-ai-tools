@@ -71,10 +71,8 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain("--marketing-bg: #ffffff");
     expect(css).not.toContain(".site-brand-logo-light");
     expect(css).toContain("--marketing-accent: #f05a35");
-    expect(css).toContain("--font-sans: 'Montserrat', 'MiSans'");
-    expect(css).not.toContain("Microsoft YaHei UI");
-    expect(css).toContain("MiSans");
-    expect(css).toContain("HarmonyOS Sans SC");
+    expect(css).toContain("--font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
+    expect(css).toContain("--font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain(".home-page-shell");
     expect(css).toContain(".home-hero-stage");
     expect(css).toContain(".home-hero-centered");
@@ -83,7 +81,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("scroll-margin-top: 96px");
     expect(css).toContain(".home-hero-actions {\n  display: flex;");
     expect(css).toContain(".home-hero-actions {\n    width: 100%;\n    flex-wrap: wrap;");
-    expect(css).toContain(".home-hero-cta {\n    flex: 1 1 42%;");
+    expect(css).toContain(".home-hero-cta {\n    flex: 1 1 calc(50% - 10px);");
     expect(css).not.toContain(".home-gooey-nav-list");
     expect(css).toContain("white-space: pre-line");
     expect(css).toContain(".home-product-preview {\n  width: min(100%, 1040px);\n  margin: 0 auto;");
@@ -155,20 +153,22 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-hero-metrics span");
     expect(css).toContain(".home-hero-cta");
     expect(css).toContain("font-family: var(--font-heading-zh)");
-    expect(css).toContain(".site-nav-link,\n.site-login-link,\n.site-admin-link {\n  align-items: center;\n  border-radius: 999px;\n  color: var(--marketing-text);");
-    expect(css).toContain(".site-user-center-cta {\n  display: inline-flex;");
+    expect(css).toContain(".site-nav-link,\n.site-login-link,\n.site-admin-link {\n  min-height: 44px;\n  align-items: center;\n  border-radius: 999px;\n  color: var(--marketing-text);");
+    expect(css).toContain(".site-user-center-cta {\n  align-items: center;");
+    expect(css).toContain(".site-header-actions > .site-login-link,\n.site-header-actions > .site-user-center-cta,\n.site-header-actions > .site-user-chip {\n  display: none;");
+    expect(css).toContain(".site-header-actions > .site-login-link,\n  .site-header-actions > .site-user-center-cta,\n  .site-header-actions > .site-user-chip {\n    display: inline-flex;");
     expect(css).toContain("background: #ffffff;\n  color: #050505;");
-    expect(css).toContain(".mobile-nav-user-center {\n  background: #ffffff !important;\n  color: #050505 !important;");
-    expect(css).toContain(".site-language-switcher a {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  border-radius: 999px;\n  background: transparent;\n  color: var(--marketing-text);");
+    expect(css).toContain(".site-user-center-cta,\n.mobile-nav-user-center {\n  background: #ffffff !important;\n  color: #050505 !important;");
+    expect(css).toContain(".site-language-switcher a {\n  display: inline-flex;\n  min-height: 34px;\n  align-items: center;\n  justify-content: center;\n  border-radius: 999px;\n  background: transparent;\n  color: var(--marketing-text);");
     expect(css).toContain(".site-language-switcher a.is-active {\n  background: #050505;");
   });
 
   it("adds more breathing room between the two hero title lines", () => {
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
-    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.672em;");
-    expect(css).toContain("margin: clamp(0.55rem, 1.05vw, 0.95rem) auto 0");
-    expect(css).toContain("gap: 0.51em;");
+    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.8736em;");
+    expect(css).toContain("margin: clamp(0.715rem, 1.365vw, 1.235rem) auto 0");
+    expect(css).toContain("gap: 0.58em;");
   });
 
   it("polishes the hero label, CTA contrast, and footer while preserving SEO and GEO source contracts", () => {

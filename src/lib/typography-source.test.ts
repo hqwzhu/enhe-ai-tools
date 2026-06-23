@@ -16,7 +16,7 @@ describe("ENHE typography source contract", () => {
     expect(existsSync(join(publicFontsPath, "misans", "MiSans-Bold.min.css"))).toBe(true);
   });
 
-  it("sets English to Montserrat and Chinese UI/body to MiSans", () => {
+  it("sets English to Montserrat and Chinese UI/body to Microsoft YaHei", () => {
     const css = readFileSync(cssPath, "utf8");
 
     expect(css).toContain("@font-face");
@@ -27,13 +27,13 @@ describe("ENHE typography source contract", () => {
     expect(css).toContain('@import "../../public/fonts/misans/MiSans-Bold.min.css"');
     expect(css).not.toContain("@import url('/fonts/misans/MiSans-Regular.min.css')");
     expect(css).not.toContain("@import url('/fonts/misans/MiSans-Bold.min.css')");
-    expect(css).toContain("--font-sans: 'Montserrat', 'MiSans'");
+    expect(css).toContain("--font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
+    expect(css).toContain("--font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain("font-family: var(--font-sans)");
     expect(css).not.toContain("fonts.googleapis.com");
-    expect(css).not.toContain("Microsoft YaHei UI");
   });
 
-  it("uses Smiley Sans only for Chinese headings and keeps English headings in Montserrat", () => {
+  it("keeps Chinese and English headings aligned to the approved Montserrat / Microsoft YaHei stack", () => {
     const css = readFileSync(cssPath, "utf8");
 
     expect(css).toContain("font-family: 'SmileySans'");

@@ -10,6 +10,7 @@ type MobileNavMenuProps = {
   showAdmin: boolean;
   loginItem?: readonly [string, string];
   userCenterItem?: readonly [string, string];
+  languageItems?: ReadonlyArray<{ label: string; href: string; locale: "zh" | "en"; active: boolean }>;
 };
 
 export function MobileNavMenu({
@@ -17,7 +18,8 @@ export function MobileNavMenu({
   navItems,
   showAdmin,
   loginItem,
-  userCenterItem = ["User Center", "/user"]
+  userCenterItem = ["User Center", "/user"],
+  languageItems = []
 }: MobileNavMenuProps) {
   return (
     <details className="mobile-nav group relative lg:hidden">
@@ -41,6 +43,22 @@ export function MobileNavMenu({
         <PrefetchLink href={userCenterItem[1]} className="mobile-nav-link mobile-nav-user-center cursor-target">
           {userCenterItem[0]}
         </PrefetchLink>
+        {languageItems.length ? (
+          <div className="mobile-nav-language" aria-label="Language">
+            {languageItems.map((item) => (
+              <PrefetchLink
+                key={item.href}
+                href={item.href}
+                className={item.active ? "mobile-nav-language-link is-active cursor-target" : "mobile-nav-language-link cursor-target"}
+                onClick={() => {
+                  document.cookie = `enhe_locale=${item.locale}; path=/; max-age=31536000; samesite=lax`;
+                }}
+              >
+                {item.label}
+              </PrefetchLink>
+            ))}
+          </div>
+        ) : null}
         {showAdmin ? (
           <PrefetchLink href="/admin" className="mobile-nav-link mobile-nav-admin cursor-target">
             <LayoutDashboard size={16} />

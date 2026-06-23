@@ -26,7 +26,8 @@ describe("tool copy formatting source", () => {
     const source = readFileSync(join(process.cwd(), "src/lib/tool-localization.ts"), "utf8");
 
     expect(source).toContain("normalizeRichText");
-    expect(source).toContain("const content = normalizeRichText(tool.content);");
+    expect(source).toContain("const localizedContent = resolveLocalizedInlineCopy(");
+    expect(source).toContain("normalizeRichText,");
     expect(source).not.toContain("const content = normalizeText(tool.content);");
   });
 });

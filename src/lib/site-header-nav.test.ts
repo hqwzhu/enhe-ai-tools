@@ -62,6 +62,6 @@ describe("site header navigation", () => {
     expect(css).toContain("grid-template-columns: minmax(14rem, 1fr) auto minmax(14rem, 1fr);");
     expect(css).toContain(".site-primary-nav {\n  grid-column: 2;");
     expect(css).toContain("gap: clamp(0.385rem, 1.32vw, 0.825rem);");
-    expect(css).toContain(".home-hero-centered {\n  display: flex;\n  width: min(100%, 940px);\n  max-width: 940px;\n  margin: 0 auto;");
+    expect(css).toContain(".home-hero-centered {\n  display: flex;\n  width: min(100%, 1222px);\n  max-width: 1222px;\n  margin: 0 auto;");
   });
 });

@@ -67,6 +67,8 @@ const cjkPattern = /[\u3400-\u9fff]/;
 const latinWordPattern = /[A-Za-z][A-Za-z0-9'+-]*/g;
 const sentenceBreakPattern = /[。！？!?；;\n]+/;
 
+const localizedBlockPattern = /\[\[(zh|en)\]\]([\s\S]*?)\[\[\/\1\]\]/g;
+
 function normalizeText(value: string | null | undefined) {
   return value?.replace(/\s+/g, " ").trim() ?? "";
 }
@@ -82,6 +84,55 @@ function normalizeRichText(value: string | null | undefined) {
       .replace(/\n{3,}/g, "\n\n")
       .trim() ?? ""
   );
+}
+
+function isPlaceholderSummary(value: string) {
+  const normalized = normalizeText(value).toLowerCase();
+  if (!normalized) return true;
+
+  return [
+    "draft",
+    "tbd",
+    "todo",
+    "coming soon",
+    "placeholder",
+    "test",
+    "n/a",
+  ].includes(normalized);
+}
+
+function extractLocalizedBlocks(value: string | null | undefined) {
+  const source = value ?? "";
+  const blocks: Partial<Record<Locale, string>> = {};
+  let hasMatch = false;
+
+  for (const match of source.matchAll(localizedBlockPattern)) {
+    const locale = match[1] as Locale;
+    const content = match[2]?.trim() ?? "";
+    if (!content) continue;
+    blocks[locale] = content;
+    hasMatch = true;
+  }
+
+  return {
+    hasMatch,
+    blocks,
+  };
+}
+
+function resolveLocalizedInlineCopy(
+  value: string | null | undefined,
+  locale: Locale,
+  normalizer: (value: string | null | undefined) => string,
+) {
+  const localized = extractLocalizedBlocks(value);
+  if (!localized.hasMatch) return normalizer(value);
+
+  if (locale === "en") {
+    return normalizer(localized.blocks.en);
+  }
+
+  return normalizer(localized.blocks.zh ?? localized.blocks.en);
 }
 
 function sanitizeAccountServiceRichCopy(
@@ -419,12 +470,21 @@ export function buildLocalizedToolSummary(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
-  const shortDescription = normalizeText(tool.shortDescription);
+  const shortDescription = resolveLocalizedInlineCopy(
+    tool.shortDescription,
+    locale,
+    normalizeText,
+  );
   if (locale === "zh")
     return tool.type === "online"
       ? sanitizeAccountServiceCopy(shortDescription, "zh")
       : shortDescription;
-  if (isLocalizedEnglishCopy(shortDescription, 4)) return shortDescription;
+  if (
+    isLocalizedEnglishCopy(shortDescription, 4) &&
+    !isPlaceholderSummary(shortDescription)
+  ) {
+    return shortDescription;
+  }
   return buildEnglishToolSentence(tool);
 }
 
@@ -433,11 +493,24 @@ export function buildLocalizedToolLongContent(
   locale: Locale,
 ) {
   const content = normalizeRichText(tool.content);
+  const localizedContent = resolveLocalizedInlineCopy(
+    tool.content,
+    locale,
+    normalizeRichText,
+  );
   if (locale === "zh")
     return tool.type === "online"
-      ? sanitizeAccountServiceRichCopy(content || tool.shortDescription, "zh")
-      : content;
-  if (isLocalizedEnglishCopy(content, 8)) return content;
+      ? sanitizeAccountServiceRichCopy(
+          localizedContent ||
+            resolveLocalizedInlineCopy(
+              tool.shortDescription,
+              "zh",
+              normalizeRichText,
+            ),
+          "zh",
+        )
+      : localizedContent || content;
+  if (isLocalizedEnglishCopy(localizedContent, 8)) return localizedContent;
 
   const summary = buildLocalizedToolSummary(tool, locale);
   return [
@@ -473,7 +546,10 @@ export function isVisibleInEnglishContent(
   value: string | null | undefined,
   minimumWords = 3,
 ) {
-  return isLocalizedEnglishCopy(value ?? "", minimumWords);
+  return isLocalizedEnglishCopy(
+    resolveLocalizedInlineCopy(value, "en", normalizeText),
+    minimumWords,
+  );
 }
 
 export function buildLocalizedToolMetaHeading(
@@ -498,7 +574,8 @@ export function buildLocalizedToolMetaDescription(
 ) {
   if (locale === "zh") {
     const description =
-      normalizeText(tool.shortDescription) || normalizeText(tool.content);
+      resolveLocalizedInlineCopy(tool.shortDescription, "zh", normalizeText) ||
+      resolveLocalizedInlineCopy(tool.content, "zh", normalizeText);
     return tool.type === "online"
       ? sanitizeAccountServiceCopy(description, "zh")
       : description;
@@ -512,7 +589,11 @@ export function buildLocalizedToolPreviewText(
   locale: Locale,
 ) {
   if (locale === "zh") {
-    const preview = normalizeText(tool.shortDescription);
+    const preview = resolveLocalizedInlineCopy(
+      tool.shortDescription,
+      "zh",
+      normalizeText,
+    );
     return tool.type === "online"
       ? sanitizeAccountServiceCopy(preview, "zh")
       : preview;
@@ -800,18 +881,24 @@ export function buildLocalizedToolFaqItems(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
+  const localizedFaqs = faqs.map((faq) => ({
+    ...faq,
+    question: resolveLocalizedInlineCopy(faq.question, locale, normalizeText),
+    answer: resolveLocalizedInlineCopy(faq.answer, locale, normalizeRichText),
+  }));
+
   if (locale === "zh") {
-    if (!faqs.length)
+    if (!localizedFaqs.length)
       return ensureMinimumLocalizedFaqItems(
         buildChineseFaqFallback(tool),
         tool,
         locale,
       );
     if (tool.type !== "online")
-      return ensureMinimumLocalizedFaqItems(faqs, tool, locale);
+      return ensureMinimumLocalizedFaqItems(localizedFaqs, tool, locale);
 
     return ensureMinimumLocalizedFaqItems(
-      faqs.map((faq) => ({
+      localizedFaqs.map((faq) => ({
         ...faq,
         answer: sanitizeAccountServiceCopy(faq.answer, "zh"),
       })),
@@ -820,14 +907,16 @@ export function buildLocalizedToolFaqItems(
     );
   }
 
-  const localizedFaqs = faqs.filter(
+  const visibleLocalizedFaqs = localizedFaqs.filter(
     (faq) =>
       isVisibleInEnglishContent(faq.question, 2) &&
       isVisibleInEnglishContent(faq.answer, 5),
   );
 
   return ensureMinimumLocalizedFaqItems(
-    localizedFaqs.length ? localizedFaqs : buildEnglishFaqFallback(tool),
+    visibleLocalizedFaqs.length
+      ? visibleLocalizedFaqs
+      : buildEnglishFaqFallback(tool),
     tool,
     locale,
   );
@@ -861,15 +950,35 @@ export function buildLocalizedToolTutorialItems(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
-  if (locale === "zh") return tutorials;
+  const localizedTutorials = tutorials.map((tutorial) => ({
+    ...tutorial,
+    title: resolveLocalizedInlineCopy(tutorial.title, locale, normalizeText),
+    content: resolveLocalizedInlineCopy(
+      tutorial.content,
+      locale,
+      normalizeRichText,
+    ),
+    notes: resolveLocalizedInlineCopy(
+      tutorial.notes,
+      locale,
+      normalizeRichText,
+    ),
+    commonErrors: resolveLocalizedInlineCopy(
+      tutorial.commonErrors,
+      locale,
+      normalizeRichText,
+    ),
+  }));
 
-  const localizedTutorials = tutorials.filter(
+  if (locale === "zh") return localizedTutorials;
+
+  const visibleLocalizedTutorials = localizedTutorials.filter(
     (tutorial) =>
       isVisibleInEnglishContent(tutorial.title, 2) &&
       isVisibleInEnglishContent(tutorial.content, 6),
   );
 
-  return localizedTutorials.length
-    ? localizedTutorials
+  return visibleLocalizedTutorials.length
+    ? visibleLocalizedTutorials
     : buildEnglishTutorialFallback(tool);
 }
