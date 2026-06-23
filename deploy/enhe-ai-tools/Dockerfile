@@ -9,9 +9,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG DATABASE_URL=postgresql://build:build@127.0.0.1:5432/build?schema=public
 ARG APP_URL=https://www.enhe-tech.com.cn
 ARG NEXT_PUBLIC_APP_URL=https://www.enhe-tech.com.cn
+ARG AUTH_SECRET=build-only-auth-secret-do-not-use-at-runtime
 ENV DATABASE_URL=$DATABASE_URL
 ENV APP_URL=$APP_URL
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV AUTH_SECRET=$AUTH_SECRET
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
