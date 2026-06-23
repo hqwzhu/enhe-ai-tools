@@ -9,6 +9,7 @@ import { ToolCard } from "@/components/tool-card";
 import {
   buildAiNewsRelatedKeywords,
   buildAiNewsDescriptionFallback,
+  buildAiNewsSerpTitle,
   extractNewsTableOfContents,
   isEnglishNewsArticleIndexable,
   mergeAiNewsRelatedItems,
@@ -82,9 +83,14 @@ export async function generateAiNewsDetailPageMetadata(
   const hasIndexableEnglishPage = isEnglishNewsArticleIndexable(article);
   const metadata = buildPageMetadata({
     title: buildMetadataTitle({
-      pageTitle: localized.title,
+      pageTitle: buildAiNewsSerpTitle({
+        title: localized.title,
+        categoryName: article.category?.name,
+        locale: forceLocale,
+        maxLength: forceLocale === "en" ? 58 : 60,
+      }),
       brand: t.brand,
-      maxLength: forceLocale === "en" ? 58 : 68,
+      maxLength: forceLocale === "en" ? 58 : 60,
     }),
     description: localized.description,
     path: `/ai-news/${canonicalSlug}`,

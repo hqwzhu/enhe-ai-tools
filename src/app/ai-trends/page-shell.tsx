@@ -20,6 +20,7 @@ import { type Locale } from "@/lib/dictionaries";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
+  buildFaqSchema,
   buildLanguageAlternates,
   buildLocalePath,
   buildMetaDescription,
@@ -111,6 +112,63 @@ const aiTrendsGeoSections = {
       body: "After identifying a trend, read AI news for context, use AI skill courses to learn the method, then choose software apps or account service guidance to complete the workflow."
     }
   ]
+} as const;
+
+const aiTrendsAnswerBlock = {
+  zh: "ENHE AI 趋势分析的核心判断是：用户最希望 AI 解决高频、耗时、需要专业判断的任务，例如办公自动化、视频生成、内容创作、编程开发、搜索研究和学习。下一步应把趋势转化为软件选择、技能学习和可交付工作流。",
+  en: "ENHE AI's trend analysis shows that users most want AI to solve frequent, time-consuming, judgment-heavy tasks such as office automation, video generation, content creation, coding, research, and learning. The next step is turning demand signals into software choices, skills, and deliverable workflows.",
+} as const;
+
+const aiTrendsSourceLinks = [
+  {
+    title: "Google Trends",
+    href: "https://trends.google.com/trends/",
+  },
+  {
+    title: "GitHub Trending",
+    href: "https://github.com/trending",
+  },
+  {
+    title: "Product Hunt Artificial Intelligence",
+    href: "https://www.producthunt.com/topics/artificial-intelligence",
+  },
+] as const;
+
+const aiTrendsFaqItems = {
+  zh: [
+    {
+      question: "AI趋势热度排行的数据应该如何理解？",
+      answer:
+        "趋势热度不是单一搜索量，而是综合公开搜索趋势、产品发布密度、开发者生态、创作者讨论和商业成熟度后的方向性判断，适合用于内容选题和产品优先级规划。",
+    },
+    {
+      question: "AI趋势页面如何帮助我决定下一步做什么？",
+      answer:
+        "先看高热度方向，再选择对应的AI前沿资讯、AI软件应用、AI技能课程或账号服务咨询，把趋势转化为可执行的工具测试、教程学习和工作流搭建。",
+    },
+    {
+      question: "AI趋势分析是否等同于投资或商业承诺？",
+      answer:
+        "不是。AI趋势分析用于内容、工具和学习方向判断，不构成投资、法律或确定性商业承诺。重要决策应结合官方来源、实际测试和自身业务场景。",
+    },
+  ],
+  en: [
+    {
+      question: "How should I interpret the AI demand heat ranking?",
+      answer:
+        "Demand heat is not a single search-volume metric. It combines public search signals, release cadence, developer momentum, creator discussion, and commercial maturity for content and product planning.",
+    },
+    {
+      question: "How does the AI Trends page help me choose the next action?",
+      answer:
+        "Start with high-demand areas, then move to related AI news, software apps, skill courses, or account service guidance so a trend becomes a tool test, learning path, or workflow.",
+    },
+    {
+      question: "Is AI trend analysis an investment or business guarantee?",
+      answer:
+        "No. The page supports content, product, and learning decisions. It is not investment, legal, or guaranteed business advice. Validate important decisions with official sources and real tests.",
+    },
+  ],
 } as const;
 
 const demandDirections = [
@@ -345,11 +403,37 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
     url: absoluteUrl(buildLocalePath(topicPath, forceLocale)),
     inLanguage: forceLocale === "en" ? "en-US" : "zh-CN"
   };
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: copy.title,
+    description: copy.description,
+    url: absoluteUrl(buildLocalePath(topicPath, forceLocale)),
+    inLanguage: forceLocale === "en" ? "en-US" : "zh-CN",
+    mainEntity: {
+      "@type": "Thing",
+      name: "AI demand trends",
+      description: aiTrendsAnswerBlock[forceLocale],
+    },
+    citation: aiTrendsSourceLinks.map((source) => ({
+      "@type": "CreativeWork",
+      name: source.title,
+      url: source.href,
+    })),
+  };
+  const faqSchema = buildFaqSchema({
+    items: aiTrendsFaqItems[forceLocale].map((item) => ({
+      question: item.question,
+      answer: item.answer,
+    })),
+  });
 
   return (
     <main>
       <Container className="py-14">
-        <StructuredData data={[breadcrumbSchema, collectionSchema]} />
+        <StructuredData
+          data={[breadcrumbSchema, collectionSchema, webPageSchema, faqSchema]}
+        />
         <section className="surface-panel overflow-hidden p-7 md:p-10">
         <div className="max-w-4xl">
           <Badge className="text-[var(--marketing-accent)]">AI Demand Trends</Badge>
@@ -369,6 +453,20 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
         </section>
 
         <AiTrendsGeoBlock forceLocale={forceLocale} />
+
+        <section className="glass mt-8 rounded-2xl p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--marketing-accent)]">
+            {forceLocale === "en" ? "Extractable answer" : "可摘录答案"}
+          </p>
+          <h2 className="mt-4 text-2xl font-black text-[var(--marketing-text)]">
+            {forceLocale === "en"
+              ? "What AI demand means now"
+              : "当前AI需求意味着什么"}
+          </h2>
+          <p className="mt-4 max-w-4xl text-base leading-8 text-[var(--marketing-muted)]">
+            {aiTrendsAnswerBlock[forceLocale]}
+          </p>
+        </section>
 
         <section className="mt-12">
         <SectionTitle title={copy.demandTitle} intro={copy.demandIntro} />
@@ -447,6 +545,47 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             </article>
           ))}
         </div>
+        </section>
+
+        <section className="mt-12 grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="glass rounded-2xl p-6">
+            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+              {forceLocale === "en" ? "AI Trends FAQ" : "AI趋势常见问题"}
+            </h2>
+            <div className="mt-5 grid gap-4">
+              {aiTrendsFaqItems[forceLocale].map((item) => (
+                <article
+                  key={item.question}
+                  className="rounded-2xl border border-white/10 bg-white/7 p-5"
+                >
+                  <h3 className="text-base font-black text-[var(--marketing-text)]">
+                    {item.question}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
+                    {item.answer}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+          <aside className="glass rounded-2xl p-6">
+            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+              {forceLocale === "en" ? "Source citations" : "趋势参考来源"}
+            </h2>
+            <div className="mt-5 grid gap-3">
+              {aiTrendsSourceLinks.map((source) => (
+                <a
+                  key={source.href}
+                  href={source.href}
+                  target="_blank"
+                  rel="nofollow noopener noreferrer"
+                  className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+                >
+                  {source.title}
+                </a>
+              ))}
+            </div>
+          </aside>
         </section>
 
         <section className="mt-12">

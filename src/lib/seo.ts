@@ -147,6 +147,7 @@ const localizedPublicRoutePatterns = [
   /^\/skill-learning\/.+$/,
   /^\/ai-news$/,
   /^\/ai-news\/.+$/,
+  /^\/ai-news\/topics\/.+$/,
   /^\/ai-trends$/,
   /^\/ai-trends\/daily$/,
   /^\/ai-trends\/daily\/.+$/,

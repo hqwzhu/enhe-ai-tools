@@ -121,7 +121,7 @@ export default async function AdminPaymentDetailPage({ params, searchParams }: A
             {isRenderablePaymentProofImage(proofImage) ? (
               <Image src={proofImage} alt={t.proofAlt} width={820} height={520} className="max-h-[520px] w-full rounded-xl object-contain" unoptimized />
             ) : (
-              <a href={proofImage} target="_blank" rel="noreferrer" className="break-all text-sm text-[#48F5D3]">{t.openProof}</a>
+              <a href={proofImage} target="_blank" rel="nofollow noopener noreferrer" className="break-all text-sm text-[#48F5D3]">{t.openProof}</a>
             )}
           </div>
         ) : null}

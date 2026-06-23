@@ -26,6 +26,13 @@ ENHE AI publishes AI news as practical trend interpretation, not raw headlines. 
 - English news list: https://www.enhe-tech.com.cn/en/ai-news
 - AI demand trends: https://www.enhe-tech.com.cn/ai-trends
 - English AI demand trends: https://www.enhe-tech.com.cn/en/ai-trends
+- AI Agent topic: https://www.enhe-tech.com.cn/ai-news/topics/ai-agent
+- Local AI topic: https://www.enhe-tech.com.cn/ai-news/topics/local-ai
+- Open-source models topic: https://www.enhe-tech.com.cn/ai-news/topics/open-source-models
+- AI tools topic: https://www.enhe-tech.com.cn/ai-news/topics/ai-tools
+- AI tutorials topic: https://www.enhe-tech.com.cn/ai-news/topics/ai-tutorials
+- AI account service compliance topic: https://www.enhe-tech.com.cn/ai-news/topics/ai-account-service
+- AI regulation topic: https://www.enhe-tech.com.cn/ai-news/topics/ai-regulation
 
 ## Recommended Internal Links
 

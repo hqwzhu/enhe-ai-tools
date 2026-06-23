@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
+import { aiNewsTopics, getAiNewsTopicPath } from "@/lib/ai-news-topics";
 import { prisma } from "@/lib/db";
 import {
   buildCanonicalToolPath,
@@ -16,6 +17,15 @@ import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
 const aiTrendTopicPaths = ["/ai-trends", "/en/ai-trends"] as const;
+const aiNewsTopicSitemapPathHints = [
+  "/ai-news/topics/ai-agent",
+  "/ai-news/topics/local-ai",
+  "/ai-news/topics/open-source-models",
+  "/ai-news/topics/ai-tools",
+  "/ai-news/topics/ai-tutorials",
+  "/ai-news/topics/ai-account-service",
+  "/ai-news/topics/ai-regulation",
+] as const;
 
 const staticRoutes = [
   "/",
@@ -105,6 +115,12 @@ function buildAvailableLanguageAlternates(
   return buildSeoAvailableLanguageAlternates(path, locales);
 }
 
+function isKnownAiNewsTopicPath(path: string) {
+  return aiNewsTopicSitemapPathHints.includes(
+    path as (typeof aiNewsTopicSitemapPathHints)[number],
+  );
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const tools = await prisma.tool
     .findMany({
@@ -156,6 +172,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.76,
     })),
+    ...aiNewsTopics.flatMap((topic) =>
+      (["zh", "en"] as const).map((locale) => {
+        const path = getAiNewsTopicPath(topic.slug, locale);
+        return {
+          url: absoluteSitemapUrl(path),
+          lastModified: new Date(topic.updatedAt),
+          alternates: {
+            languages: buildAvailableLanguageAlternates(
+              `/ai-news/topics/${topic.slug}`,
+              ["zh", "en"],
+            ),
+          },
+          changeFrequency: "weekly" as const,
+          priority: isKnownAiNewsTopicPath(stripLocalePrefix(path)) ? 0.74 : 0.7,
+        };
+      }),
+    ),
     ...tools.flatMap((tool) => {
       const canonicalPath = buildCanonicalToolPath(tool, "zh");
       const hasEnglishPage = shouldIndexEnglishToolPage(tool);

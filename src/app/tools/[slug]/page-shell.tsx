@@ -719,7 +719,7 @@ export async function ToolDetailPageShell({
                         key={tutorial.id}
                         href={tutorial.videoUrl ?? "#"}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="nofollow noopener noreferrer"
                         className="block break-all text-sm leading-6 text-[var(--marketing-accent)] hover:text-[#ffb09b]"
                       >
                         {tutorial.title}

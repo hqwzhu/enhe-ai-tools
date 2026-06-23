@@ -232,6 +232,27 @@ function extractAccountServiceProductName(
   return productName || fallback;
 }
 
+function buildAccountServiceEnglishName(
+  value: string | null | undefined,
+  fallback: string,
+) {
+  const productName = extractAccountServiceProductName(value, fallback);
+  const normalizedProduct = normalizeText(productName);
+  if (!normalizedProduct || normalizedProduct === fallback) {
+    return "AI Account Service Guidance";
+  }
+  if (/account service guidance$/i.test(normalizedProduct)) {
+    return normalizedProduct;
+  }
+  if (/account service$/i.test(normalizedProduct)) {
+    return `${normalizedProduct} Guidance`;
+  }
+  if (/guidance$/i.test(normalizedProduct)) {
+    return normalizedProduct;
+  }
+  return `${normalizedProduct} AI Account Service Guidance`;
+}
+
 function sanitizeAccountServiceName(
   value: string | null | undefined,
   locale: Locale,
@@ -242,7 +263,7 @@ function sanitizeAccountServiceName(
   if (!hasAccountServiceRiskCopy(normalized)) return normalized;
 
   if (locale === "en") {
-    return `${extractAccountServiceProductName(normalized, "AI")} account service guidance`;
+    return buildAccountServiceEnglishName(normalized, "AI");
   }
 
   return `${extractAccountServiceProductName(normalized, "AI工具")} AI账号服务咨询`;
@@ -405,7 +426,10 @@ export function resolveLocalizedToolIdentity(
   const humanizedSlug = humanizeSlug(tool.slug);
   if (humanizedSlug) {
     return {
-      primaryName: humanizedSlug,
+      primaryName:
+        tool.type === "online"
+          ? buildAccountServiceEnglishName(humanizedSlug, "AI")
+          : humanizedSlug,
       secondaryName:
         name && name.toLowerCase() !== humanizedSlug.toLowerCase() ? name : "",
     };
@@ -445,10 +469,10 @@ function buildEnglishToolSentence(tool: LocalizedToolInput) {
 
   if (tool.type === "online") {
     if (categoryIsGeneric) {
-      return `${localizedTool.primaryName} is an AI account service. Review pricing, delivery notes, and access guidance on ENHE AI.`;
+      return `${localizedTool.primaryName} provides AI tool subscription guidance, delivery notes, access support, and compliance guidance on ENHE AI. Review the official platform policy before using any third-party service.`;
     }
 
-    return `${localizedTool.primaryName} is an AI account service in ${categoryName.toLowerCase()}. Review pricing, delivery notes, and access guidance on ENHE AI.`;
+    return `${localizedTool.primaryName} provides ${categoryName.toLowerCase()} access support, delivery notes, and compliance guidance on ENHE AI. Review the official platform policy before using any third-party service.`;
   }
 
   if (tool.type === "skill_learning") {
@@ -644,7 +668,7 @@ function buildEnglishFaqFallback(
           ? "After payment review, the related download-link content becomes available in your account center."
           : tool.type === "skill_learning"
             ? "After purchase, the course content and practical learning materials become available in your account center."
-            : "After purchase, the service access details become available in your account center.",
+            : "After purchase and review, the service access notes, delivery scope, and compliance reminders become available in your account center.",
     },
   ];
 }
@@ -809,9 +833,9 @@ function buildGeneratedFaqAnswer(
 
     return [
       summary,
-      "After purchase, the service access details become available in your account center.",
-      "Review the service scope, delivery notes, platform rules, and support boundary before purchase or use.",
-      "You can contact ENHE AI support for access guidance, usage suggestions, and service-boundary clarification.",
+      "After purchase and review, the service access notes, delivery scope, and compliance reminders become available in your account center.",
+      "Review the service scope, delivery notes, platform rules, official platform policy, and support boundary before purchase or use.",
+      "You can contact ENHE AI support for access guidance, usage suggestions, compliance guidance, and service-boundary clarification.",
       "ENHE AI may update page notes when platform policy, access conditions, delivery details, or support guidance changes.",
     ][slot];
   }

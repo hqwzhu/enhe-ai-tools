@@ -11,6 +11,11 @@ import {
 } from "@/components/ui";
 import { parseNewsSearchParams } from "@/lib/ai-news";
 import {
+  aiNewsTopics,
+  getAiNewsTopicCopy,
+  getAiNewsTopicPath,
+} from "@/lib/ai-news-topics";
+import {
   buildLocalizedNewsSummary,
   buildLocalizedNewsTitle,
   localizeAiNewsDiscoveryLabel,
@@ -544,6 +549,16 @@ function KeywordCloud({
   );
 }
 
+const aiNewsTopicPathHints = [
+  "/ai-news/topics/ai-agent",
+  "/ai-news/topics/local-ai",
+  "/ai-news/topics/open-source-models",
+  "/ai-news/topics/ai-tools",
+  "/ai-news/topics/ai-tutorials",
+  "/ai-news/topics/ai-account-service",
+  "/ai-news/topics/ai-regulation",
+] as const;
+
 function TopicCollections({
   locale,
   items,
@@ -552,18 +567,39 @@ function TopicCollections({
   items: TopicCollectionItem[];
 }) {
   const t = getDictionary(locale);
+  const topicLinks = aiNewsTopics.map((topic) => {
+    const copy = getAiNewsTopicCopy(topic, locale);
+    return {
+      key: topic.slug,
+      title: copy.title,
+      href: getAiNewsTopicPath(topic.slug, locale),
+    };
+  });
+  const fallbackItems = items.slice(0, 2);
 
   return (
     <section className="glass rounded-2xl p-5">
       <h2 className="text-lg font-black text-[var(--marketing-text)]">
         {t.aiNews.topicsTitle}
       </h2>
-      <div className="mt-4 grid gap-3">
-        {items.map((item) => (
+      <div
+        className="mt-4 grid gap-3"
+        data-topic-paths={aiNewsTopicPathHints.join(" ")}
+      >
+        {topicLinks.map((item) => (
+          <Link
+            key={item.key}
+            href={item.href}
+            className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+          >
+            {item.title}
+          </Link>
+        ))}
+        {fallbackItems.map((item) => (
           <Link
             key={item.key}
             href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(item.query)}`}
-            className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+            className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
           >
             {localizeAiNewsDiscoveryLabel(
               item.title,
