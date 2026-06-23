@@ -60,14 +60,14 @@
 }
 
 @theme {
-  --font-sans: 'Montserrat', 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Noto Sans SC', Arial, Helvetica, sans-serif;
+  --font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI', Arial, Helvetica, sans-serif;
 }
 
 :root {
   color-scheme: dark;
-  --font-sans: 'Montserrat', 'MiSans', 'HarmonyOS Sans SC', 'PingFang SC', 'Noto Sans SC', Arial, Helvetica, sans-serif;
+  --font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI', Arial, Helvetica, sans-serif;
   --font-heading-en: 'Montserrat', var(--font-sans);
-  --font-heading-zh: 'SmileySans', 'MiSans', var(--font-sans);
+  --font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI', Arial, Helvetica, sans-serif;
   --mouse-x: 72vw;
   --mouse-y: 18vh;
   --marketing-bg: #22242a;
