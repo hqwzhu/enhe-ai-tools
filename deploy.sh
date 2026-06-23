@@ -23,6 +23,9 @@ docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/dock
 echo "===== 初始化 AI 资讯专题配置 ====="
 docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec -T app sh -lc 'cd /app && node prisma/seed-ai-news-topics.cjs'
 
+echo "===== 发布 LumiOS 产品与专题资讯 ====="
+docker compose --env-file deploy/enhe-ai-tools/.env -f deploy/enhe-ai-tools/docker-compose.yml exec -T app sh -lc 'cd /app && node prisma/seed-lumios.cjs'
+
 echo "===== 查看容器状态 ====="
 docker ps | grep enhe-ai-tools
 
