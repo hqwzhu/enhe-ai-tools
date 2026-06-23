@@ -342,6 +342,7 @@ export async function SoftwarePageShell({
         ) : (
           <EmptyState title={t.listing.emptyTitle} text={t.listing.emptyText} />
         )}
+        <SoftwareGeoSupportSections forceLocale={forceLocale} />
       </Container>
     </main>
   );
@@ -351,9 +352,6 @@ function SoftwareGeoBlock({ forceLocale }: { forceLocale: Locale }) {
   const sections = softwareGeoSections[forceLocale];
   const answer = softwareAnswerBlock[forceLocale];
   const labels = softwareGeoLabels[forceLocale];
-  const faqItems = softwareFaqItems[forceLocale];
-  const comparisonRows = softwareComparisonRows[forceLocale];
-  const sourceLinks = softwareSourceLinks[forceLocale];
   const links = [
     {
       label: { zh: "学习 AI 技能教程", en: "Learn AI skill courses" },
@@ -417,7 +415,18 @@ function SoftwareGeoBlock({ forceLocale }: { forceLocale: Locale }) {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
 
+function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
+  const labels = softwareGeoLabels[forceLocale];
+  const faqItems = softwareFaqItems[forceLocale];
+  const comparisonRows = softwareComparisonRows[forceLocale];
+  const sourceLinks = softwareSourceLinks[forceLocale];
+
+  return (
+    <div className="mt-8 space-y-8">
       <section className="glass rounded-2xl p-6">
         <SectionTitle
           title={labels.comparisonTitle}
