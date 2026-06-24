@@ -3,8 +3,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 const outputPath = new URL("../prisma/seed-ai-news-topics-data.cjs", import.meta.url);
 
 async function main() {
-  const module = await import("../src/lib/ai-news-topics.ts");
-  const rows = module.aiNewsTopics.map((topic, index) => ({
+  const topicsModule = await import("../src/lib/ai-news-topics.ts");
+  const rows = topicsModule.aiNewsTopics.map((topic, index) => ({
     slug: topic.slug,
     sortOrder: (index + 1) * 10,
     title: topic.zh.title,

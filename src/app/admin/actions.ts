@@ -1107,6 +1107,7 @@ export async function upsertToolAction(formData: FormData) {
     const safeToolKey = resolvedSlug;
     const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `tool-cover-${safeToolKey}`);
     const uploadedProductVideo = await saveAdminVideoUpload(formData.get("videoFile"), safeToolKey);
+    const uploadedProductVideo2 = await saveAdminVideoUpload(formData.get("videoFile2"), safeToolKey);
     const downloadFileUrl = parseDownloadFileUrl(formData.get("downloadFileUrl"));
     const selectedDownloadFileId = parseOptionalString(formData.get("downloadFileId"));
     const priceSpecs = parseToolPriceSpecsFromFormData(formData);
@@ -1130,6 +1131,9 @@ export async function upsertToolAction(formData: FormData) {
       videoUrl: uploadedProductVideo ?? parseOptionalString(formData.get("videoUrl")),
       videoTitle: parseOptionalString(formData.get("videoTitle")),
       videoDescription: parseOptionalString(formData.get("videoDescription")),
+      videoUrl2: uploadedProductVideo2 ?? parseOptionalString(formData.get("videoUrl2")),
+      videoTitle2: parseOptionalString(formData.get("videoTitle2")),
+      videoDescription2: parseOptionalString(formData.get("videoDescription2")),
       version: parseOptionalString(formData.get("version")),
       systemRequirement: parseOptionalString(formData.get("systemRequirement")),
       isVipRequired: parseBooleanField(formData.get("isVipRequired")),

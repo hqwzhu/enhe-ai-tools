@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 
-type GuardedUploadName = "coverImageFile" | "screenshotFiles" | "videoFile";
+type GuardedUploadName = "coverImageFile" | "screenshotFiles" | "videoFile" | "videoFile2";
 
 type ToolMediaUploadGuardProps = {
   name: GuardedUploadName;
@@ -32,7 +32,7 @@ export function ToolMediaUploadGuard({ name, inputClass, multiple = false }: Too
 
   const validateInput = useCallback((input: HTMLInputElement) => {
     const files = Array.from(input.files ?? []);
-    const isVideoInput = name === "videoFile";
+    const isVideoInput = name === "videoFile" || name === "videoFile2";
     const maxSingleFileBytes = isVideoInput ? maxVideoBytes : maxImageBytes;
     const maxTotalBytes = isVideoInput ? maxVideoBytes : maxBatchBytes;
     if (files.length === 0) {
@@ -98,7 +98,7 @@ export function ToolMediaUploadGuard({ name, inputClass, multiple = false }: Too
 
   return (
     <span ref={rootRef} className="block">
-      <input name={name} type="file" accept={name === "videoFile" ? videoAccept : "image/*"} multiple={multiple} className={inputClass} onChange={handleChange} />
+      <input name={name} type="file" accept={name === "videoFile" || name === "videoFile2" ? videoAccept : "image/*"} multiple={multiple} className={inputClass} onChange={handleChange} />
       {message ? (
         <span className="mt-2 block rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2 text-xs leading-5 text-red-100">
           {message}

@@ -27,6 +27,9 @@ type ToolItem = {
   videoUrl: string | null;
   videoTitle: string | null;
   videoDescription: string | null;
+  videoUrl2: string | null;
+  videoTitle2: string | null;
+  videoDescription2: string | null;
   version: string | null;
   systemRequirement: string | null;
   isVipRequired: boolean;
@@ -425,26 +428,54 @@ export function ToolEditor({
             <div>
               <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productVideo}</p>
               <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field label={copy.productVideoUrl}>
-                    <input name="videoUrl" defaultValue={tool?.videoUrl ?? ""} placeholder={copy.productVideoUrlPlaceholder} className={inputClass} />
-                  </Field>
-                  <Field label={copy.productVideoUpload}>
-                    <ToolMediaUploadGuard name="videoFile" inputClass={inputClass} />
-                  </Field>
-                  <Field label={copy.productVideoTitle}>
-                    <input name="videoTitle" defaultValue={tool?.videoTitle ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />
-                  </Field>
-                  <Field label={copy.productVideoDescription}>
-                    <textarea name="videoDescription" defaultValue={tool?.videoDescription ?? ""} placeholder={copy.productVideoDescriptionPlaceholder} className={textareaClass} />
-                  </Field>
+                <div className="grid gap-5">
+                  <div className="rounded-2xl border border-white/10 bg-[#07101E]/55 p-4">
+                    <p className="mb-3 text-sm font-semibold text-[#F6FAFF]">{copy.productVideo} 1</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label={`${copy.productVideoUrl} 1`}>
+                        <input name="videoUrl" defaultValue={tool?.videoUrl ?? ""} placeholder={copy.productVideoUrlPlaceholder} className={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoUpload} 1`}>
+                        <ToolMediaUploadGuard name="videoFile" inputClass={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoTitle} 1`}>
+                        <input name="videoTitle" defaultValue={tool?.videoTitle ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoDescription} 1`}>
+                        <textarea name="videoDescription" defaultValue={tool?.videoDescription ?? ""} placeholder={copy.productVideoDescriptionPlaceholder} className={textareaClass} />
+                      </Field>
+                    </div>
+                    {tool?.videoUrl ? (
+                      <p className="mt-4 break-all rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#C5D0E2]">
+                        {copy.currentProductVideo} 1: {tool.videoUrl}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-[#07101E]/55 p-4">
+                    <p className="mb-3 text-sm font-semibold text-[#F6FAFF]">{copy.productVideo} 2</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label={`${copy.productVideoUrl} 2`}>
+                        <input name="videoUrl2" defaultValue={tool?.videoUrl2 ?? ""} placeholder={copy.productVideoUrlPlaceholder} className={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoUpload} 2`}>
+                        <ToolMediaUploadGuard name="videoFile2" inputClass={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoTitle} 2`}>
+                        <input name="videoTitle2" defaultValue={tool?.videoTitle2 ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoDescription} 2`}>
+                        <textarea name="videoDescription2" defaultValue={tool?.videoDescription2 ?? ""} placeholder={copy.productVideoDescriptionPlaceholder} className={textareaClass} />
+                      </Field>
+                    </div>
+                    {tool?.videoUrl2 ? (
+                      <p className="mt-4 break-all rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#C5D0E2]">
+                        {copy.currentProductVideo} 2: {tool.videoUrl2}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{copy.productVideoHint}</p>
-                {tool?.videoUrl ? (
-                  <p className="mt-4 break-all rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#C5D0E2]">
-                    {copy.currentProductVideo}: {tool.videoUrl}
-                  </p>
-                ) : null}
               </div>
             </div>
             <div>
@@ -610,7 +641,7 @@ const toolAdminCopy = {
     productVideoTitlePlaceholder: "例如：产品功能演示",
     productVideoDescription: "视频说明",
     productVideoDescriptionPlaceholder: "可简要说明视频内容、适用场景或观看重点",
-    productVideoHint: "支持 MP4/WebM/MOV，建议 500MB 以内。上传新视频会自动替换当前视频地址；不上传则保留已填写的视频地址。",
+    productVideoHint: "最多上传 2 个产品视频，支持 MP4/WebM/MOV，建议单个 500MB 以内。上传新视频会自动替换对应视频地址；不上传则保留已填写的视频地址。",
     currentProductVideo: "当前视频",
     productImages: "详细介绍商品图",
     productImagesHint: "支持多张 JPG/PNG/WebP，建议 1200x900 或 4:3。图片会在工具详情页按电商图文格式展示；用上移/下移调整展示顺序，取消勾选后保存会移除。",
@@ -724,7 +755,7 @@ const toolAdminCopy = {
     productVideoTitlePlaceholder: "e.g. Product feature demo",
     productVideoDescription: "Video description",
     productVideoDescriptionPlaceholder: "Briefly describe the video content, scenario, or viewing focus",
-    productVideoHint: "Supports MP4/WebM/MOV, under 500MB recommended. Uploading a new video replaces the current video URL; leaving it empty keeps the URL you entered.",
+    productVideoHint: "Upload up to 2 product videos. MP4/WebM/MOV is supported, under 500MB each recommended. Uploading a new video replaces the matching video URL; leaving it empty keeps the URL you entered.",
     currentProductVideo: "Current video",
     productImages: "Product images in detail intro",
     productImagesHint: "Upload multiple JPG/PNG/WebP images. 1200x900 or 4:3 is recommended. Images appear in the tool detail page like an ecommerce product gallery; use move up/down to adjust display order, or uncheck images before saving to remove.",

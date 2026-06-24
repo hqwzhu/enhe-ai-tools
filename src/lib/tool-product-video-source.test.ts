@@ -8,32 +8,39 @@ function readProjectFile(path: string) {
   return readFileSync(join(root, path), "utf8");
 }
 
-function latestVideoMigrationSource() {
+function videoMigrationSource() {
   const migrationsDir = join(root, "prisma/migrations");
-  const videoMigration = readdirSync(migrationsDir)
+  return readdirSync(migrationsDir)
     .filter((name) => name.includes("tool_video"))
     .sort()
-    .at(-1);
-  if (!videoMigration) return "";
-  const migrationPath = join(migrationsDir, videoMigration, "migration.sql");
-  return existsSync(migrationPath) ? readFileSync(migrationPath, "utf8") : "";
+    .map((videoMigration) => {
+      const migrationPath = join(migrationsDir, videoMigration, "migration.sql");
+      return existsSync(migrationPath) ? readFileSync(migrationPath, "utf8") : "";
+    })
+    .join("\n");
 }
 
 describe("tool product video source", () => {
   it("adds product-level video fields to Tool and the database migration", () => {
     const schema = readProjectFile("prisma/schema.prisma");
     const toolModel = schema.slice(schema.indexOf("model Tool {"), schema.indexOf("model ToolTag {"));
-    const migration = latestVideoMigrationSource();
+    const migration = videoMigrationSource();
 
     expect(toolModel).toMatch(/videoUrl\s+String\?\s+@map\("video_url"\)/);
     expect(toolModel).toMatch(/videoTitle\s+String\?\s+@map\("video_title"\)/);
     expect(toolModel).toMatch(/videoDescription\s+String\?\s+@map\("video_description"\)/);
+    expect(toolModel).toMatch(/videoUrl2\s+String\?\s+@map\("video_url_2"\)/);
+    expect(toolModel).toMatch(/videoTitle2\s+String\?\s+@map\("video_title_2"\)/);
+    expect(toolModel).toMatch(/videoDescription2\s+String\?\s+@map\("video_description_2"\)/);
     expect(migration).toContain('ADD COLUMN "video_url" TEXT');
     expect(migration).toContain('ADD COLUMN "video_title" TEXT');
     expect(migration).toContain('ADD COLUMN "video_description" TEXT');
+    expect(migration).toContain('ADD COLUMN "video_url_2" TEXT');
+    expect(migration).toContain('ADD COLUMN "video_title_2" TEXT');
+    expect(migration).toContain('ADD COLUMN "video_description_2" TEXT');
   });
 
-  it("lets admins upload, keep, title, and describe a product video", () => {
+  it("lets admins upload, keep, title, and describe up to two product videos", () => {
     const editor = readProjectFile("src/app/admin/tool-admin-list.tsx");
     const guard = readProjectFile("src/app/admin/tool-media-upload-guard.tsx");
     const actions = readProjectFile("src/app/admin/actions.ts");
@@ -42,24 +49,34 @@ describe("tool product video source", () => {
     expect(editor).toContain('name="videoFile"');
     expect(editor).toContain('name="videoTitle"');
     expect(editor).toContain('name="videoDescription"');
+    expect(editor).toContain('name="videoUrl2"');
+    expect(editor).toContain('name="videoFile2"');
+    expect(editor).toContain('name="videoTitle2"');
+    expect(editor).toContain('name="videoDescription2"');
     expect(guard).toContain('"videoFile"');
+    expect(guard).toContain('"videoFile2"');
     expect(guard).toContain("maxVideoBytes");
     expect(guard).toContain("video/mp4");
     expect(guard).toContain("video/webm");
     expect(guard).toContain("video/quicktime");
     expect(actions).toContain('formData.get("videoFile")');
+    expect(actions).toContain('formData.get("videoFile2")');
     expect(actions).toContain('formData.get("videoUrl")');
+    expect(actions).toContain('formData.get("videoUrl2")');
     expect(actions).toContain("saveAdminVideoUpload");
     expect(actions).toContain("videoUrl:");
     expect(actions).toContain("videoTitle:");
     expect(actions).toContain("videoDescription:");
+    expect(actions).toContain("videoUrl2:");
+    expect(actions).toContain("videoTitle2:");
+    expect(actions).toContain("videoDescription2:");
   });
 
-  it("renders product video before the product image gallery on public detail pages", () => {
+  it("renders up to two product videos before the product image gallery on public detail pages", () => {
     const detail = readProjectFile("src/app/tools/[slug]/page-shell.tsx");
+    const helper = readProjectFile("src/lib/product-video.ts");
 
-    expect(detail).toContain("resolveProductVideoSrc");
-    expect(detail).toContain("tool.videoUrl");
+    expect(detail).toContain("resolveProductVideos");
     expect(detail).toContain("tool-detail-product-video");
     expect(detail).toContain("<video");
     expect(detail).toContain("autoPlay");
@@ -67,6 +84,9 @@ describe("tool product video source", () => {
     expect(detail).toContain("muted");
     expect(detail).toContain('preload="auto"');
     expect(detail.indexOf("tool-detail-product-video")).toBeLessThan(detail.indexOf("tool-detail-product-gallery"));
+    expect(helper).toContain("resolveProductVideos");
+    expect(helper).toContain("resolveProductVideoSrc");
+    expect(helper).toContain("slice(0, 2)");
   });
 
   it("proxies private COS product videos instead of rendering forbidden public URLs", () => {
