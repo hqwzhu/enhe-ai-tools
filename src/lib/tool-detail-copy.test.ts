@@ -9,4 +9,11 @@ describe("tool detail copy", () => {
     expect(dictionariesSource).toContain('introTitle: "产品介绍"');
     expect(dictionariesSource).not.toContain("图文结合展示工具功能、使用场景和关键界面。");
   });
+
+  it("keeps generated software FAQ copy aligned with product introduction wording", () => {
+    const localizationSource = readFileSync(join(process.cwd(), "src/lib/tool-localization.ts"), "utf8");
+
+    expect(localizationSource).toContain("产品介绍和使用教程");
+    expect(localizationSource).not.toContain("工具介绍和使用教程");
+  });
 });
