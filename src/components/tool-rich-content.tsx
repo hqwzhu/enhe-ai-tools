@@ -1,6 +1,33 @@
 import { cn } from "@/lib/utils";
 import { buildToolContentBlocks } from "@/lib/tool-content";
 
+function splitListLead(item: string) {
+  const match = item.match(/^([^:：]{2,24})([:：])\s*(.+)$/);
+  if (!match) return null;
+
+  const lead = match[1]?.trim();
+  const separator = match[2] ?? ":";
+  const rest = match[3]?.trim();
+  if (!lead || !rest) return null;
+
+  return { lead, separator, rest };
+}
+
+function RichListItem({ item }: { item: string }) {
+  const splitItem = splitListLead(item);
+  if (!splitItem) return <span>{item}</span>;
+
+  return (
+    <span>
+      <strong className="font-semibold text-[#F6FAFF]">
+        {splitItem.lead}
+        {splitItem.separator}
+      </strong>{" "}
+      <span>{splitItem.rest}</span>
+    </span>
+  );
+}
+
 export function ToolRichContent({
   content,
   className,
@@ -32,7 +59,7 @@ export function ToolRichContent({
               {block.items.map((item, itemIndex) => (
                 <li key={`${item}-${itemIndex}`} className="relative pl-4">
                   <span className="absolute left-0 top-[0.82em] h-1.5 w-1.5 rounded-full bg-[var(--marketing-accent)]" />
-                  <span>{item}</span>
+                  <RichListItem item={item} />
                 </li>
               ))}
             </ul>

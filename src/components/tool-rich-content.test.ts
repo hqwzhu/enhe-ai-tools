@@ -12,6 +12,20 @@ function extractOrderedMarkers(html: string) {
 }
 
 describe("ToolRichContent", () => {
+  it("emphasizes colon-led product feature labels inside lists", () => {
+    vi.stubGlobal("React", React);
+
+    const html = renderToStaticMarkup(
+      React.createElement(ToolRichContent, {
+        content: ["Features:", "Work companion: turn rough ideas into next actions."].join("\n")
+      })
+    );
+
+    expect(html).toContain("<strong");
+    expect(html).toContain("Work companion:");
+    expect(html).toContain("turn rough ideas into next actions.");
+  });
+
   it("keeps ordered markers increasing when descriptions split numbered items", () => {
     vi.stubGlobal("React", React);
 
