@@ -42,6 +42,36 @@ function slugFromName(name, fallback) {
   return encoded || fallback;
 }
 
+async function findAvailableToolTagSlug(name, fallback, existingId) {
+  const baseSlug = slugFromName(name, fallback);
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const slug = attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`;
+    const existing = await prisma.toolTag.findUnique({ where: { slug } });
+
+    if (!existing || existing.id === existingId) {
+      return slug;
+    }
+  }
+
+  return `${baseSlug}-${Date.now()}`;
+}
+
+async function findAvailableNewsTagSlug(name, fallback, existingId) {
+  const baseSlug = slugFromName(name, fallback);
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const slug = attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`;
+    const existing = await prisma.newsTag.findUnique({ where: { slug } });
+
+    if (!existing || existing.id === existingId) {
+      return slug;
+    }
+  }
+
+  return `${baseSlug}-${Date.now()}`;
+}
+
 async function findOrCreateToolCategory() {
   const category = await prisma.toolCategory.findFirst({
     where: { name: "AI电脑软件", type: "software" },
@@ -88,36 +118,26 @@ async function findOrCreateNewsCategory() {
 }
 
 async function findOrCreateToolTag(name, index) {
-  const slug = slugFromName(name, `tool-tag-${index + 1}`);
   const existingByName = await prisma.toolTag.findUnique({ where: { name } });
-  const existingBySlug = await prisma.toolTag.findUnique({ where: { slug } });
 
   if (existingByName) {
-    const data = {
-      status: "active",
-      sortOrder: index * 10,
-    };
-
-    if (!existingBySlug || existingBySlug.id === existingByName.id) {
-      data.slug = slug;
-    }
+    const slug = await findAvailableToolTagSlug(
+      name,
+      `tool-tag-${index + 1}`,
+      existingByName.id
+    );
 
     return prisma.toolTag.update({
       where: { id: existingByName.id },
-      data,
-    });
-  }
-
-  if (existingBySlug) {
-    return prisma.toolTag.update({
-      where: { id: existingBySlug.id },
       data: {
-        name,
+        slug,
         status: "active",
         sortOrder: index * 10,
       },
     });
   }
+
+  const slug = await findAvailableToolTagSlug(name, `tool-tag-${index + 1}`);
 
   return prisma.toolTag.create({
     data: {
@@ -130,36 +150,26 @@ async function findOrCreateToolTag(name, index) {
 }
 
 async function findOrCreateNewsTag(name, index) {
-  const slug = slugFromName(name, `news-tag-${index + 1}`);
   const existingByName = await prisma.newsTag.findUnique({ where: { name } });
-  const existingBySlug = await prisma.newsTag.findUnique({ where: { slug } });
 
   if (existingByName) {
-    const data = {
-      status: "active",
-      sortOrder: index * 10,
-    };
-
-    if (!existingBySlug || existingBySlug.id === existingByName.id) {
-      data.slug = slug;
-    }
+    const slug = await findAvailableNewsTagSlug(
+      name,
+      `news-tag-${index + 1}`,
+      existingByName.id
+    );
 
     return prisma.newsTag.update({
       where: { id: existingByName.id },
-      data,
-    });
-  }
-
-  if (existingBySlug) {
-    return prisma.newsTag.update({
-      where: { id: existingBySlug.id },
       data: {
-        name,
+        slug,
         status: "active",
         sortOrder: index * 10,
       },
     });
   }
+
+  const slug = await findAvailableNewsTagSlug(name, `news-tag-${index + 1}`);
 
   return prisma.newsTag.create({
     data: {
@@ -176,8 +186,15 @@ async function upsertToolTags(toolId, tagNames) {
 
   for (const [index, name] of tagNames.entries()) {
     const tag = await findOrCreateToolTag(name, index);
-    await prisma.toolTagLink.create({
-      data: { toolId, tagId: tag.id },
+    await prisma.toolTagLink.upsert({
+      where: {
+        toolId_tagId: {
+          toolId,
+          tagId: tag.id,
+        },
+      },
+      update: {},
+      create: { toolId, tagId: tag.id },
     });
   }
 }
@@ -187,8 +204,15 @@ async function upsertNewsTags(articleId, tagNames) {
 
   for (const [index, name] of tagNames.entries()) {
     const tag = await findOrCreateNewsTag(name, index);
-    await prisma.newsArticleTag.create({
-      data: { articleId, tagId: tag.id },
+    await prisma.newsArticleTag.upsert({
+      where: {
+        articleId_tagId: {
+          articleId,
+          tagId: tag.id,
+        },
+      },
+      update: {},
+      create: { articleId, tagId: tag.id },
     });
   }
 }
