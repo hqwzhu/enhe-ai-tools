@@ -87,20 +87,95 @@ async function findOrCreateNewsCategory() {
   });
 }
 
-async function upsertToolTags(toolId, tagNames) {
-  await prisma.toolTagLink.deleteMany({ where: { toolId } });
+async function findOrCreateToolTag(name, index) {
+  const slug = slugFromName(name, `tool-tag-${index + 1}`);
+  const existingByName = await prisma.toolTag.findUnique({ where: { name } });
+  const existingBySlug = await prisma.toolTag.findUnique({ where: { slug } });
 
-  for (const [index, name] of tagNames.entries()) {
-    const tag = await prisma.toolTag.upsert({
-      where: { name },
-      update: { status: "active", sortOrder: index * 10 },
-      create: {
+  if (existingByName) {
+    const data = {
+      status: "active",
+      sortOrder: index * 10,
+    };
+
+    if (!existingBySlug || existingBySlug.id === existingByName.id) {
+      data.slug = slug;
+    }
+
+    return prisma.toolTag.update({
+      where: { id: existingByName.id },
+      data,
+    });
+  }
+
+  if (existingBySlug) {
+    return prisma.toolTag.update({
+      where: { id: existingBySlug.id },
+      data: {
         name,
-        slug: slugFromName(name, `tool-tag-${index + 1}`),
         status: "active",
         sortOrder: index * 10,
       },
     });
+  }
+
+  return prisma.toolTag.create({
+    data: {
+      name,
+      slug,
+      status: "active",
+      sortOrder: index * 10,
+    },
+  });
+}
+
+async function findOrCreateNewsTag(name, index) {
+  const slug = slugFromName(name, `news-tag-${index + 1}`);
+  const existingByName = await prisma.newsTag.findUnique({ where: { name } });
+  const existingBySlug = await prisma.newsTag.findUnique({ where: { slug } });
+
+  if (existingByName) {
+    const data = {
+      status: "active",
+      sortOrder: index * 10,
+    };
+
+    if (!existingBySlug || existingBySlug.id === existingByName.id) {
+      data.slug = slug;
+    }
+
+    return prisma.newsTag.update({
+      where: { id: existingByName.id },
+      data,
+    });
+  }
+
+  if (existingBySlug) {
+    return prisma.newsTag.update({
+      where: { id: existingBySlug.id },
+      data: {
+        name,
+        status: "active",
+        sortOrder: index * 10,
+      },
+    });
+  }
+
+  return prisma.newsTag.create({
+    data: {
+      name,
+      slug,
+      status: "active",
+      sortOrder: index * 10,
+    },
+  });
+}
+
+async function upsertToolTags(toolId, tagNames) {
+  await prisma.toolTagLink.deleteMany({ where: { toolId } });
+
+  for (const [index, name] of tagNames.entries()) {
+    const tag = await findOrCreateToolTag(name, index);
     await prisma.toolTagLink.create({
       data: { toolId, tagId: tag.id },
     });
@@ -111,16 +186,7 @@ async function upsertNewsTags(articleId, tagNames) {
   await prisma.newsArticleTag.deleteMany({ where: { articleId } });
 
   for (const [index, name] of tagNames.entries()) {
-    const tag = await prisma.newsTag.upsert({
-      where: { name },
-      update: { status: "active", sortOrder: index * 10 },
-      create: {
-        name,
-        slug: slugFromName(name, `news-tag-${index + 1}`),
-        status: "active",
-        sortOrder: index * 10,
-      },
-    });
+    const tag = await findOrCreateNewsTag(name, index);
     await prisma.newsArticleTag.create({
       data: { articleId, tagId: tag.id },
     });
