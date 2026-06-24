@@ -101,6 +101,7 @@ describe("technical seo phase one source", () => {
     expect(publicContent).toContain("publicContentRevalidate = 300");
     expect(sharedLayout).not.toContain("buildWebsiteSchema");
     expect(sharedLayout).not.toContain("buildOrganizationSchema");
+    expect(sharedLayout).toContain('"bytedance-verification-code": "YuXYrV9zCcX3P66dp5/H"');
     expect(sharedLayout).toContain("icons:");
     expect(sharedLayout).toContain("shortcut");
     expect(seo).toContain('"/images/brand/enhe-icon-gradient-white-bg-cropped.png"');

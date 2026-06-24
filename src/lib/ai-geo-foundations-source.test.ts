@@ -53,13 +53,17 @@ describe("AI GEO foundations", () => {
       "OAI-SearchBot",
       "ChatGPT-User",
       "PerplexityBot",
+      "Perplexity-User",
       "ClaudeBot",
+      "Claude-SearchBot",
+      "Claude-User",
       "anthropic-ai",
       "Googlebot",
       "GoogleOther",
       "Google-Extended",
       "Bingbot",
       "Applebot",
+      "Applebot-Extended",
       "Baiduspider",
       "Bytespider",
       "Doubaobot",
@@ -67,7 +71,8 @@ describe("AI GEO foundations", () => {
       expect(robots).toContain(`"${bot}"`);
     }
 
-    expect(robots).toContain('allow: ["/"]');
+    expect(robots).toContain('const publicAllow = ["/", "/api/uploads/"];');
+    expect(robots).toContain("allow: publicAllow");
     for (const privatePath of ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"]) {
       expect(robots).toContain(`"${privatePath}"`);
     }

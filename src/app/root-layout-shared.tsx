@@ -20,7 +20,8 @@ export const sharedRootMetadata: Metadata = {
   },
   verification: {
     other: {
-      "baidu-site-verification": "codeva-LZTyTXt0Fq"
+      "baidu-site-verification": "codeva-LZTyTXt0Fq",
+      "bytedance-verification-code": "YuXYrV9zCcX3P66dp5/H"
     }
   },
   manifest: "/manifest.webmanifest",
