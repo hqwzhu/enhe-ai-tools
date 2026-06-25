@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
+  localeDetectionVaryHeader,
   localeCookieMaxAge,
   localeCookieName,
   shouldRedirectRootToEnglish,
@@ -32,10 +33,7 @@ export function middleware(request: NextRequest) {
     redirectUrl.pathname = "/en";
     const response = NextResponse.redirect(redirectUrl);
     response.headers.set("Content-Language", "en-US");
-    response.headers.set(
-      "Vary",
-      "Accept-Language, Cookie, CF-IPCountry, X-Vercel-IP-Country, X-Country-Code, X-Geo-Country, X-Forwarded-Country, X-Client-Country, X-Client-Geo-Country, X-Tencent-Country, EO-Client-Geo-Country-Code, CloudFront-Viewer-Country, X-Appengine-Country"
-    );
+    response.headers.set("Vary", localeDetectionVaryHeader);
     response.cookies.set(localeCookieName, "en", {
       path: "/",
       maxAge: localeCookieMaxAge,
@@ -56,6 +54,9 @@ export function middleware(request: NextRequest) {
     }
   });
   response.headers.set("Content-Language", htmlLocale === "en" ? "en-US" : "zh-CN");
+  if (pathname === "/") {
+    response.headers.set("Vary", localeDetectionVaryHeader);
+  }
 
   if (isEnglishPath && cookieLocale !== "en") {
     response.cookies.set(localeCookieName, "en", {
