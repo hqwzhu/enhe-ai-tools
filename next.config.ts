@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
-import { localeDetectionVaryHeader } from "./src/lib/locale-routing";
+import {
+  localeDetectionCacheControl,
+  localeDetectionVaryHeader
+} from "./src/lib/locale-routing";
 import { adminFileUploadBodySizeLimit } from "./src/lib/upload-limits";
 
 const nextConfig: NextConfig = {
@@ -47,7 +50,14 @@ const nextConfig: NextConfig = {
       }
     ];
     const zhRootCacheHeaders = [
-      ...zhPublicCacheHeaders,
+      {
+        key: "Cache-Control",
+        value: localeDetectionCacheControl
+      },
+      {
+        key: "Content-Language",
+        value: "zh-CN"
+      },
       {
         key: "Vary",
         value: localeDetectionVaryHeader

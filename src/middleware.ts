@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
+  localeDetectionCacheControl,
   localeDetectionVaryHeader,
   localeCookieMaxAge,
   localeCookieName,
@@ -33,6 +34,7 @@ export function middleware(request: NextRequest) {
     redirectUrl.pathname = "/en";
     const response = NextResponse.redirect(redirectUrl);
     response.headers.set("Content-Language", "en-US");
+    response.headers.set("Cache-Control", localeDetectionCacheControl);
     response.headers.set("Vary", localeDetectionVaryHeader);
     response.cookies.set(localeCookieName, "en", {
       path: "/",

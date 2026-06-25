@@ -112,6 +112,7 @@ describe("technical seo phase one source", () => {
 
     expect(nextConfig).toContain("headers()");
     expect(nextConfig).toContain("localeDetectionVaryHeader");
+    expect(nextConfig).toContain("localeDetectionCacheControl");
     expect(nextConfig).toContain("zhRootCacheHeaders");
     expect(nextConfig).toContain('source: "/", headers: zhRootCacheHeaders');
     expect(nextConfig).toContain("Cache-Control");

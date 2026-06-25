@@ -4,6 +4,7 @@ export const localeCookieName = "enhe_locale";
 export const localeCookieMaxAge = 60 * 60 * 24 * 365;
 export const localeDetectionVaryHeader =
   "Accept-Language, Cookie, CF-IPCountry, X-Vercel-IP-Country, X-Country-Code, X-Geo-Country, X-Forwarded-Country, X-Client-Country, X-Client-Geo-Country, X-Tencent-Country, EO-Client-Geo-Country-Code, CloudFront-Viewer-Country, X-Appengine-Country";
+export const localeDetectionCacheControl = "private, no-cache, no-store, max-age=0";
 
 const chineseRegionCountryCodes = new Set(["CN", "HK", "MO", "TW"]);
 const unknownCountryCodes = new Set(["XX", "ZZ", "T1", "A1", "A2", "O1"]);
