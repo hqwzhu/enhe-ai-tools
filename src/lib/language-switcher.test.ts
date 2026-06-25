@@ -17,11 +17,17 @@ describe("buildLanguageSwitcherHref", () => {
     expect(buildLanguageSwitcherHref("/en/legal/privacy-policy", "zh")).toBe("/legal/privacy-policy?locale=zh");
   });
 
-  it("preserves same-path locale routes like admin and order flows, while still falling back for unrelated routes", () => {
-    expect(buildLanguageSwitcherHref("/admin", "en")).toBe("/admin");
-    expect(buildLanguageSwitcherHref("/admin/orders", "zh")).toBe("/admin/orders");
-    expect(buildLanguageSwitcherHref("/orders", "en")).toBe("/orders");
-    expect(buildLanguageSwitcherHref("/orders/order-1/pay", "zh")).toBe("/orders/order-1/pay");
+  it("keeps same-path locale routes in place while still triggering explicit locale switching", () => {
+    expect(buildLanguageSwitcherHref("/admin", "en")).toBe("/admin?locale=en");
+    expect(buildLanguageSwitcherHref("/admin/orders", "zh")).toBe(
+      "/admin/orders?locale=zh",
+    );
+    expect(buildLanguageSwitcherHref("/orders", "en")).toBe(
+      "/orders?locale=en",
+    );
+    expect(buildLanguageSwitcherHref("/orders/order-1/pay", "zh")).toBe(
+      "/orders/order-1/pay?locale=zh",
+    );
     expect(buildLanguageSwitcherHref("/login", "en")).toBe("/en/login?locale=en");
     expect(buildLanguageSwitcherHref("/en/login", "zh")).toBe("/login?locale=zh");
     expect(buildLanguageSwitcherHref("/register", "en")).toBe("/en/register?locale=en");

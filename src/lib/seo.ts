@@ -180,12 +180,13 @@ export function isLocalizedPublicPath(path: string) {
 
 export function buildLanguageSwitcherHref(path: string, locale: Locale) {
   const normalized = stripLocalePrefix(path);
-  if (/^\/(?:admin|orders)(?:\/|$)/.test(normalized)) {
-    return normalized;
-  }
 
   const withLocaleSwitch = (href: string) =>
     `${href}${href.includes("?") ? "&" : "?"}${localeSwitchQueryName}=${locale}`;
+
+  if (/^\/(?:admin|orders)(?:\/|$)/.test(normalized)) {
+    return withLocaleSwitch(normalized);
+  }
 
   if (!isLocalizedPublicPath(path)) {
     return withLocaleSwitch(buildLocalePath("/", locale));
