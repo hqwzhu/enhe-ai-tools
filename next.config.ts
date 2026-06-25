@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { localeDetectionVaryHeader } from "./src/lib/locale-routing";
 import { adminFileUploadBodySizeLimit } from "./src/lib/upload-limits";
 
 const nextConfig: NextConfig = {
@@ -45,6 +46,13 @@ const nextConfig: NextConfig = {
         value: "en-US"
       }
     ];
+    const zhRootCacheHeaders = [
+      ...zhPublicCacheHeaders,
+      {
+        key: "Vary",
+        value: localeDetectionVaryHeader
+      }
+    ];
     const publicAssetCacheHeaders = [
       {
         key: "Cache-Control",
@@ -63,7 +71,7 @@ const nextConfig: NextConfig = {
       { source: "/okf/software/index.md", headers: publicAssetCacheHeaders },
       { source: "/okf/account-services/index.md", headers: publicAssetCacheHeaders },
       { source: "/okf/skill-learning/index.md", headers: publicAssetCacheHeaders },
-      { source: "/", headers: zhPublicCacheHeaders },
+      { source: "/", headers: zhRootCacheHeaders },
       { source: "/en", headers: enPublicCacheHeaders },
       { source: "/about", headers: zhPublicCacheHeaders },
       { source: "/en/about", headers: enPublicCacheHeaders },
