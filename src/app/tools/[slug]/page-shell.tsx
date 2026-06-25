@@ -52,6 +52,7 @@ import {
   canOpenProtectedDownloadEntry,
   canShowDownloadLinkArea,
   getDownloadLinkContent,
+  linkifyDownloadLinkContent,
   resolveSoftwareDownloadCtaHref,
 } from "@/lib/tool-download-link";
 
@@ -1020,9 +1021,7 @@ export async function ToolDetailPageShell({
                   <p className="text-sm text-[#8F9DB2]">
                     {td.protectedDownloadLink}
                   </p>
-                  <p className="mt-2 whitespace-pre-wrap break-words text-base font-semibold leading-7 text-[#F6FAFF]">
-                    {downloadLinkContent}
-                  </p>
+                  <LinkedDownloadLinkContent content={downloadLinkContent} />
                   <p className="mt-2 text-sm text-[#8F9DB2]">
                     {tool.downloadFile?.fileName ?? td.noDownloadFileName}
                   </p>
@@ -1073,5 +1072,29 @@ function TrustItem({
       <p className="text-sm font-semibold text-[#F6FAFF]">{label}</p>
       <div className="mt-3">{children}</div>
     </div>
+  );
+}
+
+function LinkedDownloadLinkContent({ content }: { content: string }) {
+  const segments = linkifyDownloadLinkContent(content);
+
+  return (
+    <p className="mt-2 whitespace-pre-wrap break-words text-base font-semibold leading-7 text-[#F6FAFF]">
+      {segments.map((segment, index) =>
+        segment.type === "link" ? (
+          <a
+            key={`${segment.href}-${index}`}
+            href={segment.href}
+            target="_blank"
+            rel="nofollow noopener noreferrer"
+            className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(240,90,53,0.5)] underline-offset-4 transition hover:text-[#ffb09b]"
+          >
+            {segment.text}
+          </a>
+        ) : (
+          <span key={`${segment.text}-${index}`}>{segment.text}</span>
+        ),
+      )}
+    </p>
   );
 }

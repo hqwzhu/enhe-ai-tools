@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-
-const localeCookieName = "enhe_locale";
-const localeCookieMaxAge = 60 * 60 * 24 * 365;
+import {
+  localeCookieMaxAge,
+  localeCookieName,
+  shouldRedirectRootToEnglish,
+} from "@/lib/locale-routing";
 
 export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -18,7 +20,31 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/ai-trends/") ||
     pathname.startsWith("/tools/") ||
     pathname.startsWith("/legal/");
-  const resolvedLocale = isEnglishPath ? "en" : cookieLocale === "en" ? "en" : "zh";
+
+  if (
+    shouldRedirectRootToEnglish({
+      pathname,
+      cookieLocale,
+      headers: request.headers,
+    })
+  ) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/en";
+    const response = NextResponse.redirect(redirectUrl);
+    response.headers.set("Content-Language", "en-US");
+    response.headers.set(
+      "Vary",
+      "Accept-Language, Cookie, CF-IPCountry, X-Vercel-IP-Country, X-Country-Code, X-Geo-Country, X-Forwarded-Country, X-Client-Country, X-Client-Geo-Country, X-Tencent-Country, EO-Client-Geo-Country-Code, CloudFront-Viewer-Country, X-Appengine-Country"
+    );
+    response.cookies.set(localeCookieName, "en", {
+      path: "/",
+      maxAge: localeCookieMaxAge,
+      sameSite: "lax"
+    });
+    return response;
+  }
+
+  const resolvedLocale = isEnglishPath ? "en" : isChinesePublicPath ? "zh" : cookieLocale === "en" ? "en" : "zh";
   const htmlLocale = isEnglishPath ? "en" : isChinesePublicPath ? "zh" : resolvedLocale;
 
   requestHeaders.set("x-enhe-locale", resolvedLocale);
@@ -33,6 +59,12 @@ export function middleware(request: NextRequest) {
 
   if (isEnglishPath && cookieLocale !== "en") {
     response.cookies.set(localeCookieName, "en", {
+      path: "/",
+      maxAge: localeCookieMaxAge,
+      sameSite: "lax"
+    });
+  } else if (isChinesePublicPath && cookieLocale === "en") {
+    response.cookies.set(localeCookieName, "zh", {
       path: "/",
       maxAge: localeCookieMaxAge,
       sameSite: "lax"

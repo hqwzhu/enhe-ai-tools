@@ -3,6 +3,7 @@ import {
   canOpenProtectedDownloadEntry,
   canShowDownloadLinkArea,
   getDownloadLinkContent,
+  linkifyDownloadLinkContent,
   resolveSoftwareDownloadCtaHref
 } from "@/lib/tool-download-link";
 
@@ -24,6 +25,18 @@ describe("tool download link visibility", () => {
     expect(getDownloadLinkContent({ filePath: "中文下载说明：联系管理员获取", fileUrl: "中文下载说明：联系管理员获取" })).toBe(
       "中文下载说明：联系管理员获取"
     );
+  });
+
+  it("turns http download URLs inside text into clickable link segments", () => {
+    expect(
+      linkifyDownloadLinkContent("下载地址：https://example.com/app.zip。备用：https://backup.example.com/app.zip 提取码：1234")
+    ).toEqual([
+      { type: "text", text: "下载地址：" },
+      { type: "link", text: "https://example.com/app.zip", href: "https://example.com/app.zip" },
+      { type: "text", text: "。备用：" },
+      { type: "link", text: "https://backup.example.com/app.zip", href: "https://backup.example.com/app.zip" },
+      { type: "text", text: " 提取码：1234" }
+    ]);
   });
 
   it("only opens protected download entries for real locators", () => {
