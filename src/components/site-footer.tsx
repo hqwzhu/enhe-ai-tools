@@ -146,21 +146,40 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
             <h2 className="site-footer-group-title site-footer-group-title-desktop">{locale === "en" ? "Company" : "公司信息"}</h2>
             <details className="site-footer-disclosure" open>
               <summary className="site-footer-group-title">{locale === "en" ? "Company" : "公司信息"}</summary>
-              <span>
-                {contactLabels.company}: {companyName}
-              </span>
-              <span>
-                {contactLabels.address}: {companyAddress}
-              </span>
-              <a href={companyContact.phoneHref} className="site-footer-link cursor-target">
-                {contactLabels.phone}: {companyContact.phone}
-              </a>
-              <a href={companyContact.emailHref} className="site-footer-link cursor-target">
-                {contactLabels.email}: {companyContact.email}
-              </a>
-              <PrefetchLink href={buildLocalePath("/about", locale)} className="site-footer-link cursor-target">
-                {locale === "en" ? "ENHE AI brand profile" : "恩禾ENHE AI 品牌档案"}
-              </PrefetchLink>
+              <dl className="site-footer-company-list">
+                <div className="site-footer-company-row">
+                  <dt>{contactLabels.company}</dt>
+                  <dd>{companyName}</dd>
+                </div>
+                <div className="site-footer-company-row">
+                  <dt>{contactLabels.address}</dt>
+                  <dd>{companyAddress}</dd>
+                </div>
+                <div className="site-footer-company-row">
+                  <dt>{contactLabels.phone}</dt>
+                  <dd>
+                    <a href={companyContact.phoneHref} className="site-footer-link cursor-target">
+                      {companyContact.phone}
+                    </a>
+                  </dd>
+                </div>
+                <div className="site-footer-company-row">
+                  <dt>{contactLabels.email}</dt>
+                  <dd>
+                    <a href={companyContact.emailHref} className="site-footer-link cursor-target">
+                      {companyContact.email}
+                    </a>
+                  </dd>
+                </div>
+                <div className="site-footer-company-row">
+                  <dt>{locale === "en" ? "Profile" : "档案"}</dt>
+                  <dd>
+                    <PrefetchLink href={buildLocalePath("/about", locale)} className="site-footer-link cursor-target">
+                      {locale === "en" ? "ENHE AI brand profile" : "恩禾ENHE AI 品牌档案"}
+                    </PrefetchLink>
+                  </dd>
+                </div>
+              </dl>
             </details>
           </address>
         </div>

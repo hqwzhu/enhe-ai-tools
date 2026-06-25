@@ -33,6 +33,8 @@ describe("GEO brand profile source contracts", () => {
     expect(footer).toContain("合规条款");
     expect(footer).toContain("公司信息");
     expect(footer).toContain('<details className="site-footer-disclosure" open>');
+    expect(footer).toContain('className="site-footer-company-list"');
+    expect(footer).toContain('className="site-footer-company-row"');
     expect(footer).toContain('buildLocalePath("/about", locale)');
     expect(footer).toContain("恩禾ENHE AI 品牌档案");
   });
