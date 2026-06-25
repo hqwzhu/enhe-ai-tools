@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/dictionaries";
+import { localeSwitchQueryName } from "@/lib/locale-routing";
 
 export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
 export const siteName = "ENHE AI";
@@ -182,11 +183,15 @@ export function buildLanguageSwitcherHref(path: string, locale: Locale) {
   if (/^\/(?:admin|orders)(?:\/|$)/.test(normalized)) {
     return normalized;
   }
+
+  const withLocaleSwitch = (href: string) =>
+    `${href}${href.includes("?") ? "&" : "?"}${localeSwitchQueryName}=${locale}`;
+
   if (!isLocalizedPublicPath(path)) {
-    return buildLocalePath("/", locale);
+    return withLocaleSwitch(buildLocalePath("/", locale));
   }
 
-  return buildLocalePath(path, locale);
+  return withLocaleSwitch(buildLocalePath(path, locale));
 }
 
 export function buildLanguageAlternates(path = "/") {

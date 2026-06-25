@@ -4,13 +4,17 @@ import {
   localeDetectionVaryHeader,
   localeCookieMaxAge,
   localeCookieName,
+  getRequestedLocaleSwitch,
+  localeSwitchQueryName,
   shouldRedirectRootToEnglish,
+  normalizePathForRequestedLocale,
 } from "@/lib/locale-routing";
 
 export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const pathname = request.nextUrl.pathname;
   const cookieLocale = request.cookies.get(localeCookieName)?.value;
+  const requestedLocale = getRequestedLocaleSwitch(request.nextUrl.searchParams);
   const isEnglishPath = pathname === "/en" || pathname.startsWith("/en/");
   const isChinesePublicPath =
     pathname === "/" ||
@@ -22,6 +26,29 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/ai-trends/") ||
     pathname.startsWith("/tools/") ||
     pathname.startsWith("/legal/");
+
+  if (requestedLocale) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = normalizePathForRequestedLocale(
+      redirectUrl.pathname,
+      requestedLocale,
+    );
+    redirectUrl.searchParams.delete(localeSwitchQueryName);
+
+    const response = NextResponse.redirect(redirectUrl);
+    response.headers.set(
+      "Content-Language",
+      requestedLocale === "en" ? "en-US" : "zh-CN",
+    );
+    response.headers.set("Cache-Control", localeDetectionCacheControl);
+    response.headers.set("Vary", localeDetectionVaryHeader);
+    response.cookies.set(localeCookieName, requestedLocale, {
+      path: "/",
+      maxAge: localeCookieMaxAge,
+      sameSite: "lax"
+    });
+    return response;
+  }
 
   if (
     shouldRedirectRootToEnglish({

@@ -86,21 +86,6 @@ function normalizeRichText(value: string | null | undefined) {
   );
 }
 
-function isPlaceholderSummary(value: string) {
-  const normalized = normalizeText(value).toLowerCase();
-  if (!normalized) return true;
-
-  return [
-    "draft",
-    "tbd",
-    "todo",
-    "coming soon",
-    "placeholder",
-    "test",
-    "n/a",
-  ].includes(normalized);
-}
-
 function extractLocalizedBlocks(value: string | null | undefined) {
   const source = value ?? "";
   const blocks: Partial<Record<Locale, string>> = {};
@@ -489,55 +474,39 @@ function buildEnglishToolSentence(tool: LocalizedToolInput) {
 
 export function buildLocalizedToolSummary(
   tool: LocalizedToolInput,
-  locale: Locale,
+  _locale: Locale,
 ) {
   const shortDescription = resolveLocalizedInlineCopy(
     tool.shortDescription,
-    locale,
+    "zh",
     normalizeText,
   );
-  if (locale === "zh")
-    return tool.type === "online"
-      ? sanitizeAccountServiceCopy(shortDescription, "zh")
-      : shortDescription;
-  if (
-    isLocalizedEnglishCopy(shortDescription, 4) &&
-    !isPlaceholderSummary(shortDescription)
-  ) {
-    return shortDescription;
-  }
-  return buildEnglishToolSentence(tool);
+  return tool.type === "online"
+    ? sanitizeAccountServiceCopy(shortDescription, "zh")
+    : shortDescription;
 }
 
 export function buildLocalizedToolLongContent(
   tool: LocalizedToolInput,
-  locale: Locale,
+  _locale: Locale,
 ) {
   const content = normalizeRichText(tool.content);
   const localizedContent = resolveLocalizedInlineCopy(
     tool.content,
-    locale,
+    "zh",
     normalizeRichText,
   );
-  if (locale === "zh")
-    return tool.type === "online"
-      ? sanitizeAccountServiceRichCopy(
-          localizedContent ||
-            resolveLocalizedInlineCopy(
-              tool.shortDescription,
-              "zh",
-              normalizeRichText,
-            ),
-          "zh",
-        )
-      : localizedContent || content;
-  if (isLocalizedEnglishCopy(localizedContent, 8)) return localizedContent;
-
-  const summary = buildLocalizedToolSummary(tool, locale);
-  return [
-    summary,
-    "This English page gives readers the core overview, access guidance, workflow context, and support guidance needed to evaluate the tool quickly.",
-  ].join(" ");
+  return tool.type === "online"
+    ? sanitizeAccountServiceRichCopy(
+        localizedContent ||
+          resolveLocalizedInlineCopy(
+            tool.shortDescription,
+            "zh",
+            normalizeRichText,
+          ),
+        "zh",
+      )
+    : localizedContent || content;
 }
 
 export function shouldIndexEnglishToolPage(
@@ -609,18 +578,7 @@ export function buildLocalizedToolPreviewText(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
-  if (locale === "zh") {
-    const preview = resolveLocalizedInlineCopy(
-      tool.shortDescription,
-      "zh",
-      normalizeText,
-    );
-    return tool.type === "online"
-      ? sanitizeAccountServiceCopy(preview, "zh")
-      : preview;
-  }
-
-  const summary = buildLocalizedToolSummary(tool, "en");
+  const summary = buildLocalizedToolSummary(tool, locale);
   return summary.split(sentenceBreakPattern).find(Boolean)?.trim() ?? summary;
 }
 
@@ -648,7 +606,7 @@ export function buildLocalizedToolOfferName(
 function buildEnglishFaqFallback(
   tool: LocalizedToolInput,
 ): LocalizedFaqInput[] {
-  const summary = buildLocalizedToolSummary(tool, "en");
+  const summary = buildEnglishToolSentence(tool);
   const typeLabel = getEnglishSentenceToolLabel(tool.type);
 
   return [
@@ -803,7 +761,10 @@ function buildGeneratedFaqAnswer(
   const enName =
     resolveLocalizedToolIdentity(tool, "en").primaryName ||
     getDefaultToolLabel(tool.type, "en");
-  const summary = buildLocalizedToolSummary(tool, locale);
+  const summary =
+    locale === "en"
+      ? buildEnglishToolSentence(tool)
+      : buildLocalizedToolSummary(tool, locale);
 
   if (locale === "en") {
     if (slot === 0) return summary;
@@ -946,7 +907,7 @@ export function buildLocalizedToolFaqItems(
 function buildEnglishTutorialFallback(
   tool: LocalizedToolInput,
 ): LocalizedTutorialInput[] {
-  const summary = buildLocalizedToolSummary(tool, "en");
+  const summary = buildEnglishToolSentence(tool);
   const accessText =
     tool.type === "software"
       ? "Check the version, system requirements, price, and download access before using it in your workflow."

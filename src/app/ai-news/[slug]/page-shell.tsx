@@ -565,7 +565,10 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
         }),
       ),
       summary,
-      content: article.englishContent || article.content,
+      content: selectNewsContentWithMatchingLayout(
+        article.content,
+        article.englishContent,
+      ),
       keyTakeaways: article.englishKeyTakeaways.length
         ? article.englishKeyTakeaways
         : article.keyTakeaways,
@@ -591,6 +594,29 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
     impactNotes: article.impactNotes,
     conclusion: article.conclusion,
   };
+}
+
+function getNewsContentLayoutSignature(content: string | null | undefined) {
+  return renderNewsContentBlocks(content ?? "")
+    .map((block) => {
+      if (block.type === "heading") return `${block.type}:${block.level}`;
+      if (block.type === "image") return `${block.type}:${block.src}`;
+      return block.type;
+    })
+    .join("|");
+}
+
+function selectNewsContentWithMatchingLayout(
+  sourceContent: string,
+  localizedContent: string | null | undefined,
+) {
+  const normalizedLocalizedContent = localizedContent?.trim();
+  if (!normalizedLocalizedContent) return sourceContent;
+
+  return getNewsContentLayoutSignature(sourceContent) ===
+    getNewsContentLayoutSignature(normalizedLocalizedContent)
+    ? normalizedLocalizedContent
+    : sourceContent;
 }
 
 function NewsContent({ blocks }: { blocks: NewsContentBlock[] }) {

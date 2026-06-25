@@ -41,7 +41,6 @@ import {
   buildLocalizedToolSummary,
   buildLocalizedToolTagItems,
   buildLocalizedToolTutorialItems,
-  isVisibleInEnglishContent,
   resolveLocalizedToolCategoryName,
   resolveLocalizedToolIdentity,
   shouldIndexEnglishToolPage,
@@ -213,20 +212,8 @@ export async function ToolDetailPageShell({
     toolLocalizationInput,
     forceLocale,
   );
-  const visibleChangelogs =
-    forceLocale === "en"
-      ? tool.changelogs.filter(
-          (item) =>
-            isVisibleInEnglishContent(item.title, 2) ||
-            isVisibleInEnglishContent(item.content, 5),
-        )
-      : tool.changelogs;
-  const visibleComments =
-    forceLocale === "en"
-      ? tool.comments.filter((comment) =>
-          isVisibleInEnglishContent(comment.content, 3),
-        )
-      : tool.comments;
+  const visibleChangelogs = tool.changelogs;
+  const visibleComments = tool.comments;
   const isAccountService = tool.type === "online";
   const isSkillLearning = tool.type === "skill_learning";
   const activePriceSpecs = tool.priceSpecs.filter(

@@ -1,6 +1,5 @@
 import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
-import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import {
   buildAiNewsKeywordCloud,
   buildAiNewsTopicCollections,
@@ -240,25 +239,6 @@ const getCachedPublicNewsListing = unstable_cache(
                 { publishedAt: "desc" },
               ]
             : [{ isPinned: "desc" }, { publishedAt: "desc" }];
-      if (filters.locale === "en") {
-        const candidateArticles = await prisma.newsArticle.findMany({
-          where,
-          include: { category: true, tagLinks: { include: { tag: true } } },
-          orderBy,
-          take: Math.max((filters.skip ?? 0) + (filters.take ?? 9), 80),
-        });
-        const indexableArticles = candidateArticles.filter(
-          isEnglishNewsArticleIndexable,
-        );
-        const skip = filters.skip ?? 0;
-        const take = filters.take ?? 9;
-
-        return {
-          articles: indexableArticles.slice(skip, skip + take),
-          total: indexableArticles.length,
-        };
-      }
-
       const [articles, total] = await Promise.all([
         prisma.newsArticle.findMany({
           where,

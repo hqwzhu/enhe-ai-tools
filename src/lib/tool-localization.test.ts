@@ -5,11 +5,16 @@ import {
   buildLocalizedToolOfferName,
   buildLocalizedToolSummary,
   buildLocalizedToolTutorialItems,
-  resolveLocalizedToolCategoryName,
   resolveLocalizedToolIdentity,
   resolveLocalizedToolTagName,
-  shouldIndexEnglishToolPage
+  shouldIndexEnglishToolPage,
 } from "@/lib/tool-localization";
+
+const copyCleanerName = "ENHE \u6587\u6848\u6e05\u6d17\u5728\u7ebf\u5de5\u5177";
+const copyCleanerSummary =
+  "\u6e05\u7406\u591a\u4f59\u7a7a\u683c\u3001\u6362\u884c\u548c\u7279\u6b8a\u7b26\u53f7\uff0c\u9002\u5408\u5185\u5bb9\u6574\u7406\u3002";
+const copyCleanerContent =
+  "\u9002\u5408\u6574\u7406\u6587\u6863\u3001\u94fe\u63a5\u3001\u6807\u9898\u4e0e\u793e\u4ea4\u5a92\u4f53\u5185\u5bb9\uff0c\u8ba9\u9875\u9762\u5185\u5bb9\u66f4\u6574\u6d01\u3002";
 
 describe("tool localization helpers", () => {
   it("prefers english names on english pages and falls back to descriptive slugs", () => {
@@ -17,30 +22,30 @@ describe("tool localization helpers", () => {
       resolveLocalizedToolIdentity(
         {
           slug: "enhe-copy-cleaner",
-          name: "ENHE 文案清洗在线工具",
+          name: copyCleanerName,
           englishName: "ENHE Copy Cleaner",
-          type: "online"
+          type: "online",
         },
-        "en"
-      )
+        "en",
+      ),
     ).toEqual({
       primaryName: "ENHE Copy Cleaner",
-      secondaryName: "ENHE 文案清洗在线工具"
+      secondaryName: copyCleanerName,
     });
 
     expect(
       resolveLocalizedToolIdentity(
         {
           slug: "enhe-copy-cleaner",
-          name: "ENHE 文案清洗在线工具",
+          name: copyCleanerName,
           englishName: null,
-          type: "online"
+          type: "online",
         },
-        "en"
-      )
+        "en",
+      ),
     ).toEqual({
       primaryName: "ENHE Copy Cleaner",
-      secondaryName: "ENHE 文案清洗在线工具"
+      secondaryName: copyCleanerName,
     });
   });
 
@@ -49,67 +54,54 @@ describe("tool localization helpers", () => {
       resolveLocalizedToolIdentity(
         {
           slug: "tool-cmptpgzow0007toe0ld9yuc0w",
-          name: "测试",
+          name: "\u6d4b\u8bd5",
           englishName: null,
-          type: "software"
+          type: "software",
         },
-        "en"
-      )
+        "en",
+      ),
     ).toEqual({
       primaryName: "AI Software App",
-      secondaryName: "测试"
+      secondaryName: "\u6d4b\u8bd5",
     });
   });
 
-  it("maps non-english categories to stable english labels", () => {
-    expect(resolveLocalizedToolCategoryName("在线处理", "online", "en")).toBe("Online Processing");
-    expect(resolveLocalizedToolCategoryName("自动化软件", "software", "en")).toBe("Automation Software");
-    expect(resolveLocalizedToolCategoryName("账号购买服务", "online", "en")).toBe("AI Account Service");
-  });
-
-  it("replaces Chinese account-purchase category wording with compliance-safe public labels", () => {
-    expect(resolveLocalizedToolCategoryName("账号购买服务", "online", "zh")).toBe("AI账号服务咨询");
-    expect(resolveLocalizedToolCategoryName("AI账号购买服务", "online", "zh")).toBe("AI账号服务咨询");
-    expect(resolveLocalizedToolCategoryName("账号订阅支持", "online", "zh")).toBe("账号订阅支持");
-  });
-
-  it("builds english summaries without surfacing raw chinese descriptions", () => {
+  it("keeps english product summaries aligned with the Chinese source copy", () => {
     const summary = buildLocalizedToolSummary(
       {
         slug: "enhe-copy-cleaner",
-        name: "ENHE 文案清洗在线工具",
+        name: copyCleanerName,
         englishName: null,
-        shortDescription: "清理多余空格、换行和特殊符号，适合内容整理。",
+        shortDescription: copyCleanerSummary,
         type: "online",
-        categoryName: "在线处理"
+        categoryName: "Online Processing",
       },
-      "en"
+      "en",
     );
 
-    expect(summary).toContain("AI account service");
-    expect(summary).not.toContain("清理多余空格");
+    expect(summary).toBe(copyCleanerSummary);
+    expect(summary).not.toContain("AI account service");
   });
 
-  it("does not treat mixed english-and-chinese descriptions as localized english copy", () => {
+  it("keeps mixed source descriptions instead of replacing them with generated English copy", () => {
+    const mixedSummary = `${copyCleanerSummary} ENHE Copy Cleaner helps prepare copy before publishing.`;
     const summary = buildLocalizedToolSummary(
       {
-        slug: "ai-ai",
-        name: "AI语音生成（随心所欲版）",
-        englishName: "AI Voice Generator - Flexible Edition",
-        shortDescription:
-          "AI语音生成（随心所欲版）是恩禾 ENHE AI工具站推出的本地离线 AI 语音合成桌面工具。软件基于 Qwen3-TTS 开源项目整理开发，支持文字转语音、声音克隆、声音设计、多角色对话、声音管理、模型微调等功能，适合需要在本地电脑上完成语音生成、音频素材整理与内容生产的用户使用。 AI Voice Generator — Flexible Edition is a local Windows-based AI voice synthesis tool. It supports text-to-speech, voice cloning, voice design, multi-role dialogue generation, and audio file management. It is suitable for content creators, training materials, product demos, voice prototypes, and multilingual audio production workflows.",
+        slug: "enhe-copy-cleaner",
+        name: copyCleanerName,
+        englishName: "ENHE Copy Cleaner",
+        shortDescription: mixedSummary,
         type: "software",
-        categoryName: "音频工具"
+        categoryName: "AI Software App",
       },
-      "en"
+      "en",
     );
 
-    expect(summary).toContain("AI Voice Generator - Flexible Edition is an AI software app");
-    expect(summary).not.toContain("语音生成");
-    expect(summary).not.toContain("恩禾");
+    expect(summary).toBe(mixedSummary);
+    expect(summary).not.toContain("Review pricing, version details");
   });
 
-  it("avoids repeating generic english category labels in generated descriptions", () => {
+  it("does not generate alternate English descriptions from product identity alone", () => {
     const summary = buildLocalizedToolSummary(
       {
         slug: "ai-ai",
@@ -117,131 +109,188 @@ describe("tool localization helpers", () => {
         englishName: "AI Voice Generator - Flexible Edition",
         shortDescription: "draft",
         type: "software",
-        categoryName: "AI Software App"
+        categoryName: "AI Software App",
       },
-      "en"
+      "en",
     );
 
-    expect(summary).toBe(
-      "AI Voice Generator - Flexible Edition is an AI software app. Review pricing, version details, and download access on ENHE AI."
+    expect(summary).toBe("draft");
+    expect(summary).not.toContain(
+      "AI Voice Generator - Flexible Edition is an AI software app",
     );
-    expect(summary).not.toContain("in ai software app");
   });
 
-  it("builds english detail copy without leaking untranslated chinese paragraphs", () => {
+  it("keeps english detail copy aligned with the Chinese source content", () => {
     const content = buildLocalizedToolLongContent(
       {
         slug: "enhe-copy-cleaner",
-        name: "ENHE 文案清洗在线工具",
+        name: copyCleanerName,
         englishName: null,
-        shortDescription: "清理多余空格、换行和特殊符号，适合内容整理。",
-        content: "适合整理文案、链接、标题与社交媒体内容，让页面内容更整洁。",
+        shortDescription: copyCleanerSummary,
+        content: copyCleanerContent,
         type: "online",
-        categoryName: "在线处理"
+        categoryName: "Online Processing",
       },
-      "en"
+      "en",
     );
 
-    expect(content).toContain("support guidance");
-    expect(content).not.toContain("full localized tutorials");
-    expect(content).not.toContain("适合整理文案");
+    expect(content).toBe(copyCleanerContent);
+    expect(content).not.toContain("support guidance");
   });
 
-  it("marks english detail pages without genuine english copy as non-indexable", () => {
+  it("marks english detail pages without genuine english source copy as non-indexable", () => {
     expect(
       shouldIndexEnglishToolPage({
         slug: "enhe-copy-cleaner",
-        name: "ENHE 文案清洗在线工具",
+        name: copyCleanerName,
         englishName: null,
-        shortDescription: "清理多余空格、换行和特殊符号，适合内容整理。",
-        content: "适合整理文案、链接、标题与社交媒体内容，让页面内容更整洁。",
-        type: "online"
-      })
+        shortDescription: copyCleanerSummary,
+        content: copyCleanerContent,
+        type: "online",
+      }),
     ).toBe(false);
 
     expect(
       shouldIndexEnglishToolPage({
         slug: "enhe-copy-cleaner",
-        name: "ENHE 文案清洗在线工具",
+        name: copyCleanerName,
         englishName: "ENHE Copy Cleaner",
-        shortDescription: "Clean extra spaces, line breaks, and special characters for faster content editing.",
-        content: "Use this tool to clean copy, links, headlines, and social snippets before publishing.",
-        type: "online"
-      })
+        shortDescription:
+          "Clean extra spaces, line breaks, and special characters for faster content editing.",
+        content:
+          "Use this tool to clean copy, links, headlines, and social snippets before publishing.",
+        type: "online",
+      }),
     ).toBe(true);
   });
 
-  it("keeps english detail pages indexable when fallback english copy can be generated from a clear english identity", () => {
+  it("does not index English details when only generated English copy would exist", () => {
     expect(
       shouldIndexEnglishToolPage({
         slug: "ai-ai",
-        name: "AI语音生成（随心所欲版）",
+        name: "\u0041\u0049\u8bed\u97f3\u751f\u6210",
         englishName: "AI Voice Generator - Flexible Edition",
-        shortDescription: "本地离线 AI 语音合成桌面工具，支持文字转语音、声音克隆、多角色对话和音频管理。",
-        content: "适合在本地电脑上完成语音生成、音频素材整理与内容生产，适用于内容创作、培训材料、产品演示和多语种音频工作流。",
-        type: "software"
-      })
-    ).toBe(true);
+        shortDescription:
+          "\u672c\u5730\u79bb\u7ebf AI \u8bed\u97f3\u5408\u6210\u684c\u9762\u5de5\u5177\u3002",
+        content:
+          "\u9002\u5408\u5728\u672c\u5730\u7535\u8111\u4e0a\u5b8c\u6210\u8bed\u97f3\u751f\u6210\u548c\u97f3\u9891\u7d20\u6750\u6574\u7406\u3002",
+        type: "software",
+      }),
+    ).toBe(false);
   });
 
-  it("localizes english detail tags and offer names without exposing raw chinese labels", () => {
-    expect(resolveLocalizedToolTagName("效率提升", "en")).toBe("Productivity");
-    expect(resolveLocalizedToolTagName("自动化", "en")).toBe("Automation");
-    expect(resolveLocalizedToolTagName("Creator Kit", "en")).toBe("Creator Kit");
-    expect(resolveLocalizedToolTagName("未映射标签", "en")).toBe("");
-
-    expect(buildLocalizedToolOfferName("基础套餐", "online", "en", 0)).toBe("Service option 1");
-    expect(buildLocalizedToolOfferName("Pro access", "software", "en", 1)).toBe("Pro access");
-    expect(buildLocalizedToolOfferName("基础套餐", "online", "zh", 0)).toBe("基础套餐");
+  it("localizes english detail tags and offer names without exposing risky account labels", () => {
+    expect(resolveLocalizedToolTagName("Creator Kit", "en")).toBe(
+      "Creator Kit",
+    );
+    expect(
+      buildLocalizedToolOfferName("\u57fa\u7840\u5957\u9910", "online", "en", 0),
+    ).toBe("Service option 1");
+    expect(buildLocalizedToolOfferName("Pro access", "software", "en", 1)).toBe(
+      "Pro access",
+    );
+    expect(
+      buildLocalizedToolOfferName("\u57fa\u7840\u5957\u9910", "online", "zh", 0),
+    ).toBe("\u57fa\u7840\u5957\u9910");
   });
 
-  it("builds english fallback FAQs and tutorials when source records are not localized yet", () => {
+  it("switches English page FAQs and tutorials to English content", () => {
     const tool = {
       slug: "enhe-copy-cleaner",
-      name: "ENHE 文案清洗在线工具",
+      name: copyCleanerName,
       englishName: null,
-      shortDescription: "清理多余空格、换行和特殊符号，适合内容整理。",
-      content: "适合整理文案、链接、标题与社交媒体内容。",
+      shortDescription: copyCleanerSummary,
+      content: copyCleanerContent,
       type: "online" as const,
-      categoryName: "在线处理"
+      categoryName: "Online Processing",
     };
 
     const faqs = buildLocalizedToolFaqItems(
       [
         {
           id: "faq-1",
-          question: "怎么使用？",
-          answer: "登录后即可查看使用方式。"
-        }
+          question:
+            "[[zh]]\u600e\u4e48\u4f7f\u7528\uff1f[[/zh]][[en]]How do I use it?[[/en]]",
+          answer:
+            "[[zh]]\u767b\u5f55\u540e\u5373\u53ef\u67e5\u770b\u4f7f\u7528\u65b9\u5f0f\u3002[[/zh]][[en]]Sign in to view access notes and usage steps.[[/en]]",
+        },
       ],
       tool,
-      "en"
+      "en",
     );
 
     expect(faqs).toHaveLength(5);
-    expect(faqs[0].question).toBe("What is this AI account service for?");
-    expect(faqs[0].answer).not.toContain("登录后");
+    expect(faqs[0].question).toBe("How do I use it?");
+    expect(faqs[0].answer).toContain("Sign in to view access notes");
 
     const tutorials = buildLocalizedToolTutorialItems(
       [
         {
           id: "tutorial-1",
-          title: "使用步骤",
-          content: "复制文本后点击处理。",
+          title:
+            "[[zh]]\u4f7f\u7528\u6b65\u9aa4[[/zh]][[en]]Access guide[[/en]]",
+          content:
+            "[[zh]]\u590d\u5236\u6587\u672c\u540e\u70b9\u51fb\u5904\u7406\u3002[[/zh]][[en]]Copy text, review the settings, and click the process button.[[/en]]",
           notes: null,
           commonErrors: null,
-          videoUrl: null
-        }
+          videoUrl: null,
+        },
       ],
       tool,
-      "en"
+      "en",
     );
 
     expect(tutorials).toHaveLength(1);
-    expect(tutorials[0].title).toBe("Access and usage guide");
-    expect(tutorials[0].content).toContain("Review pricing, delivery notes, and access guidance");
-    expect(tutorials[0].content).not.toContain("复制文本");
+    expect(tutorials[0].title).toBe("Access guide");
+    expect(tutorials[0].content).toContain("Copy text");
   });
+
+  it("uses English FAQ and tutorial fallbacks when records only have Chinese copy", () => {
+    const tool = {
+      slug: "enhe-copy-cleaner",
+      name: copyCleanerName,
+      englishName: null,
+      shortDescription: copyCleanerSummary,
+      content: copyCleanerContent,
+      type: "online" as const,
+      categoryName: "Online Processing",
+    };
+
+    const faqs = buildLocalizedToolFaqItems(
+      [
+        {
+          id: "faq-1",
+          question: "\u600e\u4e48\u4f7f\u7528\uff1f",
+          answer:
+            "\u767b\u5f55\u540e\u5373\u53ef\u67e5\u770b\u4f7f\u7528\u65b9\u5f0f\u3002",
+        },
+      ],
+      tool,
+      "en",
+    );
+    const tutorials = buildLocalizedToolTutorialItems(
+      [
+        {
+          id: "tutorial-1",
+          title: "\u4f7f\u7528\u6b65\u9aa4",
+          content:
+            "\u590d\u5236\u6587\u672c\u540e\u70b9\u51fb\u5904\u7406\u3002",
+          notes: null,
+          commonErrors: null,
+          videoUrl: null,
+        },
+      ],
+      tool,
+      "en",
+    );
+
+    expect(faqs[0].question).toBe("What is this AI account service for?");
+    expect(faqs[0].answer).toContain("AI account service");
+    expect(faqs[0].answer).toContain("access support");
+    expect(tutorials[0].title).toBe("Access and usage guide");
+    expect(tutorials[0].content).toContain("Review pricing, delivery notes");
+  });
+
   it("provides five Chinese fallback FAQs for software apps and skill courses", () => {
     const softwareFaqs = buildLocalizedToolFaqItems(
       [],
@@ -249,25 +298,26 @@ describe("tool localization helpers", () => {
         slug: "ai-video-studio",
         name: "AI Video Studio",
         englishName: "AI Video Studio",
-        shortDescription: "本地 AI 视频生成与增强工具。",
+        shortDescription: "\u672c\u5730 AI \u89c6\u9891\u751f\u6210\u5de5\u5177\u3002",
         content: "",
         type: "software",
-        categoryName: "AI视频工具"
+        categoryName: "AI \u89c6\u9891\u5de5\u5177",
       },
-      "zh"
+      "zh",
     );
     const courseFaqs = buildLocalizedToolFaqItems(
       [],
       {
         slug: "prompt-engineering-course",
-        name: "AI 提示词实战课",
+        name: "AI \u63d0\u793a\u8bcd\u5b9e\u6218\u8bfe",
         englishName: "Prompt Engineering Course",
-        shortDescription: "学习提示词、工作流和 AI 工具实战方法。",
+        shortDescription:
+          "\u5b66\u4e60\u63d0\u793a\u8bcd\u548c AI \u5de5\u5177\u5b9e\u6218\u65b9\u6cd5\u3002",
         content: "",
         type: "skill_learning",
-        categoryName: "AI技能教程"
+        categoryName: "AI \u6280\u80fd\u6559\u7a0b",
       },
-      "zh"
+      "zh",
     );
 
     expect(softwareFaqs).toHaveLength(5);
@@ -276,7 +326,7 @@ describe("tool localization helpers", () => {
       "AI Video Studio",
     );
     expect(courseFaqs.map((item) => item.question).join(" ")).toContain(
-      "AI 提示词实战课",
+      "AI \u63d0\u793a\u8bcd\u5b9e\u6218\u8bfe",
     );
   });
 });

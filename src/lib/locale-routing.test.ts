@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   getRequestCountryCode,
+  getRequestedLocaleSwitch,
   inferLocaleFromRequest,
   isSearchOrAiCrawler,
+  normalizePathForRequestedLocale,
   shouldRedirectRootToEnglish,
 } from "@/lib/locale-routing";
 
@@ -54,5 +56,25 @@ describe("locale routing", () => {
         headers: headers({ "cf-ipcountry": "US", "user-agent": "GPTBot/1.0" }),
       }),
     ).toBe(false);
+  });
+
+  it("honors explicit user language switching before root geo redirects", () => {
+    expect(getRequestedLocaleSwitch(new URLSearchParams("locale=zh"))).toBe(
+      "zh",
+    );
+    expect(getRequestedLocaleSwitch(new URLSearchParams("locale=en"))).toBe(
+      "en",
+    );
+    expect(getRequestedLocaleSwitch(new URLSearchParams("locale=fr"))).toBe(
+      null,
+    );
+    expect(normalizePathForRequestedLocale("/en", "zh")).toBe("/");
+    expect(normalizePathForRequestedLocale("/en/software/demo", "zh")).toBe(
+      "/software/demo",
+    );
+    expect(normalizePathForRequestedLocale("/", "en")).toBe("/en");
+    expect(normalizePathForRequestedLocale("/software/demo", "en")).toBe(
+      "/software/demo",
+    );
   });
 });
