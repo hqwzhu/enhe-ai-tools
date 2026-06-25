@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
-import { getAiNewsTopicPath } from "@/lib/ai-news-topics";
+import { aiNewsTopics, getAiNewsTopicPath } from "@/lib/ai-news-topics";
 import { prisma } from "@/lib/db";
-import { getPublicAiNewsTopics } from "@/lib/public-content";
 import {
   buildCanonicalToolPath,
   getCanonicalAiNewsSlug,
@@ -31,6 +30,8 @@ const aiNewsTopicSitemapPathHints = [
 const staticRoutes = [
   "/",
   "/en",
+  "/about",
+  "/en/about",
   "/software",
   "/en/software",
   "/account-services",
@@ -57,9 +58,20 @@ const staticRoutes = [
   "/en/legal/minor-protection",
 ] as const;
 
+const machineReadableRoutes = [
+  {
+    path: "/llms.txt",
+    lastModified: new Date("2026-06-25T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  },
+] as const;
+
 const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
   "/": new Date("2026-06-17T00:00:00.000Z"),
   "/en": new Date("2026-06-17T00:00:00.000Z"),
+  "/about": new Date("2026-06-25T00:00:00.000Z"),
+  "/en/about": new Date("2026-06-25T00:00:00.000Z"),
   "/software": new Date("2026-06-17T00:00:00.000Z"),
   "/en/software": new Date("2026-06-17T00:00:00.000Z"),
   "/account-services": new Date("2026-06-17T00:00:00.000Z"),
@@ -150,7 +162,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     })
     .catch(() => []);
-  const aiNewsTopics = await getPublicAiNewsTopics();
 
   return [
     ...staticRoutes.map((path) => ({
@@ -164,6 +175,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           ? ("daily" as const)
           : ("weekly" as const),
       priority: getPriority(path),
+    })),
+    ...machineReadableRoutes.map((route) => ({
+      url: absoluteSitemapUrl(route.path),
+      lastModified: route.lastModified,
+      changeFrequency: route.changeFrequency,
+      priority: route.priority,
     })),
     ...aiTrendTopicPaths.map((path) => ({
       url: absoluteSitemapUrl(path),

@@ -102,6 +102,18 @@ type ToolStructuredDataInput = {
   } | null;
 };
 
+type ProductStructuredDataInput = {
+  name: string;
+  description?: string | null;
+  url: string;
+  image?: string | null;
+  brand?: string;
+  category?: string | null;
+  price?: number | null;
+  currency?: string;
+  priceSpecs?: OfferSpecInput[];
+};
+
 export function getSiteBaseUrl() {
   return (
     process.env.APP_URL ??
@@ -139,6 +151,7 @@ const localizedPublicRoutePatterns = [
   /^\/login$/,
   /^\/register$/,
   /^\/user$/,
+  /^\/about$/,
   /^\/software$/,
   /^\/software\/.+$/,
   /^\/account-services$/,
@@ -876,6 +889,56 @@ export function buildToolStructuredData({
       ...structuredOffers,
     },
     ...structuredOffers,
+  };
+}
+
+export function buildProductStructuredData({
+  name,
+  description,
+  url,
+  image,
+  brand = siteName,
+  category,
+  price,
+  currency = "CNY",
+  priceSpecs = [],
+}: ProductStructuredDataInput) {
+  const normalizedPriceSpecs = priceSpecs
+    .map((spec) => ({
+      name: normalizeWhitespace(spec.name),
+      price: Number(spec.price),
+    }))
+    .filter(
+      (spec) => spec.name && Number.isFinite(spec.price) && spec.price > 0,
+    );
+  const offer =
+    typeof price === "number" && Number.isFinite(price) && price > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: price.toFixed(2),
+            priceCurrency: currency,
+            availability: "https://schema.org/InStock",
+            url: absoluteUrl(url),
+          },
+        }
+      : {};
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name,
+    description: buildMetaDescription(description),
+    url: absoluteUrl(url),
+    ...(image ? { image: absoluteUrl(image) } : {}),
+    ...(category ? { category } : {}),
+    brand: {
+      "@type": "Brand",
+      name: brand,
+    },
+    ...(normalizedPriceSpecs.length
+      ? buildOfferData(url, currency, normalizedPriceSpecs)
+      : offer),
   };
 }
 

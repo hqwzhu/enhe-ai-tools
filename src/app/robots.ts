@@ -11,7 +11,17 @@ const privateDisallow = [
   "/api",
 ];
 
-const publicAllow = ["/", "/api/uploads/"];
+const publicAllow = [
+  "/",
+  "/about",
+  "/llms.txt",
+  "/ai-news",
+  "/ai-trends",
+  "/software",
+  "/account-services",
+  "/skill-learning",
+  "/api/uploads/",
+];
 
 const answerEngineUserAgents = [
   "GPTBot",
@@ -32,6 +42,10 @@ const answerEngineUserAgents = [
   "Baiduspider",
   "Bytespider",
   "Doubaobot",
+  "KimiBot",
+  "MoonshotBot",
+  "DeepSeekBot",
+  "BingPreview",
 ] as const;
 
 export default function robots(): MetadataRoute.Robots {

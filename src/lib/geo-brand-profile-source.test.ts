@@ -1,0 +1,93 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const root = process.cwd();
+
+function read(path: string) {
+  return readFileSync(join(root, path), "utf8");
+}
+
+function exists(path: string) {
+  return existsSync(join(root, path));
+}
+
+describe("GEO brand profile source contracts", () => {
+  it("publishes an AI-readable brand profile page with FAQ and entity schema", () => {
+    const about = read("src/app/about/page-shell.tsx");
+
+    expect(exists("src/app/(zh-public)/about/page.tsx")).toBe(true);
+    expect(exists("src/app/en/about/page.tsx")).toBe(true);
+    expect(about).toContain("恩禾ENHE AI 是什么？");
+    expect(about).toContain("AI智能体");
+    expect(about).toContain("本地部署AI");
+    expect(about).toContain("AI账号服务");
+    expect(about).toContain("buildFaqSchema");
+    expect(about).toContain('"@type": "AboutPage"');
+    expect(about).toContain("contactPoint");
+  });
+
+  it("keeps footer legal and company details expanded and links to the brand profile", () => {
+    const footer = read("src/components/site-footer.tsx");
+
+    expect(footer).toContain("合规条款");
+    expect(footer).toContain("公司信息");
+    expect(footer).toContain('<details className="site-footer-disclosure" open>');
+    expect(footer).toContain('buildLocalePath("/about", locale)');
+    expect(footer).toContain("恩禾ENHE AI 品牌档案");
+  });
+
+  it("injects the ByteDance push script loader in the root head", () => {
+    const rootLayout = read("src/app/root-layout-shared.tsx");
+
+    expect(rootLayout).toContain("ttzz-push-loader");
+    expect(rootLayout).toContain("strategy=\"beforeInteractive\"");
+    expect(rootLayout).toContain("lf1-cdn-tos.bytegoofy.com/goofy/ttzz/push.js");
+    expect(rootLayout).toContain("el.id = \"ttzz\"");
+  });
+
+  it("states the homepage positioning with core GEO keywords above the fold", () => {
+    const homeShell = read("src/app/page-shell.tsx");
+    const dictionaries = read("src/lib/dictionaries.ts");
+
+    expect(homeShell).toContain("home-hero-positioning");
+    expect(homeShell).toContain("buildBreadcrumbSchema");
+    expect(homeShell).toContain("<StructuredData data={[breadcrumbSchema]} />");
+    for (const term of ["AI工具", "本地部署AI应用", "AI智能体", "AI技能教程", "AI账号服务", "AI最新资讯"]) {
+      expect(dictionaries).toContain(term);
+    }
+  });
+
+  it("adds clear 301 redirects for weak public slugs", () => {
+    const nextConfig = read("next.config.ts");
+    const slugs = read("src/lib/public-slugs.ts");
+    const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
+
+    expect(nextConfig).toContain('source: "/ai-news/ai-2"');
+    expect(nextConfig).toContain('destination: "/ai-news/tencent-cloud-efficiency-agent-tools"');
+    expect(nextConfig).toContain('source: "/ai-news/ai-3"');
+    expect(nextConfig).toContain('destination: "/ai-news/how-to-choose-ai-tool-website"');
+    expect(nextConfig).toContain('source: "/ai-news/enhe-ai"');
+    expect(nextConfig).toContain('destination: "/ai-news/enhe-ai-tool-station-user-guide"');
+    expect(nextConfig).toContain('source: "/software/zfb"');
+    expect(nextConfig).toContain('destination: "/software/zfb-transfer-link-qr-code-generator"');
+    expect(nextConfig).toContain('source: "/skill-learning/ai-ai-ilo5a5"');
+    expect(nextConfig).toContain('destination: "/skill-learning/ai-monetization-side-hustle-course"');
+    expect(slugs).toContain("explicitToolCanonicalSlugs");
+    expect(slugs).toContain("explicitAiNewsCanonicalSlugs");
+    expect(toolDetail).toContain("const canonicalSlug = getCanonicalToolSlug(tool);");
+    expect(toolDetail).not.toContain("const canonicalSlug = buildSeoFriendlySlug");
+  });
+
+  it("adds GEO article-template requirements to AI news detail pages", () => {
+    const detail = read("src/app/ai-news/[slug]/page-shell.tsx");
+
+    expect(detail).toContain("buildAiNewsFaqItems");
+    expect(detail).toContain("FAQ");
+    expect(detail).toContain("相关工具/教程");
+    expect(detail).toContain("buildFaqSchema");
+    expect(detail).toContain('buildLocalePath("/software", forceLocale)');
+    expect(detail).toContain('buildLocalePath("/skill-learning", forceLocale)');
+    expect(detail).toContain('buildLocalePath("/account-services", forceLocale)');
+  });
+});

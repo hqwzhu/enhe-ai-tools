@@ -20,11 +20,12 @@ describe("AI GEO foundations", () => {
     expect(exists("public/okf/enhe-ai-overview.md")).toBe(true);
 
     const llms = read("public/llms.txt");
-    expect(llms).toContain("ENHE AI");
+    expect(llms).toContain("# 恩禾ENHE AI");
     expect(llms).toContain("https://www.enhe-tech.com.cn/ai-news");
+    expect(llms).toContain("https://www.enhe-tech.com.cn/about");
     expect(llms).toContain("https://www.enhe-tech.com.cn/okf/index.md");
-    expect(llms).toContain("AI agent tools recommendation");
-    expect(llms).toContain("AI account service compliance guidance");
+    expect(llms).toContain("AI agents");
+    expect(llms).toContain("AI account service guidance");
 
     const pricing = read("public/pricing.md");
     expect(pricing).toContain("AI software apps");
@@ -67,11 +68,22 @@ describe("AI GEO foundations", () => {
       "Baiduspider",
       "Bytespider",
       "Doubaobot",
+      "KimiBot",
+      "MoonshotBot",
+      "DeepSeekBot",
+      "BingPreview",
     ]) {
       expect(robots).toContain(`"${bot}"`);
     }
 
-    expect(robots).toContain('const publicAllow = ["/", "/api/uploads/"];');
+    expect(robots).toContain('"/about"');
+    expect(robots).toContain('"/llms.txt"');
+    expect(robots).toContain('"/ai-news"');
+    expect(robots).toContain('"/ai-trends"');
+    expect(robots).toContain('"/software"');
+    expect(robots).toContain('"/account-services"');
+    expect(robots).toContain('"/skill-learning"');
+    expect(robots).toContain('"/api/uploads/"');
     expect(robots).toContain("allow: publicAllow");
     for (const privatePath of ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"]) {
       expect(robots).toContain(`"${privatePath}"`);
@@ -128,20 +140,19 @@ describe("AI GEO foundations", () => {
     expect(skillLearning).toContain("From AI skills to repeatable workflows");
   });
 
-  it("keeps machine-readable GEO files publicly cached but out of the main search sitemap", () => {
+  it("keeps machine-readable GEO files publicly cached and publishes llms.txt in the sitemap", () => {
     const sitemap = read("src/app/sitemap.ts");
     const nextConfig = read("next.config.ts");
 
-    for (const path of [
-      "/llms.txt",
-      "/pricing.md",
-      "/okf/index.md",
-      "/okf/enhe-ai-overview.md",
-    ]) {
+    expect(sitemap).toContain('path: "/llms.txt"');
+    expect(nextConfig).toContain('source: "/llms.txt"');
+    for (const path of ["/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md"]) {
       expect(sitemap).not.toContain(`"${path}"`);
       expect(nextConfig).toContain(`source: "${path}"`);
     }
 
+    expect(sitemap).toContain('"/about"');
+    expect(sitemap).toContain('"/en/about"');
     expect(sitemap).toContain('"/en/ai-trends"');
   });
 });

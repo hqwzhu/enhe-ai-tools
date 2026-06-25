@@ -3,11 +3,25 @@ import { buildSeoFriendlySlug } from "@/lib/admin-form";
 import { resolveAiNewsCanonicalSlug } from "@/lib/ai-news";
 import { buildLocalePath } from "@/lib/seo";
 
+const explicitToolCanonicalSlugs: Record<string, string> = {
+  zfb: "zfb-transfer-link-qr-code-generator",
+  "ai-ai-ilo5a5": "ai-monetization-side-hustle-course",
+};
+
+const explicitAiNewsCanonicalSlugs: Record<string, string> = {
+  "ai-2": "tencent-cloud-efficiency-agent-tools",
+  "ai-3": "how-to-choose-ai-tool-website",
+  "enhe-ai": "enhe-ai-tool-station-user-guide",
+};
+
 export function getCanonicalToolSlug(tool: {
   slug: string;
   name: string;
   englishName?: string | null;
 }) {
+  const explicitSlug = explicitToolCanonicalSlugs[tool.slug];
+  if (explicitSlug) return explicitSlug;
+
   return buildSeoFriendlySlug({
     currentSlug: tool.slug,
     name: tool.name,
@@ -38,6 +52,9 @@ export function getCanonicalAiNewsSlug(article: {
   title: string;
   englishTitle?: string | null;
 }) {
+  const explicitSlug = explicitAiNewsCanonicalSlugs[article.slug];
+  if (explicitSlug) return explicitSlug;
+
   return resolveAiNewsCanonicalSlug({
     slug: article.slug,
     title: article.title,

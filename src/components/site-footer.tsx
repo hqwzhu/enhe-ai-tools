@@ -124,10 +124,10 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
         </div>
 
         <div className="site-footer-grid">
-          {footerGroups.map((group, index) => (
+          {footerGroups.map((group) => (
             <nav key={group.title} className="site-footer-group" aria-label={group.title}>
               <h2 className="site-footer-group-title site-footer-group-title-desktop">{group.title}</h2>
-              <details className="site-footer-disclosure" open={index < 2}>
+              <details className="site-footer-disclosure" open>
                 <summary className="site-footer-group-title">{group.title}</summary>
               <ul className="site-footer-link-list">
                 {group.links.map((link) => (
@@ -144,7 +144,7 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
 
           <address id="footer-contact" className="site-footer-contact not-italic">
             <h2 className="site-footer-group-title site-footer-group-title-desktop">{locale === "en" ? "Company" : "公司信息"}</h2>
-            <details className="site-footer-disclosure">
+            <details className="site-footer-disclosure" open>
               <summary className="site-footer-group-title">{locale === "en" ? "Company" : "公司信息"}</summary>
               <span>
                 {contactLabels.company}: {companyName}
@@ -158,6 +158,9 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
               <a href={companyContact.emailHref} className="site-footer-link cursor-target">
                 {contactLabels.email}: {companyContact.email}
               </a>
+              <PrefetchLink href={buildLocalePath("/about", locale)} className="site-footer-link cursor-target">
+                {locale === "en" ? "ENHE AI brand profile" : "恩禾ENHE AI 品牌档案"}
+              </PrefetchLink>
             </details>
           </address>
         </div>

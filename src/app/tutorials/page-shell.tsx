@@ -45,10 +45,34 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
       { name: t.tutorials.title, path: forceLocale === "en" ? "/en/tutorials" : "/tutorials" }
     ]
   });
+  const howToSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: tutorialGuidance.title,
+    description: t.tutorials.intro,
+    inLanguage: forceLocale === "en" ? "en-US" : "zh-CN",
+    step: [
+      {
+        "@type": "HowToStep",
+        name: forceLocale === "en" ? "Choose the matching tool page" : "选择对应工具页",
+        text: tutorialGuidance.workflowSteps
+      },
+      {
+        "@type": "HowToStep",
+        name: forceLocale === "en" ? "Follow the operating notes" : "按操作说明执行",
+        text: tutorialGuidance.relatedTools
+      },
+      {
+        "@type": "HowToStep",
+        name: forceLocale === "en" ? "Check common errors" : "检查常见问题",
+        text: tutorialGuidance.commonErrors
+      }
+    ]
+  };
 
   return (
     <Container className="py-14">
-      <StructuredData data={breadcrumbSchema} />
+      <StructuredData data={[breadcrumbSchema, howToSchema]} />
       <SectionTitle as="h1" title={t.tutorials.title} intro={t.tutorials.intro} />
       <section className="surface-panel mb-8 p-6">
         <h2 className="text-2xl font-semibold text-[var(--marketing-text)]">{tutorialGuidance.title}</h2>

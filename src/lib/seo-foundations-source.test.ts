@@ -44,6 +44,8 @@ describe("SEO foundations source contract", () => {
     const publicChrome = read("src/components/public-site-chrome.tsx");
     const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
     const software = read("src/app/software/page-shell.tsx");
+    const tutorials = read("src/app/tutorials/page-shell.tsx");
+    const seo = read("src/lib/seo.ts");
 
     expect(publicChrome).toContain("StructuredData");
     expect(publicChrome).toContain("WebSite");
@@ -54,12 +56,15 @@ describe("SEO foundations source contract", () => {
     expect(software).toContain("BreadcrumbList");
     expect(toolDetail).toContain("BreadcrumbList");
     expect(toolDetail).toContain("SoftwareApplication");
+    expect(toolDetail).toContain("buildProductStructuredData");
+    expect(seo).toContain('"@type": "Product"');
     expect(toolDetail).toContain("Service");
     expect(toolDetail).toContain("Course");
     expect(toolDetail).toContain("faq: ");
     expect(toolDetail).toContain("aggregateRating");
     expect(toolDetail).toContain("hasOfferCatalog");
     expect(toolDetail).toContain("CourseInstance");
+    expect(tutorials).toContain('"@type": "HowTo"');
   });
 
   it("uses stable sitemap timestamps and cached public settings", () => {

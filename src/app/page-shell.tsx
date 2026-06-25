@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import { ScrollVelocity } from "@/components/scroll-velocity";
+import { StructuredData } from "@/components/structured-data";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getHomeRecommendedTools } from "@/lib/public-content";
-import { buildHomeMetaDescription, buildHomeMetadataTitle, buildPageMetadata } from "@/lib/seo";
+import {
+  buildBreadcrumbSchema,
+  buildHomeMetaDescription,
+  buildHomeMetadataTitle,
+  buildLocalePath,
+  buildPageMetadata,
+} from "@/lib/seo";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { getEffectiveLocalizedHomeHeroIntro, getEffectiveHomeHeroTitle, getSettingsMap } from "@/lib/settings";
 
@@ -29,9 +36,13 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
   const heroTitleWordmark = /^ENHE\s+AI$/i.test(heroTitle.trim());
   const heroVelocityTexts = [t.home.titleSecondLine, t.home.titleSecondLineEn];
+  const breadcrumbSchema = buildBreadcrumbSchema({
+    items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
+  });
 
   return (
     <main className="home-page-shell">
+      <StructuredData data={[breadcrumbSchema]} />
       <section className="home-hero-shell">
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
@@ -65,6 +76,8 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                   scrollerClassName="home-hero-velocity-scroller"
                 />
               </div>
+
+              <p className="home-hero-positioning">{t.home.positioning}</p>
 
               <div className="home-hero-actions">
                 <ButtonLink

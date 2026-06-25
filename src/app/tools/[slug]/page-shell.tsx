@@ -11,7 +11,6 @@ import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { ToolRichContent } from "@/components/tool-rich-content";
-import { buildSeoFriendlySlug } from "@/lib/admin-form";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
@@ -28,6 +27,7 @@ import {
   buildFaqSchema,
   buildLocalePath,
   buildPageMetadata,
+  buildProductStructuredData,
   buildToolMetaDescription,
   buildToolMetadataTitle,
   buildToolStructuredData,
@@ -172,11 +172,7 @@ export async function ToolDetailPageShell({
   });
   if (!tool || tool.status !== "published") notFound();
 
-  const canonicalSlug = buildSeoFriendlySlug({
-    currentSlug: tool.slug,
-    name: tool.name,
-    englishName: tool.englishName,
-  });
+  const canonicalSlug = getCanonicalToolSlug(tool);
   if (slug !== canonicalSlug || (expectedType && tool.type !== expectedType)) {
     permanentRedirect(buildCanonicalToolPath(tool, forceLocale));
   }
@@ -411,6 +407,22 @@ export async function ToolDetailPageShell({
     })),
     aggregateRating: schemaContent.aggregateRating,
   });
+  const productStructuredData =
+    tool.type === "software"
+      ? buildProductStructuredData({
+          name: localizedTool.primaryName,
+          description: localizedSummary,
+          url: buildCanonicalToolPath(tool, forceLocale),
+          image: coverImage,
+          brand: t.brand,
+          category: localizedCategoryName,
+          price: servicePrice > 0 ? servicePrice : null,
+          priceSpecs: localizedPriceSpecs.map((spec) => ({
+            name: spec.localizedName,
+            price: Number(spec.price),
+          })),
+        })
+      : null;
   // Service schemas can emit hasOfferCatalog, and course schemas can emit CourseInstance when the tool data supports them.
 
   return (
@@ -419,6 +431,7 @@ export async function ToolDetailPageShell({
         data={[
           breadcrumbSchema,
           toolStructuredData,
+          ...(productStructuredData ? [productStructuredData] : []),
           ...(faqSchema ? [faqSchema] : []),
         ]}
       />
