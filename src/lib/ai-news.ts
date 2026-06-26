@@ -372,6 +372,17 @@ export function isEnglishNewsArticleIndexable(article: {
   );
 }
 
+export function resolveLocalizedNewsContent(
+  sourceContent: string,
+  localizedContent: string | null | undefined,
+  locale: "zh" | "en",
+) {
+  if (locale !== "en") return sourceContent;
+
+  const normalizedLocalizedContent = localizedContent?.trim();
+  return normalizedLocalizedContent || sourceContent;
+}
+
 function looksLikeDateOnlyDescription(value: string) {
   const text = value.trim();
   return (

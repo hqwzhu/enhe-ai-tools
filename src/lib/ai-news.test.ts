@@ -7,6 +7,7 @@ import {
   parseNewsRelationIds,
   parseNewsSearchParams,
   renderNewsContentBlocks,
+  resolveLocalizedNewsContent,
   resolveAiNewsMetaDescription,
   resolveNewsVideo,
   resolveAiNewsCanonicalSlug,
@@ -249,6 +250,23 @@ describe("AI news helpers", () => {
           "This English-looking introduction is followed by 中文正文, which means the page should not be indexed as English.",
       }),
     ).toBe(false);
+  });
+
+  it("uses available English body content even when its layout differs from Chinese", () => {
+    const chineseContent =
+      "## 事实概述\n\n这是一段中文正文。\n\n![中文图](https://images.unsplash.com/photo-cn \"中文说明\")";
+    const englishContent =
+      "## Fact Summary\n\nThis English body explains the same AI news for English readers.\n\n- Track the source facts.\n- Compare practical workflow impact.";
+
+    expect(resolveLocalizedNewsContent(chineseContent, englishContent, "en")).toBe(
+      englishContent,
+    );
+    expect(resolveLocalizedNewsContent(chineseContent, englishContent, "zh")).toBe(
+      chineseContent,
+    );
+    expect(resolveLocalizedNewsContent(chineseContent, "   ", "en")).toBe(
+      chineseContent,
+    );
   });
 
   it("skips date-only and thin fields when resolving SEO descriptions", () => {

@@ -15,6 +15,7 @@ import {
   mergeAiNewsRelatedItems,
   renderNewsContentBlocks,
   resolveAiNewsMetaDescription,
+  resolveLocalizedNewsContent,
   resolveNewsVideo,
   toNewsIsoDate,
   type NewsContentBlock,
@@ -565,9 +566,10 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
         }),
       ),
       summary,
-      content: selectNewsContentWithMatchingLayout(
+      content: resolveLocalizedNewsContent(
         article.content,
         article.englishContent,
+        "en",
       ),
       keyTakeaways: article.englishKeyTakeaways.length
         ? article.englishKeyTakeaways
@@ -594,29 +596,6 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
     impactNotes: article.impactNotes,
     conclusion: article.conclusion,
   };
-}
-
-function getNewsContentLayoutSignature(content: string | null | undefined) {
-  return renderNewsContentBlocks(content ?? "")
-    .map((block) => {
-      if (block.type === "heading") return `${block.type}:${block.level}`;
-      if (block.type === "image") return `${block.type}:${block.src}`;
-      return block.type;
-    })
-    .join("|");
-}
-
-function selectNewsContentWithMatchingLayout(
-  sourceContent: string,
-  localizedContent: string | null | undefined,
-) {
-  const normalizedLocalizedContent = localizedContent?.trim();
-  if (!normalizedLocalizedContent) return sourceContent;
-
-  return getNewsContentLayoutSignature(sourceContent) ===
-    getNewsContentLayoutSignature(normalizedLocalizedContent)
-    ? normalizedLocalizedContent
-    : sourceContent;
 }
 
 function NewsContent({ blocks }: { blocks: NewsContentBlock[] }) {
