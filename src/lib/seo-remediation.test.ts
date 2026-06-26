@@ -149,6 +149,47 @@ describe("SEO remediation helpers", () => {
     }
   });
 
+  it("makes sanitized account-service metadata unique without restoring risky copy", () => {
+    const unsafeDescription =
+      "Shared account, guaranteed no ban, recharge supported.";
+    const geminiDescription = buildToolMetaDescription({
+      name: "Gemini Pro",
+      englishName: "Gemini Pro",
+      description: unsafeDescription,
+      type: "online",
+      locale: "zh",
+    });
+    const claudeDescription = buildToolMetaDescription({
+      name: "Claude Pro",
+      englishName: "Claude Pro",
+      description: unsafeDescription,
+      type: "online",
+      locale: "zh",
+    });
+    const englishDescription = buildToolMetaDescription({
+      name: "Gemini Pro",
+      englishName: "Gemini Pro",
+      description: unsafeDescription,
+      type: "online",
+      locale: "en",
+    });
+
+    expect(geminiDescription).not.toBe(claudeDescription);
+    expect(geminiDescription).toContain("Gemini Pro");
+    expect(claudeDescription).toContain("Claude Pro");
+    expect(englishDescription).toContain("Gemini Pro account service guidance");
+    for (const output of [
+      geminiDescription,
+      claudeDescription,
+      englishDescription,
+    ]) {
+      expect(output.length).toBeLessThanOrEqual(145);
+      for (const risky of ["Shared account", "guaranteed", "recharge"]) {
+        expect(output).not.toContain(risky);
+      }
+    }
+  });
+
   it("sanitizes account-service names and offer labels before public rendering", () => {
     const tool = {
       slug: "chatgpt-plus-100",

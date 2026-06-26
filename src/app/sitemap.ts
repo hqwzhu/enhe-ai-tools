@@ -65,6 +65,48 @@ const machineReadableRoutes = [
     changeFrequency: "weekly" as const,
     priority: 0.7,
   },
+  {
+    path: "/pricing.md",
+    lastModified: new Date("2026-06-25T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  },
+  {
+    path: "/okf/index.md",
+    lastModified: new Date("2026-06-21T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: 0.65,
+  },
+  {
+    path: "/okf/enhe-ai-overview.md",
+    lastModified: new Date("2026-06-21T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: 0.65,
+  },
+  {
+    path: "/okf/ai-news/index.md",
+    lastModified: new Date("2026-06-21T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  },
+  {
+    path: "/okf/software/index.md",
+    lastModified: new Date("2026-06-21T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  },
+  {
+    path: "/okf/account-services/index.md",
+    lastModified: new Date("2026-06-21T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  },
+  {
+    path: "/okf/skill-learning/index.md",
+    lastModified: new Date("2026-06-21T00:00:00.000Z"),
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  },
 ] as const;
 
 const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
@@ -163,7 +205,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
     .catch(() => []);
 
-  return [
+  const entries = [
     ...staticRoutes.map((path) => ({
       url: absoluteSitemapUrl(path),
       lastModified: staticRouteLastModified[path],
@@ -253,4 +295,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }));
     }),
   ];
+  const seenUrls = new Set<string>();
+  return entries.filter((entry) => {
+    if (seenUrls.has(entry.url)) return false;
+    seenUrls.add(entry.url);
+    return true;
+  });
 }

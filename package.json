@@ -18,6 +18,7 @@
     "repair:activated-vip-orders": "node prisma/reconcile-activated-vip-orders.js",
     "baidu:push:sitemap": "tsx scripts/push-baidu-sitemap.ts",
     "faq:backfill": "tsx scripts/backfill-tool-faqs.ts",
+    "audit:performance": "node scripts/audit-public-performance.mjs",
     "test": "vitest run"
   },
   "dependencies": {

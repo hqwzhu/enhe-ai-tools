@@ -52,6 +52,8 @@ describe("SEO foundations source contract", () => {
     expect(publicChrome).toContain("Organization");
     expect(publicChrome).toContain("SearchAction");
     expect(publicChrome).toContain("buildLocalePath");
+    expect(publicChrome).toContain("sameAs");
+    expect(publicChrome).toContain("contactPoint");
 
     expect(software).toContain("BreadcrumbList");
     expect(toolDetail).toContain("BreadcrumbList");

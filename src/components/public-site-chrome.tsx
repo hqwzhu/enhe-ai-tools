@@ -39,8 +39,19 @@ export async function PublicSiteChrome({
   const organizationSchema = buildOrganizationSchema({
     schemaType: "Organization",
     name: siteDisplayName,
+    description: siteDescription,
     logo: siteLogo,
-    url: languageAlternates[inLanguage]
+    url: languageAlternates[inLanguage],
+    sameAs: [
+      "https://www.enhe-tech.com.cn/about",
+      "https://www.enhe-tech.com.cn/ai-news",
+      "https://www.enhe-tech.com.cn/software"
+    ],
+    contactPoint: {
+      email: "ENHEAI.life@protonmail.com",
+      contactType: "customer support",
+      availableLanguage: ["zh-CN", "en-US"]
+    }
   });
 
   return (

@@ -12,6 +12,7 @@ import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   buildBreadcrumbSchema,
+  buildFaqSchema,
   buildListingMetaDescription,
   buildLocalePath,
   buildMetadataTitle,
@@ -51,6 +52,72 @@ const accountServicesGeoSections = {
   ],
 } as const;
 
+const accountServicesFaqItems = {
+  zh: [
+    {
+      question: "AI账号服务适合解决什么问题？",
+      answer:
+        "AI账号服务适合在购买或使用 AI 工具前确认订阅方式、访问路径、交付说明、售后边界和平台规则提醒。它应该帮助用户合规理解工具使用，而不是替代官方授权或绕过平台限制。",
+    },
+    {
+      question: "使用第三方 AI 平台账号服务要注意什么？",
+      answer:
+        "涉及第三方平台时，应以对应平台官方政策为准。用户需要确认服务范围、交付材料、退款规则、账号安全和数据边界，不应依赖共享账号、破解或保证不封号等高风险承诺。",
+    },
+    {
+      question: "账号服务如何和软件、课程一起使用？",
+      answer:
+        "更稳妥的路径是先明确任务，再选择 AI 软件应用或 AI 技能课程，最后根据实际访问和订阅需求咨询账号服务。这样能把工具、学习和合规使用连接成完整工作流。",
+    },
+  ],
+  en: [
+    {
+      question: "What does AI account service guidance help with?",
+      answer:
+        "AI account service guidance helps users understand subscription options, access paths, delivery notes, support boundaries, and platform policy reminders before adopting an AI tool.",
+    },
+    {
+      question: "What should users check for third-party AI platforms?",
+      answer:
+        "For third-party AI platforms, the official platform policy should prevail. Users should review service scope, delivery notes, refund rules, account security, and data boundaries before purchase or use.",
+    },
+    {
+      question: "How should account services connect with software and courses?",
+      answer:
+        "Users should first define the task, then choose suitable AI software or skill courses, and only then request account service guidance when access or subscription support is needed.",
+    },
+  ],
+} as const;
+
+function buildAccountServicesCollectionSchema(forceLocale: Locale) {
+  const isEnglish = forceLocale === "en";
+  const url = buildLocalePath("/account-services", forceLocale);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: isEnglish ? "AI Account Services" : "AI账号服务",
+    description: buildListingMetaDescription("account-services", forceLocale),
+    url,
+    inLanguage: isEnglish ? "en-US" : "zh-CN",
+    mainEntity: {
+      "@type": "Service",
+      name: isEnglish
+        ? "AI account service guidance"
+        : "AI账号服务咨询",
+      serviceType: isEnglish
+        ? "AI account subscription and usage guidance"
+        : "AI工具订阅与账号使用支持",
+      provider: {
+        "@type": "Organization",
+        name: "ENHE AI",
+      },
+      areaServed: "CN",
+      url,
+    },
+  };
+}
+
 export async function generateAccountServicesPageMetadata(
   forceLocale: Locale,
 ): Promise<Metadata> {
@@ -89,6 +156,10 @@ export async function AccountServicesPageShell({
       },
     ],
   });
+  const faqSchema = buildFaqSchema({
+    items: accountServicesFaqItems[forceLocale],
+  });
+  const collectionSchema = buildAccountServicesCollectionSchema(forceLocale);
   const [categories, tools] = await Promise.all([
     getPublicToolCategories("online"),
     getPublicToolListing("online", categoryId, keyword, undefined, sort),
@@ -97,7 +168,7 @@ export async function AccountServicesPageShell({
   return (
     <main>
       <Container className="py-14">
-        <StructuredData data={breadcrumbSchema} />
+        <StructuredData data={[breadcrumbSchema, collectionSchema, faqSchema]} />
         <SectionTitle
           as="h1"
           title={t.listing.onlineTitle}
@@ -121,6 +192,7 @@ export async function AccountServicesPageShell({
 
 function AccountServicesGeoBlock({ forceLocale }: { forceLocale: Locale }) {
   const sections = accountServicesGeoSections[forceLocale];
+  const faqs = accountServicesFaqItems[forceLocale];
   const links = [
     {
       label: { zh: "选择 AI 软件应用", en: "Choose AI software apps" },
@@ -164,6 +236,21 @@ function AccountServicesGeoBlock({ forceLocale }: { forceLocale: Locale }) {
           </Link>
         ))}
       </div>
+      <div className="mt-6 grid gap-3 md:grid-cols-3">
+        {faqs.map((item) => (
+          <article
+            key={item.question}
+            className="rounded-2xl border border-white/10 bg-white/7 p-5"
+          >
+            <h2 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+              {item.question}
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
+              {item.answer}
+            </p>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
@@ -181,10 +268,11 @@ function FilterBar({
     <form className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_140px]">
       <input
         name="q"
+        aria-label={t.listing.searchPlaceholder}
         placeholder={t.listing.searchPlaceholder}
         className="form-control-dark"
       />
-      <select name="category" className="form-select-dark">
+      <select name="category" aria-label={t.listing.allCategories} className="form-select-dark">
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -192,7 +280,7 @@ function FilterBar({
           </option>
         ))}
       </select>
-      <select name="sort" className="form-select-dark">
+      <select name="sort" aria-label={t.listing.latest} className="form-select-dark">
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

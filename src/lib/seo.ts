@@ -48,6 +48,13 @@ type OrganizationSchemaInput = {
   name: string;
   logo?: string | null;
   url?: string;
+  description?: string | null;
+  sameAs?: string[];
+  contactPoint?: {
+    email: string;
+    contactType?: string;
+    availableLanguage?: string[];
+  } | null;
   schemaType?: "Organization";
 };
 
@@ -71,7 +78,7 @@ type BreadcrumbSchemaInput = {
 };
 
 type FaqSchemaInput = {
-  items: Array<{
+  items: ReadonlyArray<{
     question: string;
     answer: string;
   }>;
@@ -180,7 +187,6 @@ export function isLocalizedPublicPath(path: string) {
 
 export function buildLanguageSwitcherHref(path: string, locale: Locale) {
   const normalized = stripLocalePrefix(path);
-
   const withLocaleSwitch = (href: string) =>
     `${href}${href.includes("?") ? "&" : "?"}${localeSwitchQueryName}=${locale}`;
 
@@ -398,6 +404,8 @@ const accountServiceRiskTermPatterns = [
 
 const safeZhAccountServiceCopy =
   "AI\u5de5\u5177\u8ba2\u9605\u4e0e\u8d26\u53f7\u4f7f\u7528\u652f\u6301\uff0c\u63d0\u4f9b\u8ba2\u9605\u54a8\u8be2\u3001\u8d26\u53f7\u4f7f\u7528\u5efa\u8bae\u3001\u4ea4\u4ed8\u8bf4\u660e\u4e0e\u552e\u540e\u8fb9\u754c\u3002\u4f7f\u7528\u524d\u8bf7\u9075\u5b88\u5bf9\u5e94\u5e73\u53f0\u89c4\u5219\uff1b\u5982\u6d89\u53ca\u7b2c\u4e09\u65b9\u5e73\u53f0\uff0c\u8bf7\u4ee5\u5b98\u65b9\u653f\u7b56\u4e3a\u51c6\u3002";
+const safeEnAccountServiceCopy =
+  "AI tool subscription and account usage support with access guidance, delivery notes, and compliance reminders. Please follow the rules of each platform; for third-party services, the official policy should prevail.";
 
 export function hasAccountServiceRiskTerms(value: string | null | undefined) {
   const normalized = normalizeWhitespace(value ?? "");
@@ -424,10 +432,39 @@ export function sanitizeAccountServiceCopy(
     return normalized;
 
   if (locale === "en") {
-    return "AI tool subscription and account usage support with access guidance, delivery notes, and compliance reminders. Please follow the rules of each platform; for third-party services, the official policy should prevail.";
+    return safeEnAccountServiceCopy;
   }
 
   return safeZhAccountServiceCopy;
+}
+
+function isGenericAccountServiceMetaDescription(
+  value: string,
+  locale: Locale,
+) {
+  if (locale === "en") {
+    return (
+      value === safeEnAccountServiceCopy ||
+      /^AI tool subscription and account usage support\b/i.test(value)
+    );
+  }
+
+  return (
+    value === safeZhAccountServiceCopy ||
+    (value.includes("\u8ba2\u9605\u54a8\u8be2") &&
+      value.includes("\u5e73\u53f0\u89c4\u5219"))
+  );
+}
+
+function buildUniqueAccountServiceMetaDescription(
+  primaryName: string,
+  locale: Locale,
+) {
+  if (locale === "en") {
+    return `${primaryName} account service guidance: review access paths, delivery notes, support boundaries, pricing context, and platform-policy reminders before use.`;
+  }
+
+  return `${primaryName} AI\u8d26\u53f7\u670d\u52a1\u54a8\u8be2\uff1a\u63d0\u4f9bAI\u5de5\u5177\u8ba2\u9605\u4e0e\u8d26\u53f7\u4f7f\u7528\u652f\u6301\uff0c\u5305\u542b\u8bbf\u95ee\u8def\u5f84\u3001\u4ea4\u4ed8\u8bf4\u660e\u3001\u552e\u540e\u8fb9\u754c\u4e0e\u5e73\u53f0\u89c4\u5219\u63d0\u9192\u3002`;
 }
 
 function resolveToolTitleNames(
@@ -564,11 +601,17 @@ export function buildToolMetaDescription({
   const { primaryName } = resolveToolTitleNames(name, englishName, locale);
   const typeLabel = resolveToolTypeLabel(type, locale);
   const targetMaxLength = Math.min(maxLength, locale === "en" ? 135 : 145);
+  const shouldNameGenericAccountServiceCopy =
+    type === "online" &&
+    normalizedDescription &&
+    isGenericAccountServiceMetaDescription(normalizedDescription, locale);
 
   if (locale === "en") {
     if (normalizedDescription)
       return buildMetaDescription(
-        normalizedDescription,
+        shouldNameGenericAccountServiceCopy
+          ? buildUniqueAccountServiceMetaDescription(primaryName, locale)
+          : normalizedDescription,
         defaultSiteDescription,
         targetMaxLength,
       );
@@ -581,6 +624,14 @@ export function buildToolMetaDescription({
   }
 
   if (normalizedDescription) {
+    if (shouldNameGenericAccountServiceCopy) {
+      return buildMetaDescription(
+        buildUniqueAccountServiceMetaDescription(primaryName, locale),
+        defaultSiteDescription,
+        targetMaxLength,
+      );
+    }
+
     const brandLower = normalizeWhitespace(brand).toLowerCase();
     const descriptionLower = normalizedDescription.toLowerCase();
     const compactDescription = descriptionLower.includes(brandLower)
@@ -657,6 +708,9 @@ export function buildOrganizationSchema({
   name,
   logo,
   url = absoluteUrl("/"),
+  description,
+  sameAs = [],
+  contactPoint,
   schemaType = "Organization",
 }: OrganizationSchemaInput) {
   return {
@@ -664,7 +718,22 @@ export function buildOrganizationSchema({
     "@type": schemaType,
     name,
     url,
+    ...(description ? { description: buildMetaDescription(description) } : {}),
     ...(logo ? { logo: absoluteUrl(logo) } : {}),
+    ...(sameAs.length ? { sameAs } : {}),
+    ...(contactPoint?.email
+      ? {
+          contactPoint: {
+            "@type": "ContactPoint",
+            email: contactPoint.email,
+            contactType: contactPoint.contactType ?? "customer support",
+            availableLanguage: contactPoint.availableLanguage ?? [
+              "zh-CN",
+              "en-US",
+            ],
+          },
+        }
+      : {}),
   };
 }
 

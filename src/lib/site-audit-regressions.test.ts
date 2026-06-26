@@ -41,7 +41,7 @@ describe("site audit regression coverage", () => {
   });
 
   it("treats zh AI news routes as Chinese public pages in middleware", () => {
-    const middleware = read("middleware.ts");
+    const middleware = read("src/middleware.ts");
 
     expect(middleware).toContain('"/ai-news"');
     expect(middleware).toContain('pathname.startsWith("/ai-news/")');

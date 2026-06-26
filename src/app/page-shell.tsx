@@ -35,7 +35,10 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const t = getDictionary(forceLocale);
   const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
   const heroTitleWordmark = /^ENHE\s+AI$/i.test(heroTitle.trim());
-  const heroVelocityTexts = [t.home.titleSecondLine, t.home.titleSecondLineEn];
+  const heroVelocityTexts =
+    forceLocale === "en"
+      ? [t.home.titleSecondLineEn]
+      : [t.home.titleSecondLine, t.home.titleSecondLineEn];
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
   });

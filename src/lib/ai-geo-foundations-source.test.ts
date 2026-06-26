@@ -140,19 +140,58 @@ describe("AI GEO foundations", () => {
     expect(skillLearning).toContain("From AI skills to repeatable workflows");
   });
 
-  it("keeps machine-readable GEO files publicly cached and publishes llms.txt in the sitemap", () => {
+  it("keeps machine-readable GEO files publicly cached and publishes them in the sitemap", () => {
     const sitemap = read("src/app/sitemap.ts");
     const nextConfig = read("next.config.ts");
 
-    expect(sitemap).toContain('path: "/llms.txt"');
-    expect(nextConfig).toContain('source: "/llms.txt"');
-    for (const path of ["/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md"]) {
-      expect(sitemap).not.toContain(`"${path}"`);
+    for (const path of [
+      "/llms.txt",
+      "/pricing.md",
+      "/okf/index.md",
+      "/okf/enhe-ai-overview.md",
+      "/okf/ai-news/index.md",
+      "/okf/software/index.md",
+      "/okf/account-services/index.md",
+      "/okf/skill-learning/index.md",
+    ]) {
+      expect(sitemap).toContain(`path: "${path}"`);
       expect(nextConfig).toContain(`source: "${path}"`);
     }
+
+    expect(nextConfig).toContain('source: "/okf"');
+    expect(nextConfig).toContain('destination: "/okf/index.md"');
 
     expect(sitemap).toContain('"/about"');
     expect(sitemap).toContain('"/en/about"');
     expect(sitemap).toContain('"/en/ai-trends"');
+  });
+
+  it("keeps account services answer-engine extractable with FAQ and Service schema", () => {
+    const accountServices = read("src/app/account-services/page-shell.tsx");
+
+    expect(accountServices).toContain("accountServicesFaqItems");
+    expect(accountServices).toContain("buildFaqSchema");
+    expect(accountServices).toContain("buildAccountServicesCollectionSchema");
+    expect(accountServices).toContain('"@type": "Service"');
+    expect(accountServices).toContain("AI账号服务适合解决什么问题？");
+    expect(accountServices).toContain("What does AI account service guidance help with?");
+  });
+
+  it("keeps homepage language signals separate for Chinese and English indexation", () => {
+    const middleware = read("src/middleware.ts");
+    const localeRouting = read("src/lib/locale-routing.ts");
+    const pageShell = read("src/app/page-shell.tsx");
+    const dictionaries = read("src/lib/dictionaries.ts");
+
+    expect(localeRouting).toContain("shouldRedirectRootToEnglish");
+    expect(localeRouting).toContain("localeDetectionVaryHeader");
+    expect(middleware).toContain('isChinesePublicPath ? "zh"');
+    expect(middleware).toContain('"x-enhe-locale"');
+    expect(middleware).toContain('"Vary", localeDetectionVaryHeader');
+    expect(pageShell).toContain("const heroVelocityTexts =");
+    expect(pageShell).toContain('forceLocale === "en"');
+    expect(pageShell).toContain("[t.home.titleSecondLineEn]");
+    expect(dictionaries).toContain('titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来"');
+    expect(dictionaries).toContain('titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future"');
   });
 });

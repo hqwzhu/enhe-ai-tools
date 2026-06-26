@@ -80,9 +80,48 @@ describe("sitemap canonical URL contract", () => {
       expect(urls.some((url) => url.includes(forbidden)), forbidden).toBe(false);
     }
 
-    for (const machineReadable of ["/llms.txt", "/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md", "/okf/ai-news/index.md"]) {
-      expect(urls.some((url) => url.endsWith(machineReadable)), machineReadable).toBe(false);
+    for (const machineReadable of [
+      "/llms.txt",
+      "/pricing.md",
+      "/okf/index.md",
+      "/okf/enhe-ai-overview.md",
+      "/okf/ai-news/index.md",
+      "/okf/software/index.md",
+      "/okf/account-services/index.md",
+      "/okf/skill-learning/index.md",
+    ]) {
+      expect(urls.some((url) => url.endsWith(machineReadable)), machineReadable).toBe(true);
     }
+  });
+
+  it("deduplicates canonical loc entries when legacy and generated slugs collide", async () => {
+    prismaMock.tool.findMany.mockResolvedValue([]);
+    prismaMock.newsArticle.findMany.mockResolvedValue([
+      {
+        slug: "how-to-choose-ai-tool-website",
+        title: "AI工具站如何选择？",
+        englishTitle: "How To Choose An AI Tool Website",
+        englishSummary: "A useful English summary that explains how to choose AI tool websites.",
+        englishContent: "Choosing an AI tool website requires checking positioning, tools, tutorials, account guidance, sources, and FAQ coverage. ".repeat(3),
+        updatedAt: new Date("2026-06-25T10:20:43.395Z")
+      }
+    ]);
+
+    const { default: sitemap } = await import("@/app/sitemap");
+    const entries = await sitemap();
+    const urls = entries.map((entry) => entry.url);
+
+    expect(new Set(urls).size).toBe(urls.length);
+    expect(
+      urls.filter((url) =>
+        new URL(url).pathname === "/ai-news/how-to-choose-ai-tool-website",
+      ),
+    ).toHaveLength(1);
+    expect(
+      urls.filter((url) =>
+        new URL(url).pathname === "/en/ai-news/how-to-choose-ai-tool-website",
+      ),
+    ).toHaveLength(1);
   });
 
   it("keeps root sitemap loc and hreflang alternates on the same canonical URL", async () => {
