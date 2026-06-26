@@ -50,12 +50,14 @@ describe("buildLocalePath", () => {
 });
 
 describe("language switcher source", () => {
-  it("uses link-friendly styles and locale-aware fallback href generation", () => {
+  it("uses full document links with locale-aware fallback href generation", () => {
     const component = readFileSync(new URL("../components/language-switcher.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
     expect(component).toContain("buildLanguageSwitcherHref");
     expect(component).not.toContain("buildLocalePath(normalizedPath, item)");
+    expect(component).not.toContain('import Link from "next/link"');
+    expect(component).toContain("<a");
 
     expect(css).toContain(".site-language-switcher a");
     expect(css).toContain(".site-language-switcher a.is-active");

@@ -77,4 +77,18 @@ describe("locale routing", () => {
       "/software/demo",
     );
   });
+
+  it("keeps admin locale switches on the same path for any visitor region", () => {
+    expect(normalizePathForRequestedLocale("/admin", "zh")).toBe("/admin");
+    expect(normalizePathForRequestedLocale("/admin", "en")).toBe("/admin");
+    expect(normalizePathForRequestedLocale("/admin/ai-news", "zh")).toBe(
+      "/admin/ai-news",
+    );
+    expect(
+      shouldRedirectRootToEnglish({
+        pathname: "/admin",
+        headers: headers({ "cf-ipcountry": "US", "user-agent": "Mozilla/5.0" }),
+      }),
+    ).toBe(false);
+  });
 });
