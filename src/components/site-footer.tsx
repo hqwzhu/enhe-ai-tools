@@ -64,6 +64,10 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
       title: locale === "en" ? "Resources" : "资源支持",
       links: [
         { label: t.nav.updates, href: buildLocalePath("/#updates", locale) },
+        {
+          label: locale === "en" ? "Build Your Own X Navigator" : "Build Your Own X 项目导航器",
+          href: buildLocalePath("/build-your-own-x", locale)
+        },
         { label: t.nav.aiTrends, href: buildLocalePath("/ai-trends", locale) },
         { label: t.nav.pricing, href: buildLocalePath("/pricing", locale) },
         { label: t.nav.tutorials, href: buildLocalePath("/tutorials", locale) },

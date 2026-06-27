@@ -160,6 +160,7 @@ const localizedPublicRoutePatterns = [
   /^\/register$/,
   /^\/user$/,
   /^\/about$/,
+  /^\/build-your-own-x$/,
   /^\/software$/,
   /^\/software\/.+$/,
   /^\/account-services$/,

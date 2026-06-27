@@ -2629,6 +2629,603 @@ select option:disabled {
 
 }
 
+.byox-page {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(240, 90, 53, 0.12), transparent 30rem),
+    radial-gradient(circle at 88% 16%, rgba(88, 166, 255, 0.12), transparent 26rem),
+    var(--marketing-bg);
+}
+
+.byox-container {
+  padding-top: 3.5rem;
+  padding-bottom: 4.5rem;
+}
+
+.byox-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  gap: 2rem;
+  align-items: end;
+  min-height: 34rem;
+}
+
+.byox-hero-copy {
+  max-width: 56rem;
+}
+
+.byox-eyebrow,
+.byox-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--marketing-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.byox-eyebrow {
+  margin-bottom: 1rem;
+}
+
+.byox-hero h1 {
+  color: var(--marketing-text);
+  font-size: clamp(2.55rem, 5vw, 5.6rem);
+  line-height: 0.98;
+  letter-spacing: 0;
+  font-weight: 950;
+}
+
+.byox-hero-copy > p:not(.byox-eyebrow) {
+  margin-top: 1.25rem;
+  max-width: 48rem;
+  color: var(--marketing-muted);
+  font-size: 1.08rem;
+  line-height: 1.9;
+  font-weight: 600;
+}
+
+.byox-hero-actions,
+.byox-related-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.byox-hero-actions {
+  margin-top: 2rem;
+}
+
+.byox-primary-link,
+.byox-secondary-link,
+.byox-reset-button,
+.byox-copy-button,
+.byox-related-links a,
+.byox-route-card a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  border-radius: 999px;
+  padding: 0.75rem 1.05rem;
+  font-size: 0.92rem;
+  font-weight: 850;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.byox-primary-link,
+.byox-copy-button {
+  border: 1px solid rgba(240, 90, 53, 0.68);
+  background: rgba(240, 90, 53, 0.92);
+  color: #fff;
+}
+
+.byox-secondary-link,
+.byox-reset-button,
+.byox-related-links a,
+.byox-route-card a {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--marketing-text);
+}
+
+.byox-primary-link:hover,
+.byox-secondary-link:hover,
+.byox-reset-button:hover,
+.byox-copy-button:hover,
+.byox-related-links a:hover,
+.byox-route-card a:hover {
+  transform: translateY(-1px);
+  border-color: var(--marketing-accent);
+  color: #fff;
+}
+
+.byox-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.byox-stat-card,
+.byox-project-card,
+.byox-route-card {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.byox-stat-card {
+  min-height: 9.5rem;
+  border-radius: 0.5rem;
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.byox-stat-card strong {
+  color: var(--marketing-text);
+  font-size: 2.3rem;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.byox-stat-card span {
+  color: var(--marketing-muted);
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.byox-answer,
+.byox-app,
+.byox-route-section,
+.byox-support-grid {
+  margin-top: 2rem;
+}
+
+.byox-answer {
+  padding: 1.5rem;
+}
+
+.byox-answer h2,
+.byox-filter-header h2,
+.byox-route-panel h2,
+.byox-results-bar h2,
+.byox-prompt-card h2,
+.byox-section-heading h2,
+.byox-support-card h2 {
+  color: var(--marketing-text);
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.byox-answer h2 {
+  font-size: 1.5rem;
+}
+
+.byox-answer p,
+.byox-route-panel p,
+.byox-section-heading p,
+.byox-support-card p {
+  margin-top: 0.75rem;
+  color: var(--marketing-muted);
+  line-height: 1.8;
+  font-weight: 600;
+}
+
+.byox-filter-panel,
+.byox-route-panel,
+.byox-prompt-card,
+.byox-support-card {
+  border-radius: 0.5rem;
+}
+
+.byox-filter-panel,
+.byox-prompt-card {
+  padding: 1.25rem;
+}
+
+.byox-filter-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.byox-filter-header h2,
+.byox-route-panel h2 {
+  margin-top: 0.45rem;
+  font-size: 1.45rem;
+}
+
+.byox-controls {
+  display: grid;
+  grid-template-columns: minmax(15rem, 1.35fr) repeat(6, minmax(8.4rem, 1fr));
+  gap: 0.7rem;
+  margin-top: 1.1rem;
+}
+
+.byox-search,
+.byox-controls select {
+  min-height: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.5rem;
+  background: rgba(5, 5, 5, 0.48);
+  color: var(--marketing-text);
+}
+
+.byox-search {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.85rem;
+}
+
+.byox-search input,
+.byox-controls select {
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.byox-search input {
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.byox-controls select {
+  padding: 0 0.8rem;
+}
+
+.byox-search input::placeholder {
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.byox-route-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.42fr);
+  gap: 1.2rem;
+  align-items: stretch;
+  padding: 1.25rem;
+}
+
+.byox-route-outcome {
+  border-left: 1px solid rgba(255, 255, 255, 0.13);
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.byox-route-outcome span {
+  color: var(--marketing-accent);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.byox-route-outcome strong {
+  margin-top: 0.55rem;
+  color: var(--marketing-text);
+  line-height: 1.55;
+  font-size: 1.02rem;
+}
+
+.byox-results-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.34fr);
+  gap: 1rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+.byox-results-main {
+  min-width: 0;
+}
+
+.byox-results-bar {
+  margin-bottom: 0.9rem;
+}
+
+.byox-results-bar h2 {
+  font-size: 1.1rem;
+}
+
+.byox-project-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.byox-project-card,
+.byox-route-card {
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.byox-project-card {
+  min-height: 16rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.byox-project-card-top {
+  min-height: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  color: var(--marketing-accent);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.byox-project-card-top em {
+  font-style: normal;
+  color: var(--marketing-muted);
+}
+
+.byox-project-card h3,
+.byox-route-card h3,
+.byox-support-card h3,
+.byox-faq-list h3 {
+  color: var(--marketing-text);
+  letter-spacing: 0;
+}
+
+.byox-project-card h3 {
+  margin-top: 0.65rem;
+  font-size: 1rem;
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.byox-project-card p {
+  margin-top: 0.65rem;
+  color: var(--marketing-muted);
+  line-height: 1.65;
+  font-size: 0.86rem;
+}
+
+.byox-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.8rem;
+}
+
+.byox-chip-row span {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0.3rem 0.55rem;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.byox-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+  color: var(--marketing-text);
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.byox-source-link:hover {
+  color: var(--marketing-accent);
+}
+
+.byox-prompt-card {
+  position: sticky;
+  top: 5.5rem;
+}
+
+.byox-prompt-card > p:not(.byox-kicker) {
+  margin-top: 0.75rem;
+  color: var(--marketing-muted);
+  line-height: 1.65;
+  font-size: 0.9rem;
+}
+
+.byox-prompt-card pre {
+  margin-top: 1rem;
+  max-height: 28rem;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.38);
+  padding: 0.9rem;
+  white-space: pre-wrap;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.byox-copy-button {
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+  width: 100%;
+}
+
+.byox-empty {
+  padding: 2rem;
+  color: var(--marketing-muted);
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.byox-section-heading {
+  max-width: 48rem;
+  margin-bottom: 1rem;
+}
+
+.byox-section-heading h2,
+.byox-support-card h2 {
+  font-size: 1.7rem;
+}
+
+.byox-route-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.byox-route-card {
+  min-height: 15rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.byox-route-card h3 {
+  font-size: 1.02rem;
+  font-weight: 900;
+}
+
+.byox-route-card p {
+  margin-top: 0.7rem;
+  color: var(--marketing-muted);
+  line-height: 1.65;
+  font-size: 0.86rem;
+}
+
+.byox-route-card a {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.byox-support-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
+  gap: 1rem;
+}
+
+.byox-support-card {
+  padding: 1.25rem;
+}
+
+.byox-faq-list {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.byox-faq-list article {
+  border-top: 1px solid rgba(255, 255, 255, 0.11);
+  padding-top: 0.9rem;
+}
+
+.byox-faq-list h3,
+.byox-support-card h3 {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.byox-faq-list p {
+  margin-top: 0.45rem;
+  color: var(--marketing-muted);
+  line-height: 1.75;
+  font-size: 0.9rem;
+}
+
+.byox-source-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.byox-source-list dt {
+  color: var(--marketing-accent);
+  font-size: 0.75rem;
+  font-weight: 850;
+}
+
+.byox-source-list dd {
+  margin-top: 0.25rem;
+  color: var(--marketing-muted);
+  line-height: 1.6;
+  font-size: 0.88rem;
+}
+
+.byox-source-list a {
+  color: var(--marketing-text);
+  font-weight: 850;
+}
+
+.byox-source-list a:hover {
+  color: var(--marketing-accent);
+}
+
+.byox-support-card h3 {
+  margin-top: 1.1rem;
+}
+
+.byox-related-links {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 1180px) {
+  .byox-controls {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .byox-search {
+    grid-column: 1 / -1;
+  }
+
+  .byox-project-grid,
+  .byox-route-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .byox-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
+
+  .byox-hero,
+  .byox-route-panel,
+  .byox-results-layout,
+  .byox-support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .byox-hero {
+    min-height: auto;
+  }
+
+  .byox-prompt-card {
+    position: static;
+  }
+
+  .byox-route-outcome {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.13);
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .byox-hero h1 {
+    font-size: 2.55rem;
+  }
+
+  .byox-stat-grid,
+  .byox-controls,
+  .byox-project-grid,
+  .byox-route-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .byox-filter-header {
+    flex-direction: column;
+  }
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
