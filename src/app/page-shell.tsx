@@ -21,61 +21,6 @@ import { getEffectiveLocalizedHomeHeroIntro, getEffectiveHomeHeroTitle, getSetti
 
 export const publicPageRevalidate = publicPageCacheSeconds;
 
-const homeJourneyItems = {
-  zh: [
-    {
-      title: "先判断趋势",
-      body: "从 AI前沿资讯和趋势分析里看清变化，知道哪些模型、工具、政策和工作方式值得关注。",
-      href: "/ai-news",
-      cta: "看 AI 前沿资讯",
-    },
-    {
-      title: "再选择工具",
-      body: "进入 AI软件应用，按任务、部署方式、价格和教程支持筛选真正适合自己的工具。",
-      href: "/software",
-      cta: "选 AI 软件应用",
-    },
-    {
-      title: "把方法学会",
-      body: "通过 AI技能学习和使用教程，把零散试用变成可复用的提示词、流程、模板和交付物。",
-      href: "/skill-learning",
-      cta: "学 AI 技能",
-    },
-    {
-      title: "需要时再咨询访问",
-      body: "涉及账号、订阅和第三方平台时，先确认服务范围、交付边界和官方平台规则。",
-      href: "/account-services",
-      cta: "看账号服务",
-    },
-  ],
-  en: [
-    {
-      title: "Read the signal first",
-      body: "Use AI news and trend analysis to see which models, tools, policies, and workflows are worth attention.",
-      href: "/ai-news",
-      cta: "Read AI news",
-    },
-    {
-      title: "Choose the tool",
-      body: "Explore AI software by task, deployment model, pricing, and tutorial support before adopting anything.",
-      href: "/software",
-      cta: "Choose software",
-    },
-    {
-      title: "Learn the method",
-      body: "Turn scattered experiments into reusable prompts, steps, templates, and deliverables through skill learning.",
-      href: "/skill-learning",
-      cta: "Learn AI skills",
-    },
-    {
-      title: "Check access when needed",
-      body: "For accounts, subscriptions, and third-party platforms, review scope, delivery boundaries, and official rules first.",
-      href: "/account-services",
-      cta: "View account services",
-    },
-  ],
-} as const;
-
 const homeFaqItems = {
   zh: [
     {
@@ -160,7 +105,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
             <div className="home-hero-centered">
-              <p className="home-hero-eyebrow backdrop-blur-xl backdrop-saturate-150">{t.home.eyebrow}</p>
               <h1 className="home-hero-title">
                 <span
                   className={`home-hero-title-glitch${heroTitleWordmark ? " home-hero-title-glitch-wordmark" : ""}`}
@@ -206,61 +150,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                 ))}
               </div>
 
-              <div className="home-hero-actions">
-                <ButtonLink
-                  href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}
-                  className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"
-                >
-                  {t.home.aiNewsButton}
-                </ButtonLink>
-                <ButtonLink
-                  href={forceLocale === "en" ? "/en/software" : "/software"}
-                  className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"
-                >
-                  {t.home.softwareButton}
-                </ButtonLink>
-                <ButtonLink
-                  href={forceLocale === "en" ? "/en/account-services" : "/account-services"}
-                  className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"
-                >
-                  {t.home.onlineButton}
-                </ButtonLink>
-                <ButtonLink
-                  href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}
-                  className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"
-                >
-                  {t.home.skillLearningButton}
-                </ButtonLink>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      <section className="home-journey-shell" aria-label={forceLocale === "en" ? "ENHE AI user journey" : "ENHE AI 用户路径"}>
-        <Container className="home-hero-reference-frame">
-          <div className="home-product-preview home-journey-panel backdrop-blur-xl backdrop-saturate-150">
-            <div className="home-product-preview-header">
-              <div>
-                <p>{forceLocale === "en" ? "How ENHE AI helps" : "如何使用 ENHE AI"}</p>
-                <h2>
-                  {forceLocale === "en"
-                    ? "Start with the signal, finish with a usable AI workflow."
-                    : "先看清变化，再把 AI 变成自己能用的工作流。"}
-                </h2>
-              </div>
-            </div>
-            <div className="home-journey-grid">
-              {homeJourneyItems[forceLocale].map((item) => (
-                <article key={item.href} className="home-journey-item">
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                  <Link href={buildLocalePath(item.href, forceLocale)} className="home-journey-link">
-                    {item.cta}
-                    <ArrowUpRight size={15} aria-hidden="true" />
-                  </Link>
-                </article>
-              ))}
             </div>
           </div>
         </Container>
