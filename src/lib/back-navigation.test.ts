@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { getBackNavigationParentHref, shouldShowBackNavigation } from "@/lib/back-navigation";
 
 describe("back navigation", () => {
@@ -36,5 +37,17 @@ describe("back navigation", () => {
     expect(getBackNavigationParentHref("/admin/orders/cm123")).toBe("/admin/orders");
     expect(getBackNavigationParentHref("/orders/cm123/pay")).toBe("/orders/cm123");
     expect(getBackNavigationParentHref("/orders/cm123")).toBe("/user");
+  });
+
+  it("keeps the public back button aligned to the content container", () => {
+    const css = readFileSync("src/app/globals.css", "utf8");
+    const backNav = css.match(/\.site-back-nav\s*\{[\s\S]*?\}/)?.[0] ?? "";
+    const backButton = css.match(/\.site-back-nav-button\s*\{[\s\S]*?\}/)?.[0] ?? "";
+
+    expect(backNav).toContain("max-width: 1280px");
+    expect(backNav).toContain("margin: 0 auto");
+    expect(backNav).toContain("padding: 8px 1rem 0");
+    expect(backButton).toContain("display: inline-flex");
+    expect(backButton).toContain("background: transparent");
   });
 });

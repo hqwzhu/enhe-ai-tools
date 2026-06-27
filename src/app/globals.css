@@ -749,6 +749,41 @@ select option:disabled {
   height: 72px;
 }
 
+.site-back-nav {
+  position: relative;
+  z-index: 40;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 8px 1rem 0;
+}
+
+.site-back-nav-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.site-back-nav-button:hover {
+  color: var(--marketing-text);
+  transform: translateX(-2px);
+}
+
+.site-back-nav-button:focus-visible {
+  outline: 2px solid rgba(240, 90, 53, 0.72);
+  outline-offset: 4px;
+}
+
 .site-brand {
   display: inline-flex;
   grid-column: 1;
