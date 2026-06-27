@@ -270,7 +270,7 @@ export async function AiNewsTopicPageShell({
             </section>
           </div>
 
-          <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
+          <section className="space-y-6 lg:sticky lg:top-28 lg:self-start" aria-label="Topic support links">
             <section className="glass rounded-2xl p-5">
               <h2 className="text-lg font-black text-[var(--marketing-text)]">
                 {forceLocale === "en" ? "Keywords" : "专题关键词"}
@@ -314,7 +314,7 @@ export async function AiNewsTopicPageShell({
             >
               {t.aiNews.latestTitle}
             </ButtonLink>
-          </aside>
+          </section>
         </section>
       </Container>
     </main>

@@ -568,8 +568,8 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
               ))}
             </div>
           </div>
-          <aside className="glass rounded-2xl p-6">
-            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+          <section className="glass rounded-2xl p-6" aria-labelledby="ai-trends-source-citations">
+            <h2 id="ai-trends-source-citations" className="text-2xl font-black text-[var(--marketing-text)]">
               {forceLocale === "en" ? "Source citations" : "趋势参考来源"}
             </h2>
             <div className="mt-5 grid gap-3">
@@ -585,7 +585,7 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
                 </a>
               ))}
             </div>
-          </aside>
+          </section>
         </section>
 
         <section className="mt-12">

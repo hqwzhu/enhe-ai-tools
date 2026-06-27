@@ -73,6 +73,7 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
   return (
     <Container className="py-14">
       <StructuredData data={[breadcrumbSchema, howToSchema]} />
+      <main>
       <SectionTitle as="h1" title={t.tutorials.title} intro={t.tutorials.intro} />
       <section className="surface-panel mb-8 p-6">
         <h2 className="text-2xl font-semibold text-[var(--marketing-text)]">{tutorialGuidance.title}</h2>
@@ -98,6 +99,7 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
           </Link>
         ))}
       </div>
+      </main>
     </Container>
   );
 }

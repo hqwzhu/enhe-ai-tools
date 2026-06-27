@@ -75,15 +75,19 @@ describe("tool product video source", () => {
   it("renders up to two product videos before the product image gallery on public detail pages", () => {
     const detail = readProjectFile("src/app/tools/[slug]/page-shell.tsx");
     const helper = readProjectFile("src/lib/product-video.ts");
+    const player = readProjectFile("src/components/product-video-player.tsx");
 
     expect(detail).toContain("resolveProductVideos");
     expect(detail).toContain("tool-detail-product-video");
-    expect(detail).toContain("<video");
-    expect(detail).toContain("autoPlay");
-    expect(detail).toContain("controls");
-    expect(detail).toContain("muted");
-    expect(detail).toContain('preload="auto"');
+    expect(detail).toContain("ProductVideoPlayer");
     expect(detail.indexOf("tool-detail-product-video")).toBeLessThan(detail.indexOf("tool-detail-product-gallery"));
+    expect(player).toContain("<video");
+    expect(player).toContain("autoPlay");
+    expect(player).toContain("controls");
+    expect(player).toContain("muted");
+    expect(player).toContain('preload="none"');
+    expect(player).toContain("IntersectionObserver");
+    expect(player).toContain("video.src = src");
     expect(helper).toContain("resolveProductVideos");
     expect(helper).toContain("resolveProductVideoSrc");
     expect(helper).toContain("slice(0, 2)");

@@ -212,7 +212,7 @@ export async function AiNewsPageShell({
             )}
           </div>
 
-          <aside className="space-y-6">
+          <section className="space-y-6" aria-label="AI news filters">
             <TrendPanel articles={hot.articles} locale={forceLocale} />
             <KeywordCloud
               locale={forceLocale}
@@ -223,7 +223,7 @@ export async function AiNewsPageShell({
               items={discovery.topicCollectionItems}
               topics={topics}
             />
-          </aside>
+          </section>
         </div>
 
         <section className="glass mt-12 rounded-2xl p-7">
@@ -324,11 +324,13 @@ function FilterBar({
       <input
         name="q"
         defaultValue={filters.q}
+        aria-label={t.aiNews.searchPlaceholder}
         placeholder={t.aiNews.searchPlaceholder}
         className="form-control-dark"
       />
       <select
         name="category"
+        aria-label={t.aiNews.allCategories}
         defaultValue={filters.category ?? ""}
         className="form-select-dark"
       >
@@ -341,6 +343,7 @@ function FilterBar({
       </select>
       <select
         name="tag"
+        aria-label={t.aiNews.allTags}
         defaultValue={filters.tag ?? ""}
         className="form-select-dark"
       >
@@ -353,6 +356,7 @@ function FilterBar({
       </select>
       <select
         name="sort"
+        aria-label={t.aiNews.latest}
         defaultValue={filters.sort}
         className="form-select-dark"
       >

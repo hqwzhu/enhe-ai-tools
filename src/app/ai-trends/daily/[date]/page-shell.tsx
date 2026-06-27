@@ -245,7 +245,7 @@ export async function AiTrendDailyDetailPageShell({
             )}
           </main>
 
-          <aside className="space-y-5 lg:sticky lg:top-28 lg:self-start">
+          <section className="space-y-5 lg:sticky lg:top-28 lg:self-start" aria-label="Daily trend support links">
             <section className="surface-panel-soft p-5">
               <h2 className="text-lg font-black text-[var(--marketing-text)]">{text.sourceSignals}</h2>
               <div className="mt-4 grid gap-3">
@@ -274,7 +274,7 @@ export async function AiTrendDailyDetailPageShell({
             <ButtonLink href={buildLocalePath("/ai-trends", forceLocale)} variant="ghost" className="w-full">
               {text.trendOverview}
             </ButtonLink>
-          </aside>
+          </section>
         </div>
       </article>
     </Container>

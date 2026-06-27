@@ -182,7 +182,8 @@ export async function AiNewsDetailPageShell({
       <StructuredData
         data={[breadcrumbSchema, organizationSchema, newsArticleSchema, faqSchema]}
       />
-      <article>
+      <main>
+        <article>
         <section className="glass overflow-hidden rounded-[2rem] p-5 md:p-8">
           <div className="flex flex-wrap gap-2">
             {article.category ? (
@@ -235,7 +236,7 @@ export async function AiNewsDetailPageShell({
         </section>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <main className="space-y-8">
+          <div className="space-y-8">
             <section className="glass rounded-2xl p-6">
               <h2 className="text-xl font-black text-[var(--marketing-text)]">
                 {t.aiNews.keyTakeaways}
@@ -484,9 +485,9 @@ export async function AiNewsDetailPageShell({
                 loginRequired: t.aiNews.loginRequired,
               }}
             />
-          </main>
+          </div>
 
-          <aside className="space-y-5 lg:sticky lg:top-28 lg:self-start">
+          <section className="space-y-5 lg:sticky lg:top-28 lg:self-start" aria-label="Article support links">
             <section className="glass rounded-2xl p-5">
               <h2 className="text-lg font-black text-[var(--marketing-text)]">
                 {t.aiNews.tableOfContents}
@@ -516,9 +517,10 @@ export async function AiNewsDetailPageShell({
             >
               {t.aiNews.latestTitle}
             </ButtonLink>
-          </aside>
+          </section>
         </div>
-      </article>
+        </article>
+      </main>
     </Container>
   );
 }

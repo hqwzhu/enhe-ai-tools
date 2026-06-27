@@ -7,6 +7,7 @@ import {
   createSoftwareDownloadOrderAction,
 } from "@/app/actions";
 import { FormSubmitButton } from "@/components/form-submit-button";
+import { ProductVideoPlayer } from "@/components/product-video-player";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
@@ -412,6 +413,16 @@ export async function ToolDetailPageShell({
         })
       : null;
   // Service schemas can emit hasOfferCatalog, and course schemas can emit CourseInstance when the tool data supports them.
+  const detailNavItems = [
+    { href: "#tool-purchase", label: purchaseButtonLabel },
+    { href: "#tool-intro", label: introTitle },
+    {
+      href: "#tool-tutorials",
+      label: isSkillLearning ? td.courseContentTitle : td.tutorialsTitle,
+    },
+    { href: "#tool-faq", label: td.faqTitle },
+    { href: "#tool-related", label: td.relatedTitle },
+  ];
 
   return (
     <Container className="py-14">
@@ -567,7 +578,10 @@ export async function ToolDetailPageShell({
                   </div>
                 ) : null}
 
-                <div className="mt-7 flex flex-wrap gap-3">
+                <div
+                  id="tool-purchase"
+                  className="tool-detail-purchase-panel scroll-mt-24 mt-7 flex flex-wrap gap-3"
+                >
                   {shouldShowPurchaseForm ? (
                     <form
                       id={
@@ -584,7 +598,7 @@ export async function ToolDetailPageShell({
                           {localizedPriceSpecs.map((spec, index) => (
                             <label
                               key={spec.id}
-                              className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12"
+                              className="tool-price-option group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--marketing-accent)] has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12"
                             >
                               <span>
                                 <span className="block font-semibold text-[#F6FAFF]">
@@ -599,6 +613,7 @@ export async function ToolDetailPageShell({
                                 type="radio"
                                 value={spec.id}
                                 defaultChecked={index === 0}
+                                className="tool-price-radio"
                               />
                             </label>
                           ))}
@@ -607,6 +622,7 @@ export async function ToolDetailPageShell({
                       <div className="flex flex-wrap items-center gap-3">
                         <select
                           name="paymentMethod"
+                          aria-label={forceLocale === "en" ? "Payment method" : "支付方式"}
                           defaultValue="wechat"
                           className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]"
                         >
@@ -718,6 +734,14 @@ export async function ToolDetailPageShell({
           </div>
         </section>
 
+        <nav className="tool-detail-mobile-toc" aria-label="Product detail sections">
+          {detailNavItems.map((item) => (
+            <Link key={item.href} href={item.href}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
         <div className="mt-10 space-y-10">
           <section
             id="tool-intro"
@@ -734,7 +758,7 @@ export async function ToolDetailPageShell({
                         href={tutorial.videoUrl ?? "#"}
                         target="_blank"
                         rel="nofollow noopener noreferrer"
-                        className="block break-all text-sm leading-6 text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                        className="tool-detail-touch-link break-all text-sm leading-6 text-[var(--marketing-accent)] hover:text-[#ffb09b]"
                       >
                         {tutorial.title}
                       </a>
@@ -773,7 +797,7 @@ export async function ToolDetailPageShell({
                 </p>
                 <Link
                   href="#tool-changelog"
-                  className="mt-2 inline-flex text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                  className="tool-detail-touch-link mt-2 text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]"
                 >
                   {td.changelogTitle}
                 </Link>
@@ -781,7 +805,7 @@ export async function ToolDetailPageShell({
               <TrustItem label={td.supportEmail}>
                 <a
                   href={`mailto:${supportEmail}`}
-                  className="break-all text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                  className="tool-detail-touch-link break-all text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]"
                 >
                   {supportEmail}
                 </a>
@@ -790,7 +814,7 @@ export async function ToolDetailPageShell({
                     "/legal/membership-refund",
                     forceLocale,
                   )}
-                  className="mt-2 block text-sm leading-6 text-[#FFB86B] hover:text-[#FFD29B]"
+                  className="tool-detail-touch-link mt-2 text-sm leading-6 text-[#FFB86B] hover:text-[#FFD29B]"
                 >
                   {td.refundRulesIntro}
                 </Link>
@@ -798,24 +822,28 @@ export async function ToolDetailPageShell({
             </div>
           </section>
 
-          <section className="glass rounded-2xl p-7">
-            <SectionTitle title={introTitle} intro={productImagesIntro} />
-            <div className="mt-6 space-y-7">
+          <details
+            className="tool-detail-mobile-disclosure glass rounded-2xl p-7"
+            open
+          >
+            <summary className="tool-detail-disclosure-summary">
+              {introTitle}
+            </summary>
+            <div className="tool-detail-disclosure-body">
+              <SectionTitle title={introTitle} intro={productImagesIntro} />
+              <div className="mt-6 space-y-7">
               {productVideos.map((video) => (
                 <div key={video.src} className="tool-detail-product-video overflow-hidden rounded-2xl border border-white/10 bg-[#07101E]">
-                  <video
-                    className="aspect-video w-full bg-black object-contain"
-                    autoPlay
-                    controls
-                    muted
-                    playsInline
-                    preload="auto"
+                  <ProductVideoPlayer
                     src={video.src}
-                  >
-                    {forceLocale === "en"
-                      ? "Your browser does not support embedded video playback."
-                      : "您的浏览器不支持内嵌视频播放。"}
-                  </video>
+                    title={video.title || `${localizedTool.primaryName} ${td.demoVideo}`}
+                    fallbackText={
+                      forceLocale === "en"
+                        ? "Your browser does not support embedded video playback."
+                        : "您的浏览器不支持内嵌视频播放。"
+                    }
+                    playLabel={forceLocale === "en" ? "Play product video" : "播放产品视频"}
+                  />
                   {video.title || video.description ? (
                     <div className="border-t border-white/10 bg-white/6 p-5">
                       {video.title ? (
@@ -863,17 +891,25 @@ export async function ToolDetailPageShell({
               <div className="tool-detail-copy-card rounded-2xl border border-white/10 bg-white/8 p-5">
                 <ToolRichContent content={localizedLongContent} />
               </div>
+              </div>
             </div>
-          </section>
+          </details>
 
-          <section className="glass rounded-2xl p-7">
-            <SectionTitle
-              title={
-                isSkillLearning ? td.courseContentTitle : td.tutorialsTitle
-              }
-              intro={td.tutorialsIntro}
-            />
-            {isSkillLearning && !hasDownloadPurchase ? (
+          <details
+            id="tool-tutorials"
+            className="tool-detail-mobile-disclosure glass scroll-mt-24 rounded-2xl p-7"
+          >
+            <summary className="tool-detail-disclosure-summary">
+              {isSkillLearning ? td.courseContentTitle : td.tutorialsTitle}
+            </summary>
+            <div className="tool-detail-disclosure-body">
+              <SectionTitle
+                title={
+                  isSkillLearning ? td.courseContentTitle : td.tutorialsTitle
+                }
+                intro={td.tutorialsIntro}
+              />
+              {isSkillLearning && !hasDownloadPurchase ? (
               <div className="rounded-2xl border border-[#FFB86B]/25 bg-[#FFB86B]/8 p-6 text-center">
                 <p className="text-sm font-semibold text-[#FFB86B]">
                   {forceLocale === "en"
@@ -924,12 +960,20 @@ export async function ToolDetailPageShell({
                   </div>
                 ))}
               </div>
-            )}
-          </section>
+              )}
+            </div>
+          </details>
 
-          <section className="glass rounded-2xl p-7">
-            <SectionTitle title={td.faqTitle} />
-            <div className="mt-5 grid gap-3">
+          <details
+            id="tool-faq"
+            className="tool-detail-mobile-disclosure glass scroll-mt-24 rounded-2xl p-7"
+          >
+            <summary className="tool-detail-disclosure-summary">
+              {td.faqTitle}
+            </summary>
+            <div className="tool-detail-disclosure-body">
+              <SectionTitle title={td.faqTitle} />
+              <div className="mt-5 grid gap-3">
               {visibleFaqs.length ? (
                 visibleFaqs.map((faq) => (
                   <details
@@ -949,8 +993,9 @@ export async function ToolDetailPageShell({
                   {publicFaqFallback}
                 </p>
               )}
+              </div>
             </div>
-          </section>
+          </details>
 
           <section className="glass rounded-2xl p-7">
             <SectionTitle title={td.commentsTitle} />
@@ -1025,14 +1070,22 @@ export async function ToolDetailPageShell({
           ) : null}
         </div>
 
-        <section className="mt-12">
-          <SectionTitle title={td.relatedTitle} />
-          <div className="grid gap-5 md:grid-cols-3">
-            {related.map((item) => (
-              <ToolCard key={item.id} tool={item} locale={forceLocale} />
-            ))}
+        <details
+          id="tool-related"
+          className="tool-detail-mobile-disclosure mt-12 scroll-mt-24"
+        >
+          <summary className="tool-detail-disclosure-summary">
+            {td.relatedTitle}
+          </summary>
+          <div className="tool-detail-disclosure-body">
+            <SectionTitle title={td.relatedTitle} />
+            <div className="grid gap-5 md:grid-cols-3">
+              {related.map((item) => (
+                <ToolCard key={item.id} tool={item} locale={forceLocale} />
+              ))}
+            </div>
           </div>
-        </section>
+        </details>
       </main>
     </Container>
   );

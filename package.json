@@ -19,6 +19,7 @@
     "baidu:push:sitemap": "tsx scripts/push-baidu-sitemap.ts",
     "faq:backfill": "tsx scripts/backfill-tool-faqs.ts",
     "audit:performance": "node scripts/audit-public-performance.mjs",
+    "audit:a11y": "node scripts/audit-public-a11y.mjs",
     "test": "vitest run"
   },
   "dependencies": {
@@ -44,6 +45,7 @@
     "@types/nodemailer": "^8.0.0",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
+    "axe-core": "^4.12.1",
     "eslint": "^9.27.0",
     "eslint-config-next": "^15.3.2",
     "postcss": "^8.5.3",

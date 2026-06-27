@@ -45,6 +45,20 @@ export function RootDocument({
   return (
     <html lang={lang}>
       <head>
+        <link
+          rel="preload"
+          href="/fonts/montserrat/montserrat-latin-800-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/montserrat/montserrat-latin-900-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <Script id="ttzz-push-loader" strategy="beforeInteractive">
           {`(function(){
 var el = document.createElement("script");
