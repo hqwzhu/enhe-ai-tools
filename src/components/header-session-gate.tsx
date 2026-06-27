@@ -21,7 +21,15 @@ export function HeaderSessionGate({
     zh: string;
     en: string;
   };
-  navItems: ReadonlyArray<{ label: string; href: string }>;
+  navItems: ReadonlyArray<{
+    label: string;
+    href: string;
+    children?: ReadonlyArray<{
+      label: string;
+      href: string;
+      description?: string;
+    }>;
+  }>;
   initialUser: HeaderSessionUser | null;
 }) {
   const { user } = useHeaderSessionUser(initialUser);

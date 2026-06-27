@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ChevronDown } from "lucide-react";
 import { getHeaderUserSnapshot } from "@/lib/auth";
 import { HeaderAdminNavLink } from "@/components/header-admin-nav-link";
 import { HeaderAccountControls } from "@/components/header-account-controls";
@@ -26,8 +27,43 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
     { label: t.nav.aiNews, href: buildLocalePath("/ai-news", locale) },
     { label: t.nav.aiTrends, href: buildLocalePath("/ai-trends", locale) },
     { label: t.nav.software, href: buildLocalePath("/software", locale) },
-    { label: t.nav.onlineTools, href: buildLocalePath("/account-services", locale) },
-    { label: t.nav.skillLearning, href: buildLocalePath("/skill-learning", locale) }
+    {
+      label: t.nav.onlineTools,
+      href: buildLocalePath("/account-services", locale),
+      children: [
+        {
+          label: t.nav.onlineTools,
+          href: buildLocalePath("/account-services", locale),
+          description: locale === "en" ? "Account access guidance and service notes" : "账号使用支持与服务说明"
+        },
+        {
+          label: locale === "en" ? "Pricing" : "价格与购买说明",
+          href: buildLocalePath("/pricing", locale),
+          description: locale === "en" ? "Review payment, delivery, and refund rules" : "查看付费、交付与退款规则"
+        }
+      ]
+    },
+    {
+      label: t.nav.skillLearning,
+      href: buildLocalePath("/skill-learning", locale),
+      children: [
+        {
+          label: t.nav.skillLearning,
+          href: buildLocalePath("/skill-learning", locale),
+          description: locale === "en" ? "AI workflows, prompts, and practical courses" : "AI 工作流、提示词与实战课程"
+        },
+        {
+          label: locale === "en" ? "Build Your Own X Navigator" : "Build Your Own X 项目导航器",
+          href: buildLocalePath("/build-your-own-x", locale),
+          description: locale === "en" ? "Free project selector for hands-on developers" : "免费项目筛选器，适合动手提升工程能力"
+        },
+        {
+          label: t.nav.tutorials,
+          href: buildLocalePath("/tutorials", locale),
+          description: locale === "en" ? "Implementation guides and tool walkthroughs" : "工具教程与落地操作指南"
+        }
+      ]
+    }
   ] as const;
 
   return (
@@ -50,11 +86,28 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
           </PrefetchLink>
 
           <nav className="site-primary-nav hidden items-center lg:flex" aria-label="Primary navigation">
-            {navItems.map(({ label, href }) => (
-              <PrefetchLink key={href} href={href} className="site-nav-link cursor-target">
-                {label}
-              </PrefetchLink>
-            ))}
+            {navItems.map((item) =>
+              "children" in item ? (
+                <details key={item.href} className="site-nav-dropdown">
+                  <summary className="site-nav-link site-nav-dropdown-trigger cursor-target">
+                    <span>{item.label}</span>
+                    <ChevronDown size={14} strokeWidth={1.8} aria-hidden="true" />
+                  </summary>
+                  <div className="site-nav-dropdown-panel">
+                    {item.children.map((child) => (
+                      <PrefetchLink key={child.href} href={child.href} className="site-nav-dropdown-link cursor-target">
+                        <span>{child.label}</span>
+                        <small>{child.description}</small>
+                      </PrefetchLink>
+                    ))}
+                  </div>
+                </details>
+              ) : (
+                <PrefetchLink key={item.href} href={item.href} className="site-nav-link cursor-target">
+                  {item.label}
+                </PrefetchLink>
+              )
+            )}
             <HeaderAdminNavLink locale={locale} label={t.nav.admin} initialUser={headerUser} />
           </nav>
 

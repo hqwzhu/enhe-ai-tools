@@ -1,12 +1,22 @@
 import { LayoutDashboard, Menu } from "lucide-react";
 import { PrefetchLink } from "@/components/prefetch-link";
 
+type MobileNavItem = {
+  label: string;
+  href: string;
+  children?: ReadonlyArray<{
+    label: string;
+    href: string;
+    description?: string;
+  }>;
+};
+
 type MobileNavMenuProps = {
   labels: {
     menu: string;
     admin?: string;
   };
-  navItems: ReadonlyArray<{ label: string; href: string }>;
+  navItems: ReadonlyArray<MobileNavItem>;
   showAdmin: boolean;
   loginItem?: readonly [string, string];
   userCenterItem?: readonly [string, string];
@@ -30,11 +40,26 @@ export function MobileNavMenu({
         <Menu size={18} />
       </summary>
       <div className="mobile-nav-panel absolute right-0 top-12 z-50 w-64 overflow-hidden p-2">
-        {navItems.map(({ label, href }) => (
-          <PrefetchLink key={href} href={href} className="mobile-nav-link cursor-target">
-            {label}
-          </PrefetchLink>
-        ))}
+        {navItems.map((item) =>
+          item.children?.length ? (
+            <div key={item.href} className="mobile-nav-group">
+              <PrefetchLink href={item.href} className="mobile-nav-link mobile-nav-parent-link cursor-target">
+                {item.label}
+              </PrefetchLink>
+              <div className="mobile-nav-submenu">
+                {item.children.map((child) => (
+                  <PrefetchLink key={child.href} href={child.href} className="mobile-nav-sublink cursor-target">
+                    <span>{child.label}</span>
+                  </PrefetchLink>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <PrefetchLink key={item.href} href={item.href} className="mobile-nav-link cursor-target">
+              {item.label}
+            </PrefetchLink>
+          )
+        )}
         {loginItem ? (
           <PrefetchLink href={loginItem[1]} className="mobile-nav-link cursor-target">
             {loginItem[0]}
