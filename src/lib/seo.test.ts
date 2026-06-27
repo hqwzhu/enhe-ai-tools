@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildHomeMetaDescription,
   buildHomeMetadataTitle,
+  buildListingMetaDescription,
   buildMetaDescription,
   buildMetadataTitle,
   buildPageMetadata,
@@ -102,5 +104,56 @@ describe("seo helpers", () => {
   it("builds homepage titles as brand plus business scope", () => {
     expect(buildHomeMetadataTitle("en", "ENHE AI")).toBe("ENHE AI | AI News, Apps, Accounts & Courses");
     expect(buildHomeMetadataTitle("zh", "恩禾 ENHE AI")).toBe("恩禾 ENHE AI | AI前沿资讯、软件应用、账号服务与技能学习");
+  });
+
+  it("builds stronger meta descriptions for core public pages", () => {
+    const coreDescriptions = [
+      buildHomeMetaDescription("zh"),
+      buildHomeMetaDescription("en"),
+      buildListingMetaDescription("software", "zh"),
+      buildListingMetaDescription("account-services", "zh"),
+      buildListingMetaDescription("skill-learning", "zh"),
+      buildListingMetaDescription("pricing", "zh"),
+      buildListingMetaDescription("software", "en"),
+      buildListingMetaDescription("account-services", "en"),
+      buildListingMetaDescription("skill-learning", "en"),
+      buildListingMetaDescription("pricing", "en")
+    ];
+
+    for (const description of coreDescriptions.slice(0, 6)) {
+      expect(description.length).toBeGreaterThanOrEqual(75);
+      expect(description.length).toBeLessThanOrEqual(150);
+    }
+    for (const description of coreDescriptions.slice(6)) {
+      expect(description.length).toBeGreaterThanOrEqual(95);
+      expect(description.length).toBeLessThanOrEqual(150);
+    }
+    expect(buildListingMetaDescription("pricing", "zh")).toContain("报价");
+    expect(buildListingMetaDescription("software", "en")).toContain("AI software");
+  });
+
+  it("enriches short detail page descriptions with intent and conversion context", () => {
+    const chineseDescription = buildToolMetaDescription({
+      name: "即梦AI",
+      englishName: "Dreamina",
+      description: "AI创作工具。",
+      brand: "ENHE AI",
+      locale: "zh",
+      type: "software"
+    });
+    const englishDescription = buildToolMetaDescription({
+      name: "Dreamina",
+      description: "AI creation tool.",
+      brand: "ENHE AI",
+      locale: "en",
+      type: "software"
+    });
+
+    expect(chineseDescription.length).toBeGreaterThanOrEqual(60);
+    expect(chineseDescription).toContain("价格");
+    expect(chineseDescription).toContain("教程");
+    expect(englishDescription.length).toBeGreaterThanOrEqual(95);
+    expect(englishDescription).toContain("pricing");
+    expect(englishDescription).toContain("ENHE AI");
   });
 });

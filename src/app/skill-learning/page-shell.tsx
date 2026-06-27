@@ -341,13 +341,27 @@ function FilterBar({
 
   return (
     <form className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_140px]">
+      <label className="sr-only" htmlFor="skill-learning-search">
+        {t.listing.searchPlaceholder}
+      </label>
       <input
+        id="skill-learning-search"
         name="q"
         aria-label={t.listing.searchPlaceholder}
         placeholder={t.listing.searchPlaceholder}
+        title={t.listing.searchPlaceholder}
         className="form-control-dark"
       />
-      <select name="category" aria-label={t.listing.allCategories} className="form-select-dark">
+      <label className="sr-only" htmlFor="skill-learning-category">
+        {t.listing.allCategories}
+      </label>
+      <select
+        id="skill-learning-category"
+        name="category"
+        aria-label={t.listing.allCategories}
+        title={t.listing.allCategories}
+        className="form-select-dark"
+      >
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -359,7 +373,16 @@ function FilterBar({
           </option>
         ))}
       </select>
-      <select name="sort" aria-label={t.listing.latest} className="form-select-dark">
+      <label className="sr-only" htmlFor="skill-learning-sort">
+        {t.listing.latest}
+      </label>
+      <select
+        id="skill-learning-sort"
+        name="sort"
+        aria-label={t.listing.latest}
+        title={t.listing.latest}
+        className="form-select-dark"
+      >
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

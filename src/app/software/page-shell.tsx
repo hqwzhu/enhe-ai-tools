@@ -592,13 +592,27 @@ function FilterBar({
       id="software-list"
       className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_160px_140px]"
     >
+      <label className="sr-only" htmlFor="software-search">
+        {t.listing.searchPlaceholder}
+      </label>
       <input
+        id="software-search"
         name="q"
         aria-label={t.listing.searchPlaceholder}
         placeholder={t.listing.searchPlaceholder}
+        title={t.listing.searchPlaceholder}
         className="form-control-dark"
       />
-      <select name="category" aria-label={t.listing.allCategories} className="form-select-dark">
+      <label className="sr-only" htmlFor="software-category">
+        {t.listing.allCategories}
+      </label>
+      <select
+        id="software-category"
+        name="category"
+        aria-label={t.listing.allCategories}
+        title={t.listing.allCategories}
+        className="form-select-dark"
+      >
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -610,12 +624,30 @@ function FilterBar({
           </option>
         ))}
       </select>
-      <select name="paid" aria-label={t.listing.allAccess} className="form-select-dark">
+      <label className="sr-only" htmlFor="software-paid">
+        {t.listing.allAccess}
+      </label>
+      <select
+        id="software-paid"
+        name="paid"
+        aria-label={t.listing.allAccess}
+        title={t.listing.allAccess}
+        className="form-select-dark"
+      >
         <option value="">{t.listing.allAccess}</option>
         <option value="paid">{t.toolCard.paidDownload}</option>
         <option value="free">{t.toolCard.free}</option>
       </select>
-      <select name="sort" aria-label={t.listing.latest} className="form-select-dark">
+      <label className="sr-only" htmlFor="software-sort">
+        {t.listing.latest}
+      </label>
+      <select
+        id="software-sort"
+        name="sort"
+        aria-label={t.listing.latest}
+        title={t.listing.latest}
+        className="form-select-dark"
+      >
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

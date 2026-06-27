@@ -11,6 +11,7 @@ import {
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
+  absoluteUrl,
   buildBreadcrumbSchema,
   buildFaqSchema,
   buildListingMetaDescription,
@@ -108,7 +109,7 @@ const accountServicesDecisionBlock = {
 
 function buildAccountServicesCollectionSchema(forceLocale: Locale) {
   const isEnglish = forceLocale === "en";
-  const url = buildLocalePath("/account-services", forceLocale);
+  const url = absoluteUrl(buildLocalePath("/account-services", forceLocale));
 
   return {
     "@context": "https://schema.org",
@@ -302,13 +303,27 @@ function FilterBar({
 
   return (
     <form className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_140px]">
+      <label className="sr-only" htmlFor="account-services-search">
+        {t.listing.searchPlaceholder}
+      </label>
       <input
+        id="account-services-search"
         name="q"
         aria-label={t.listing.searchPlaceholder}
         placeholder={t.listing.searchPlaceholder}
+        title={t.listing.searchPlaceholder}
         className="form-control-dark"
       />
-      <select name="category" aria-label={t.listing.allCategories} className="form-select-dark">
+      <label className="sr-only" htmlFor="account-services-category">
+        {t.listing.allCategories}
+      </label>
+      <select
+        id="account-services-category"
+        name="category"
+        aria-label={t.listing.allCategories}
+        title={t.listing.allCategories}
+        className="form-select-dark"
+      >
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -316,7 +331,16 @@ function FilterBar({
           </option>
         ))}
       </select>
-      <select name="sort" aria-label={t.listing.latest} className="form-select-dark">
+      <label className="sr-only" htmlFor="account-services-sort">
+        {t.listing.latest}
+      </label>
+      <select
+        id="account-services-sort"
+        name="sort"
+        aria-label={t.listing.latest}
+        title={t.listing.latest}
+        className="form-select-dark"
+      >
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

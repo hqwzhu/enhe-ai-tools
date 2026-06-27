@@ -5,7 +5,14 @@ import { StructuredData } from "@/components/structured-data";
 import { Container, SectionTitle } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildBreadcrumbSchema, buildListingMetaDescription, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
+import {
+  absoluteUrl,
+  buildBreadcrumbSchema,
+  buildListingMetaDescription,
+  buildLocalePath,
+  buildMetadataTitle,
+  buildPageMetadata,
+} from "@/lib/seo";
 
 export const pricingPageRevalidate = publicPageCacheSeconds;
 
@@ -21,6 +28,81 @@ export async function generatePricingPageMetadata(forceLocale: Locale): Promise<
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale
   });
+}
+
+function buildPricingOfferCatalogSchema(forceLocale: Locale) {
+  const isEnglish = forceLocale === "en";
+  const pricingUrl = absoluteUrl(buildLocalePath("/pricing", forceLocale));
+  const offerItems = isEnglish
+    ? [
+        {
+          name: "AI software paid downloads",
+          description:
+            "Per-tool AI software downloads with price, access scope, and unlock notes shown on each software detail page.",
+          url: absoluteUrl(buildLocalePath("/software", forceLocale)),
+        },
+        {
+          name: "AI skill courses",
+          description:
+            "Practical AI skill courses with current price, course scope, tutorials, and learning access shown on each course detail page.",
+          url: absoluteUrl(buildLocalePath("/skill-learning", forceLocale)),
+        },
+        {
+          name: "AI account service guidance",
+          description:
+            "AI account subscription and usage guidance with service scope, delivery notes, and platform-policy reminders shown on each service detail page.",
+          url: absoluteUrl(buildLocalePath("/account-services", forceLocale)),
+        },
+      ]
+    : [
+        {
+          name: "AI软件付费下载",
+          description:
+            "按具体AI软件单独报价，价格、权益范围、解锁说明和下载方式以各软件详情页为准。",
+          url: absoluteUrl(buildLocalePath("/software", forceLocale)),
+        },
+        {
+          name: "AI技能课程",
+          description:
+            "AI技能课程按课程详情页展示当前报价、课程范围、教程内容和学习权限。",
+          url: absoluteUrl(buildLocalePath("/skill-learning", forceLocale)),
+        },
+        {
+          name: "AI账号服务咨询",
+          description:
+            "AI账号订阅与使用支持按服务详情页展示服务范围、交付说明和平台规则提醒。",
+          url: absoluteUrl(buildLocalePath("/account-services", forceLocale)),
+        },
+      ];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "OfferCatalog",
+    name: isEnglish ? "ENHE AI pricing and service offers" : "ENHE AI报价与服务目录",
+    description: buildListingMetaDescription("pricing", forceLocale),
+    url: pricingUrl,
+    inLanguage: isEnglish ? "en-US" : "zh-CN",
+    provider: {
+      "@type": "Organization",
+      name: "ENHE AI",
+      url: absoluteUrl("/"),
+    },
+    itemListElement: offerItems.map((item, index) => ({
+      "@type": "Offer",
+      position: index + 1,
+      name: item.name,
+      description: item.description,
+      priceCurrency: "CNY",
+      availability: "https://schema.org/InStock",
+      url: item.url,
+      itemOffered: {
+        "@type": "Service",
+        name: item.name,
+        description: item.description,
+        url: item.url,
+      },
+    })),
+  };
 }
 
 export async function PricingPageShell({ forceLocale }: { forceLocale: Locale }) {
@@ -58,11 +140,12 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
       { name: copy.title, path: forceLocale === "en" ? "/en/pricing" : "/pricing" }
     ]
   });
+  const pricingOfferCatalogSchema = buildPricingOfferCatalogSchema(forceLocale);
 
   return (
     <main>
       <Container className="py-14">
-      <StructuredData data={breadcrumbSchema} />
+      <StructuredData data={[breadcrumbSchema, pricingOfferCatalogSchema]} />
       <SectionTitle as="h1" title={copy.title} intro={copy.intro} />
       <section className="surface-panel mt-8 p-7">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">

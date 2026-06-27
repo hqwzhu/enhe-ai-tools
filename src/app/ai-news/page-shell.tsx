@@ -321,17 +321,27 @@ function FilterBar({
       data-analytics-meta-tag={filters.tag ?? ""}
       data-analytics-meta-sort={filters.sort}
     >
+      <label className="sr-only" htmlFor="ai-news-search">
+        {t.aiNews.searchPlaceholder}
+      </label>
       <input
+        id="ai-news-search"
         name="q"
         defaultValue={filters.q}
         aria-label={t.aiNews.searchPlaceholder}
         placeholder={t.aiNews.searchPlaceholder}
+        title={t.aiNews.searchPlaceholder}
         className="form-control-dark"
       />
+      <label className="sr-only" htmlFor="ai-news-category">
+        {t.aiNews.allCategories}
+      </label>
       <select
+        id="ai-news-category"
         name="category"
         aria-label={t.aiNews.allCategories}
         defaultValue={filters.category ?? ""}
+        title={t.aiNews.allCategories}
         className="form-select-dark"
       >
         <option value="">{t.aiNews.allCategories}</option>
@@ -341,10 +351,15 @@ function FilterBar({
           </option>
         ))}
       </select>
+      <label className="sr-only" htmlFor="ai-news-tag">
+        {t.aiNews.allTags}
+      </label>
       <select
+        id="ai-news-tag"
         name="tag"
         aria-label={t.aiNews.allTags}
         defaultValue={filters.tag ?? ""}
+        title={t.aiNews.allTags}
         className="form-select-dark"
       >
         <option value="">{t.aiNews.allTags}</option>
@@ -354,10 +369,15 @@ function FilterBar({
           </option>
         ))}
       </select>
+      <label className="sr-only" htmlFor="ai-news-sort">
+        {t.aiNews.latest}
+      </label>
       <select
+        id="ai-news-sort"
         name="sort"
         aria-label={t.aiNews.latest}
         defaultValue={filters.sort}
+        title={t.aiNews.latest}
         className="form-select-dark"
       >
         <option value="latest">{t.aiNews.latest}</option>

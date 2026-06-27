@@ -53,4 +53,41 @@ describe("site audit regression coverage", () => {
     expect(newsDetail).toContain("<time");
     expect(newsDetail).toContain("dateTime=");
   });
+
+  it("keeps tool detail CTAs, course copy, and purchase form fields readable", () => {
+    const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
+
+    expect(toolDetail).not.toContain("鐐");
+    expect(toolDetail).not.toContain("楼");
+    expect(toolDetail).toContain("freeDownloadButtonLabel");
+    expect(toolDetail).toContain("priceSpecHelpId");
+    expect(toolDetail).toContain("paymentMethodLabelId");
+    expect(toolDetail).toContain('aria-describedby={priceSpecHelpId}');
+    expect(toolDetail).toContain('aria-describedby={paymentMethodHelpId}');
+    expect(toolDetail).toContain('required');
+    expect(toolDetail).toContain('title=');
+  });
+
+  it("clips homepage motion and glow effects horizontally", () => {
+    const globals = read("src/app/globals.css");
+
+    expect(globals).toContain("overflow-x: clip");
+    expect(globals).toContain("@supports not (overflow: clip)");
+    expect(globals).toContain("overflow-x: hidden");
+  });
+
+  it("uses absolute URLs in account service collection schema", () => {
+    const accountServices = read("src/app/account-services/page-shell.tsx");
+
+    expect(accountServices).toContain("absoluteUrl");
+    expect(accountServices).toContain('const url = absoluteUrl(buildLocalePath("/account-services", forceLocale));');
+  });
+
+  it("adds an offer catalog schema to the pricing page", () => {
+    const pricingPage = read("src/app/pricing/page-shell.tsx");
+
+    expect(pricingPage).toContain('"@type": "OfferCatalog"');
+    expect(pricingPage).toContain("pricingOfferCatalogSchema");
+    expect(pricingPage).toContain("StructuredData data={[breadcrumbSchema, pricingOfferCatalogSchema]}");
+  });
 });

@@ -321,10 +321,10 @@ export function buildHomeMetaDescription(
   }
 
   if (locale === "en") {
-    return "ENHE AI brings together global AI news, AI software apps, account service guidance, skill courses, and practical tutorials to turn AI changes into productivity.";
+    return "ENHE AI helps young AI users and creators track AI news, compare software apps, review account services, learn courses, and choose tools faster.";
   }
 
-  return "恩禾 ENHE AI 聚合 AI前沿资讯、AI软件应用、AI账号服务、AI技能课程与实用教程，帮助用户理解趋势、选择工具、提升效率并把想法落地。";
+  return "恩禾 ENHE AI 面向年轻AI用户与创作者，聚合AI前沿资讯、AI软件应用、账号服务、技能课程、价格说明与实用教程，提供工具对比、购买指引和实战内容，帮助你快速理解趋势、选择工具、提升效率并把创意落地。";
 }
 
 export function buildListingMetaDescription(
@@ -339,31 +339,31 @@ export function buildListingMetaDescription(
 ) {
   const zhDescriptions = {
     software:
-      "精选本地部署AI应用、AI效率工具、桌面软件和创作辅助工具，覆盖内容生产、运营自动化、音视频处理与日常工作流，帮助你更快完成实际任务。",
+      "精选AI软件应用、本地部署工具、桌面效率软件和创作辅助工具，覆盖内容生产、运营自动化、音视频处理与日常工作流，提供价格、教程、下载线索、适用场景和工具对比，帮助你更快完成实际任务。",
     "account-services":
-      "浏览AI账号服务咨询、AI工具订阅与账号使用支持、合规使用建议和交付说明。使用第三方平台前，请以对应平台官方政策为准。",
+      "浏览AI账号服务咨询、AI工具订阅与账号使用支持，查看服务范围、交付说明、合规使用建议、价格线索、售后边界、适合人群和使用前检查项。使用第三方平台前，请以对应平台官方政策为准。",
     "skill-learning":
-      "学习AI提示词、AI工具实战、本地部署、自动化流程和内容创作课程，用清晰教程把AI能力转化为可复用的工作技能。",
+      "学习AI提示词、AI工具实战、本地部署、自动化流程和内容创作课程，查看课程报价、适合人群、学习路径、教程内容、实战案例和工具组合建议，把AI能力转化为可复用的工作技能。",
     "ai-news":
-      "关注全球AI智能体、本地部署AI应用、开源模型、AI工具、AI技能教程与行业趋势，帮助你把AI变化转化为实际生产力。",
+      "关注全球AI智能体、开源模型、本地部署AI应用、AI工具、技能教程与行业趋势，快速获取创作者和AI用户需要的前沿信号，把AI变化转化为实际生产力。",
     pricing:
-      "查看ENHE AI付费软件、课程与服务的购买流程、权益说明、支付审核、售后边界和退款规则，购买前先了解交付与使用方式。",
+      "查看ENHE AI软件、课程与账号服务报价结构、购买流程、权益说明、支付审核、交付方式、售后边界、退款规则、适合人群和服务范围，购买前先确认价格与使用方式。",
     tutorials:
-      "阅读ENHE AI工具教程、软件使用指南、AI技能实战步骤和常见问题处理方法，把工具能力转化为可执行的工作流程。",
+      "阅读ENHE AI工具教程、软件使用指南、AI技能实战步骤、常见问题和工作流案例，快速掌握下载、配置、使用和复盘方法，把工具能力转化为可执行成果。",
   } as const;
   const enDescriptions = {
     software:
-      "Explore AI software apps for local deployment, productivity workflows, content creation, automation, audio, video, and daily work. Compare features, pricing, and access.",
+      "Explore AI software apps for creators, local deployment, automation, audio, video, and daily work. Compare features, pricing, tutorials, and access.",
     "account-services":
-      "Browse AI account service guidance, subscription support, account usage notes, compliance reminders, pricing, and delivery boundaries for AI tools.",
+      "Browse AI account service guidance for subscriptions, access notes, compliance reminders, delivery boundaries, support scope, and pricing context.",
     "skill-learning":
-      "Learn prompt engineering, AI tool workflows, local AI deployment, automation, and content creation through practical ENHE AI skill courses.",
+      "Learn prompt engineering, AI tool workflows, local AI deployment, automation, and content creation with practical ENHE AI courses and tutorials.",
     "ai-news":
-      "Follow global AI agents, local AI deployment, open models, AI tools, tutorials, and industry trends so new AI changes become practical productivity.",
+      "Follow global AI agents, open models, local deployment, AI tools, tutorials, and industry trends so creators can turn AI changes into productivity.",
     pricing:
-      "Review ENHE AI paid software, courses, service access, payment review, delivery boundaries, after-sales support, and refund rules before purchase.",
+      "Review ENHE AI software, course, and account service pricing, payment review, delivery boundaries, support scope, and refund rules before purchase.",
     tutorials:
-      "Read ENHE AI tutorials, software guides, AI workflow steps, and practical troubleshooting notes to turn tools into repeatable outcomes.",
+      "Read ENHE AI tutorials, software guides, workflow steps, setup notes, and troubleshooting tips to turn AI tools into repeatable creator outcomes.",
   } as const;
 
   return locale === "en" ? enDescriptions[kind] : zhDescriptions[kind];
@@ -601,13 +601,25 @@ export function buildToolMetaDescription({
   const { primaryName } = resolveToolTitleNames(name, englishName, locale);
   const typeLabel = resolveToolTypeLabel(type, locale);
   const targetMaxLength = Math.min(maxLength, locale === "en" ? 135 : 145);
+  const shortDescriptionLimit = locale === "en" ? 95 : 58;
   const shouldNameGenericAccountServiceCopy =
     type === "online" &&
     normalizedDescription &&
     isGenericAccountServiceMetaDescription(normalizedDescription, locale);
 
   if (locale === "en") {
-    if (normalizedDescription)
+    if (normalizedDescription) {
+      if (
+        !shouldNameGenericAccountServiceCopy &&
+        normalizedDescription.length < shortDescriptionLimit
+      ) {
+        return buildMetaDescription(
+          `${normalizedDescription} On ${brand}, review ${primaryName} features, pricing, tutorials, access notes, and creator workflow fit before use.`,
+          defaultSiteDescription,
+          targetMaxLength,
+        );
+      }
+
       return buildMetaDescription(
         shouldNameGenericAccountServiceCopy
           ? buildUniqueAccountServiceMetaDescription(primaryName, locale)
@@ -615,6 +627,7 @@ export function buildToolMetaDescription({
         defaultSiteDescription,
         targetMaxLength,
       );
+    }
 
     return buildMetaDescription(
       `${primaryName}: ${typeLabel} on ${brand}. Review features, pricing, tutorials, and access.`,
@@ -634,9 +647,12 @@ export function buildToolMetaDescription({
 
     const brandLower = normalizeWhitespace(brand).toLowerCase();
     const descriptionLower = normalizedDescription.toLowerCase();
-    const compactDescription = descriptionLower.includes(brandLower)
-      ? normalizedDescription
-      : `${normalizedDescription} 在 ${brand} 查看使用建议。`;
+    const compactDescription =
+      normalizedDescription.length < shortDescriptionLimit
+        ? `${normalizedDescription} 在 ${brand} 查看${primaryName}的功能亮点、价格、教程、访问方式与适用场景，判断是否适合你的AI创作或效率工作流。`
+        : descriptionLower.includes(brandLower)
+          ? normalizedDescription
+          : `${normalizedDescription} 在 ${brand} 查看使用建议。`;
 
     return buildMetaDescription(
       compactDescription,

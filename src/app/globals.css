@@ -109,17 +109,28 @@
 }
 
 html {
+  max-width: 100%;
+  overflow-x: clip;
   scroll-behavior: smooth;
 }
 
 body {
+  max-width: 100%;
   min-height: 100vh;
   margin: 0;
+  overflow-x: clip;
   background:
     radial-gradient(circle at 78% 12%, rgba(240, 90, 53, 0.1), transparent 26rem),
     linear-gradient(180deg, #22242a 0%, #22242a 60%, #202229 100%);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
 }
 
 html[lang='zh-CN'] :is(h1, h2, h3, .home-hero-title) {
@@ -169,6 +180,7 @@ body::after {
   position: fixed;
   inset: 0;
   z-index: -1;
+  contain: paint;
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
@@ -185,6 +197,7 @@ body::after {
   z-index: -1;
   width: 0;
   height: 0;
+  contain: paint;
   pointer-events: none;
   opacity: 0;
   transition: opacity 220ms ease;
@@ -1295,6 +1308,7 @@ select option:disabled {
   position: relative;
   width: min(100%, 1404px);
   max-width: 100%;
+  contain: paint;
   margin: 0 auto;
   overflow: hidden;
   padding: 0.03em 0;

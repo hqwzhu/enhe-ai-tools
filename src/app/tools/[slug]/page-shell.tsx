@@ -237,7 +237,10 @@ export async function ToolDetailPageShell({
     activePriceSpecs,
     tool.downloadPrice,
   );
+  const paidSoftware =
+    tool.type === "software" && tool.isDownloadPaid && servicePrice > 0;
   const isPurchasableAccountService = isAccountService && servicePrice > 0;
+  const paidSkillCourse = isSkillLearning && servicePrice > 0;
   const coverImage = normalizeImageSrc(tool.coverImage);
   const productVideos = resolveProductVideos([
     {
@@ -264,23 +267,23 @@ export async function ToolDetailPageShell({
         .then(Boolean)
     : false;
   const shouldShowPurchaseForm =
-    (tool.type === "software" && tool.isDownloadPaid && !hasDownloadPurchase) ||
+    (paidSoftware && !hasDownloadPurchase) ||
     (isPurchasableAccountService && !hasDownloadPurchase) ||
-    (tool.type === "skill_learning" && !hasDownloadPurchase);
+    (paidSkillCourse && !hasDownloadPurchase);
   const downloadLinkContent = getDownloadLinkContent(tool.downloadFile);
   const hasDownloadLink = Boolean(
     tool.downloadFileId && tool.downloadFile && downloadLinkContent,
   );
   const showDownloadLinkArea = canShowDownloadLinkArea({
     hasDownloadLink,
-    isDownloadPaid: tool.isDownloadPaid,
+    isDownloadPaid: paidSoftware,
     hasDownloadPurchase,
   });
   const canOpenDownloadEntry =
     canOpenProtectedDownloadEntry(downloadLinkContent);
   const publicDownloadHref = canOpenPublicDownloadEntry({
     content: downloadLinkContent,
-    isDownloadPaid: tool.isDownloadPaid,
+    isDownloadPaid: paidSoftware,
     hasDownloadPurchase,
   })
     ? downloadLinkContent
@@ -289,7 +292,7 @@ export async function ToolDetailPageShell({
   const softwareDownloadCtaHref = resolveSoftwareDownloadCtaHref({
     hasDownloadLink,
     showDownloadLinkArea,
-    isDownloadPaid: tool.isDownloadPaid,
+    isDownloadPaid: paidSoftware,
     hasDownloadPurchase,
     protectedDownloadHref,
     publicDownloadHref,
@@ -321,11 +324,17 @@ export async function ToolDetailPageShell({
     forceLocale === "en"
       ? "Before using this page, review the suitable scenario, delivery boundary, platform rules, and support contact. ENHE AI will continue adding common questions as the page evolves."
       : "使用前请先确认适用场景、交付边界、平台规则和支持方式；页面会随产品与课程内容持续补充常见问题。";
+  const freeDownloadButtonLabel =
+    forceLocale === "en" ? "Free download" : "免费下载";
+  const priceSpecHelpId = "tool-purchase-price-spec-help";
+  const paymentMethodLabelId = "tool-purchase-payment-method-label";
+  const paymentMethodHelpId = "tool-purchase-payment-method-help";
+  const commentHelpId = "tool-comment-help";
   const purchaseButtonLabel = isAccountService ? td.buyService : isSkillLearning
-    ? forceLocale === "en"
-      ? "Purchase now"
-      : "鐐瑰嚮璐拱"
-    : td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2));
+    ? td.buyCourse.replace("{price}", Number(servicePrice).toFixed(2))
+    : servicePrice > 0
+      ? td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2))
+      : freeDownloadButtonLabel;
   const introTitle = isAccountService ? td.serviceIntroTitle : td.introTitle;
   const productImagesIntro = isAccountService
     ? td.serviceProductImagesIntro
@@ -599,64 +608,107 @@ export async function ToolDetailPageShell({
                     >
                       <input type="hidden" name="toolId" value={tool.id} />
                       {localizedPriceSpecs.length ? (
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {localizedPriceSpecs.map((spec, index) => (
-                            <label
-                              key={spec.id}
-                              className="tool-price-option group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--marketing-accent)] has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12"
-                            >
-                              <span>
-                                <span className="block font-semibold text-[#F6FAFF]">
-                                  {spec.localizedName}
-                                </span>
-                                <span className="mt-1 block text-[#FFB86B]">
-                                  ¥{Number(spec.price).toFixed(2)}
-                                </span>
-                              </span>
-                              <input
-                                name="priceSpecId"
-                                type="radio"
-                                value={spec.id}
-                                defaultChecked={index === 0}
-                                className="tool-price-radio"
-                              />
-                            </label>
-                          ))}
-                        </div>
-                      ) : null}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <select
-                          name="paymentMethod"
-                          aria-label={forceLocale === "en" ? "Payment method" : "支付方式"}
-                          defaultValue="wechat"
-                          className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]"
+                        <fieldset
+                          aria-describedby={priceSpecHelpId}
+                          className="grid gap-3"
                         >
-                          <option value="alipay">{td.alipay}</option>
-                          <option value="wechat">{td.wechat}</option>
-                        </select>
+                          <legend className="text-sm font-semibold text-[#F6FAFF]">
+                            {forceLocale === "en" ? "Choose an offer" : "选择购买方案"}
+                          </legend>
+                          <p
+                            id={priceSpecHelpId}
+                            className="text-xs leading-5 text-[#8F9DB2]"
+                          >
+                            {forceLocale === "en"
+                              ? "Select one offer before generating the payment QR code. The selected offer controls the order amount."
+                              : "生成支付二维码前请选择一个方案，订单金额以所选方案为准。"}
+                          </p>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {localizedPriceSpecs.map((spec, index) => (
+                              <label
+                                key={spec.id}
+                                className="tool-price-option group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--marketing-accent)] has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12"
+                              >
+                                <span>
+                                  <span className="block font-semibold text-[#F6FAFF]">
+                                    {spec.localizedName}
+                                  </span>
+                                  <span className="mt-1 block text-[#FFB86B]">
+                                    ¥{Number(spec.price).toFixed(2)}
+                                  </span>
+                                </span>
+                                <input
+                                  name="priceSpecId"
+                                  type="radio"
+                                  value={spec.id}
+                                  defaultChecked={index === 0}
+                                  required={index === 0}
+                                  aria-describedby={priceSpecHelpId}
+                                  aria-label={`${spec.localizedName} ¥${Number(spec.price).toFixed(2)}`}
+                                  title={
+                                    forceLocale === "en"
+                                      ? "Choose this purchase offer"
+                                      : "选择此购买方案"
+                                  }
+                                  className="tool-price-radio"
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
+                      ) : null}
+                      <div className="grid gap-3 sm:grid-cols-[minmax(180px,220px)_auto] sm:items-end">
+                        <div>
+                          <label
+                            id={paymentMethodLabelId}
+                            htmlFor="tool-purchase-payment-method"
+                            className="block text-sm font-semibold text-[#F6FAFF]"
+                          >
+                            {forceLocale === "en" ? "Payment method" : "支付方式"}
+                          </label>
+                          <select
+                            id="tool-purchase-payment-method"
+                            name="paymentMethod"
+                            defaultValue="wechat"
+                            required
+                            aria-labelledby={paymentMethodLabelId}
+                            aria-describedby={paymentMethodHelpId}
+                            title={
+                              forceLocale === "en"
+                                ? "Choose a payment method"
+                                : "请选择支付方式"
+                            }
+                            className="mt-2 w-full rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]"
+                          >
+                            <option value="alipay">{td.alipay}</option>
+                            <option value="wechat">{td.wechat}</option>
+                          </select>
+                          <p
+                            id={paymentMethodHelpId}
+                            className="mt-2 text-xs leading-5 text-[#8F9DB2]"
+                          >
+                            {forceLocale === "en"
+                              ? "Choose the method you will use on the payment page."
+                              : "请选择后续付款页面实际使用的支付方式。"}
+                          </p>
+                        </div>
                         <FormSubmitButton
+                          className="w-full sm:w-auto"
                           pendingLabel={
                             forceLocale === "en"
                               ? "Generating payment QR..."
                               : "生成支付二维码中..."
                           }
                         >
-                          {isAccountService
-                            ? td.buyService
-                            : isSkillLearning
-                              ? forceLocale === "en"
-                                ? "Purchase now"
-                                : "点击购买"
-                              : td.buyDownload.replace(
-                                  "{price}",
-                                  Number(servicePrice).toFixed(2),
-                                )}
+                          {purchaseButtonLabel}
                         </FormSubmitButton>
                       </div>
                     </form>
                   ) : tool.type === "software" ? (
                     <ButtonLink href={softwareDownloadCtaHref}>
-                      {td.downloadSoftware}
+                      {paidSoftware && hasDownloadPurchase
+                        ? td.downloadSoftware
+                        : freeDownloadButtonLabel}
                     </ButtonLink>
                   ) : (
                     <ButtonLink
@@ -1008,12 +1060,35 @@ export async function ToolDetailPageShell({
               <form action={createCommentAction} className="mb-6">
                 <input type="hidden" name="toolId" value={tool.id} />
                 <input type="hidden" name="slug" value={tool.slug} />
+                <label
+                  htmlFor="tool-comment-content"
+                  className="mb-2 block text-sm font-semibold text-[#F6FAFF]"
+                >
+                  {forceLocale === "en" ? "Comment" : "评论内容"}
+                </label>
                 <textarea
+                  id="tool-comment-content"
                   name="content"
                   required
+                  minLength={2}
+                  maxLength={1000}
+                  aria-describedby={commentHelpId}
+                  title={
+                    forceLocale === "en"
+                      ? "Enter 2 to 1000 characters before submitting."
+                      : "请输入 2 到 1000 个字符后提交。"
+                  }
                   className="min-h-28 w-full rounded-xl border border-white/12 bg-white/8 p-4 outline-none"
                   placeholder={td.commentPlaceholder}
                 />
+                <p
+                  id={commentHelpId}
+                  className="mt-2 text-xs leading-5 text-[#8F9DB2]"
+                >
+                  {forceLocale === "en"
+                    ? "Required. Use 2 to 1000 characters. Reviews appear after moderation."
+                    : "必填，2 到 1000 个字符。评论通过审核后展示。"}
+                </p>
                 <FormSubmitButton
                   className="mt-3 text-base"
                   pendingLabel={
