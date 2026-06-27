@@ -2900,11 +2900,104 @@ select option:disabled {
   font-weight: 750;
 }
 
+.byox-quick-panel,
 .byox-answer,
+.byox-fit-grid,
 .byox-app,
+.byox-answer-blocks,
 .byox-route-section,
+.byox-route-seo,
 .byox-support-grid {
   margin-top: 2rem;
+}
+
+.byox-quick-panel {
+  padding: 1.25rem;
+}
+
+.byox-quick-head {
+  display: grid;
+  grid-template-columns: minmax(0, 0.38fr) minmax(0, 0.62fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.byox-quick-head h2,
+.byox-fit-grid h2,
+.byox-route-seo h2 {
+  color: var(--marketing-text);
+  font-size: 1.35rem;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.byox-language-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.byox-language-chips a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  color: var(--marketing-text);
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.byox-language-chips a:hover {
+  border-color: var(--marketing-accent);
+  color: #fff;
+}
+
+.byox-language-chips span {
+  color: var(--marketing-accent);
+  font-size: 0.72rem;
+}
+
+.byox-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.byox-quick-card {
+  min-height: 9.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
+    rgba(255, 255, 255, 0.045);
+}
+
+.byox-quick-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(240, 90, 53, 0.55);
+}
+
+.byox-quick-card strong {
+  display: block;
+  color: var(--marketing-text);
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.byox-quick-card span {
+  display: block;
+  margin-top: 0.65rem;
+  color: var(--marketing-muted);
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.65;
 }
 
 .byox-answer {
@@ -2928,6 +3021,9 @@ select option:disabled {
 }
 
 .byox-answer p,
+.byox-fit-grid li,
+.byox-answer-grid p,
+.byox-route-seo p,
 .byox-route-panel p,
 .byox-section-heading p,
 .byox-support-card p {
@@ -2935,6 +3031,42 @@ select option:disabled {
   color: var(--marketing-muted);
   line-height: 1.8;
   font-weight: 600;
+}
+
+.byox-fit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.byox-fit-grid article,
+.byox-answer-grid article {
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+}
+
+.byox-fit-grid ul {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.byox-fit-grid li {
+  position: relative;
+  padding-left: 1rem;
+}
+
+.byox-fit-grid li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.82rem;
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 999px;
+  background: var(--marketing-accent);
 }
 
 .byox-filter-panel,
@@ -3196,6 +3328,36 @@ select option:disabled {
   gap: 0.85rem;
 }
 
+.byox-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.byox-answer-grid h3,
+.byox-route-seo h3 {
+  color: var(--marketing-text);
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.byox-route-seo {
+  padding: 1.5rem;
+}
+
+.byox-route-seo-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.byox-route-seo-list article {
+  border-top: 1px solid rgba(255, 255, 255, 0.11);
+  padding-top: 0.85rem;
+}
+
 .byox-route-card {
   min-height: 15rem;
   display: flex;
@@ -3299,6 +3461,8 @@ select option:disabled {
   }
 
   .byox-project-grid,
+  .byox-quick-grid,
+  .byox-route-seo-list,
   .byox-route-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3311,6 +3475,9 @@ select option:disabled {
   }
 
   .byox-hero,
+  .byox-quick-head,
+  .byox-fit-grid,
+  .byox-answer-grid,
   .byox-route-panel,
   .byox-results-layout,
   .byox-support-grid {
@@ -3341,12 +3508,18 @@ select option:disabled {
   .byox-stat-grid,
   .byox-controls,
   .byox-project-grid,
+  .byox-quick-grid,
+  .byox-route-seo-list,
   .byox-route-grid {
     grid-template-columns: 1fr;
   }
 
   .byox-filter-header {
     flex-direction: column;
+  }
+
+  .byox-language-chips {
+    justify-content: flex-start;
   }
 }
 
