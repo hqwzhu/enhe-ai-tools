@@ -194,7 +194,6 @@ export async function SkillLearningPageShell({
           intro={t.listing.skillLearningIntro}
         />
         <SkillLearningGeoBlock forceLocale={forceLocale} />
-        <SkillLearningOutcomeBlock forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
           <div className="mt-8 grid gap-5 md:grid-cols-3">
@@ -205,6 +204,7 @@ export async function SkillLearningPageShell({
         ) : (
           <EmptyState title={t.listing.emptyTitle} text={t.listing.emptyText} />
         )}
+        <SkillLearningOutcomeBlock forceLocale={forceLocale} />
       </Container>
     </main>
   );

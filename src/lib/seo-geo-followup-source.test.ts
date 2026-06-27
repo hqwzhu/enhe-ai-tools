@@ -54,6 +54,17 @@ describe("SEO and GEO follow-up source contracts", () => {
     expect(skillLearning).toContain('buildLocalePath("/account-services", forceLocale)');
   });
 
+  it("keeps skill-learning outcome and FAQ sections below the product cards", () => {
+    const skillLearning = read("src/app/skill-learning/page-shell.tsx");
+    const toolCardIndex = skillLearning.indexOf("<ToolCard key={tool.id}");
+    const outcomeIndex = skillLearning.indexOf(
+      "<SkillLearningOutcomeBlock forceLocale={forceLocale} />",
+    );
+
+    expect(toolCardIndex).toBeGreaterThan(-1);
+    expect(outcomeIndex).toBeGreaterThan(toolCardIndex);
+  });
+
   it("documents the first-stage GEO implementation rules for future content work", () => {
     const guide = read("docs/geo-implementation-plan.md");
 
