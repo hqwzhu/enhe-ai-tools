@@ -594,10 +594,11 @@ function FilterBar({
     >
       <input
         name="q"
+        aria-label={t.listing.searchPlaceholder}
         placeholder={t.listing.searchPlaceholder}
         className="form-control-dark"
       />
-      <select name="category" className="form-select-dark">
+      <select name="category" aria-label={t.listing.allCategories} className="form-select-dark">
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -609,12 +610,12 @@ function FilterBar({
           </option>
         ))}
       </select>
-      <select name="paid" className="form-select-dark">
+      <select name="paid" aria-label={t.listing.allAccess} className="form-select-dark">
         <option value="">{t.listing.allAccess}</option>
         <option value="paid">{t.toolCard.paidDownload}</option>
         <option value="free">{t.toolCard.free}</option>
       </select>
-      <select name="sort" className="form-select-dark">
+      <select name="sort" aria-label={t.listing.latest} className="form-select-dark">
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

@@ -29,35 +29,38 @@ export async function LoginPageShell({
   const paymentSuccess = params.payment === "success";
 
   return (
-    <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
-      <form action={loginAction} className="surface-panel w-full max-w-md p-8">
-        <input type="hidden" name="csrfToken" value={csrfToken} />
-        <h1 className="text-3xl font-black text-[var(--marketing-text)]">{t.auth.loginTitle}</h1>
-        <p className="mt-3 text-sm font-medium text-[var(--marketing-muted)]">{t.auth.loginIntro}</p>
-        {paymentSuccess ? <div className="status-success mt-4">{t.auth.loginSuccessPayment}</div> : null}
-        {errorMessage ? <div className="status-danger mt-4">{errorMessage}</div> : null}
-        <label className="mt-6 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.email}</label>
-        <input name="email" type="text" required autoComplete="username" className="form-control-dark mt-2" />
-        <label className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.password}</label>
-        <PasswordInput
-          name="password"
-          required
-          autoComplete="current-password"
-          showLabel={t.auth.showPassword}
-          hideLabel={t.auth.hidePassword}
-          wrapperClassName="mt-2"
-          className="form-control-dark"
-        />
-        <FormSubmitButton className="login-submit-button mt-8 w-full text-base !text-[#050505]" pendingLabel={t.auth.loggingIn}>
-          {t.auth.loginButton}
-        </FormSubmitButton>
-        <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
-          {t.auth.noAccount}
-          <Link className="font-semibold text-[var(--marketing-accent)]" href={buildLocalePath("/register", locale)}>
-            {t.auth.registerNow}
-          </Link>
-        </p>
-      </form>
-    </Container>
+    <main>
+      <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
+        <form action={loginAction} className="surface-panel w-full max-w-md p-8">
+          <input type="hidden" name="csrfToken" value={csrfToken} />
+          <h1 className="text-3xl font-black text-[var(--marketing-text)]">{t.auth.loginTitle}</h1>
+          <p className="mt-3 text-sm font-medium text-[var(--marketing-muted)]">{t.auth.loginIntro}</p>
+          {paymentSuccess ? <div className="status-success mt-4">{t.auth.loginSuccessPayment}</div> : null}
+          {errorMessage ? <div className="status-danger mt-4">{errorMessage}</div> : null}
+          <label htmlFor="login-email" className="mt-6 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.email}</label>
+          <input id="login-email" name="email" type="text" required autoComplete="username" className="form-control-dark mt-2" />
+          <label htmlFor="login-password" className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.password}</label>
+          <PasswordInput
+            id="login-password"
+            name="password"
+            required
+            autoComplete="current-password"
+            showLabel={t.auth.showPassword}
+            hideLabel={t.auth.hidePassword}
+            wrapperClassName="mt-2"
+            className="form-control-dark"
+          />
+          <FormSubmitButton className="login-submit-button mt-8 w-full text-base !text-[#050505]" pendingLabel={t.auth.loggingIn}>
+            {t.auth.loginButton}
+          </FormSubmitButton>
+          <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
+            {t.auth.noAccount}
+            <Link className="font-semibold text-[var(--marketing-accent)]" href={buildLocalePath("/register", locale)}>
+              {t.auth.registerNow}
+            </Link>
+          </p>
+        </form>
+      </Container>
+    </main>
   );
 }

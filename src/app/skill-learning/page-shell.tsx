@@ -314,10 +314,11 @@ function FilterBar({
     <form className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_140px]">
       <input
         name="q"
+        aria-label={t.listing.searchPlaceholder}
         placeholder={t.listing.searchPlaceholder}
         className="form-control-dark"
       />
-      <select name="category" className="form-select-dark">
+      <select name="category" aria-label={t.listing.allCategories} className="form-select-dark">
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -329,7 +330,7 @@ function FilterBar({
           </option>
         ))}
       </select>
-      <select name="sort" className="form-select-dark">
+      <select name="sort" aria-label={t.listing.latest} className="form-select-dark">
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

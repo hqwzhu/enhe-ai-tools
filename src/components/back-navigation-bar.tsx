@@ -45,7 +45,7 @@ export function BackNavigationBar({ locale }: BackNavigationBarProps) {
   const label = locale === "en" ? "Back" : "返回上一页";
 
   return (
-    <div className="site-back-nav" aria-label={locale === "en" ? "Page back navigation" : "页面返回导航"}>
+    <nav className="site-back-nav" aria-label={locale === "en" ? "Page back navigation" : "页面返回导航"}>
       <button
         type="button"
         className={cn("site-back-nav-button cursor-target")}
@@ -60,6 +60,6 @@ export function BackNavigationBar({ locale }: BackNavigationBarProps) {
         <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
         <span>{label}</span>
       </button>
-    </div>
+    </nav>
   );
 }

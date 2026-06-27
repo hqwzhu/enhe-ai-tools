@@ -13,36 +13,39 @@ export async function RegisterPageShell({ forceLocale }: { forceLocale?: Locale 
   const csrfToken = await getOrCreateCsrfToken();
 
   return (
-    <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
-      <form action={registerAction} className="surface-panel w-full max-w-md p-8">
-        <input type="hidden" name="csrfToken" value={csrfToken} />
-        <h1 className="text-3xl font-black text-[var(--marketing-text)]">{t.auth.registerTitle}</h1>
-        <p className="mt-3 text-sm font-medium text-[var(--marketing-muted)]">{t.auth.registerIntro}</p>
-        <label className="mt-8 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.email}</label>
-        <input name="email" type="text" required autoComplete="username" className="form-control-dark mt-2" />
-        <label className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.password}</label>
-        <PasswordInput
-          name="password"
-          minLength={6}
-          required
-          autoComplete="new-password"
-          showLabel={t.auth.showPassword}
-          hideLabel={t.auth.hidePassword}
-          wrapperClassName="mt-2"
-          className="form-control-dark"
-        />
-        <label className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.newsletterEmailLabel}</label>
-        <input name="newsletterEmail" type="email" autoComplete="email" className="form-control-dark mt-2" />
-        <FormSubmitButton className="mt-8 w-full text-base" pendingLabel={t.auth.creatingAccount}>
-          {t.auth.createAccount}
-        </FormSubmitButton>
-        <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
-          {t.auth.hasAccount}
-          <Link className="font-semibold text-[var(--marketing-accent)]" href={buildLocalePath("/login", locale)}>
-            {t.auth.goLogin}
-          </Link>
-        </p>
-      </form>
-    </Container>
+    <main>
+      <Container className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-16">
+        <form action={registerAction} className="surface-panel w-full max-w-md p-8">
+          <input type="hidden" name="csrfToken" value={csrfToken} />
+          <h1 className="text-3xl font-black text-[var(--marketing-text)]">{t.auth.registerTitle}</h1>
+          <p className="mt-3 text-sm font-medium text-[var(--marketing-muted)]">{t.auth.registerIntro}</p>
+          <label htmlFor="register-email" className="mt-8 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.email}</label>
+          <input id="register-email" name="email" type="text" required autoComplete="username" className="form-control-dark mt-2" />
+          <label htmlFor="register-password" className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.password}</label>
+          <PasswordInput
+            id="register-password"
+            name="password"
+            minLength={6}
+            required
+            autoComplete="new-password"
+            showLabel={t.auth.showPassword}
+            hideLabel={t.auth.hidePassword}
+            wrapperClassName="mt-2"
+            className="form-control-dark"
+          />
+          <label htmlFor="register-newsletter-email" className="mt-5 block text-sm font-semibold text-[var(--marketing-text)]">{t.auth.newsletterEmailLabel}</label>
+          <input id="register-newsletter-email" name="newsletterEmail" type="email" autoComplete="email" className="form-control-dark mt-2" />
+          <FormSubmitButton className="mt-8 w-full text-base" pendingLabel={t.auth.creatingAccount}>
+            {t.auth.createAccount}
+          </FormSubmitButton>
+          <p className="mt-5 text-center text-sm text-[var(--marketing-muted)]">
+            {t.auth.hasAccount}
+            <Link className="font-semibold text-[var(--marketing-accent)]" href={buildLocalePath("/login", locale)}>
+              {t.auth.goLogin}
+            </Link>
+          </p>
+        </form>
+      </Container>
+    </main>
   );
 }
