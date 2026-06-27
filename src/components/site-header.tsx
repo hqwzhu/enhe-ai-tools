@@ -13,6 +13,10 @@ import { getCurrentLocale } from "@/lib/i18n";
 import { buildLocalePath } from "@/lib/seo";
 import { getEffectiveLocalizedSiteName, getSettingsMap } from "@/lib/settings";
 
+function softwareSearchHref(query: string, locale: Locale) {
+  return buildLocalePath(`/software?q=${encodeURIComponent(query)}`, locale);
+}
+
 export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
   const [locale, settings, headerUser] = await Promise.all([
     forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(),
@@ -26,7 +30,37 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
     { label: t.nav.home, href: buildLocalePath("/", locale) },
     { label: t.nav.aiNews, href: buildLocalePath("/ai-news", locale) },
     { label: t.nav.aiTrends, href: buildLocalePath("/ai-trends", locale) },
-    { label: t.nav.software, href: buildLocalePath("/software", locale) },
+    {
+      label: t.nav.software,
+      href: buildLocalePath("/software", locale),
+      children: [
+        {
+          label: locale === "en" ? "AI video generation" : "AI视频生成",
+          href: softwareSearchHref(locale === "en" ? "AI video generation" : "AI视频生成", locale),
+          description: locale === "en" ? "Video creation and generation tools" : "视频创作与生成工具"
+        },
+        {
+          label: locale === "en" ? "AI voice generation" : "AI语音生成",
+          href: softwareSearchHref(locale === "en" ? "AI voice generation" : "AI语音生成", locale),
+          description: locale === "en" ? "Voice, narration, and audio generation" : "语音、旁白与音频生成"
+        },
+        {
+          label: locale === "en" ? "AI agents" : "AI智能体",
+          href: softwareSearchHref(locale === "en" ? "AI agent" : "AI智能体", locale),
+          description: locale === "en" ? "Agent tools and workflow automation" : "智能体工具与自动化流程"
+        },
+        {
+          label: locale === "en" ? "AI video/image processing" : "AI 视频/图片处理",
+          href: softwareSearchHref(locale === "en" ? "AI video image processing" : "AI视频图片处理", locale),
+          description: locale === "en" ? "Media editing, enhancement, and repair" : "视频图片编辑、增强与修复"
+        },
+        {
+          label: locale === "en" ? "AI productivity" : "AI提升效率",
+          href: softwareSearchHref(locale === "en" ? "AI productivity" : "AI提升效率", locale),
+          description: locale === "en" ? "Tools for daily work and productivity" : "提升日常工作效率的工具"
+        }
+      ]
+    },
     {
       label: t.nav.onlineTools,
       href: buildLocalePath("/account-services", locale),

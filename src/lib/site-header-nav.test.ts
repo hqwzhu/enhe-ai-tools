@@ -22,10 +22,26 @@ describe("site header navigation", () => {
     expect(source).toContain("getHeaderUserSnapshot");
     expect(accountControlsSource).not.toContain("labels.admin");
     expect(accountControlsSource).not.toContain("site-admin-link");
-    expect(source).not.toContain('"/tutorials"');
-    expect(source).not.toContain("t.nav.tutorials");
+    expect(source).toContain('href: buildLocalePath("/tutorials", locale)');
+    expect(source).toContain("t.nav.tutorials");
     expect(source).not.toContain('href: buildLocalePath("/#updates", locale)');
     expect(updatesNavIndex).toBe(-1);
+  });
+
+  it("adds an AI software dropdown with focused software discovery entries", () => {
+    const source = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
+
+    expect(source).toContain("softwareSearchHref");
+    expect(source).toContain("AI视频生成");
+    expect(source).toContain("AI语音生成");
+    expect(source).toContain("AI智能体");
+    expect(source).toContain("AI 视频/图片处理");
+    expect(source).toContain("AI提升效率");
+    expect(source).toContain("AI video generation");
+    expect(source).toContain("AI voice generation");
+    expect(source).toContain("AI agents");
+    expect(source).toContain("AI video/image processing");
+    expect(source).toContain("AI productivity");
   });
 
   it("uses a signed header snapshot plus shared client state so header auth does not cold-start as logged-out on every navigation", () => {
