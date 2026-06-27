@@ -32,6 +32,27 @@ describe("site audit regression coverage", () => {
     expect(homeShell).toContain('"/account-services"');
   });
 
+  it("keeps the homepage growth hub linked to major SEO and conversion paths", () => {
+    const homeShell = read("src/app/page-shell.tsx");
+
+    for (const path of [
+      '"/ai-news"',
+      '"/ai-trends"',
+      '"/software"',
+      '"/skill-learning"',
+      '"/account-services"',
+      '"/pricing"',
+      '"/tutorials"',
+      '"/build-your-own-x"',
+    ]) {
+      expect(homeShell).toContain(path);
+    }
+
+    expect(homeShell).toContain("creatorOutcomeCards");
+    expect(homeShell).toContain("creatorWorkflowSteps");
+    expect(homeShell).toContain("buildYourOwnXSpotlight");
+  });
+
   it("gives robots and sitemap public cache headers", () => {
     const nextConfig = read("next.config.ts");
 
