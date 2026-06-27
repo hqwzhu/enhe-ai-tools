@@ -89,6 +89,23 @@ const accountServicesFaqItems = {
   ],
 } as const;
 
+const accountServicesDecisionBlock = {
+  zh: {
+    eyebrow: "咨询前先确认",
+    title: "账号服务不是捷径，而是帮你把访问、订阅和平台规则先看清楚。",
+    body:
+      "在咨询 AI账号服务前，建议先确认你要使用哪个工具、需要完成什么任务、是否涉及第三方平台规则，以及是否已经阅读对应软件或课程页面。这样沟通会更快，也能减少不必要的试错。",
+    checks: ["确认真实任务", "查看官方规则", "看清交付边界", "再决定是否咨询"],
+  },
+  en: {
+    eyebrow: "Before asking for access",
+    title: "Account guidance is not a shortcut. It helps you understand access, subscriptions, and platform rules first.",
+    body:
+      "Before requesting AI account service guidance, confirm the tool, the task, the third-party platform rules, and whether the related software or course page already answers your question.",
+    checks: ["Confirm the task", "Review official rules", "Check delivery scope", "Then request guidance"],
+  },
+} as const;
+
 function buildAccountServicesCollectionSchema(forceLocale: Locale) {
   const isEnglish = forceLocale === "en";
   const url = buildLocalePath("/account-services", forceLocale);
@@ -193,6 +210,7 @@ export async function AccountServicesPageShell({
 function AccountServicesGeoBlock({ forceLocale }: { forceLocale: Locale }) {
   const sections = accountServicesGeoSections[forceLocale];
   const faqs = accountServicesFaqItems[forceLocale];
+  const decision = accountServicesDecisionBlock[forceLocale];
   const links = [
     {
       label: { zh: "选择 AI 软件应用", en: "Choose AI software apps" },
@@ -210,6 +228,24 @@ function AccountServicesGeoBlock({ forceLocale }: { forceLocale: Locale }) {
 
   return (
     <section className="glass mt-8 rounded-2xl p-6">
+      <div className="mb-5 rounded-2xl border border-[var(--marketing-accent)]/28 bg-[var(--marketing-accent)]/10 p-5">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--marketing-accent)]">
+          {decision.eyebrow}
+        </p>
+        <h2 className="mt-3 max-w-4xl text-2xl font-black leading-snug text-[var(--marketing-text)]">
+          {decision.title}
+        </h2>
+        <p className="mt-3 max-w-4xl text-sm font-semibold leading-7 text-[var(--marketing-muted)]">
+          {decision.body}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {decision.checks.map((check) => (
+            <span key={check} className="rounded-full border border-white/14 bg-white/8 px-3 py-1 text-xs font-bold text-[var(--marketing-text)]">
+              {check}
+            </span>
+          ))}
+        </div>
+      </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {sections.map((section) => (
           <article

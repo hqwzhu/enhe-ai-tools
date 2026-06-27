@@ -97,8 +97,8 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
             </div>
             <p className="site-footer-summary">
               {locale === "en"
-                ? "AI software, account services, skill learning, and frontier AI insight in one ENHE AI hub."
-                : "汇集AI前沿资讯、AI软件应用、AI账号服务与AI技能学习，让用户从信息判断走向可执行成果。"}
+                ? "AI news, trend analysis, software apps, account guidance, skill learning, and tutorials in one ENHE AI hub."
+                : "汇集AI前沿资讯、AI趋势分析、AI软件应用、AI账号服务、AI技能学习与使用教程，让用户从信息判断走向可执行成果。"}
             </p>
             <div className="site-footer-socials" aria-label={locale === "en" ? "ENHE AI social channels" : "ENHE AI 社交渠道"}>
               {footerSocialLinks.map(({ label, href, icon: Icon }) =>
@@ -124,7 +124,7 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
         </div>
 
         <div className="site-footer-grid">
-          {footerGroups.map((group) => (
+          {footerGroups.map((group, index) => (
             <nav key={group.title} className="site-footer-group" aria-label={group.title}>
               <h2 className="site-footer-group-title site-footer-group-title-desktop">{group.title}</h2>
               <details className="site-footer-disclosure" open>

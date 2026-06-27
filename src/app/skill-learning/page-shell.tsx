@@ -83,6 +83,19 @@ const skillLearningOutcomeSections = {
   ],
 } as const;
 
+const skillLearningPathStrip = {
+  zh: [
+    { label: "1", title: "从真实问题开始", body: "先选一个要完成的任务。" },
+    { label: "2", title: "配合工具练习", body: "用软件或账号服务跑通流程。" },
+    { label: "3", title: "沉淀可复用资产", body: "保存提示词、步骤和模板。" },
+  ],
+  en: [
+    { label: "1", title: "Start from a real problem", body: "Choose one task you need to finish." },
+    { label: "2", title: "Practice with tools", body: "Run the workflow with software or access guidance." },
+    { label: "3", title: "Save reusable assets", body: "Keep prompts, steps, and templates." },
+  ],
+} as const;
+
 const skillLearningFaqItems = {
   zh: [
     {
@@ -254,6 +267,7 @@ function SkillLearningOutcomeBlock({ forceLocale }: { forceLocale: Locale }) {
 
 function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
   const sections = skillLearningGeoSections[forceLocale];
+  const pathItems = skillLearningPathStrip[forceLocale];
   const links = [
     {
       label: { zh: "先看 AI 前沿趋势", en: "Read AI trends first" },
@@ -271,6 +285,21 @@ function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
 
   return (
     <section className="glass mt-8 rounded-2xl p-6">
+      <div className="mb-5 grid gap-3 md:grid-cols-3">
+        {pathItems.map((item) => (
+          <article key={item.label} className="rounded-2xl border border-[var(--marketing-accent)]/24 bg-[var(--marketing-accent)]/10 p-4">
+            <span className="grid size-8 place-items-center rounded-full bg-[var(--marketing-accent)] text-sm font-black text-white">
+              {item.label}
+            </span>
+            <h2 className="mt-3 text-base font-black leading-snug text-[var(--marketing-text)]">
+              {item.title}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--marketing-muted)]">
+              {item.body}
+            </p>
+          </article>
+        ))}
+      </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {sections.map((section) => (
           <article
