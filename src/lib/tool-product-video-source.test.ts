@@ -37,15 +37,21 @@ describe("tool product video source", () => {
     expect(toolModel).toMatch(/videoUrl2\s+String\?\s+@map\("video_url_2"\)/);
     expect(toolModel).toMatch(/videoTitle2\s+String\?\s+@map\("video_title_2"\)/);
     expect(toolModel).toMatch(/videoDescription2\s+String\?\s+@map\("video_description_2"\)/);
+    expect(toolModel).toMatch(/videoUrl3\s+String\?\s+@map\("video_url_3"\)/);
+    expect(toolModel).toMatch(/videoTitle3\s+String\?\s+@map\("video_title_3"\)/);
+    expect(toolModel).toMatch(/videoDescription3\s+String\?\s+@map\("video_description_3"\)/);
     expect(migration).toContain('ADD COLUMN "video_url" TEXT');
     expect(migration).toContain('ADD COLUMN "video_title" TEXT');
     expect(migration).toContain('ADD COLUMN "video_description" TEXT');
     expect(migration).toContain('ADD COLUMN "video_url_2" TEXT');
     expect(migration).toContain('ADD COLUMN "video_title_2" TEXT');
     expect(migration).toContain('ADD COLUMN "video_description_2" TEXT');
+    expect(migration).toContain('ADD COLUMN "video_url_3" TEXT');
+    expect(migration).toContain('ADD COLUMN "video_title_3" TEXT');
+    expect(migration).toContain('ADD COLUMN "video_description_3" TEXT');
   });
 
-  it("lets admins upload, keep, title, and describe up to two product videos", () => {
+  it("lets admins upload, keep, title, and describe up to three product videos", () => {
     const editor = readProjectFile("src/app/admin/tool-admin-list.tsx");
     const actions = readProjectFile("src/app/admin/actions.ts");
     const uploadField = readProjectFile("src/app/admin/tool-video-upload-field.tsx");
@@ -57,21 +63,28 @@ describe("tool product video source", () => {
     expect(editor).toContain('urlName="videoUrl2"');
     expect(editor).toContain('name="videoTitle2"');
     expect(editor).toContain('name="videoDescription2"');
+    expect(editor).toContain('urlName="videoUrl3"');
+    expect(editor).toContain('name="videoTitle3"');
+    expect(editor).toContain('name="videoDescription3"');
     expect(uploadField).toContain("maxVideoBytes");
     expect(uploadField).toContain("video/mp4");
     expect(uploadField).toContain("video/webm");
     expect(uploadField).toContain("video/quicktime");
     expect(actions).toContain('formData.get("videoUrl")');
     expect(actions).toContain('formData.get("videoUrl2")');
+    expect(actions).toContain('formData.get("videoUrl3")');
     expect(actions).toContain("videoUrl:");
     expect(actions).toContain("videoTitle:");
     expect(actions).toContain("videoDescription:");
     expect(actions).toContain("videoUrl2:");
     expect(actions).toContain("videoTitle2:");
     expect(actions).toContain("videoDescription2:");
+    expect(actions).toContain("videoUrl3:");
+    expect(actions).toContain("videoTitle3:");
+    expect(actions).toContain("videoDescription3:");
   });
 
-  it("renders up to two product videos before the product image gallery on public detail pages", () => {
+  it("renders up to three product videos before the product image gallery on public detail pages", () => {
     const detail = readProjectFile("src/app/tools/[slug]/page-shell.tsx");
     const helper = readProjectFile("src/lib/product-video.ts");
     const player = readProjectFile("src/components/product-video-player.tsx");
@@ -89,7 +102,8 @@ describe("tool product video source", () => {
     expect(player).toContain("video.src = src");
     expect(helper).toContain("resolveProductVideos");
     expect(helper).toContain("resolveProductVideoSrc");
-    expect(helper).toContain("slice(0, 2)");
+    expect(detail).toContain("tool.videoUrl3");
+    expect(helper).toContain("slice(0, 3)");
   });
 
   it("proxies private COS product videos instead of rendering forbidden public URLs", () => {
@@ -125,8 +139,10 @@ describe("tool product video source", () => {
     expect(editor).toContain("ToolVideoUploadField");
     expect(editor).not.toContain('name="videoFile"');
     expect(editor).not.toContain('name="videoFile2"');
+    expect(editor).not.toContain('name="videoFile3"');
     expect(actions).not.toContain('formData.get("videoFile")');
     expect(actions).not.toContain('formData.get("videoFile2")');
+    expect(actions).not.toContain('formData.get("videoFile3")');
     expect(uploadField).toContain('xhr.open("POST", "/api/admin/tool-video-upload")');
     expect(uploadField).toContain("name={urlName}");
     expect(uploadRoute).toContain("saveUploadedFile");

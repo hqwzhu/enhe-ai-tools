@@ -9,7 +9,7 @@ type UploadState = {
 };
 
 type ToolVideoUploadFieldProps = {
-  urlName: "videoUrl" | "videoUrl2";
+  urlName: "videoUrl" | "videoUrl2" | "videoUrl3";
   uploadLabel: string;
   currentUrl?: string | null;
   inputClass: string;

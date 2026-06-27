@@ -40,8 +40,8 @@ export function resolveProductVideos(videos: ProductVideoInput[], env?: ProductV
       description: String(video.description ?? "").trim() || null
     });
 
-    if (resolved.length >= 2) break;
+    if (resolved.length >= 3) break;
   }
 
-  return resolved.slice(0, 2);
+  return resolved.slice(0, 3);
 }

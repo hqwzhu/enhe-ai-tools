@@ -250,6 +250,11 @@ export async function ToolDetailPageShell({
       title: tool.videoTitle2,
       description: tool.videoDescription2,
     },
+    {
+      url: tool.videoUrl3,
+      title: tool.videoTitle3,
+      description: tool.videoDescription3,
+    },
   ]);
   const hasDownloadPurchase = user
     ? await prisma.toolPurchase

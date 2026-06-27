@@ -264,6 +264,9 @@ model Tool {
   videoUrl2         String?        @map("video_url_2")
   videoTitle2       String?        @map("video_title_2")
   videoDescription2 String?        @map("video_description_2")
+  videoUrl3         String?        @map("video_url_3")
+  videoTitle3       String?        @map("video_title_3")
+  videoDescription3 String?        @map("video_description_3")
   version           String?
   systemRequirement String?        @map("system_requirement")
   isVipRequired     Boolean        @default(true) @map("is_vip_required")
