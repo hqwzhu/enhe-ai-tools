@@ -4,6 +4,7 @@ import { deleteToolAction, upsertToolAction } from "@/app/admin/actions";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import { ToolMediaUploadGuard } from "@/app/admin/tool-media-upload-guard";
 import { ToolProductImageManager } from "@/app/admin/tool-product-image-manager";
+import { ToolVideoUploadField } from "@/app/admin/tool-video-upload-field";
 import { getAdminToolBasePath, getAdminToolEditPath, getAdminToolNewPath } from "@/lib/admin-tool-routes";
 import type { Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
@@ -432,11 +433,14 @@ export function ToolEditor({
                   <div className="rounded-2xl border border-white/10 bg-[#07101E]/55 p-4">
                     <p className="mb-3 text-sm font-semibold text-[#F6FAFF]">{copy.productVideo} 1</p>
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label={`${copy.productVideoUrl} 1`}>
-                        <input name="videoUrl" defaultValue={tool?.videoUrl ?? ""} placeholder={copy.productVideoUrlPlaceholder} className={inputClass} />
-                      </Field>
-                      <Field label={`${copy.productVideoUpload} 1`}>
-                        <ToolMediaUploadGuard name="videoFile" inputClass={inputClass} />
+                      <Field label={`${copy.productVideoUrl} / ${copy.productVideoUpload} 1`}>
+                        <ToolVideoUploadField
+                          urlName="videoUrl"
+                          currentUrl={tool?.videoUrl}
+                          inputClass={inputClass}
+                          toolSlug={tool?.slug}
+                          uploadLabel={`${copy.productVideoUpload} 1`}
+                        />
                       </Field>
                       <Field label={`${copy.productVideoTitle} 1`}>
                         <input name="videoTitle" defaultValue={tool?.videoTitle ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />
@@ -455,11 +459,14 @@ export function ToolEditor({
                   <div className="rounded-2xl border border-white/10 bg-[#07101E]/55 p-4">
                     <p className="mb-3 text-sm font-semibold text-[#F6FAFF]">{copy.productVideo} 2</p>
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label={`${copy.productVideoUrl} 2`}>
-                        <input name="videoUrl2" defaultValue={tool?.videoUrl2 ?? ""} placeholder={copy.productVideoUrlPlaceholder} className={inputClass} />
-                      </Field>
-                      <Field label={`${copy.productVideoUpload} 2`}>
-                        <ToolMediaUploadGuard name="videoFile2" inputClass={inputClass} />
+                      <Field label={`${copy.productVideoUrl} / ${copy.productVideoUpload} 2`}>
+                        <ToolVideoUploadField
+                          urlName="videoUrl2"
+                          currentUrl={tool?.videoUrl2}
+                          inputClass={inputClass}
+                          toolSlug={tool?.slug}
+                          uploadLabel={`${copy.productVideoUpload} 2`}
+                        />
                       </Field>
                       <Field label={`${copy.productVideoTitle} 2`}>
                         <input name="videoTitle2" defaultValue={tool?.videoTitle2 ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />

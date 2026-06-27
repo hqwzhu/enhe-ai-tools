@@ -8,6 +8,11 @@ function readProjectFile(path: string) {
   return readFileSync(join(root, path), "utf8");
 }
 
+function readProjectFileIfExists(path: string) {
+  const fullPath = join(root, path);
+  return existsSync(fullPath) ? readFileSync(fullPath, "utf8") : "";
+}
+
 function videoMigrationSource() {
   const migrationsDir = join(root, "prisma/migrations");
   return readdirSync(migrationsDir)
@@ -42,28 +47,22 @@ describe("tool product video source", () => {
 
   it("lets admins upload, keep, title, and describe up to two product videos", () => {
     const editor = readProjectFile("src/app/admin/tool-admin-list.tsx");
-    const guard = readProjectFile("src/app/admin/tool-media-upload-guard.tsx");
     const actions = readProjectFile("src/app/admin/actions.ts");
+    const uploadField = readProjectFile("src/app/admin/tool-video-upload-field.tsx");
 
-    expect(editor).toContain('name="videoUrl"');
-    expect(editor).toContain('name="videoFile"');
+    expect(editor).toContain("ToolVideoUploadField");
+    expect(editor).toContain('urlName="videoUrl"');
     expect(editor).toContain('name="videoTitle"');
     expect(editor).toContain('name="videoDescription"');
-    expect(editor).toContain('name="videoUrl2"');
-    expect(editor).toContain('name="videoFile2"');
+    expect(editor).toContain('urlName="videoUrl2"');
     expect(editor).toContain('name="videoTitle2"');
     expect(editor).toContain('name="videoDescription2"');
-    expect(guard).toContain('"videoFile"');
-    expect(guard).toContain('"videoFile2"');
-    expect(guard).toContain("maxVideoBytes");
-    expect(guard).toContain("video/mp4");
-    expect(guard).toContain("video/webm");
-    expect(guard).toContain("video/quicktime");
-    expect(actions).toContain('formData.get("videoFile")');
-    expect(actions).toContain('formData.get("videoFile2")');
+    expect(uploadField).toContain("maxVideoBytes");
+    expect(uploadField).toContain("video/mp4");
+    expect(uploadField).toContain("video/webm");
+    expect(uploadField).toContain("video/quicktime");
     expect(actions).toContain('formData.get("videoUrl")');
     expect(actions).toContain('formData.get("videoUrl2")');
-    expect(actions).toContain("saveAdminVideoUpload");
     expect(actions).toContain("videoUrl:");
     expect(actions).toContain("videoTitle:");
     expect(actions).toContain("videoDescription:");
@@ -96,14 +95,14 @@ describe("tool product video source", () => {
   it("proxies private COS product videos instead of rendering forbidden public URLs", () => {
     const helper = readProjectFile("src/lib/product-video.ts");
     const route = readProjectFile("src/app/api/tool-videos/route.ts");
-    const actions = readProjectFile("src/app/admin/actions.ts");
+    const uploadRoute = readProjectFile("src/app/api/admin/tool-video-upload/route.ts");
 
     expect(helper).toContain("parseCosFilePath");
     expect(helper).toContain("parseCosPublicUrl");
     expect(helper).toContain("/api/tool-videos?src=");
     expect(route).toContain("getSecureCosMediaUrl");
     expect(route).toContain("NextResponse.redirect");
-    expect(actions).toContain('stored.storage === "cos" ? stored.filePath : stored.fileUrl');
+    expect(uploadRoute).toContain('stored.storage === "cos" ? stored.filePath : stored.fileUrl');
   });
 
   it("serves uploaded videos with byte ranges for browser playback", () => {
@@ -115,5 +114,32 @@ describe("tool product video source", () => {
     expect(uploadRoute).toContain("Content-Range");
     expect(uploadRoute).toContain("status: 206");
     expect(uploadRoute).toContain('".mp4": "video/mp4"');
+  });
+
+  it("uploads product videos before the product save action so large files are not submitted through Server Actions", () => {
+    const editor = readProjectFile("src/app/admin/tool-admin-list.tsx");
+    const actions = readProjectFile("src/app/admin/actions.ts");
+    const uploadField = readProjectFileIfExists("src/app/admin/tool-video-upload-field.tsx");
+    const uploadRoute = readProjectFileIfExists("src/app/api/admin/tool-video-upload/route.ts");
+
+    expect(editor).toContain("ToolVideoUploadField");
+    expect(editor).not.toContain('name="videoFile"');
+    expect(editor).not.toContain('name="videoFile2"');
+    expect(actions).not.toContain('formData.get("videoFile")');
+    expect(actions).not.toContain('formData.get("videoFile2")');
+    expect(uploadField).toContain('xhr.open("POST", "/api/admin/tool-video-upload")');
+    expect(uploadField).toContain("name={urlName}");
+    expect(uploadRoute).toContain("saveUploadedFile");
+    expect(uploadRoute).toContain("isLikelyUploadableVideo");
+    expect(uploadRoute).toContain('stored.storage === "cos" ? stored.filePath : stored.fileUrl');
+  });
+
+  it("keeps video upload parser failures inside the upload API response", () => {
+    const uploadRoute = readProjectFileIfExists("src/app/api/admin/tool-video-upload/route.ts");
+
+    expect(uploadRoute).toContain("let formData: FormData");
+    expect(uploadRoute).toContain("await request.formData()");
+    expect(uploadRoute).toContain("视频上传请求解析失败");
+    expect(uploadRoute).toContain("{ status: 413 }");
   });
 });
