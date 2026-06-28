@@ -34,15 +34,15 @@ type CategoryName = (typeof categories)[number]["name"];
 
 const primaryRules: Array<{ category: CategoryName; patterns: RegExp[] }> = [
   {
-    category: "视频/图片处理",
-    patterns: [
-      /faceswap|face\s*swap|换脸|人像合成|截图|图片处理|图像处理|照片|抠图|去水印|修复|增强|放大|retouch|restore|upscale|enhance/i,
-    ],
-  },
-  {
     category: "视频生成",
     patterns: [
       /video\s*studio|视频生成|文生视频|图生视频|短视频|生成视频|视频创作|video\s*generation|generate\s*video|text\s*to\s*video|image\s*to\s*video|runway|kling|sora/i,
+    ],
+  },
+  {
+    category: "视频/图片处理",
+    patterns: [
+      /faceswap|face\s*swap|换脸|人像合成|截图|图片处理|图像处理|照片|抠图|去水印|修复|增强|放大|retouch|restore|upscale|enhance/i,
     ],
   },
   {
