@@ -40,28 +40,6 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
       })),
     },
     {
-      label: t.nav.onlineTools,
-      href: buildLocalePath("/account-services", locale),
-      children: [
-        {
-          label: locale === "en" ? "Upgrade subscription" : "升级订阅",
-          href: buildLocalePath("/account-services?q=升级订阅", locale),
-          description:
-            locale === "en"
-              ? "Subscription upgrade guidance and service notes"
-              : "订阅升级咨询与服务说明",
-        },
-        {
-          label: locale === "en" ? "Account order" : "账号订购",
-          href: buildLocalePath("/account-services?q=账号订购", locale),
-          description:
-            locale === "en"
-              ? "Account ordering guidance and delivery notes"
-              : "账号订购咨询与交付说明",
-        },
-      ],
-    },
-    {
       label: t.nav.skillLearning,
       href: buildLocalePath("/skill-learning", locale),
       children: [
@@ -72,6 +50,14 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
             locale === "en"
               ? "AI workflows, prompts, and practical courses"
               : "AI 工作流、提示词与实战课程",
+        },
+        {
+          label: t.nav.onlineTools,
+          href: buildLocalePath("/account-services", locale),
+          description:
+            locale === "en"
+              ? "Account service guidance and access notes"
+              : "AI账号服务咨询与使用说明",
         },
         {
           label:
@@ -117,11 +103,11 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
           >
             {navItems.map((item) =>
               "children" in item ? (
-                <details key={item.href} className="site-nav-dropdown">
-                  <summary className="site-nav-link site-nav-dropdown-trigger cursor-target">
+                <div key={item.href} className="site-nav-dropdown">
+                  <div className="site-nav-link site-nav-dropdown-trigger cursor-target">
                     <span>{item.label}</span>
                     <ChevronDown size={14} strokeWidth={1.8} aria-hidden="true" />
-                  </summary>
+                  </div>
                   <div className="site-nav-dropdown-panel">
                     {item.children.map((child) => (
                       <PrefetchLink
@@ -134,7 +120,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
                       </PrefetchLink>
                     ))}
                   </div>
-                </details>
+                </div>
               ) : (
                 <PrefetchLink
                   key={item.href}

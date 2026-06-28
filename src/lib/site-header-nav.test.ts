@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("site header navigation", () => {
-  it("keeps the homepage nav first, restores the admin entry for admin sessions, and removes updates from the header nav", () => {
+  it("keeps core nav entries and removes obsolete top-level account-service dropdown", () => {
     const source = readFileSync(
       new URL("../components/site-header.tsx", import.meta.url),
       "utf8",
@@ -15,10 +15,11 @@ describe("site header navigation", () => {
 
     expect(source).toContain("nav.home");
     expect(source).toContain("nav.software");
-    expect(source).toContain("nav.onlineTools");
     expect(source).toContain("nav.skillLearning");
     expect(source).toContain("nav.aiNews");
+    expect(source).toContain("nav.aiTrends");
     expect(source).toContain('href: buildLocalePath("/account-services", locale)');
+    expect(source).not.toContain('label: t.nav.onlineTools,\n      href: buildLocalePath("/account-services", locale),');
     expect(source).not.toContain('href: buildLocalePath("/online-tools", locale)');
     expect(source).toContain('href: buildLocalePath("/ai-news", locale)');
     expect(source).toContain("t.nav.login");
@@ -32,8 +33,26 @@ describe("site header navigation", () => {
     expect(source).not.toContain("t.nav.tutorials");
     expect(source).not.toContain('href: buildLocalePath("/pricing", locale)');
     expect(source).not.toContain("Pricing");
+    expect(source).not.toContain("Upgrade subscription");
+    expect(source).not.toContain("Account order");
     expect(source).not.toContain('href: buildLocalePath("/#updates", locale)');
     expect(updatesNavIndex).toBe(-1);
+  });
+
+  it("places account services inside the skill learning dropdown", () => {
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const skillLearningIndex = source.indexOf("label: t.nav.skillLearning");
+    const accountServiceIndex = source.indexOf("label: t.nav.onlineTools");
+    const buildYourOwnXIndex = source.indexOf("Build Your Own X Navigator");
+
+    expect(skillLearningIndex).toBeGreaterThan(-1);
+    expect(accountServiceIndex).toBeGreaterThan(skillLearningIndex);
+    expect(buildYourOwnXIndex).toBeGreaterThan(accountServiceIndex);
+    expect(source).toContain("Account service guidance and access notes");
+    expect(source).toContain("AI账号服务咨询与使用说明");
   });
 
   it("uses category landing links for software dropdown entries", () => {
@@ -67,18 +86,22 @@ describe("site header navigation", () => {
     expect(source).not.toContain("AI productivity");
   });
 
-  it("keeps account service dropdown focused on upgrade and account ordering", () => {
+  it("uses hover and focus for desktop dropdown visibility", () => {
     const source = readFileSync(
       new URL("../components/site-header.tsx", import.meta.url),
       "utf8",
     );
+    const css = readFileSync(
+      new URL("../app/globals.css", import.meta.url),
+      "utf8",
+    ).replace(/\r\n/g, "\n");
 
-    expect(source).toContain("升级订阅");
-    expect(source).toContain("账号订购");
-    expect(source).toContain("Upgrade subscription");
-    expect(source).toContain("Account order");
-    expect(source).not.toContain("价格与购买说明");
-    expect(source).not.toContain("Review payment, delivery, and refund rules");
+    expect(source).not.toContain("<details key={item.href} className=\"site-nav-dropdown\">");
+    expect(source).toContain('<div key={item.href} className="site-nav-dropdown">');
+    expect(css).toContain(".site-nav-dropdown:hover .site-nav-dropdown-panel,");
+    expect(css).toContain(".site-nav-dropdown:focus-within .site-nav-dropdown-panel");
+    expect(css).not.toContain(".site-nav-dropdown[open] .site-nav-dropdown-panel");
+    expect(css).not.toContain(".site-nav-dropdown[open] .site-nav-dropdown-trigger");
   });
 
   it("resolves software categoryName query values to category ids", () => {
