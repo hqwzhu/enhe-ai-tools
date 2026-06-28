@@ -34,10 +34,6 @@ type CategoryName = (typeof categories)[number]["name"];
 
 const primaryRules: Array<{ category: CategoryName; patterns: RegExp[] }> = [
   {
-    category: "智能体",
-    patterns: [/lumios|智能体|agent|mcp|操作系统|操作伴侣|工作台/i],
-  },
-  {
     category: "视频/图片处理",
     patterns: [
       /faceswap|face\s*swap|换脸|人像合成|截图|图片处理|图像处理|照片|抠图|去水印|修复|增强|放大|retouch|restore|upscale|enhance/i,
@@ -52,6 +48,10 @@ const primaryRules: Array<{ category: CategoryName; patterns: RegExp[] }> = [
   {
     category: "语音生成",
     patterns: [/语音生成|配音|旁白|音频|voice|audio|speech|tts|narration/i],
+  },
+  {
+    category: "智能体",
+    patterns: [/lumios|智能体|agent|mcp|操作系统|操作伴侣|自动执行|autonomous/i],
   },
   {
     category: "提升效率",
