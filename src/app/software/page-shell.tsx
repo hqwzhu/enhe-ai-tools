@@ -9,6 +9,7 @@ import {
   getPublicToolListing,
 } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
+import { resolveSoftwareCategoryIdByName } from "@/lib/software-category-navigation";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   absoluteUrl,
@@ -300,6 +301,7 @@ export async function SoftwarePageShell({
   const params = await searchParams;
   const keyword = params.q;
   const categoryId = params.category;
+  const categoryName = params.categoryName;
   const paid = params.paid;
   const sort = params.sort;
   const t = getDictionary(forceLocale);
@@ -317,10 +319,17 @@ export async function SoftwarePageShell({
     items: [...softwareFaqItems[forceLocale]],
   });
   const collectionSchema = buildSoftwareCollectionSchema(forceLocale);
-  const [categories, tools] = await Promise.all([
-    getPublicToolCategories("software"),
-    getPublicToolListing("software", categoryId, keyword, paid, sort),
-  ]);
+  const categories = await getPublicToolCategories("software");
+  const resolvedCategoryId =
+    categoryId ||
+    resolveSoftwareCategoryIdByName(categoryName, categories, forceLocale);
+  const tools = await getPublicToolListing(
+    "software",
+    resolvedCategoryId,
+    keyword,
+    paid,
+    sort,
+  );
 
   return (
     <main>

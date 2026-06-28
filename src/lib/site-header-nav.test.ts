@@ -3,8 +3,14 @@ import { describe, expect, it } from "vitest";
 
 describe("site header navigation", () => {
   it("keeps the homepage nav first, restores the admin entry for admin sessions, and removes updates from the header nav", () => {
-    const source = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
-    const accountControlsSource = readFileSync(new URL("../components/header-account-controls.tsx", import.meta.url), "utf8");
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const accountControlsSource = readFileSync(
+      new URL("../components/header-account-controls.tsx", import.meta.url),
+      "utf8",
+    );
     const updatesNavIndex = source.indexOf("t.nav.updates");
 
     expect(source).toContain("nav.home");
@@ -22,36 +28,105 @@ describe("site header navigation", () => {
     expect(source).toContain("getHeaderUserSnapshot");
     expect(accountControlsSource).not.toContain("labels.admin");
     expect(accountControlsSource).not.toContain("site-admin-link");
-    expect(source).toContain('href: buildLocalePath("/tutorials", locale)');
-    expect(source).toContain("t.nav.tutorials");
+    expect(source).not.toContain('href: buildLocalePath("/tutorials", locale)');
+    expect(source).not.toContain("t.nav.tutorials");
+    expect(source).not.toContain('href: buildLocalePath("/pricing", locale)');
+    expect(source).not.toContain("Pricing");
     expect(source).not.toContain('href: buildLocalePath("/#updates", locale)');
     expect(updatesNavIndex).toBe(-1);
   });
 
-  it("adds an AI software dropdown with focused software discovery entries", () => {
-    const source = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
+  it("uses category landing links for software dropdown entries", () => {
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const categorySource = readFileSync(
+      new URL("../lib/software-category-navigation.ts", import.meta.url),
+      "utf8",
+    );
 
-    expect(source).toContain("softwareSearchHref");
-    expect(source).toContain("AI视频生成");
-    expect(source).toContain("AI语音生成");
-    expect(source).toContain("AI智能体");
-    expect(source).toContain("AI 视频/图片处理");
-    expect(source).toContain("AI提升效率");
-    expect(source).toContain("AI video generation");
-    expect(source).toContain("AI voice generation");
-    expect(source).toContain("AI agents");
-    expect(source).toContain("AI video/image processing");
-    expect(source).toContain("AI productivity");
+    expect(source).not.toContain("softwareSearchHref");
+    expect(source).toContain("softwareNavCategories.map");
+    expect(source).toContain("buildSoftwareCategoryHref");
+    expect(categorySource).toContain("视频生成");
+    expect(categorySource).toContain("语音生成");
+    expect(categorySource).toContain("智能体");
+    expect(categorySource).toContain("视频/图片处理");
+    expect(categorySource).toContain("提升效率");
+    expect(categorySource).toContain("Video generation");
+    expect(categorySource).toContain("Voice generation");
+    expect(categorySource).toContain("Agents");
+    expect(categorySource).toContain("Video/image processing");
+    expect(categorySource).toContain("Productivity");
+    expect(categorySource).toContain("/software?categoryName=");
+    expect(source).not.toContain("AI video generation");
+    expect(source).not.toContain("AI voice generation");
+    expect(source).not.toContain("AI agents");
+    expect(source).not.toContain("AI video/image processing");
+    expect(source).not.toContain("AI productivity");
+  });
+
+  it("keeps account service dropdown focused on upgrade and account ordering", () => {
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+
+    expect(source).toContain("升级订阅");
+    expect(source).toContain("账号订购");
+    expect(source).toContain("Upgrade subscription");
+    expect(source).toContain("Account order");
+    expect(source).not.toContain("价格与购买说明");
+    expect(source).not.toContain("Review payment, delivery, and refund rules");
+  });
+
+  it("resolves software categoryName query values to category ids", () => {
+    const pageSource = readFileSync(
+      new URL("../app/software/page-shell.tsx", import.meta.url),
+      "utf8",
+    );
+    const categorySource = readFileSync(
+      new URL("../lib/software-category-navigation.ts", import.meta.url),
+      "utf8",
+    );
+
+    expect(pageSource).toContain("categoryName");
+    expect(pageSource).toContain("resolveSoftwareCategoryIdByName");
+    expect(pageSource).toContain("resolvedCategoryId");
+    expect(categorySource).toContain("resolveSoftwareCategoryIdByName");
+    expect(categorySource).toContain("resolveLocalizedToolCategoryName");
   });
 
   it("uses a signed header snapshot plus shared client state so header auth does not cold-start as logged-out on every navigation", () => {
-    const source = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
-    const accountControlsSource = readFileSync(new URL("../components/header-account-controls.tsx", import.meta.url), "utf8");
-    const sessionSource = readFileSync(new URL("../components/header-session.ts", import.meta.url), "utf8");
-    const sessionGateSource = readFileSync(new URL("../components/header-session-gate.tsx", import.meta.url), "utf8");
-    const adminNavSource = readFileSync(new URL("../components/header-admin-nav-link.tsx", import.meta.url), "utf8");
-    const authSource = readFileSync(new URL("../lib/auth.ts", import.meta.url), "utf8");
-    const cookieSource = readFileSync(new URL("../lib/header-user-cookie.ts", import.meta.url), "utf8");
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const accountControlsSource = readFileSync(
+      new URL("../components/header-account-controls.tsx", import.meta.url),
+      "utf8",
+    );
+    const sessionSource = readFileSync(
+      new URL("../components/header-session.ts", import.meta.url),
+      "utf8",
+    );
+    const sessionGateSource = readFileSync(
+      new URL("../components/header-session-gate.tsx", import.meta.url),
+      "utf8",
+    );
+    const adminNavSource = readFileSync(
+      new URL("../components/header-admin-nav-link.tsx", import.meta.url),
+      "utf8",
+    );
+    const authSource = readFileSync(
+      new URL("../lib/auth.ts", import.meta.url),
+      "utf8",
+    );
+    const cookieSource = readFileSync(
+      new URL("../lib/header-user-cookie.ts", import.meta.url),
+      "utf8",
+    );
 
     expect(source).toContain("HeaderSessionGate");
     expect(source).toContain("HeaderAdminNavLink");
@@ -69,15 +144,24 @@ describe("site header navigation", () => {
     expect(authSource).toContain("getHeaderUserSnapshot");
     expect(authSource).toContain("signHeaderUserCookieValue");
     expect(authSource).toContain("httpOnly: true");
-    expect(cookieSource).toContain('export const headerUserCookieName = "enhe_header_user"');
+    expect(cookieSource).toContain(
+      'export const headerUserCookieName = "enhe_header_user"',
+    );
   });
 
   it("keeps the desktop header nav on the same center axis as the homepage hero and widens nav spacing by ten percent", () => {
-    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+    const css = readFileSync(
+      new URL("../app/globals.css", import.meta.url),
+      "utf8",
+    ).replace(/\r\n/g, "\n");
 
-    expect(css).toContain("grid-template-columns: minmax(14rem, 1fr) auto minmax(14rem, 1fr);");
+    expect(css).toContain(
+      "grid-template-columns: minmax(14rem, 1fr) auto minmax(14rem, 1fr);",
+    );
     expect(css).toContain(".site-primary-nav {\n  grid-column: 2;");
     expect(css).toContain("gap: clamp(0.385rem, 1.32vw, 0.825rem);");
-    expect(css).toContain(".home-hero-centered {\n  display: flex;\n  width: min(100%, 1222px);\n  max-width: 1222px;\n  margin: 0 auto;");
+    expect(css).toContain(
+      ".home-hero-centered {\n  display: flex;\n  width: min(100%, 1222px);\n  max-width: 1222px;\n  margin: 0 auto;",
+    );
   });
 });
