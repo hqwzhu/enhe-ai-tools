@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import { aiNewsTopics, getAiNewsTopicPath } from "@/lib/ai-news-topics";
+import { aiTopicClusters, getAiTopicPath } from "@/lib/ai-topic-clusters";
 import { prisma } from "@/lib/db";
 import {
   buildCanonicalToolPath,
@@ -34,6 +35,8 @@ const staticRoutes = [
   "/en/about",
   "/build-your-own-x",
   "/en/build-your-own-x",
+  "/ai-topics",
+  "/en/ai-topics",
   "/software",
   "/en/software",
   "/account-services",
@@ -124,6 +127,8 @@ const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
   "/en/about": new Date("2026-06-25T00:00:00.000Z"),
   "/build-your-own-x": new Date("2026-06-28T00:00:00.000Z"),
   "/en/build-your-own-x": new Date("2026-06-28T00:00:00.000Z"),
+  "/ai-topics": new Date("2026-06-28T00:00:00.000Z"),
+  "/en/ai-topics": new Date("2026-06-28T00:00:00.000Z"),
   "/software": new Date("2026-06-17T00:00:00.000Z"),
   "/en/software": new Date("2026-06-17T00:00:00.000Z"),
   "/account-services": new Date("2026-06-17T00:00:00.000Z"),
@@ -257,6 +262,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           },
           changeFrequency: "weekly" as const,
           priority: isKnownAiNewsTopicPath(stripLocalePrefix(path)) ? 0.74 : 0.7,
+        };
+      }),
+    ),
+    ...aiTopicClusters.flatMap((topic) =>
+      (["zh", "en"] as const).map((locale) => {
+        const path = getAiTopicPath(topic.slug, locale);
+        return {
+          url: absoluteSitemapUrl(path),
+          lastModified: new Date(topic.updatedAt),
+          alternates: {
+            languages: buildAvailableLanguageAlternates(
+              `/ai-topics/${topic.slug}`,
+              ["zh", "en"],
+            ),
+          },
+          changeFrequency: "weekly" as const,
+          priority: 0.73,
         };
       }),
     ),

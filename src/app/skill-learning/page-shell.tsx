@@ -281,6 +281,10 @@ function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
       label: { zh: "了解 AI 账号服务", en: "Review account service guidance" },
       href: buildLocalePath("/account-services", forceLocale),
     },
+    {
+      label: { zh: "AI 技能学习路线", en: "AI skill learning path" },
+      href: buildLocalePath("/ai-topics/ai-skill-learning-path", forceLocale),
+    },
   ];
 
   return (

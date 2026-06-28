@@ -225,6 +225,13 @@ function AccountServicesGeoBlock({ forceLocale }: { forceLocale: Locale }) {
       label: { zh: "阅读 AI 前沿资讯", en: "Read AI news" },
       href: buildLocalePath("/ai-news", forceLocale),
     },
+    {
+      label: { zh: "账号服务合规指南", en: "Account compliance guide" },
+      href: buildLocalePath(
+        "/ai-topics/ai-account-service-compliance",
+        forceLocale,
+      ),
+    },
   ];
 
   return (

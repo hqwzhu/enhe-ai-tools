@@ -374,6 +374,17 @@ function SoftwareGeoBlock({ forceLocale }: { forceLocale: Locale }) {
       label: { zh: "了解 AI 账号服务", en: "Review account services" },
       href: buildLocalePath("/account-services", forceLocale),
     },
+    {
+      label: { zh: "AI 内容创作工具路线", en: "AI content creation path" },
+      href: buildLocalePath(
+        "/ai-topics/ai-content-creation-tools",
+        forceLocale,
+      ),
+    },
+    {
+      label: { zh: "本地 AI 部署路线", en: "Local AI deployment path" },
+      href: buildLocalePath("/ai-topics/local-ai-deployment", forceLocale),
+    },
   ];
 
   return (

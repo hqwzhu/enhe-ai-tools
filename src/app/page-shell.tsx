@@ -250,6 +250,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
 
               <div className="home-hero-path-strip" aria-label={forceLocale === "en" ? "ENHE AI section guide" : "ENHE AI 栏目导航"}>
                 {[
+                  { label: forceLocale === "en" ? "AI topic paths" : "AI 主题路径", note: forceLocale === "en" ? "Choose by goal" : "按目标选择", href: "/ai-topics" },
                   { label: t.home.aiNewsButton, note: forceLocale === "en" ? "Read the signal" : "先看趋势", href: "/ai-news" },
                   { label: t.home.softwareButton, note: forceLocale === "en" ? "Choose tools" : "再选工具", href: "/software" },
                   { label: t.home.skillLearningButton, note: forceLocale === "en" ? "Learn workflows" : "学习方法", href: "/skill-learning" },

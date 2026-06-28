@@ -51,4 +51,46 @@ describe("seo phase two source contracts", () => {
     expect(actions).toContain('redirect(`${buildLocalePath("/user", locale)}?password=${encodeURIComponent("当前密码不正确")}`);');
     expect(actions).not.toContain('redirect(`/user?password=${encodeURIComponent("当前密码不正确")}`);');
   });
+
+  it("keeps AI topic cluster routes static, localized, and schema-backed", () => {
+    const shell = read("src/app/ai-topics/page-shell.tsx");
+    const zhHub = read("src/app/(zh-public)/ai-topics/page.tsx");
+    const zhDetail = read("src/app/(zh-public)/ai-topics/[slug]/page.tsx");
+    const enHub = read("src/app/en/ai-topics/page.tsx");
+    const enDetail = read("src/app/en/ai-topics/[slug]/page.tsx");
+
+    expect(shell).toContain("generateAiTopicsHubMetadata");
+    expect(shell).toContain("generateAiTopicDetailMetadata");
+    expect(shell).toContain("generateAiTopicStaticParams");
+    expect(shell).toContain("buildAiTopicCollectionSchema");
+    expect(shell).toContain("buildFaqSchema");
+    expect(shell).toContain("notFound()");
+    expect(zhHub).toContain('forceLocale="zh"');
+    expect(zhDetail).toContain('forceLocale: "zh"');
+    expect(enHub).toContain('forceLocale="en"');
+    expect(enDetail).toContain('forceLocale: "en"');
+  });
+
+  it("keeps AI topic cluster sitemap, locale switching, and internal links discoverable", () => {
+    const sitemap = read("src/app/sitemap.ts");
+    const seo = read("src/lib/seo.ts");
+    const home = read("src/app/page-shell.tsx");
+    const software = read("src/app/software/page-shell.tsx");
+    const skillLearning = read("src/app/skill-learning/page-shell.tsx");
+    const accountServices = read("src/app/account-services/page-shell.tsx");
+
+    expect(sitemap).toContain("aiTopicClusters");
+    expect(sitemap).toContain('"/ai-topics"');
+    expect(sitemap).toContain('"/en/ai-topics"');
+    expect(sitemap).toContain("getAiTopicPath");
+    expect(seo).toContain("/^\\/ai-topics$/");
+    expect(seo).toContain("/^\\/ai-topics\\/.+$/");
+    expect(home).toContain('"/ai-topics"');
+    expect(software).toContain('"/ai-topics/ai-content-creation-tools"');
+    expect(software).toContain('"/ai-topics/local-ai-deployment"');
+    expect(skillLearning).toContain('"/ai-topics/ai-skill-learning-path"');
+    expect(accountServices).toContain(
+      '"/ai-topics/ai-account-service-compliance"',
+    );
+  });
 });
