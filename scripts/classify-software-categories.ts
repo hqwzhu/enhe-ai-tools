@@ -32,7 +32,34 @@ const categories = [
 
 type CategoryName = (typeof categories)[number]["name"];
 
-const rules: Array<{ category: CategoryName; patterns: RegExp[] }> = [
+const primaryRules: Array<{ category: CategoryName; patterns: RegExp[] }> = [
+  {
+    category: "智能体",
+    patterns: [/lumios|智能体|agent|mcp|操作系统|操作伴侣|工作台/i],
+  },
+  {
+    category: "视频/图片处理",
+    patterns: [
+      /faceswap|face\s*swap|换脸|人像合成|截图|图片处理|图像处理|照片|抠图|去水印|修复|增强|放大|retouch|restore|upscale|enhance/i,
+    ],
+  },
+  {
+    category: "视频生成",
+    patterns: [
+      /video\s*studio|视频生成|文生视频|图生视频|短视频|生成视频|视频创作|video\s*generation|generate\s*video|text\s*to\s*video|image\s*to\s*video|runway|kling|sora/i,
+    ],
+  },
+  {
+    category: "语音生成",
+    patterns: [/语音生成|配音|旁白|音频|voice|audio|speech|tts|narration/i],
+  },
+  {
+    category: "提升效率",
+    patterns: [/二维码|效率|办公|写作|文档|资料|研究|搜索|总结|翻译|代码|productivity|office|writing|document|research|coding/i],
+  },
+];
+
+const fallbackRules: Array<{ category: CategoryName; patterns: RegExp[] }> = [
   {
     category: "语音生成",
     patterns: [
@@ -72,18 +99,24 @@ function resolveCategoryName(tool: {
   shortDescription: string;
   content: string;
 }): CategoryName {
-  const haystack = [
+  const primaryHaystack = [
     tool.name,
     tool.englishName,
     tool.slug,
     tool.shortDescription,
-    tool.content,
   ]
     .filter(Boolean)
     .join(" ");
+  const fallbackHaystack = [primaryHaystack, tool.content].join(" ");
 
-  for (const rule of rules) {
-    if (rule.patterns.some((pattern) => pattern.test(haystack))) {
+  for (const rule of primaryRules) {
+    if (rule.patterns.some((pattern) => pattern.test(primaryHaystack))) {
+      return rule.category;
+    }
+  }
+
+  for (const rule of fallbackRules) {
+    if (rule.patterns.some((pattern) => pattern.test(fallbackHaystack))) {
       return rule.category;
     }
   }
