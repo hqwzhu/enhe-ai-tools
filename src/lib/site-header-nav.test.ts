@@ -98,6 +98,8 @@ describe("site header navigation", () => {
 
     expect(source).not.toContain("<details key={item.href} className=\"site-nav-dropdown\">");
     expect(source).toContain('<div key={item.href} className="site-nav-dropdown">');
+    expect(css).toContain(".site-nav-dropdown::after {");
+    expect(css).toContain("height: 12px;");
     expect(css).toContain(".site-nav-dropdown:hover .site-nav-dropdown-panel,");
     expect(css).toContain(".site-nav-dropdown:focus-within .site-nav-dropdown-panel");
     expect(css).not.toContain(".site-nav-dropdown[open] .site-nav-dropdown-panel");
