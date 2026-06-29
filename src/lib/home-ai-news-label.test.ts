@@ -18,7 +18,8 @@ describe("home AI news label contracts", () => {
     expect(page).toContain('href={buildLocalePath(item.href, forceLocale)}');
     expect(page).toContain('className="home-support-link"');
     expect(page).toContain('href={buildLocalePath("/software", forceLocale)}');
-    expect(page).toContain('href={buildLocalePath("/pricing", forceLocale)}');
+    expect(page).toContain('href={buildLocalePath("/ai-news", forceLocale)}');
+    expect(page).toContain('forceLocale === "en" ? "View news" : "查看资讯"');
     expect(page).not.toContain("HomeGooeyNav");
   });
 });

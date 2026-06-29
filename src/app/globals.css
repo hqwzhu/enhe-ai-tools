@@ -1426,14 +1426,6 @@ select option:disabled {
   text-align: center;
 }
 
-.home-hero-brand {
-  margin: 0 0 1.05rem;
-  color: var(--marketing-accent);
-  font-size: 0.88rem;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-}
-
 .home-hero-eyebrow {
   --home-hero-eyebrow-filter: blur(18px) saturate(150%);
 

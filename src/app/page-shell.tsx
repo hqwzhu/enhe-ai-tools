@@ -215,7 +215,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
             <div className="home-hero-centered">
-              <p className="home-hero-brand">ENHE AI</p>
               <h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>
               <p className="home-hero-positioning">{heroIntro}</p>
 
@@ -223,8 +222,8 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                 <ButtonLink href={buildLocalePath("/software", forceLocale)} variant="primary" className="home-hero-cta home-hero-cta-primary">
                   {forceLocale === "en" ? "Browse products" : "浏览产品"}
                 </ButtonLink>
-                <ButtonLink href={buildLocalePath("/pricing", forceLocale)} variant="ghost" className="home-hero-cta home-hero-cta-accent">
-                  {forceLocale === "en" ? "View pricing" : "查看价格"}
+                <ButtonLink href={buildLocalePath("/ai-news", forceLocale)} variant="ghost" className="home-hero-cta home-hero-cta-accent">
+                  {forceLocale === "en" ? "View news" : "查看资讯"}
                 </ButtonLink>
               </div>
             </div>

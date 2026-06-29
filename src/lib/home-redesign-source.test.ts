@@ -35,7 +35,8 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('className="home-hero-cta home-hero-cta-primary"');
     expect(page).toContain('className="home-hero-cta home-hero-cta-accent"');
     expect(page).toContain('href={buildLocalePath("/software", forceLocale)}');
-    expect(page).toContain('href={buildLocalePath("/pricing", forceLocale)}');
+    expect(page).toContain('href={buildLocalePath("/ai-news", forceLocale)}');
+    expect(page).toContain('forceLocale === "en" ? "View news" : "查看资讯"');
     expect(page).toContain("const homeProductPaths = {");
     expect(page).toContain("const homeSupportLinks = {");
     expect(page).not.toContain("const creatorOutcomeCards = {");
@@ -89,7 +90,6 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-page-shell");
     expect(css).toContain(".home-hero-stage");
     expect(css).toContain(".home-hero-centered");
-    expect(css).toContain(".home-hero-brand");
     expect(css).toContain(".home-hero-title-simple");
     expect(css).not.toContain(".home-hero-metrics");
     expect(css).toContain(".home-featured-shell");
@@ -117,10 +117,10 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain('import { ScrollVelocity } from "@/components/scroll-velocity";');
     expect(page).not.toContain("const heroVelocityTexts =");
     expect(page).not.toContain("texts={heroVelocityTexts}");
-    expect(page).toContain('<p className="home-hero-brand">ENHE AI</p>');
+    expect(page).not.toContain('<p className="home-hero-brand">ENHE AI</p>');
     expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
     expect(page).toContain("<p className=\"home-hero-positioning\">{heroIntro}</p>");
-    expect(css).toContain(".home-hero-brand");
+    expect(css).not.toContain(".home-hero-brand");
     expect(css).toContain(".home-hero-title-simple");
     expect(css).toContain("font-size: clamp(2.7rem, 7.4vw, 6.1rem)");
   });
