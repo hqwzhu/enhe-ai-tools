@@ -142,7 +142,7 @@ export async function AiNewsPageShell({
       <Container className="py-14">
         <StructuredData data={[breadcrumbSchema, collectionSchema]} />
         <section className="glass relative overflow-hidden rounded-[2rem] p-7 md:p-10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(240,90,53,0.22),transparent_30%),radial-gradient(circle_at_82%_20%,rgba(122,167,255,0.16),transparent_32%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(65,197,219,0.22),transparent_30%),radial-gradient(circle_at_82%_20%,rgba(122,167,255,0.16),transparent_32%)]" />
           <div className="relative max-w-4xl">
             <p className="text-sm font-bold tracking-[0.08em] text-[var(--marketing-accent)]">
               ENHE AI INSIGHTS
@@ -445,7 +445,7 @@ function NewsCard({
               unoptimized
             />
           ) : (
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(240,90,53,0.24),transparent_34%),radial-gradient(circle_at_80%_70%,rgba(122,167,255,0.18),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(65,197,219,0.24),transparent_34%),radial-gradient(circle_at_80%_70%,rgba(122,167,255,0.18),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
           )}
         </div>
         <div className="p-5">

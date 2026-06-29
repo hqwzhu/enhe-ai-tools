@@ -5,8 +5,8 @@ describe("global night glass UI source contract", () => {
   it("shares the approved ENHE night glass tokens and utility surfaces", () => {
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
-    expect(css).toContain("--marketing-bg: #22242a");
-    expect(css).toContain("--marketing-accent: #f05a35");
+    expect(css).toContain("--marketing-bg: #101821");
+    expect(css).toContain("--marketing-accent: #41c5db");
     expect(css).toContain("--font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain("--font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain(".surface-panel");
@@ -21,6 +21,7 @@ describe("global night glass UI source contract", () => {
     expect(css).toContain(".status-danger");
     expect(css).toContain("backdrop-filter: blur(28px) saturate(160%)");
     expect(css).toContain("-webkit-backdrop-filter: blur(28px) saturate(160%)");
+    expect(css).toContain("filter: brightness(0) invert(1)");
   });
 
   it("updates shared public components away from the old cyan primary language", () => {

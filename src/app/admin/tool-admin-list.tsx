@@ -68,7 +68,7 @@ const statusTextEn: Record<string, string> = {
 
 const statusClass: Record<string, string> = {
   draft: "border-white/15 bg-white/8 text-[#8B95A7]",
-  published: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]",
+  published: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#d8f8ff]",
   offline: "border-amber-300/30 bg-amber-300/10 text-amber-100"
 };
 
@@ -172,7 +172,7 @@ export function ToolAdminList({
             {isSkillLearning ? copy.courseListIntro : isAccountService ? copy.serviceListIntro : copy.listIntro}
           </p>
         </div>
-        <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ff6844]">
+        <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#56bfd0]">
           {isSkillLearning ? copy.newCourse : isAccountService ? copy.newService : copy.newTool}
         </Link>
       </div>
@@ -246,7 +246,7 @@ export function ToolAdminList({
                       {coverImage ? (
                         <Image src={coverImage} alt={tool.name} fill className="object-cover" sizes="96px" unoptimized />
                       ) : (
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_30%,rgba(240,90,53,0.22),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.12),transparent)]" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_30%,rgba(65,197,219,0.22),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.12),transparent)]" />
                       )}
                     </div>
                     <div>
@@ -275,7 +275,7 @@ export function ToolAdminList({
                         {publishIssues.length > 3 ? <Badge className="border-white/15 bg-white/8 text-[#8B95A7]">+{publishIssues.length - 3}</Badge> : null}
                       </>
                     ) : (
-                      <Badge className="border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]">{copy.publishable}</Badge>
+                      <Badge className="border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#d8f8ff]">{copy.publishable}</Badge>
                     )}
                   </div>
                   <div className="text-right">
@@ -542,7 +542,7 @@ export function ToolEditor({
                 <p className="mt-2 text-sm leading-6 text-[#8B95A7]">{copy.courseContentSectionIntro}</p>
                 {tool?.id ? (
                   <div className="mt-4 flex flex-wrap gap-3">
-                    <a href={`/admin/tutorials?toolId=${tool.id}`} className="inline-block rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ff6844]">{copy.manageTutorials}</a>
+                    <a href={`/admin/tutorials?toolId=${tool.id}`} className="inline-block rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#56bfd0]">{copy.manageTutorials}</a>
                     <a href={`/admin/faqs?toolId=${tool.id}`} className="inline-block rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-[#E8EEF8] transition hover:border-[var(--marketing-accent)]/50 hover:text-[var(--marketing-accent)]">{copy.manageFaq}</a>
                   </div>
                 ) : (

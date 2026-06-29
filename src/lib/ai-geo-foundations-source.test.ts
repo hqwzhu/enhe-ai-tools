@@ -191,8 +191,9 @@ describe("AI GEO foundations", () => {
     expect(pageShell).toContain("const heroTitle =");
     expect(pageShell).toContain("const heroIntro =");
     expect(pageShell).toContain('forceLocale === "en"');
-    expect(pageShell).toContain("AI 工具、账号服务与课程，一站式选择");
-    expect(pageShell).toContain("AI tools, account services, and courses in one place");
+    expect(pageShell).toContain("ENHE AI");
+    expect(pageShell).toContain("探索 AI 智能体、AI 工具与AI 技能，让 AI 成为你的效率伙伴，重塑你的未来。");
+    expect(pageShell).toContain("Explore AI agents, AI tools, and AI skills. Make AI your productivity partner and reshape your future.");
     expect(dictionaries).toContain('titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来"');
     expect(dictionaries).toContain('titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future"');
   });

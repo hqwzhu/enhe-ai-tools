@@ -463,7 +463,7 @@ export async function ToolDetailPageShell({
                     unoptimized
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(240,90,53,0.2),transparent_32%),radial-gradient(circle_at_72%_70%,rgba(255,184,107,0.16),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(65,197,219,0.2),transparent_32%),radial-gradient(circle_at_72%_70%,rgba(255,184,107,0.16),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
                 )}
               </div>
             </div>
@@ -815,7 +815,7 @@ export async function ToolDetailPageShell({
                         href={tutorial.videoUrl ?? "#"}
                         target="_blank"
                         rel="nofollow noopener noreferrer"
-                        className="tool-detail-touch-link break-all text-sm leading-6 text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                        className="tool-detail-touch-link break-all text-sm leading-6 text-[var(--marketing-accent)] hover:text-[#8feaff]"
                       >
                         {tutorial.title}
                       </a>
@@ -854,7 +854,7 @@ export async function ToolDetailPageShell({
                 </p>
                 <Link
                   href="#tool-changelog"
-                  className="tool-detail-touch-link mt-2 text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                  className="tool-detail-touch-link mt-2 text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#8feaff]"
                 >
                   {td.changelogTitle}
                 </Link>
@@ -862,7 +862,7 @@ export async function ToolDetailPageShell({
               <TrustItem label={td.supportEmail}>
                 <a
                   href={`mailto:${supportEmail}`}
-                  className="tool-detail-touch-link break-all text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                  className="tool-detail-touch-link break-all text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#8feaff]"
                 >
                   {supportEmail}
                 </a>
@@ -1207,7 +1207,7 @@ function LinkedDownloadLinkContent({ content }: { content: string }) {
             href={segment.href}
             target="_blank"
             rel="nofollow noopener noreferrer"
-            className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(240,90,53,0.5)] underline-offset-4 transition hover:text-[#ffb09b]"
+            className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(65,197,219,0.5)] underline-offset-4 transition hover:text-[#8feaff]"
           >
             {segment.text}
           </a>

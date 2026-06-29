@@ -21,8 +21,9 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('id="updates" className="home-featured-shell"');
     expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-outcome-shell"));
     expect(page).toContain("const heroTitle =");
-    expect(page).toContain("AI 工具、账号服务与课程，一站式选择");
-    expect(page).toContain("AI tools, account services, and courses in one place");
+    expect(page).toContain("ENHE AI");
+    expect(page).toContain("探索 AI 智能体、AI 工具与AI 技能，让 AI 成为你的效率伙伴，重塑你的未来。");
+    expect(page).toContain("Explore AI agents, AI tools, and AI skills. Make AI your productivity partner and reshape your future.");
     expect(page).toContain("const heroIntro =");
     expect(page).not.toContain("home-hero-metrics");
     expect(page).not.toContain("t.home.metricsExploreTitle");
@@ -83,11 +84,11 @@ describe("homepage SaaS redesign source", () => {
     expect(dictionaries).toContain('featuredContentTitle: "Featured Content"');
 
     expect(css).toContain("color-scheme: dark");
-    expect(css).toContain("--marketing-bg: #22242a");
+    expect(css).toContain("--marketing-bg: #101821");
     expect(css).not.toContain("color-scheme: light");
     expect(css).not.toContain("--marketing-bg: #ffffff");
     expect(css).not.toContain(".site-brand-logo-light");
-    expect(css).toContain("--marketing-accent: #f05a35");
+    expect(css).toContain("--marketing-accent: #41c5db");
     expect(css).toContain("--font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain("--font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain(".home-page-shell");
@@ -111,7 +112,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-hero-cta {\n    flex: 1 1 calc(50% - 10px);");
     expect(css).not.toContain(".home-gooey-nav-list");
     expect(css).toContain("white-space: pre-line");
-    expect(css).toContain(".home-product-preview {\n  width: min(100%, 1040px);\n  margin: 0 auto;");
+    expect(css).toContain(".home-product-preview {\n  width: min(100%, 1280px);\n  margin: 0 auto;");
     expect(css).not.toContain(".enhe-orbital-system");
     expect(css).not.toContain(".home-hero-scroll-cue");
   });
@@ -130,6 +131,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-hero-brand");
     expect(css).toContain(".home-hero-title-simple");
     expect(css).toContain("font-size: clamp(2.7rem, 7.4vw, 6.1rem)");
+    expect(css).toContain(".site-brand-logo-dark {\n  opacity: 1;\n  filter: brightness(0) invert(1)");
   });
 
   it("uses simplified product cards in the homepage featured preview without changing the full card contract", () => {
@@ -205,6 +207,10 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("background-image: none !important");
     expect(css).toContain(".home-hero-cta-primary,\n.home-hero-cta-accent {\n  background: transparent");
     expect(css).toContain("color: #ffffff");
+    expect(css).toContain(".home-outcome-shell {\n  margin-top: clamp(-7rem, -9vw, -4.5rem);");
+    expect(css).toContain("linear-gradient(180deg, rgba(16, 24, 33, 0) 0%, rgba(16, 24, 33, 0.34) 28%, rgba(16, 24, 33, 0.9) 54%, #111a24 100%)");
+    expect(css).toContain(".home-recommended-tool-grid .surface-panel");
+    expect(css).toContain(".site-footer-logo {\n  width: 48px;\n  height: 32px;\n  object-fit: contain;\n  filter: brightness(0) invert(1)");
     expect(css).not.toContain(".home-gooey-effect.filter");
     expect(css).not.toContain(".home-gooey-particle");
     expect(css).not.toContain("@keyframes home-gooey-particle");

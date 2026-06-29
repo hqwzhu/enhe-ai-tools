@@ -184,12 +184,12 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const t = getDictionary(forceLocale);
   const heroTitle =
     forceLocale === "en"
-      ? "AI tools, account services, and courses in one place"
-      : "AI 工具、账号服务与课程，一站式选择";
+      ? "ENHE AI"
+      : "ENHE AI";
   const heroIntro =
     forceLocale === "en"
-      ? "Pick the right product faster, then learn the workflow that turns it into output."
-      : "更快找到适合你的 AI 产品，再用教程和课程把它变成实际产出。";
+      ? "Explore AI agents, AI tools, and AI skills. Make AI your productivity partner and reshape your future."
+      : "探索 AI 智能体、AI 工具与AI 技能，让 AI 成为你的效率伙伴，重塑你的未来。";
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
   });

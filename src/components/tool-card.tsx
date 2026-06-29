@@ -74,7 +74,7 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
 
   return (
     <PrefetchLink href={buildCanonicalToolPath(tool, locale)} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
-      <div className="relative aspect-[16/9] overflow-hidden border-b border-white/14 bg-[#202229]">
+      <div className="relative aspect-[16/9] overflow-hidden border-b border-white/14 bg-[#101821]">
         {coverImage ? (
           <Image
             src={coverImage}
@@ -85,9 +85,9 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
             unoptimized
           />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(240,90,53,0.16),transparent_34%),radial-gradient(circle_at_72%_72%,rgba(255,255,255,0.1),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(65,197,219,0.16),transparent_34%),radial-gradient(circle_at_72%_72%,rgba(255,255,255,0.1),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#202229]/90 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#101821]/90 via-transparent to-transparent" />
       </div>
 
       <div className="p-5">

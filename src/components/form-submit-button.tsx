@@ -17,7 +17,7 @@ const variantClass = {
   primary:
     "bg-[#050505] px-5 py-3 text-sm text-white shadow-[0_14px_34px_rgba(0,0,0,0.22)] hover:bg-[#161616]",
   success:
-    "bg-[var(--marketing-accent)] px-5 py-3 text-sm text-white hover:bg-[#ff6844]",
+    "bg-[var(--marketing-accent)] px-5 py-3 text-sm text-white hover:bg-[#56bfd0]",
   secondary:
     "border border-white/14 bg-white/7 px-5 py-3 text-sm text-[var(--marketing-text)] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]",
   danger:
@@ -89,7 +89,7 @@ export function FormSubmitButton({
         <span
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-full border border-[var(--marketing-accent)]/35 bg-[#202229]/95 px-4 py-2 text-sm font-semibold text-[var(--marketing-text)] shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
+          className="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-full border border-[var(--marketing-accent)]/35 bg-[#101821]/95 px-4 py-2 text-sm font-semibold text-[var(--marketing-text)] shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
         >
           {duplicateSubmitLabel}
         </span>

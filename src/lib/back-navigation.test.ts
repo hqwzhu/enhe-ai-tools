@@ -46,7 +46,7 @@ describe("back navigation", () => {
 
     expect(backNav).toContain("max-width: 1280px");
     expect(backNav).toContain("margin: 0 auto");
-    expect(backNav).toContain("padding: 8px 1rem 0");
+    expect(backNav).toContain("padding: 80px 1rem 0");
     expect(backButton).toContain("display: inline-flex");
     expect(backButton).toContain("background: transparent");
   });

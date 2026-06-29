@@ -115,7 +115,7 @@ export async function AiNewsTopicPageShell({
         <StructuredData data={[breadcrumbSchema, topicSchema, faqSchema]} />
 
         <section className="glass relative overflow-hidden rounded-[2rem] p-7 md:p-10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(240,90,53,0.18),transparent_30%),radial-gradient(circle_at_80%_18%,rgba(122,167,255,0.14),transparent_34%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(65,197,219,0.18),transparent_30%),radial-gradient(circle_at_80%_18%,rgba(122,167,255,0.14),transparent_34%)]" />
           <div className="relative max-w-4xl">
             <Badge className="text-[var(--marketing-accent)]">
               AI News Topic
