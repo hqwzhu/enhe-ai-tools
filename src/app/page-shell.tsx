@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
+import { HomeLiquidEtherBackground } from "@/components/home/home-liquid-ether-background";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
@@ -212,6 +213,11 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
     <main className="home-page-shell">
       <StructuredData data={[breadcrumbSchema, webPageSchema, faqSchema]} />
       <section className="home-hero-shell">
+        <div className="home-hero-liquid-layer" aria-hidden="true">
+          <HomeLiquidEtherBackground />
+        </div>
+        <div className="home-hero-liquid-overlay" aria-hidden="true" />
+        <div className="home-hero-liquid-vignette" aria-hidden="true" />
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
             <div className="home-hero-centered">

@@ -10,6 +10,9 @@ describe("homepage SaaS redesign source", () => {
 
     expect(page).toContain('className="home-page-shell"');
     expect(page).toContain("home-hero-shell");
+    expect(page).toContain("HomeLiquidEtherBackground");
+    expect(page).toContain('className="home-hero-liquid-layer"');
+    expect(page).toContain('aria-hidden="true"');
     expect(page).toContain("home-hero-stage");
     expect(page).toContain("home-hero-centered");
     expect(page).not.toContain('className="home-hero-intro"');
@@ -88,6 +91,9 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("--font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain("--font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain(".home-page-shell");
+    expect(css).toContain(".home-hero-liquid-layer");
+    expect(css).toContain(".liquid-ether-container");
+    expect(css).toContain(".home-liquid-ether-fallback");
     expect(css).toContain(".home-hero-stage");
     expect(css).toContain(".home-hero-centered");
     expect(css).toContain(".home-hero-title-simple");
@@ -110,13 +116,14 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-hero-scroll-cue");
   });
 
-  it("uses a static sales hero instead of marquee-heavy bilingual motion", () => {
+  it("uses a product-first sales hero instead of marquee-heavy bilingual motion", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
     expect(page).not.toContain('import { ScrollVelocity } from "@/components/scroll-velocity";');
     expect(page).not.toContain("const heroVelocityTexts =");
     expect(page).not.toContain("texts={heroVelocityTexts}");
+    expect(page).toContain('import { HomeLiquidEtherBackground } from "@/components/home/home-liquid-ether-background";');
     expect(page).not.toContain('<p className="home-hero-brand">ENHE AI</p>');
     expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
     expect(page).toContain("<p className=\"home-hero-positioning\">{heroIntro}</p>");
