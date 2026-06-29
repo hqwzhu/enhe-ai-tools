@@ -20,7 +20,7 @@ describe("AI GEO foundations", () => {
     expect(exists("public/okf/enhe-ai-overview.md")).toBe(true);
 
     const llms = read("public/llms.txt");
-    expect(llms).toContain("# 恩禾ENHE AI");
+    expect(llms).toContain("# 恩禾 ENHE AI");
     expect(llms).toContain("https://www.enhe-tech.com.cn/ai-news");
     expect(llms).toContain("https://www.enhe-tech.com.cn/about");
     expect(llms).toContain("https://www.enhe-tech.com.cn/okf/index.md");
@@ -188,9 +188,11 @@ describe("AI GEO foundations", () => {
     expect(middleware).toContain('isChinesePublicPath ? "zh"');
     expect(middleware).toContain('"x-enhe-locale"');
     expect(middleware).toContain('"Vary", localeDetectionVaryHeader');
-    expect(pageShell).toContain("const heroVelocityTexts =");
+    expect(pageShell).toContain("const heroTitle =");
+    expect(pageShell).toContain("const heroIntro =");
     expect(pageShell).toContain('forceLocale === "en"');
-    expect(pageShell).toContain("[t.home.titleSecondLineEn]");
+    expect(pageShell).toContain("AI 工具、账号服务与课程，一站式选择");
+    expect(pageShell).toContain("AI tools, account services, and courses in one place");
     expect(dictionaries).toContain('titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来"');
     expect(dictionaries).toContain('titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future"');
   });

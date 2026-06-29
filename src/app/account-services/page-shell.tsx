@@ -192,10 +192,11 @@ export async function AccountServicesPageShell({
           title={t.listing.onlineTitle}
           intro={t.listing.onlineIntro}
         />
-        <AccountServicesGeoBlock forceLocale={forceLocale} />
+        <ListingDecisionStrip forceLocale={forceLocale} />
+        <ListingTrustNote forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (
               <ToolCard key={tool.id} tool={tool} locale={forceLocale} />
             ))}
@@ -203,8 +204,100 @@ export async function AccountServicesPageShell({
         ) : (
           <EmptyState title={t.listing.emptyTitle} text={t.listing.emptyText} />
         )}
+        <ProductSeoDisclosure
+          summary={
+            forceLocale === "en"
+              ? "Account service compliance guide and FAQ"
+              : "账号服务合规说明与常见问题"
+          }
+        >
+          <AccountServicesGeoBlock forceLocale={forceLocale} />
+        </ProductSeoDisclosure>
       </Container>
     </main>
+  );
+}
+
+function ListingDecisionStrip({ forceLocale }: { forceLocale: Locale }) {
+  const items =
+    forceLocale === "en"
+      ? [
+          {
+            label: "Rules first",
+            title: "Confirm platform policy",
+            body: "Treat official platform rules as the final source before requesting service guidance.",
+          },
+          {
+            label: "Delivery scope",
+            title: "Check the boundary",
+            body: "Review what is included, what is not, and how support is delivered.",
+          },
+          {
+            label: "Then consult",
+            title: "Ask with context",
+            body: "Send the tool, task, and access need so the response can be precise.",
+          },
+        ]
+      : [
+          {
+            label: "确认平台规则",
+            title: "官方规则优先",
+            body: "涉及第三方平台时，先以官方政策和使用边界为准。",
+          },
+          {
+            label: "看交付边界",
+            title: "明确服务范围",
+            body: "先确认包含内容、排除事项、交付方式和售后规则。",
+          },
+          {
+            label: "再咨询服务",
+            title: "带着任务沟通",
+            body: "说明工具、任务和访问需求，咨询效率会更高。",
+          },
+        ];
+
+  return (
+    <section
+      className="listing-decision-strip"
+      aria-label={
+        forceLocale === "en"
+          ? "Account service decision guide"
+          : "账号服务决策提示"
+      }
+    >
+      {items.map((item) => (
+        <div key={item.label}>
+          <span>{item.label}</span>
+          <strong>{item.title}</strong>
+          <p>{item.body}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function ListingTrustNote({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <p className="listing-trust-note">
+      {forceLocale === "en"
+        ? "Official platform rules remain the final source. Use service notes to confirm scope, delivery, and support boundaries."
+        : "第三方平台以官方规则为准；服务说明只用于确认范围、交付和售后边界。"}
+      <Link href={buildLocalePath("/ai-topics/ai-account-service-compliance", forceLocale)}>
+        {forceLocale === "en" ? "Read compliance guide" : "查看合规指南"}
+      </Link>
+    </p>
+  );
+}
+
+function ProductSeoDisclosure({
+  summary,
+  children,
+}: React.PropsWithChildren<{ summary: string }>) {
+  return (
+    <details className="product-seo-disclosure">
+      <summary>{summary}</summary>
+      <div className="product-seo-disclosure-body">{children}</div>
+    </details>
   );
 }
 
@@ -235,7 +328,7 @@ function AccountServicesGeoBlock({ forceLocale }: { forceLocale: Locale }) {
   ];
 
   return (
-    <section className="glass mt-8 rounded-2xl p-6">
+    <section className="glass rounded-2xl p-6">
       <div className="mb-5 rounded-2xl border border-[var(--marketing-accent)]/28 bg-[var(--marketing-accent)]/10 p-5">
         <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--marketing-accent)]">
           {decision.eyebrow}

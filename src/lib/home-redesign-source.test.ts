@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("homepage SaaS redesign source", () => {
-  it("uses localized homepage copy, keeps the hero isolated to the first viewport, and keeps all six recommended tools inside the featured content card", () => {
+  it("uses a simplified product-first homepage while keeping recommended tools and SEO support links", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
     const dictionaries = readFileSync(new URL("../lib/dictionaries.ts", import.meta.url), "utf8");
@@ -16,10 +16,11 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("home-hero-background");
     expect(page).not.toContain("home-hero-unicorn-remix");
     expect(page).toContain('id="updates" className="home-featured-shell"');
-    expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-byox-spotlight"));
-    expect(page).toContain("t.home.title");
-    expect(page).toContain("t.home.titleSecondLine");
-    expect(page).toContain("t.home.titleSecondLineEn");
+    expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-outcome-shell"));
+    expect(page).toContain("const heroTitle =");
+    expect(page).toContain("AI 工具、账号服务与课程，一站式选择");
+    expect(page).toContain("AI tools, account services, and courses in one place");
+    expect(page).toContain("const heroIntro =");
     expect(page).not.toContain("home-hero-metrics");
     expect(page).not.toContain("t.home.metricsExploreTitle");
     expect(page).not.toContain("t.home.metricsExplore");
@@ -34,14 +35,19 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('className="home-hero-cta home-hero-cta-primary"');
     expect(page).toContain('className="home-hero-cta home-hero-cta-accent"');
     expect(page).toContain('href={buildLocalePath("/software", forceLocale)}');
-    expect(page).toContain('href={buildLocalePath("/build-your-own-x", forceLocale)}');
-    expect(page).toContain("const creatorOutcomeCards = {");
-    expect(page).toContain("const creatorWorkflowSteps = {");
-    expect(page).toContain("const buildYourOwnXSpotlight = {");
+    expect(page).toContain('href={buildLocalePath("/pricing", forceLocale)}');
+    expect(page).toContain("const homeProductPaths = {");
+    expect(page).toContain("const homeSupportLinks = {");
+    expect(page).not.toContain("const creatorOutcomeCards = {");
+    expect(page).not.toContain("const creatorWorkflowSteps = {");
+    expect(page).not.toContain("const buildYourOwnXSpotlight = {");
     expect(page).toContain('href: "/build-your-own-x"');
     expect(page).toContain('className="home-outcome-shell"');
-    expect(page).toContain('className="home-workflow-shell"');
-    expect(page).toContain('className="home-byox-spotlight"');
+    expect(page).toContain('className="home-outcome-grid home-product-path-grid"');
+    expect(page).toContain('className="home-support-shell"');
+    expect(page).toContain('className="home-seo-disclosure"');
+    expect(page).not.toContain('className="home-workflow-shell"');
+    expect(page).not.toContain('className="home-byox-spotlight"');
     expect(page).toContain("t.home.featuredContentTitle");
     expect(page).toContain("t.home.featuredContentIntro");
     expect(page).not.toContain("take: 40");
@@ -52,6 +58,8 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('href: "/software"');
     expect(page).toContain('href: "/account-services"');
     expect(page).toContain('href: "/ai-news"');
+    expect(page).toContain('href: "/ai-trends"');
+    expect(page).toContain('href: "/ai-topics"');
     expect(page).toContain('href: "/skill-learning"');
     expect(page).toContain("home-product-preview backdrop-blur-xl backdrop-saturate-150");
     expect(page).not.toContain("HeroLogoMark");
@@ -81,15 +89,16 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-page-shell");
     expect(css).toContain(".home-hero-stage");
     expect(css).toContain(".home-hero-centered");
+    expect(css).toContain(".home-hero-brand");
+    expect(css).toContain(".home-hero-title-simple");
     expect(css).not.toContain(".home-hero-metrics");
     expect(css).toContain(".home-featured-shell");
     expect(css).toContain(".home-outcome-shell");
     expect(css).toContain(".home-outcome-grid");
-    expect(css).toContain(".home-workflow-shell");
-    expect(css).toContain(".home-workflow-grid");
-    expect(css).toContain(".home-byox-spotlight");
+    expect(css).toContain(".home-product-path-grid");
+    expect(css).toContain(".home-support-shell");
+    expect(css).toContain(".home-seo-disclosure");
     expect(css).toContain("overflow-x: clip");
-    expect(css).toContain(".home-hero-title-emphasis {\n  width: min(100%, 1404px);");
     expect(css).toContain("scroll-margin-top: 96px");
     expect(css).toContain(".home-hero-actions {\n  display: flex;");
     expect(css).toContain(".home-hero-actions {\n    width: 100%;\n    flex-wrap: wrap;");
@@ -101,38 +110,19 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-hero-scroll-cue");
   });
 
-  it("emphasizes the bilingual hero promise with React Bits ScrollVelocity while keeping SEO-readable text", () => {
+  it("uses a static sales hero instead of marquee-heavy bilingual motion", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
-    const scrollVelocity = readFileSync(new URL("../components/scroll-velocity.tsx", import.meta.url), "utf8");
 
-    expect(page).toContain('import { ScrollVelocity } from "@/components/scroll-velocity";');
-    expect(page).toContain("const heroVelocityTexts =");
-    expect(page).toContain(": [t.home.titleSecondLine, t.home.titleSecondLineEn];");
-    expect(page).toContain('<span className="sr-only"> {heroVelocityTexts.join(" ")}</span>');
-    expect(page).toContain('<div className="home-hero-title-emphasis" aria-hidden="true">');
-    expect(page).toContain('texts={heroVelocityTexts}');
-    expect(page).not.toContain('<span className="home-hero-title-emphasis" aria-hidden="true">');
-    expect(css).toContain(".home-hero-title-emphasis");
-    expect(css).toContain(".home-hero-velocity-parallax");
-    expect(css).toContain(".home-hero-velocity-scroller");
-    expect(css).toContain(".home-hero-velocity-copy");
-    expect(css).toContain("color: var(--marketing-accent)");
-    expect(css).toContain("animation: hero-title-breathe");
-    expect(css).toContain("@keyframes hero-title-breathe");
-    expect(css).toContain("text-shadow:");
-    expect(css).toContain(".home-hero-title-emphasis {\n    animation: none");
-    expect(scrollVelocity).toContain('velocity = 100');
-    expect(scrollVelocity).toContain('damping = 50');
-    expect(scrollVelocity).toContain('stiffness = 400');
-    expect(scrollVelocity).toContain('numCopies = 6');
-    expect(scrollVelocity).toContain('velocityMapping = { input: [0, 1000], output: [0, 5] }');
-    expect(scrollVelocity).toContain('parallaxClassName = "parallax"');
-    expect(scrollVelocity).toContain('scrollerClassName = "scroller"');
-    expect(scrollVelocity).toContain('from "motion/react"');
-    expect(scrollVelocity).toContain("useAnimationFrame");
-    expect(scrollVelocity).toContain("useVelocity(scrollY)");
-    expect(scrollVelocity).toContain("baseVelocity={index % 2 !== 0 ? -velocity : velocity}");
+    expect(page).not.toContain('import { ScrollVelocity } from "@/components/scroll-velocity";');
+    expect(page).not.toContain("const heroVelocityTexts =");
+    expect(page).not.toContain("texts={heroVelocityTexts}");
+    expect(page).toContain('<p className="home-hero-brand">ENHE AI</p>');
+    expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
+    expect(page).toContain("<p className=\"home-hero-positioning\">{heroIntro}</p>");
+    expect(css).toContain(".home-hero-brand");
+    expect(css).toContain(".home-hero-title-simple");
+    expect(css).toContain("font-size: clamp(2.7rem, 7.4vw, 6.1rem)");
   });
 
   it("uses simplified product cards in the homepage featured preview without changing the full card contract", () => {
@@ -179,11 +169,11 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".site-language-switcher a.is-active {\n  background: #050505;");
   });
 
-  it("adds more breathing room between the two hero title lines", () => {
+  it("keeps the simplified hero scale stable on desktop and mobile", () => {
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
-    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.8736em;");
-    expect(css).toContain("margin: clamp(0.715rem, 1.365vw, 1.235rem) auto 0");
+    expect(css).toContain(".home-hero-title-simple");
+    expect(css).toContain("font-size: clamp(2.7rem, 7.4vw, 6.1rem)");
     expect(css).toContain("gap: 0.58em;");
   });
 

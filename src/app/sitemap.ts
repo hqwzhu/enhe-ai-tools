@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import { aiNewsTopics, getAiNewsTopicPath } from "@/lib/ai-news-topics";
+import { getPublicAiNewsTopics } from "@/lib/ai-news-topic-config";
 import { aiTopicClusters, getAiTopicPath } from "@/lib/ai-topic-clusters";
 import { prisma } from "@/lib/db";
 import {
@@ -192,33 +193,36 @@ function isKnownAiNewsTopicPath(path: string) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const tools = await prisma.tool
-    .findMany({
-      where: { status: "published" },
-      select: {
-        slug: true,
-        name: true,
-        englishName: true,
-        shortDescription: true,
-        content: true,
-        updatedAt: true,
-        type: true,
-      },
-    })
-    .catch(() => []);
-  const newsArticles = await prisma.newsArticle
-    .findMany({
-      where: { status: "published" },
-      select: {
-        slug: true,
-        title: true,
-        englishTitle: true,
-        updatedAt: true,
-        englishSummary: true,
-        englishContent: true,
-      },
-    })
-    .catch(() => []);
+  const [tools, newsArticles, publicAiNewsTopics] = await Promise.all([
+    prisma.tool
+      .findMany({
+        where: { status: "published" },
+        select: {
+          slug: true,
+          name: true,
+          englishName: true,
+          shortDescription: true,
+          content: true,
+          updatedAt: true,
+          type: true,
+        },
+      })
+      .catch(() => []),
+    prisma.newsArticle
+      .findMany({
+        where: { status: "published" },
+        select: {
+          slug: true,
+          title: true,
+          englishTitle: true,
+          updatedAt: true,
+          englishSummary: true,
+          englishContent: true,
+        },
+      })
+      .catch(() => []),
+    getPublicAiNewsTopics().catch(() => aiNewsTopics),
+  ]);
 
   const entries = [
     ...staticRoutes.map((path) => ({
@@ -248,7 +252,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.76,
     })),
-    ...aiNewsTopics.flatMap((topic) =>
+    ...publicAiNewsTopics.flatMap((topic) =>
       (["zh", "en"] as const).map((locale) => {
         const path = getAiNewsTopicPath(topic.slug, locale);
         return {

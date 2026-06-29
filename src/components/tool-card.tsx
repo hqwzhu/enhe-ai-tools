@@ -57,7 +57,20 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
   const highlights = showMarketingMeta ? buildCardHighlights(tool, locale) : [];
   const audience = showMarketingMeta ? localizedCategory || t.toolCard.defaultAudience : "";
   const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], tool.downloadPrice);
-  const showPrice = showMarketingMeta && ((tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0) || tool.type === "skill_learning");
+  const isPositivePrice = Number.isFinite(servicePrice) && servicePrice > 0;
+  const showPrice =
+    showMarketingMeta &&
+    ((tool.type === "software" && tool.isDownloadPaid && isPositivePrice) ||
+      (tool.type === "online" && isPositivePrice) ||
+      (tool.type === "skill_learning" && isPositivePrice));
+  const commerceLabel = showPrice ? `¥${servicePrice.toFixed(2)}` : t.toolCard.free;
+  const deliveryLabel =
+    tool.type === "software"
+      ? t.toolCard.deliveryDownload
+      : tool.type === "online"
+        ? t.toolCard.deliveryService
+        : t.toolCard.deliveryCourse;
+  const primaryActionLabel = showPrice ? t.toolCard.compareBeforeBuy : t.toolCard.getFreeTool;
 
   return (
     <PrefetchLink href={buildCanonicalToolPath(tool, locale)} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
@@ -119,6 +132,18 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
             </div>
           </>
         ) : null}
+        {showMarketingMeta ? (
+          <div className="tool-card-commerce" aria-label={`${t.toolCard.priceLabel}: ${commerceLabel}`}>
+            <div>
+              <span>{t.toolCard.priceLabel}</span>
+              <strong>{commerceLabel}</strong>
+            </div>
+            <div>
+              <span>{t.toolCard.deliveryLabel}</span>
+              <strong>{deliveryLabel}</strong>
+            </div>
+          </div>
+        ) : null}
         <div className="mt-6 flex items-center justify-between gap-4 text-xs text-[var(--marketing-muted)]">
           <span className="inline-flex items-center gap-3">
             <span className="inline-flex items-center gap-1">
@@ -130,7 +155,10 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
               {tool.usageCount}
             </span>
           </span>
-          <span className="font-semibold text-[var(--marketing-accent)]">{t.toolCard.viewDetails}</span>
+          <span className="tool-card-primary-action">
+            {primaryActionLabel}
+            <ArrowUpRight size={14} aria-hidden="true" />
+          </span>
         </div>
       </div>
     </PrefetchLink>

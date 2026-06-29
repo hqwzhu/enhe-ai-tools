@@ -340,10 +340,11 @@ export async function SoftwarePageShell({
           title={t.listing.softwareTitle}
           intro={t.listing.softwareIntro}
         />
-        <SoftwareGeoBlock forceLocale={forceLocale} />
+        <ListingDecisionStrip forceLocale={forceLocale} />
+        <ListingTrustNote forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (
               <ToolCard key={tool.id} tool={tool} locale={forceLocale} />
             ))}
@@ -351,9 +352,101 @@ export async function SoftwarePageShell({
         ) : (
           <EmptyState title={t.listing.emptyTitle} text={t.listing.emptyText} />
         )}
-        <SoftwareGeoSupportSections forceLocale={forceLocale} />
+        <ProductSeoDisclosure
+          summary={
+            forceLocale === "en"
+              ? "AI software buying guide, FAQ, and source notes"
+              : "AI 软件选购指南、FAQ 与来源说明"
+          }
+        >
+          <SoftwareGeoBlock forceLocale={forceLocale} />
+          <SoftwareGeoSupportSections forceLocale={forceLocale} />
+        </ProductSeoDisclosure>
       </Container>
     </main>
+  );
+}
+
+function ListingDecisionStrip({ forceLocale }: { forceLocale: Locale }) {
+  const items =
+    forceLocale === "en"
+      ? [
+          {
+            label: "Task first",
+            title: "Pick one deliverable",
+            body: "Choose writing, video, automation, or local deployment before comparing tools.",
+          },
+          {
+            label: "Then price",
+            title: "Check the boundary",
+            body: "Compare free access, paid download price, and delivery notes before opening details.",
+          },
+          {
+            label: "Then tutorial",
+            title: "Make it usable",
+            body: "Confirm the tutorial or example can support your real workflow.",
+          },
+        ]
+      : [
+          {
+            label: "先看任务",
+            title: "确定要交付什么",
+            body: "写作、视频、自动化或本地部署，先选一个真实任务。",
+          },
+          {
+            label: "再看价格",
+            title: "确认付费边界",
+            body: "先看免费、下载价格和交付说明，再进入详情。",
+          },
+          {
+            label: "最后看教程",
+            title: "把工具落地",
+            body: "购买或下载前确认教程和案例能跟上工作流。",
+          },
+        ];
+
+  return (
+    <section
+      className="listing-decision-strip"
+      aria-label={
+        forceLocale === "en"
+          ? "Software purchase decision guide"
+          : "软件购买决策提示"
+      }
+    >
+      {items.map((item) => (
+        <div key={item.label}>
+          <span>{item.label}</span>
+          <strong>{item.title}</strong>
+          <p>{item.body}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function ListingTrustNote({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <p className="listing-trust-note">
+      {forceLocale === "en"
+        ? "Price and delivery are visible before purchase. For setup depth, review the local AI deployment topic."
+        : "购买前可先确认价格、交付方式和安装说明；需要部署深度时，先看本地 AI 部署专题。"}
+      <Link href={buildLocalePath("/ai-topics/local-ai-deployment", forceLocale)}>
+        {forceLocale === "en" ? "Open topic" : "查看专题"}
+      </Link>
+    </p>
+  );
+}
+
+function ProductSeoDisclosure({
+  summary,
+  children,
+}: React.PropsWithChildren<{ summary: string }>) {
+  return (
+    <details className="product-seo-disclosure">
+      <summary>{summary}</summary>
+      <div className="product-seo-disclosure-body">{children}</div>
+    </details>
   );
 }
 
@@ -388,7 +481,7 @@ function SoftwareGeoBlock({ forceLocale }: { forceLocale: Locale }) {
   ];
 
   return (
-    <div className="mt-8 space-y-8">
+    <div className="space-y-8">
       <section className="glass rounded-2xl p-6">
         <div className="rounded-2xl border border-[var(--marketing-accent)]/25 bg-[var(--marketing-accent)]/10 p-5">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--marketing-accent)]">

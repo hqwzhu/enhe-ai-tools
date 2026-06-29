@@ -24,7 +24,6 @@ describe("site audit regression coverage", () => {
   it("keeps the homepage featured fallback as useful internal links", () => {
     const homeShell = read("src/app/page-shell.tsx");
 
-    expect(homeShell).toContain('{" "}');
     expect(dictionaries.zh.home.featuredContentEmpty).not.toContain("后台设置");
     expect(dictionaries.en.home.featuredContentEmpty).not.toContain("admin panel");
     expect(homeShell).toContain("home-fallback-link-grid");
@@ -48,9 +47,31 @@ describe("site audit regression coverage", () => {
       expect(homeShell).toContain(path);
     }
 
-    expect(homeShell).toContain("creatorOutcomeCards");
-    expect(homeShell).toContain("creatorWorkflowSteps");
-    expect(homeShell).toContain("buildYourOwnXSpotlight");
+    expect(homeShell).toContain("homeProductPaths");
+    expect(homeShell).toContain("homeSupportLinks");
+    expect(homeShell).toContain("home-seo-disclosure");
+  });
+
+  it("keeps P2 topic-growth links discoverable inside the folded homepage support area", () => {
+    const homeShell = read("src/app/page-shell.tsx");
+    const globals = read("src/app/globals.css");
+
+    for (const path of [
+      '"/ai-topics/ai-content-creation-tools"',
+      '"/ai-topics/local-ai-deployment"',
+      '"/ai-topics/ai-account-service-compliance"',
+      '"/ai-topics/ai-skill-learning-path"',
+    ]) {
+      expect(homeShell).toContain(path);
+    }
+
+    expect(homeShell).toContain("homeTopicGrowthLinks");
+    expect(homeShell).toContain("home-topic-growth-grid");
+    expect(homeShell.indexOf("home-topic-growth-grid")).toBeGreaterThan(
+      homeShell.indexOf("home-seo-disclosure"),
+    );
+    expect(globals).toContain(".home-topic-growth-grid");
+    expect(globals).toContain(".home-topic-growth-link");
   });
 
   it("gives robots and sitemap public cache headers", () => {

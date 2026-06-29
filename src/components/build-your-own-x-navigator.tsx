@@ -377,7 +377,9 @@ export function BuildYourOwnXNavigator({
             {text.promptTitle}
           </p>
           <p>{text.promptIntro}</p>
-          <pre>{prompt}</pre>
+          <pre tabIndex={0} aria-label={text.promptTitle}>
+            {prompt}
+          </pre>
           <button type="button" className="byox-copy-button" onClick={copyPrompt}>
             {copied ? <Check size={17} aria-hidden="true" /> : <Copy size={17} aria-hidden="true" />}
             {copied ? text.copied : text.copy}

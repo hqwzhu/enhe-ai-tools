@@ -112,7 +112,7 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
   const faqSchema = buildFaqSchema({ items: faqItems });
 
   return (
-    <Container className="py-14">
+    <Container className="tutorials-page py-14">
       <StructuredData data={[breadcrumbSchema, howToSchema, faqSchema]} />
       <main>
       <SectionTitle as="h1" title={t.tutorials.title} intro={t.tutorials.intro} />

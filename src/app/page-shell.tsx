@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { ScrollVelocity } from "@/components/scroll-velocity";
 import { StructuredData } from "@/components/structured-data";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
@@ -17,7 +16,7 @@ import {
   absoluteUrl,
 } from "@/lib/seo";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { getEffectiveLocalizedHomeHeroIntro, getEffectiveHomeHeroTitle, getSettingsMap } from "@/lib/settings";
+import { getEffectiveLocalizedHomeHeroIntro, getSettingsMap } from "@/lib/settings";
 
 export const publicPageRevalidate = publicPageCacheSeconds;
 
@@ -58,107 +57,113 @@ const homeFaqItems = {
   ],
 } as const;
 
-const creatorOutcomeCards = {
+const homeProductPaths = {
   zh: [
     {
-      title: "写作与内容发布",
-      description: "从选题、资料、脚本到发布，先找到能直接进入产出的 AI 工具。",
+      title: "AI 软件应用",
+      description: "本地部署、内容创作、效率工具和自动化软件，先按任务筛选。",
       href: "/software",
-      action: "找内容工具",
+      action: "进入软件货架",
     },
     {
-      title: "视频与图像创作",
-      description: "为短视频、封面、素材处理和视觉生产选择合适的 AI 工作流。",
-      href: "/software",
-      action: "看创作工具",
-    },
-    {
-      title: "本地部署与开发",
-      description: "用项目路线补齐工程能力，把 AI 学习落到可展示作品里。",
-      href: "/build-your-own-x",
-      action: "选项目路线",
-    },
-    {
-      title: "自动化与 Agent",
-      description: "学习提示词、自动化流程和实战课程，把重复任务交给 AI。",
+      title: "AI 技能学习",
+      description: "提示词、工作流、课程和项目路线，把工具变成可复用能力。",
       href: "/skill-learning",
-      action: "学工作流",
+      action: "选择课程",
     },
     {
-      title: "效率工具与账号访问",
-      description: "确认工具价格、访问方式、服务边界和使用前注意事项。",
+      title: "AI 账号服务",
+      description: "购买前确认访问方式、服务边界、价格说明和平台规则。",
       href: "/account-services",
-      action: "查服务说明",
+      action: "查看服务",
     },
   ],
   en: [
     {
-      title: "Writing and publishing",
-      description: "Move from idea, research, script, and publishing with AI tools that reach output faster.",
+      title: "AI Software Apps",
+      description: "Local AI, creator tools, productivity apps, and automation software by task.",
       href: "/software",
-      action: "Find content tools",
+      action: "Open software shelf",
     },
     {
-      title: "Video and image creation",
-      description: "Choose practical AI workflows for short video, covers, assets, and visual production.",
-      href: "/software",
-      action: "Explore creator tools",
-    },
-    {
-      title: "Local AI and development",
-      description: "Use project routes to build engineering skill and turn AI learning into portfolio work.",
-      href: "/build-your-own-x",
-      action: "Choose a project route",
-    },
-    {
-      title: "Automation and agents",
-      description: "Learn prompts, automation flows, and practical courses for repetitive AI-powered work.",
+      title: "AI Skill Learning",
+      description: "Prompts, workflows, courses, and project routes for reusable AI skills.",
       href: "/skill-learning",
-      action: "Learn workflows",
+      action: "Choose courses",
     },
     {
-      title: "Productivity and access",
-      description: "Review pricing, access paths, service boundaries, and usage notes before choosing tools.",
+      title: "AI Account Services",
+      description: "Review access paths, service scope, pricing notes, and platform rules before purchase.",
       href: "/account-services",
-      action: "Check service notes",
+      action: "View services",
     },
   ],
 } as const;
 
-const creatorWorkflowSteps = {
+const homeSupportLinks = {
   zh: [
-    { title: "先看趋势", description: "用 AI 资讯和趋势日报判断机会窗口。", href: "/ai-news", action: "看 AI 资讯" },
-    { title: "再选工具", description: "按任务选择软件、插件和本地部署工具。", href: "/software", action: "选 AI 工具" },
-    { title: "学习方法", description: "用课程和教程把工具变成稳定流程。", href: "/skill-learning", action: "学 AI 技能" },
-    { title: "确认访问", description: "购买前检查账号服务、价格和交付规则。", href: "/pricing", action: "看价格说明" },
-    { title: "动手构建", description: "从 Build Your Own X 选择项目，做成可展示作品。", href: "/build-your-own-x", action: "开始构建" },
-    { title: "复盘教程", description: "用实用教程解决配置、下载、使用和复盘问题。", href: "/tutorials", action: "读教程" },
-    { title: "跟踪趋势", description: "用 AI 趋势页持续观察新模型、产品和需求变化。", href: "/ai-trends", action: "看趋势" },
+    { label: "价格与购买说明", href: "/pricing" },
+    { label: "使用教程", href: "/tutorials" },
+    { label: "AI 前沿资讯", href: "/ai-news" },
+    { label: "AI 趋势分析", href: "/ai-trends" },
+    { label: "AI 主题路径", href: "/ai-topics" },
+    { label: "Build Your Own X", href: "/build-your-own-x" },
   ],
   en: [
-    { title: "Read the signal", description: "Use AI news and trend briefings to find useful timing.", href: "/ai-news", action: "Read AI news" },
-    { title: "Choose tools", description: "Pick software, plugins, and local AI tools by task.", href: "/software", action: "Choose AI tools" },
-    { title: "Learn methods", description: "Turn tools into repeatable workflows with courses and tutorials.", href: "/skill-learning", action: "Learn AI skills" },
-    { title: "Check access", description: "Review account services, pricing, delivery, and purchase rules first.", href: "/pricing", action: "Review pricing" },
-    { title: "Build projects", description: "Use Build Your Own X to choose a project and create portfolio proof.", href: "/build-your-own-x", action: "Start building" },
-    { title: "Review guides", description: "Use tutorials to solve setup, download, usage, and review questions.", href: "/tutorials", action: "Read tutorials" },
-    { title: "Track trends", description: "Follow AI Trends for new model, product, and demand changes.", href: "/ai-trends", action: "View trends" },
+    { label: "Pricing and purchase notes", href: "/pricing" },
+    { label: "Tutorials", href: "/tutorials" },
+    { label: "AI News", href: "/ai-news" },
+    { label: "AI Trends", href: "/ai-trends" },
+    { label: "AI topic paths", href: "/ai-topics" },
+    { label: "Build Your Own X", href: "/build-your-own-x" },
   ],
 } as const;
 
-const buildYourOwnXSpotlight = {
-  zh: {
-    title: "免费项目导航：Build Your Own X",
-    description: "从 300+ 开源项目教程里筛选适合你的路线，用 AI 生成学习计划，把收藏变成可执行任务。",
-    primary: "打开项目导航器",
-    secondary: "继续看实用教程",
-  },
-  en: {
-    title: "Free project navigator: Build Your Own X",
-    description: "Filter 300+ open-source project tutorials, generate an AI learning plan, and turn bookmarks into executable tasks.",
-    primary: "Open navigator",
-    secondary: "Read tutorials",
-  },
+const homeTopicGrowthLinks = {
+  zh: [
+    {
+      title: "AI 内容创作工具",
+      description: "写作、视频、图片和发布工具路径。",
+      href: "/ai-topics/ai-content-creation-tools",
+    },
+    {
+      title: "本地 AI 部署",
+      description: "适合重视隐私、离线和稳定工作流的用户。",
+      href: "/ai-topics/local-ai-deployment",
+    },
+    {
+      title: "AI 账号服务合规",
+      description: "购买前先确认平台规则、交付边界和风险提示。",
+      href: "/ai-topics/ai-account-service-compliance",
+    },
+    {
+      title: "AI 技能学习路线",
+      description: "把课程、工具和项目练习连接成可复用能力。",
+      href: "/ai-topics/ai-skill-learning-path",
+    },
+  ],
+  en: [
+    {
+      title: "AI content creation tools",
+      description: "Writing, video, image, and publishing tool paths.",
+      href: "/ai-topics/ai-content-creation-tools",
+    },
+    {
+      title: "Local AI deployment",
+      description: "For privacy, offline use, and stable workflows.",
+      href: "/ai-topics/local-ai-deployment",
+    },
+    {
+      title: "AI account service compliance",
+      description: "Check platform rules, delivery scope, and risk notes before purchase.",
+      href: "/ai-topics/ai-account-service-compliance",
+    },
+    {
+      title: "AI skill learning path",
+      description: "Connect courses, tools, and projects into reusable capability.",
+      href: "/ai-topics/ai-skill-learning-path",
+    },
+  ],
 } as const;
 
 export async function generateHomePageMetadata(forceLocale: Locale): Promise<Metadata> {
@@ -174,14 +179,16 @@ export async function generateHomePageMetadata(forceLocale: Locale): Promise<Met
 }
 
 export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
-  const [recommendedTools, settings] = await Promise.all([getHomeRecommendedTools(), getSettingsMap()]);
+  const recommendedTools = await getHomeRecommendedTools();
   const t = getDictionary(forceLocale);
-  const heroTitle = getEffectiveHomeHeroTitle(settings, t.home.title);
-  const heroTitleWordmark = /^ENHE\s+AI$/i.test(heroTitle.trim());
-  const heroVelocityTexts =
+  const heroTitle =
     forceLocale === "en"
-      ? [t.home.titleSecondLineEn]
-      : [t.home.titleSecondLine, t.home.titleSecondLineEn];
+      ? "AI tools, account services, and courses in one place"
+      : "AI 工具、账号服务与课程，一站式选择";
+  const heroIntro =
+    forceLocale === "en"
+      ? "Pick the right product faster, then learn the workflow that turns it into output."
+      : "更快找到适合你的 AI 产品，再用教程和课程把它变成实际产出。";
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
   });
@@ -208,61 +215,18 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
             <div className="home-hero-centered">
-              <h1 className="home-hero-title">
-                <span
-                  className={`home-hero-title-glitch${heroTitleWordmark ? " home-hero-title-glitch-wordmark" : ""}`}
-                  data-text={heroTitle}
-                >
-                  {heroTitleWordmark ? (
-                    <>
-                      <span className="home-hero-title-wordmark-accent">E</span>
-                      <span className="home-hero-title-wordmark-letter">N</span>
-                      <span className="home-hero-title-wordmark-letter home-hero-title-wordmark-slice">H</span>
-                      <span className="home-hero-title-wordmark-letter">E</span>{" "}
-                      <span className="home-hero-title-wordmark-accent">A</span>
-                      <span className="home-hero-title-wordmark-letter">I</span>
-                    </>
-                  ) : (
-                    heroTitle
-                  )}
-                </span>
-                <span className="sr-only"> {heroVelocityTexts.join(" ")}</span>
-              </h1>
-              <div className="home-hero-title-emphasis" aria-hidden="true">
-                <ScrollVelocity
-                  texts={heroVelocityTexts}
-                  className="home-hero-velocity-copy"
-                  parallaxClassName="home-hero-velocity-parallax"
-                  scrollerClassName="home-hero-velocity-scroller"
-                />
-              </div>
-
-              <p className="home-hero-positioning">{t.home.positioning}</p>
+              <p className="home-hero-brand">ENHE AI</p>
+              <h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>
+              <p className="home-hero-positioning">{heroIntro}</p>
 
               <div className="home-hero-actions">
                 <ButtonLink href={buildLocalePath("/software", forceLocale)} variant="primary" className="home-hero-cta home-hero-cta-primary">
-                  {t.home.softwareButton}
+                  {forceLocale === "en" ? "Browse products" : "浏览产品"}
                 </ButtonLink>
-                <ButtonLink href={buildLocalePath("/build-your-own-x", forceLocale)} variant="ghost" className="home-hero-cta home-hero-cta-accent">
-                  {forceLocale === "en" ? "Choose a creator path" : "选择创作路径"}
+                <ButtonLink href={buildLocalePath("/pricing", forceLocale)} variant="ghost" className="home-hero-cta home-hero-cta-accent">
+                  {forceLocale === "en" ? "View pricing" : "查看价格"}
                 </ButtonLink>
               </div>
-
-              <div className="home-hero-path-strip" aria-label={forceLocale === "en" ? "ENHE AI section guide" : "ENHE AI 栏目导航"}>
-                {[
-                  { label: forceLocale === "en" ? "AI topic paths" : "AI 主题路径", note: forceLocale === "en" ? "Choose by goal" : "按目标选择", href: "/ai-topics" },
-                  { label: t.home.aiNewsButton, note: forceLocale === "en" ? "Read the signal" : "先看趋势", href: "/ai-news" },
-                  { label: t.home.softwareButton, note: forceLocale === "en" ? "Choose tools" : "再选工具", href: "/software" },
-                  { label: t.home.skillLearningButton, note: forceLocale === "en" ? "Learn workflows" : "学习方法", href: "/skill-learning" },
-                  { label: t.home.onlineButton, note: forceLocale === "en" ? "Check access" : "确认访问", href: "/account-services" },
-                ].map((item) => (
-                  <Link key={item.href} href={buildLocalePath(item.href, forceLocale)} className="home-hero-path-link">
-                    <span>{item.note}</span>
-                    <strong>{item.label}</strong>
-                  </Link>
-                ))}
-              </div>
-
             </div>
           </div>
         </Container>
@@ -271,65 +235,21 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
       <section className="home-outcome-shell" aria-labelledby="home-outcome-title">
         <Container className="home-hero-reference-frame">
           <div className="home-section-heading">
-            <h2 id="home-outcome-title">{forceLocale === "en" ? "Start by outcome" : "按目标开始"}</h2>
+            <h2 id="home-outcome-title">{forceLocale === "en" ? "Choose by product type" : "按产品类型选择"}</h2>
             <p>
               {forceLocale === "en"
-                ? "Choose the job you want AI to help with, then enter the right ENHE AI path."
-                : "先选你想完成的任务，再进入对应的 ENHE AI 路径。"}
+                ? "Start with software, courses, or account services, then compare pricing and delivery details before purchase."
+                : "先从软件、课程或账号服务进入，再对比价格、交付方式和购买说明。"}
             </p>
           </div>
-          <div className="home-outcome-grid">
-            {creatorOutcomeCards[forceLocale].map((item) => (
+          <div className="home-outcome-grid home-product-path-grid">
+            {homeProductPaths[forceLocale].map((item) => (
               <Link key={item.title} href={buildLocalePath(item.href, forceLocale)} className="home-outcome-card">
                 <span>{item.action}</span>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
               </Link>
             ))}
-          </div>
-        </Container>
-      </section>
-
-      <section className="home-workflow-shell" aria-labelledby="home-workflow-title">
-        <Container className="home-hero-reference-frame">
-          <div className="home-workflow-panel">
-            <div className="home-section-heading">
-              <h2 id="home-workflow-title">{forceLocale === "en" ? "From signal to shipped work" : "从趋势信号到交付成果"}</h2>
-              <p>
-                {forceLocale === "en"
-                  ? "ENHE AI connects discovery, selection, learning, access checks, and practice into one creator workflow."
-                  : "ENHE AI 把趋势发现、工具选择、方法学习、访问确认和项目练习连成一条创作者工作流。"}
-              </p>
-            </div>
-            <div className="home-workflow-grid">
-              {creatorWorkflowSteps[forceLocale].map((item) => (
-                <Link key={item.title} href={buildLocalePath(item.href, forceLocale)} className="home-workflow-step">
-                  <strong>{item.title}</strong>
-                  <span>{item.description}</span>
-                  <em>{item.action}</em>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      <section className="home-byox-shell" aria-labelledby="home-byox-title">
-        <Container className="home-hero-reference-frame">
-          <div className="home-byox-spotlight">
-            <div>
-              <h2 id="home-byox-title">{buildYourOwnXSpotlight[forceLocale].title}</h2>
-              <p>{buildYourOwnXSpotlight[forceLocale].description}</p>
-            </div>
-            <div className="home-byox-actions">
-              <ButtonLink href={buildLocalePath("/build-your-own-x", forceLocale)} variant="primary">
-                {buildYourOwnXSpotlight[forceLocale].primary}
-              </ButtonLink>
-              <ButtonLink href={buildLocalePath("/tutorials", forceLocale)} variant="ghost">
-                {buildYourOwnXSpotlight[forceLocale].secondary}
-                <ArrowUpRight size={16} />
-              </ButtonLink>
-            </div>
           </div>
         </Container>
       </section>
@@ -365,6 +285,33 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               </div>
             )}
           </div>
+        </Container>
+      </section>
+
+      <section className="home-support-shell" aria-label={forceLocale === "en" ? "Supporting ENHE AI paths" : "ENHE AI 支撑路径"}>
+        <Container className="home-hero-reference-frame">
+          <details className="home-seo-disclosure">
+            <summary>{forceLocale === "en" ? "More paths for research, tutorials, and project practice" : "查看更多资讯、教程和项目练习路径"}</summary>
+            <div className="home-support-link-grid">
+              {homeSupportLinks[forceLocale].map((item) => (
+                <Link key={item.href} href={buildLocalePath(item.href, forceLocale)} className="home-support-link">
+                  {item.label}
+                  <ArrowUpRight size={15} aria-hidden="true" />
+                </Link>
+              ))}
+            </div>
+            <div
+              className="home-topic-growth-grid"
+              aria-label={forceLocale === "en" ? "AI topic growth paths" : "AI 主题增长路径"}
+            >
+              {homeTopicGrowthLinks[forceLocale].map((item) => (
+                <Link key={item.href} href={buildLocalePath(item.href, forceLocale)} className="home-topic-growth-link">
+                  <strong>{item.title}</strong>
+                  <span>{item.description}</span>
+                </Link>
+              ))}
+            </div>
+          </details>
         </Container>
       </section>
     </main>

@@ -193,10 +193,11 @@ export async function SkillLearningPageShell({
           title={t.listing.skillLearningTitle}
           intro={t.listing.skillLearningIntro}
         />
-        <SkillLearningGeoBlock forceLocale={forceLocale} />
+        <ListingDecisionStrip forceLocale={forceLocale} />
+        <ListingTrustNote forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (
               <ToolCard key={tool.id} tool={tool} locale={forceLocale} />
             ))}
@@ -204,9 +205,101 @@ export async function SkillLearningPageShell({
         ) : (
           <EmptyState title={t.listing.emptyTitle} text={t.listing.emptyText} />
         )}
-        <SkillLearningOutcomeBlock forceLocale={forceLocale} />
+        <ProductSeoDisclosure
+          summary={
+            forceLocale === "en"
+              ? "AI learning path, outcome guide, and FAQ"
+              : "AI 学习路径、成果转化与常见问题"
+          }
+        >
+          <SkillLearningGeoBlock forceLocale={forceLocale} />
+          <SkillLearningOutcomeBlock forceLocale={forceLocale} />
+        </ProductSeoDisclosure>
       </Container>
     </main>
+  );
+}
+
+function ListingDecisionStrip({ forceLocale }: { forceLocale: Locale }) {
+  const items =
+    forceLocale === "en"
+      ? [
+          {
+            label: "Real task",
+            title: "Choose by outcome",
+            body: "Start from a deliverable instead of collecting another generic AI course.",
+          },
+          {
+            label: "Course delivery",
+            title: "Check the path",
+            body: "Look for steps, examples, and tool connections before buying.",
+          },
+          {
+            label: "Reusable assets",
+            title: "Save the system",
+            body: "Turn prompts, steps, and templates into assets you can reuse.",
+          },
+        ]
+      : [
+          {
+            label: "选真实任务",
+            title: "按成果选课",
+            body: "先确定要产出什么，避免只收藏泛泛的 AI 课程。",
+          },
+          {
+            label: "看课程交付",
+            title: "确认学习路径",
+            body: "购买前看步骤、案例和对应工具是否足够清楚。",
+          },
+          {
+            label: "沉淀模板",
+            title: "形成复用资产",
+            body: "把提示词、步骤和模板保存为下一次可用的系统。",
+          },
+        ];
+
+  return (
+    <section
+      className="listing-decision-strip"
+      aria-label={
+        forceLocale === "en"
+          ? "Course purchase decision guide"
+          : "课程购买决策提示"
+      }
+    >
+      {items.map((item) => (
+        <div key={item.label}>
+          <span>{item.label}</span>
+          <strong>{item.title}</strong>
+          <p>{item.body}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function ListingTrustNote({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <p className="listing-trust-note">
+      {forceLocale === "en"
+        ? "Course pages should make the outcome and delivery clear before purchase. Choose from a real task, not a vague interest."
+        : "课程购买前先确认学习成果和交付内容；建议从真实任务出发，而不是泛泛收藏。"}
+      <Link href={buildLocalePath("/ai-topics/ai-skill-learning-path", forceLocale)}>
+        {forceLocale === "en" ? "View learning path" : "查看学习路线"}
+      </Link>
+    </p>
+  );
+}
+
+function ProductSeoDisclosure({
+  summary,
+  children,
+}: React.PropsWithChildren<{ summary: string }>) {
+  return (
+    <details className="product-seo-disclosure">
+      <summary>{summary}</summary>
+      <div className="product-seo-disclosure-body">{children}</div>
+    </details>
   );
 }
 
@@ -215,7 +308,7 @@ function SkillLearningOutcomeBlock({ forceLocale }: { forceLocale: Locale }) {
   const faqs = skillLearningFaqItems[forceLocale];
 
   return (
-    <section className="mt-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+    <section className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="surface-panel-soft p-6">
         <h2 className="text-2xl font-black text-[var(--marketing-text)]">
           {forceLocale === "en"
@@ -288,7 +381,7 @@ function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
   ];
 
   return (
-    <section className="glass mt-8 rounded-2xl p-6">
+    <section className="glass rounded-2xl p-6">
       <div className="mb-5 grid gap-3 md:grid-cols-3">
         {pathItems.map((item) => (
           <article key={item.label} className="rounded-2xl border border-[var(--marketing-accent)]/24 bg-[var(--marketing-accent)]/10 p-4">

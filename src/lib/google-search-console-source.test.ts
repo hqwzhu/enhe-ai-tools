@@ -57,17 +57,18 @@ describe("Google Search Console SEO source contract", () => {
     expect(sitemap).not.toContain('"/payment"');
   });
 
-  it("blocks non-public surfaces in robots while exposing the sitemap", () => {
+  it("blocks non-public surfaces in robots while keeping public discovery paths crawlable", () => {
     const robots = read("src/app/robots.ts");
 
     expect(robots).toContain('absoluteUrl("/sitemap.xml")');
     expect(robots).toContain('"Baiduspider"');
+    expect(robots).toContain("publicAllow");
     for (const blockedPath of ["/admin", "/dashboard", "/user-center", "/checkout", "/orders", "/payment", "/api"]) {
       expect(robots).toContain(blockedPath);
     }
 
     for (const publicPath of ["/ai-news", "/software", "/skill-learning", "/account-services"]) {
-      expect(robots).not.toContain(`"${publicPath}"`);
+      expect(robots).toContain(`"${publicPath}"`);
     }
   });
 
