@@ -255,11 +255,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         <Container className="home-hero-reference-frame">
           <div className="home-section-heading">
             <h2 id="home-outcome-title">{forceLocale === "en" ? "Choose by product type" : "按产品类型选择"}</h2>
-            <p>
-              {forceLocale === "en"
-                ? "Start with software, courses, or account services, then compare pricing and delivery details before purchase."
-                : "先从软件、课程或账号服务进入，再对比价格、交付方式和购买说明。"}
-            </p>
           </div>
           <div className="home-outcome-grid home-product-path-grid">
             {homeProductPaths[forceLocale].map((item) => (

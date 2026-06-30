@@ -49,6 +49,8 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('href: "/build-your-own-x"');
     expect(page).toContain('className="home-outcome-shell"');
     expect(page).toContain('className="home-outcome-grid home-product-path-grid"');
+    expect(page).not.toContain("先从软件、课程或账号服务进入，再对比价格、交付方式和购买说明。");
+    expect(page).not.toContain("Start with software, courses, or account services, then compare pricing and delivery details before purchase.");
     expect(page).toContain('className="home-support-shell"');
     expect(page).toContain('className="home-seo-disclosure"');
     expect(page).not.toContain('className="home-workflow-shell"');
