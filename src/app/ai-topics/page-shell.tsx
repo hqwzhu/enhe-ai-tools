@@ -308,17 +308,21 @@ export function AiTopicDetailPageShell({
             </h2>
             <div className="mt-5 space-y-4">
               {content.faqs.map((item) => (
-                <article
+                <details
                   key={item.question}
-                  className="rounded-2xl border border-white/10 bg-white/7 p-5"
+                  className="content-fold"
                 >
-                  <h3 className="text-base font-black leading-snug text-[var(--marketing-text)]">
-                    {item.question}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
-                    {item.answer}
-                  </p>
-                </article>
+                  <summary>
+                    <h3 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                      {item.question}
+                    </h3>
+                  </summary>
+                  <div className="content-fold-body">
+                    <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                      {item.answer}
+                    </p>
+                  </div>
+                </details>
               ))}
             </div>
           </div>

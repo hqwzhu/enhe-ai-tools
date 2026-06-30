@@ -375,17 +375,21 @@ function AccountServicesGeoBlock({ forceLocale }: { forceLocale: Locale }) {
       </div>
       <div className="mt-6 grid gap-3 md:grid-cols-3">
         {faqs.map((item) => (
-          <article
+          <details
             key={item.question}
-            className="rounded-2xl border border-white/10 bg-white/7 p-5"
+            className="content-fold"
           >
-            <h2 className="text-base font-black leading-snug text-[var(--marketing-text)]">
-              {item.question}
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
-              {item.answer}
-            </p>
-          </article>
+            <summary>
+              <h2 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                {item.question}
+              </h2>
+            </summary>
+            <div className="content-fold-body">
+              <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                {item.answer}
+              </p>
+            </div>
+          </details>
         ))}
       </div>
     </section>

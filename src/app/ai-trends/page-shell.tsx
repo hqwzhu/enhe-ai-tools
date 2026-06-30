@@ -497,38 +497,49 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
         </div>
         </section>
 
-        <section className="mt-12">
-        <SectionTitle title={copy.scenarioTitle} intro={copy.scenarioIntro} />
-        <div className="grid gap-4 lg:grid-cols-3">
-          {workProductivityScenarioRanking.map((scenario, index) => (
-            <article key={scenario.zhName} className="surface-panel-soft p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <Badge className="text-[var(--marketing-accent)]">#{index + 1}</Badge>
-                  <h2 className="mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">
-                    {forceLocale === "en" ? scenario.enName : scenario.zhName}
-                  </h2>
-                </div>
-                <div className="text-right">
-                  <strong className="block text-2xl font-black text-[var(--marketing-accent)]">{scenario.heat}</strong>
-                  <span className="mt-1 block text-xs font-bold text-[var(--marketing-muted)]">
-                    {copy.scenarioPriority} {scenario.priority}
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 h-2 rounded-full bg-white/8">
-                <div className="h-full rounded-full bg-[var(--marketing-accent)]" style={{ width: `${scenario.heat}%` }} />
-              </div>
-              <p className="mt-4 text-sm leading-7 text-[var(--marketing-muted)]">
-                {forceLocale === "en" ? scenario.enPain : scenario.zhPain}
+        <details className="content-fold mt-12">
+          <summary>
+            <div className="content-fold-summary-copy">
+              <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+                {copy.scenarioTitle}
+              </h2>
+              <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
+                {copy.scenarioIntro}
               </p>
-              <p className="mt-3 text-sm font-bold leading-7 text-[var(--marketing-text)]">
-                {forceLocale === "en" ? scenario.enOpportunity : scenario.zhOpportunity}
-              </p>
-            </article>
-          ))}
-        </div>
-        </section>
+            </div>
+          </summary>
+          <div className="content-fold-body">
+            <div className="grid gap-4 lg:grid-cols-3">
+              {workProductivityScenarioRanking.map((scenario, index) => (
+                <article key={scenario.zhName} className="surface-panel-soft p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <Badge className="text-[var(--marketing-accent)]">#{index + 1}</Badge>
+                      <h2 className="mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">
+                        {forceLocale === "en" ? scenario.enName : scenario.zhName}
+                      </h2>
+                    </div>
+                    <div className="text-right">
+                      <strong className="block text-2xl font-black text-[var(--marketing-accent)]">{scenario.heat}</strong>
+                      <span className="mt-1 block text-xs font-bold text-[var(--marketing-muted)]">
+                        {copy.scenarioPriority} {scenario.priority}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-4 h-2 rounded-full bg-white/8">
+                    <div className="h-full rounded-full bg-[var(--marketing-accent)]" style={{ width: `${scenario.heat}%` }} />
+                  </div>
+                  <p className="mt-4 text-sm leading-7 text-[var(--marketing-muted)]">
+                    {forceLocale === "en" ? scenario.enPain : scenario.zhPain}
+                  </p>
+                  <p className="mt-3 text-sm font-bold leading-7 text-[var(--marketing-text)]">
+                    {forceLocale === "en" ? scenario.enOpportunity : scenario.zhOpportunity}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </details>
 
         <section className="mt-12">
         <SectionTitle title={copy.prioritiesTitle} intro={copy.prioritiesIntro} />
@@ -554,17 +565,21 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             </h2>
             <div className="mt-5 grid gap-4">
               {aiTrendsFaqItems[forceLocale].map((item) => (
-                <article
+                <details
                   key={item.question}
-                  className="rounded-2xl border border-white/10 bg-white/7 p-5"
+                  className="content-fold"
                 >
-                  <h3 className="text-base font-black text-[var(--marketing-text)]">
-                    {item.question}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
-                    {item.answer}
-                  </p>
-                </article>
+                  <summary>
+                    <h3 className="text-base font-black text-[var(--marketing-text)]">
+                      {item.question}
+                    </h3>
+                  </summary>
+                  <div className="content-fold-body">
+                    <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                      {item.answer}
+                    </p>
+                  </div>
+                </details>
               ))}
             </div>
           </div>

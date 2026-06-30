@@ -418,10 +418,7 @@ export function BuildYourOwnXPageShell({ forceLocale }: { forceLocale: Locale })
           languages={topLanguages}
         />
 
-        <section className="byox-answer-blocks">
-          <div className="byox-section-heading">
-            <h2>{text.extractableTitle}</h2>
-          </div>
+        <ContentFold title={text.extractableTitle} className="byox-answer-blocks">
           <div className="byox-answer-grid">
             {answerBlocks[forceLocale].map((item) => (
               <article key={item.question} className="surface-panel-soft">
@@ -430,13 +427,13 @@ export function BuildYourOwnXPageShell({ forceLocale }: { forceLocale: Locale })
               </article>
             ))}
           </div>
-        </section>
+        </ContentFold>
 
-        <section className="byox-route-section">
-          <div className="byox-section-heading">
-            <h2>{text.routeTitle}</h2>
-            <p>{text.routeIntro}</p>
-          </div>
+        <ContentFold
+          title={text.routeTitle}
+          intro={text.routeIntro}
+          className="byox-route-section"
+        >
           <div className="byox-route-grid">
             {buildYourOwnXRoutes.map((route) => (
               <article key={route.slug} className="byox-route-card">
@@ -448,10 +445,9 @@ export function BuildYourOwnXPageShell({ forceLocale }: { forceLocale: Locale })
               </article>
             ))}
           </div>
-        </section>
+        </ContentFold>
 
-        <section className="byox-route-seo surface-panel">
-          <h2>{text.routeSeoTitle}</h2>
+        <ContentFold title={text.routeSeoTitle} className="byox-route-seo">
           <div className="byox-route-seo-list">
             {buildYourOwnXRoutes.map((route) => (
               <article key={route.slug} id={`learn-${route.slug}`}>
@@ -461,11 +457,10 @@ export function BuildYourOwnXPageShell({ forceLocale }: { forceLocale: Locale })
               </article>
             ))}
           </div>
-        </section>
+        </ContentFold>
 
         <section className="byox-support-grid">
-          <div className="byox-support-card surface-panel">
-            <h2>{text.faqTitle}</h2>
+          <ContentFold title={text.faqTitle} className="byox-support-card">
             <div className="byox-faq-list">
               {faqItems[forceLocale].map((item) => (
                 <article key={item.question}>
@@ -474,7 +469,7 @@ export function BuildYourOwnXPageShell({ forceLocale }: { forceLocale: Locale })
                 </article>
               ))}
             </div>
-          </div>
+          </ContentFold>
           <aside className="byox-support-card surface-panel-soft">
             <h2>{text.sourceTitle}</h2>
             <p>{text.sourceIntro}</p>
@@ -508,5 +503,28 @@ export function BuildYourOwnXPageShell({ forceLocale }: { forceLocale: Locale })
         </section>
       </Container>
     </main>
+  );
+}
+
+function ContentFold({
+  title,
+  intro,
+  className,
+  children,
+}: React.PropsWithChildren<{
+  title: string;
+  intro?: string;
+  className?: string;
+}>) {
+  return (
+    <details className={`content-fold ${className ?? ""}`}>
+      <summary>
+        <div className="content-fold-summary-copy">
+          <h2>{title}</h2>
+          {intro ? <p>{intro}</p> : null}
+        </div>
+      </summary>
+      <div className="content-fold-body">{children}</div>
+    </details>
   );
 }

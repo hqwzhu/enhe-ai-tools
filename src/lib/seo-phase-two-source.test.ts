@@ -93,4 +93,22 @@ describe("seo phase two source contracts", () => {
       '"/ai-topics/ai-account-service-compliance"',
     );
   });
+
+  it("keeps growth pages covered by public cache and language headers", () => {
+    const nextConfig = read("next.config.ts");
+    const middleware = read("src/middleware.ts");
+
+    expect(nextConfig).toContain('source: "/ai-topics"');
+    expect(nextConfig).toContain('source: "/en/ai-topics"');
+    expect(nextConfig).toContain('source: "/ai-topics/:slug*"');
+    expect(nextConfig).toContain('source: "/en/ai-topics/:slug*"');
+    expect(nextConfig).toContain('source: "/build-your-own-x"');
+    expect(nextConfig).toContain('source: "/en/build-your-own-x"');
+    expect(nextConfig).toContain(
+      'source: "/okf/build-your-own-x/index.md"',
+    );
+    expect(middleware).toContain('"/ai-topics"');
+    expect(middleware).toContain('"/build-your-own-x"');
+    expect(middleware).toContain('pathname.startsWith("/ai-topics/")');
+  });
 });

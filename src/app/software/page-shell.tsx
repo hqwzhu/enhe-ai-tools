@@ -540,12 +540,19 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
 
   return (
     <div className="mt-8 space-y-8">
-      <section className="glass rounded-2xl p-6">
-        <SectionTitle
-          title={labels.comparisonTitle}
-          intro={labels.comparisonIntro}
-        />
-        <div className="mt-6 hidden overflow-x-auto md:block">
+      <details className="content-fold">
+        <summary>
+          <div className="content-fold-summary-copy">
+            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+              {labels.comparisonTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
+              {labels.comparisonIntro}
+            </p>
+          </div>
+        </summary>
+        <div className="content-fold-body">
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[760px] border-separate border-spacing-0 overflow-hidden rounded-2xl border border-white/10 text-left text-sm">
             <thead>
               <tr className="bg-white/10 text-[var(--marketing-text)]">
@@ -604,30 +611,56 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
             </article>
           ))}
         </div>
-      </section>
+        </div>
+      </details>
 
-      <section className="glass rounded-2xl p-6">
-        <SectionTitle title={labels.faqTitle} intro={labels.faqIntro} />
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <details className="content-fold">
+        <summary>
+          <div className="content-fold-summary-copy">
+            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+              {labels.faqTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
+              {labels.faqIntro}
+            </p>
+          </div>
+        </summary>
+        <div className="content-fold-body">
+        <div className="grid gap-4 md:grid-cols-2">
           {faqItems.map((item) => (
-            <article
+            <details
               key={item.question}
-              className="rounded-2xl border border-white/10 bg-white/8 p-5"
+              className="content-fold"
             >
-              <h2 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
-                {item.question}
-              </h2>
-              <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
-                {item.answer}
-              </p>
-            </article>
+              <summary>
+                <h3 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
+                  {item.question}
+                </h3>
+              </summary>
+              <div className="content-fold-body">
+                <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                  {item.answer}
+                </p>
+              </div>
+            </details>
           ))}
         </div>
-      </section>
+        </div>
+      </details>
 
-      <section className="glass rounded-2xl p-6">
-        <SectionTitle title={labels.sourceTitle} intro={labels.sourceIntro} />
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <details className="content-fold">
+        <summary>
+          <div className="content-fold-summary-copy">
+            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+              {labels.sourceTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
+              {labels.sourceIntro}
+            </p>
+          </div>
+        </summary>
+        <div className="content-fold-body">
+        <div className="grid gap-4 md:grid-cols-2">
           {sourceLinks.map((source) => (
             <article
               key={source.href}
@@ -650,7 +683,8 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
         <p className="mt-5 text-xs font-bold text-[var(--marketing-muted)]">
           {labels.updatedLabel}: <time dateTime="2026-06-23">2026-06-23</time>
         </p>
-      </section>
+        </div>
+      </details>
     </div>
   );
 }
