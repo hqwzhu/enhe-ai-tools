@@ -126,11 +126,9 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("texts={heroVelocityTexts}");
     expect(page).toContain('import { HomeLiquidEtherBackground } from "@/components/home/home-liquid-ether-background";');
     expect(page).toContain('import DecryptedText from "@/components/home/decrypted-text";');
-    expect(page).toContain('import TextPressure from "@/components/home/text-pressure";');
+    expect(page).not.toContain('import TextPressure from "@/components/home/text-pressure";');
     expect(page).not.toContain('<p className="home-hero-brand">ENHE AI</p>');
-    expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple home-hero-title-pressure">');
-    expect(page).toContain("text={heroTitle}");
-    expect(page).toContain('fontFamily="Roboto Flex ENHE"');
+    expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
     expect(page).toContain('<p className="home-hero-positioning">');
     expect(page).toContain("text={heroIntro}");
     expect(page).toContain('animateOn="view"');
@@ -138,36 +136,23 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("home-hero-decrypted-text");
     expect(css).not.toContain(".home-hero-brand");
     expect(css).toContain(".home-hero-title-simple");
-    expect(css).toContain("@font-face {\n  font-family: 'Roboto Flex ENHE'");
-    expect(css).toContain(".home-hero-title-pressure");
-    expect(css).toContain(".text-pressure-title");
+    expect(css).not.toContain("Roboto Flex ENHE");
+    expect(css).not.toContain(".home-hero-title-pressure");
+    expect(css).not.toContain(".text-pressure-title");
     expect(css).toContain(".home-hero-decrypted-text");
     expect(css).toContain(".home-hero-encrypted-letter");
     expect(css).toContain("font-size: clamp(2.7rem, 7.4vw, 6.1rem)");
     expect(css).toContain(".site-brand-logo-dark {\n  opacity: 1;\n  filter: brightness(0) invert(1)");
   });
 
-  it("uses TextPressure as a DOM-safe hero wordmark upgrade with reduced-motion fallback", () => {
-    const component = readFileSync(new URL("../components/home/text-pressure.tsx", import.meta.url), "utf8");
+  it("keeps the homepage hero title as static DOM text after removing TextPressure", () => {
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
-    expect(component).toContain('"use client";');
-    expect(component).toContain('import { useReducedMotion } from "motion/react";');
-    expect(component).toContain("const shouldReduceMotion = useReducedMotion();");
-    expect(component).toContain("Adapted from React Bits TextPressure");
-    expect(component).toContain("{char}");
-    expect(component).toContain('window.addEventListener("mousemove", handleMouseMove, { passive: true })');
-    expect(component).toContain("window.removeEventListener(\"mousemove\", handleMouseMove)");
-    expect(component).toContain("const measureCharacters = useCallback");
-    expect(component).toContain("metricsRef.current");
-    expect(component).toContain("startFrameLoopRef.current?.()");
-    expect(component).toContain("stopFrameLoopRef.current?.()");
-    expect(component).toContain('document.addEventListener("visibilitychange", handleVisibilityChange)');
-    expect(component).toContain("new IntersectionObserver");
-    expect(component).toContain("cancelAnimationFrame(rafId)");
-    expect(component).toContain("\"Roboto Flex ENHE\"");
-    expect(css).toContain("@media (prefers-reduced-motion: reduce)");
-    expect(css).toContain("will-change: auto");
+    expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
+    expect(page).not.toContain("TextPressure");
+    expect(css).not.toContain("text-pressure");
+    expect(css).not.toContain("Roboto Flex ENHE");
   });
 
   it("keeps LiquidEther visually active with bounded WebGL render cost", () => {
