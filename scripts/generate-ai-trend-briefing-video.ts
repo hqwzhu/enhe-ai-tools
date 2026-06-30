@@ -76,6 +76,7 @@ function stripUtf8Bom(value: string) {
 }
 
 export function buildVideoProps(input: AiTrendBriefingPublishInput): AiTrendVideoProps {
+  const data = validateAiTrendBriefingInput(input);
   const summary = buildVideoSummaryPayload(input);
   const scenes: AiTrendVideoScene[] = summary.demandBreakdowns.slice(0, 3).map((breakdown) => ({
     title: breakdown.direction,
@@ -88,13 +89,27 @@ export function buildVideoProps(input: AiTrendBriefingPublishInput): AiTrendVide
     heat: breakdown.heat
   }));
 
+  if (!scenes.length) {
+    scenes.push({
+      title: "核心结论",
+      body:
+        data.publicHighlights.slice(0, 2).join("；") ||
+        data.summary ||
+        data.coreConclusion,
+      heat: 80
+    });
+  }
+
+  const directions =
+    summary.directions.length > 0 ? summary.directions : ["核心结论", "公开摘要", "落地机会"];
+
   return {
     date: summary.date,
     title: summary.title,
     coreConclusion: summary.coreConclusion,
     summary: summary.summary,
     sourceCount: summary.sourceCount,
-    directions: summary.directions,
+    directions,
     scenes
   };
 }
