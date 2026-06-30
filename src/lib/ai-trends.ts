@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import type { AiTrendBriefingStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { normalizeMediaSrc } from "@/lib/media";
 
 export type AiTrendSourceSignal = {
   title: string;
@@ -45,6 +46,11 @@ export type AiTrendBriefingPublishInput = {
   fullHtml: string;
   sourceSignals?: unknown;
   demandBreakdowns?: unknown;
+  videoUrl?: string | null;
+  videoTitle?: string | null;
+  videoDescription?: string | null;
+  videoPosterUrl?: string | null;
+  videoDurationSeconds?: number | string | null;
   status?: AiTrendBriefingStatus;
   isIncludedInTopicPage?: boolean;
   publishedAt?: string | Date | null;
@@ -61,6 +67,11 @@ export type AiTrendBriefingPublishData = {
   sourceSignals: AiTrendSourceSignal[];
   demandBreakdowns: AiTrendDemandBreakdown[];
   sourcePayload: AiTrendSourcePayload;
+  videoUrl: string | null;
+  videoTitle: string | null;
+  videoDescription: string | null;
+  videoPosterUrl: string | null;
+  videoDurationSeconds: number | null;
   status: AiTrendBriefingStatus;
   isIncludedInTopicPage: boolean;
   publishedAt: Date | null;
@@ -76,6 +87,11 @@ export type AiTrendBriefingRecord = {
   publicHighlights: string[];
   fullHtml: string;
   sourceSignals: unknown;
+  videoUrl: string | null;
+  videoTitle: string | null;
+  videoDescription: string | null;
+  videoPosterUrl: string | null;
+  videoDurationSeconds: number | null;
   status: AiTrendBriefingStatus;
   publishedAt: Date | null;
   isIncludedInTopicPage: boolean;
@@ -88,6 +104,11 @@ export type AiTrendBriefingView = Omit<AiTrendBriefingRecord, "sourceSignals" | 
   sourceCount: number;
   signalTypes: string[];
   demandBreakdowns: AiTrendDemandBreakdown[];
+  videoUrl: string | null;
+  videoTitle: string | null;
+  videoDescription: string | null;
+  videoPosterUrl: string | null;
+  videoDurationSeconds: number | null;
   fullHtml?: string;
 };
 
@@ -106,6 +127,39 @@ function normalizeNumber(value: unknown, fallback = 0) {
 function normalizeTextList(value: unknown, limit = 8) {
   if (!Array.isArray(value)) return [];
   return value.map(normalizeText).filter(Boolean).slice(0, limit);
+}
+
+function normalizeOptionalMediaString(value: unknown) {
+  const normalized = normalizeText(value);
+  if (!normalized) return null;
+  return normalizeMediaSrc(normalized) ?? null;
+}
+
+function normalizeOptionalText(value: unknown) {
+  const normalized = normalizeText(value);
+  return normalized || null;
+}
+
+function normalizeOptionalDurationSeconds(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number.parseInt(String(value), 10);
+  if (!Number.isFinite(number) || number <= 0) {
+    throw new Error("AI trend briefing videoDurationSeconds must be a positive integer.");
+  }
+  return number;
+}
+
+function normalizeRequiredDate(value: unknown, fieldName: string) {
+  const date = value instanceof Date ? value : new Date(String(value ?? ""));
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`AI trend briefing ${fieldName} must be a valid date.`);
+  }
+  return date;
+}
+
+function normalizeOptionalDate(value: unknown, fieldName: string) {
+  if (value === null || value === undefined || value === "") return null;
+  return normalizeRequiredDate(value, fieldName);
 }
 
 function stripUtf8Bom(value: string) {
@@ -156,6 +210,10 @@ export function aiTrendDateSlugToDate(value: string) {
 
 export function dateToAiTrendSlug(value: Date) {
   return value.toISOString().slice(0, 10);
+}
+
+export function hasRenderableAiTrendVideo(value: { videoUrl?: string | null }) {
+  return Boolean(normalizeOptionalMediaString(value.videoUrl));
 }
 
 export function buildAiTrendLoginUrl(dateSlug: string, locale: "zh" | "en" = "zh") {
@@ -345,6 +403,11 @@ export function validateAiTrendBriefingInput(input: AiTrendBriefingPublishInput)
   const demandBreakdowns = normalizeAiTrendDemandBreakdowns(input.demandBreakdowns ?? input.sourceSignals);
   const sourcePayload = buildAiTrendSourcePayload(sourceSignals, demandBreakdowns);
   const fullHtml = sanitizeAiTrendBriefingHtml(input.fullHtml);
+  const videoUrl = normalizeOptionalMediaString(input.videoUrl);
+  const videoTitle = normalizeOptionalText(input.videoTitle);
+  const videoDescription = normalizeOptionalText(input.videoDescription);
+  const videoPosterUrl = normalizeOptionalMediaString(input.videoPosterUrl);
+  const videoDurationSeconds = normalizeOptionalDurationSeconds(input.videoDurationSeconds);
 
   if (!isValidAiTrendDateSlug(slug)) {
     throw new Error("AI trend briefing date must be a valid YYYY-MM-DD slug.");
@@ -390,8 +453,14 @@ export function validateAiTrendBriefingInput(input: AiTrendBriefingPublishInput)
     sourceSignals,
     demandBreakdowns,
     sourcePayload,
+    videoUrl,
+    videoTitle,
+    videoDescription,
+    videoPosterUrl,
+    videoDurationSeconds,
     status,
-    isIncludedInTopicPage: Boolean(input.isIncludedInTopicPage),
+    isIncludedInTopicPage:
+      typeof input.isIncludedInTopicPage === "boolean" ? input.isIncludedInTopicPage : status === "published",
     publishedAt
   };
 }
@@ -406,17 +475,22 @@ export function toAiTrendBriefingView(
 
   return {
     id: briefing.id,
-    date: briefing.date,
+    date: normalizeRequiredDate(briefing.date, "date"),
     slug: briefing.slug,
     title: briefing.title,
     summary: briefing.summary,
     coreConclusion: briefing.coreConclusion,
     publicHighlights: briefing.publicHighlights,
+    videoUrl: normalizeOptionalMediaString(briefing.videoUrl),
+    videoTitle: normalizeOptionalText(briefing.videoTitle),
+    videoDescription: normalizeOptionalText(briefing.videoDescription),
+    videoPosterUrl: normalizeOptionalMediaString(briefing.videoPosterUrl),
+    videoDurationSeconds: briefing.videoDurationSeconds ?? null,
     status: briefing.status,
-    publishedAt: briefing.publishedAt,
+    publishedAt: normalizeOptionalDate(briefing.publishedAt, "publishedAt"),
     isIncludedInTopicPage: briefing.isIncludedInTopicPage,
-    createdAt: briefing.createdAt,
-    updatedAt: briefing.updatedAt,
+    createdAt: normalizeRequiredDate(briefing.createdAt, "createdAt"),
+    updatedAt: normalizeRequiredDate(briefing.updatedAt, "updatedAt"),
     sourceSignals,
     sourceCount: sourceSignals.length,
     signalTypes,
@@ -460,6 +534,11 @@ const aiTrendSummarySelect = {
   publicHighlights: true,
   fullHtml: true,
   sourceSignals: true,
+  videoUrl: true,
+  videoTitle: true,
+  videoDescription: true,
+  videoPosterUrl: true,
+  videoDurationSeconds: true,
   status: true,
   publishedAt: true,
   isIncludedInTopicPage: true,
@@ -503,6 +582,30 @@ const getCachedAiTrendBriefingByDateSlug = unstable_cache(
   { revalidate: aiTrendBriefingCacheSeconds, tags: ["public-ai-trends"] }
 );
 
+const getCachedLatestPublishedAiTrendBriefingWithVideo = unstable_cache(
+  async () => {
+    try {
+      const row = await prisma.aiTrendBriefing.findFirst({
+        where: {
+          ...publishedWhere,
+          videoUrl: { not: null }
+        },
+        select: aiTrendSummarySelect,
+        orderBy: [{ publishedAt: "desc" }, { date: "desc" }]
+      });
+
+      if (!row) return null;
+      const view = toAiTrendBriefingView(row, false);
+      return hasRenderableAiTrendVideo(view) ? view : null;
+    } catch (error) {
+      if (isRecoverableAiTrendReadError(error)) return null;
+      throw error;
+    }
+  },
+  ["public-ai-trend-latest-video-briefing"],
+  { revalidate: aiTrendBriefingCacheSeconds, tags: ["public-ai-trends"] }
+);
+
 export async function getAiTrendBriefingSummaries(limit = 12) {
   return getCachedAiTrendBriefingSummaries(Math.min(Math.max(1, limit), 60));
 }
@@ -510,4 +613,8 @@ export async function getAiTrendBriefingSummaries(limit = 12) {
 export async function getAiTrendBriefingByDateSlug(slug: string) {
   if (!isValidAiTrendDateSlug(slug)) return null;
   return getCachedAiTrendBriefingByDateSlug(slug);
+}
+
+export async function getLatestPublishedAiTrendBriefingWithVideo() {
+  return getCachedLatestPublishedAiTrendBriefingWithVideo();
 }

@@ -7,6 +7,7 @@ type ProductVideoPlayerProps = {
   title: string;
   fallbackText: string;
   playLabel: string;
+  poster?: string | null;
 };
 
 export function ProductVideoPlayer({
@@ -14,6 +15,7 @@ export function ProductVideoPlayer({
   title,
   fallbackText,
   playLabel,
+  poster,
 }: ProductVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [needsGesture, setNeedsGesture] = useState(false);
@@ -85,9 +87,11 @@ export function ProductVideoPlayer({
         className="aspect-video w-full bg-black object-contain"
         autoPlay
         muted
+        loop
         controls
         playsInline
-        preload="none"
+        preload="metadata"
+        poster={poster ?? undefined}
       >
         {fallbackText}
       </video>

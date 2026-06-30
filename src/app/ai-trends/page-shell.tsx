@@ -14,8 +14,14 @@ import {
   WalletCards
 } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
+import { AiTrendVideoBriefing } from "@/components/ai-trend-video-briefing";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
-import { getAiTrendBriefingSummaries, localizeAiTrendBriefingView } from "@/lib/ai-trends";
+import {
+  getAiTrendBriefingSummaries,
+  getLatestPublishedAiTrendBriefingWithVideo,
+  hasRenderableAiTrendVideo,
+  localizeAiTrendBriefingView
+} from "@/lib/ai-trends";
 import { type Locale } from "@/lib/dictionaries";
 import {
   absoluteUrl,
@@ -133,6 +139,13 @@ const aiTrendsSourceLinks = [
     href: "https://www.producthunt.com/topics/artificial-intelligence",
   },
 ] as const;
+
+function toIsoDateString(value: Date | string | null | undefined) {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
 
 const aiTrendsFaqItems = {
   zh: [
@@ -388,7 +401,15 @@ export function generateAiTrendTopicMetadata(locale: Locale = "zh"): Metadata {
 
 export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocale?: Locale } = {}) {
   const copy = content[forceLocale];
-  const recentBriefings = (await getAiTrendBriefingSummaries(3)).map((briefing) => localizeAiTrendBriefingView(briefing, forceLocale));
+  const [recentBriefingsRaw, latestVideoBriefingRaw] = await Promise.all([
+    getAiTrendBriefingSummaries(3),
+    getLatestPublishedAiTrendBriefingWithVideo()
+  ]);
+  const recentBriefings = recentBriefingsRaw.map((briefing) => localizeAiTrendBriefingView(briefing, forceLocale));
+  const latestVideoBriefing =
+    latestVideoBriefingRaw && hasRenderableAiTrendVideo(latestVideoBriefingRaw)
+      ? localizeAiTrendBriefingView(latestVideoBriefingRaw, forceLocale)
+      : null;
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [
       { name: copy.home, path: buildLocalePath("/", forceLocale) },
@@ -427,12 +448,30 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
       answer: item.answer,
     })),
   });
+  const videoSchema = latestVideoBriefing
+    ? {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        name: latestVideoBriefing.videoTitle || latestVideoBriefing.title,
+        description: latestVideoBriefing.videoDescription || latestVideoBriefing.coreConclusion,
+        contentUrl: absoluteUrl(latestVideoBriefing.videoUrl ?? "/"),
+        ...(latestVideoBriefing.videoPosterUrl
+          ? { thumbnailUrl: [absoluteUrl(latestVideoBriefing.videoPosterUrl)] }
+          : {}),
+        uploadDate:
+          toIsoDateString(latestVideoBriefing.publishedAt ?? latestVideoBriefing.date) ??
+          new Date().toISOString(),
+        ...(latestVideoBriefing.videoDurationSeconds
+          ? { duration: `PT${latestVideoBriefing.videoDurationSeconds}S` }
+          : {})
+      }
+    : null;
 
   return (
     <main>
       <Container className="py-14">
         <StructuredData
-          data={[breadcrumbSchema, collectionSchema, webPageSchema, faqSchema]}
+          data={[breadcrumbSchema, collectionSchema, webPageSchema, faqSchema, ...(videoSchema ? [videoSchema] : [])]}
         />
         <section className="surface-panel overflow-hidden p-7 md:p-10">
         <div className="max-w-4xl">
@@ -467,6 +506,20 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             {aiTrendsAnswerBlock[forceLocale]}
           </p>
         </section>
+
+        {latestVideoBriefing?.videoUrl ? (
+          <AiTrendVideoBriefing
+            locale={forceLocale}
+            title={latestVideoBriefing.title}
+            slug={latestVideoBriefing.slug}
+            coreConclusion={latestVideoBriefing.coreConclusion}
+            videoUrl={latestVideoBriefing.videoUrl}
+            videoTitle={latestVideoBriefing.videoTitle}
+            videoDescription={latestVideoBriefing.videoDescription}
+            videoPosterUrl={latestVideoBriefing.videoPosterUrl}
+            dailyHref={buildLocalePath(`/ai-trends/daily/${latestVideoBriefing.slug}`, forceLocale)}
+          />
+        ) : null}
 
         <section className="mt-12">
         <SectionTitle title={copy.demandTitle} intro={copy.demandIntro} />
@@ -565,21 +618,17 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
             </h2>
             <div className="mt-5 grid gap-4">
               {aiTrendsFaqItems[forceLocale].map((item) => (
-                <details
+                <article
                   key={item.question}
-                  className="content-fold"
+                  className="rounded-2xl border border-white/10 bg-white/7 p-5"
                 >
-                  <summary>
-                    <h3 className="text-base font-black text-[var(--marketing-text)]">
-                      {item.question}
-                    </h3>
-                  </summary>
-                  <div className="content-fold-body">
-                    <p className="text-sm leading-7 text-[var(--marketing-muted)]">
-                      {item.answer}
-                    </p>
-                  </div>
-                </details>
+                  <h3 className="text-base font-black text-[var(--marketing-text)]">
+                    {item.question}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
+                    {item.answer}
+                  </p>
+                </article>
               ))}
             </div>
           </div>

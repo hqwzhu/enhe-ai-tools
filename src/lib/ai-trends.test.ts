@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   aiTrendDateSlugToDate,
   buildAiTrendLoginUrl,
+  hasRenderableAiTrendVideo,
   isValidAiTrendDateSlug,
   localizeAiTrendBriefingView,
   normalizeAiTrendDemandBreakdowns,
@@ -20,7 +21,6 @@ const validSourceSignals = [
     observedSignal: "AI video and AI productivity queries remain prominent."
   }
 ];
-
 
 const validDemandBreakdowns = [
   {
@@ -55,6 +55,7 @@ const validDemandBreakdowns = [
     ]
   }
 ];
+
 const validInput = {
   date: "2026-06-19",
   title: "AI 需求趋势分析",
@@ -64,6 +65,11 @@ const validInput = {
   fullHtml: "<article><h1>AI 需求趋势分析</h1><p>完整报告正文。</p></article>",
   sourceSignals: validSourceSignals,
   demandBreakdowns: validDemandBreakdowns,
+  videoUrl: "/uploads/ai-trends/2026-06-19/briefing.mp4",
+  videoTitle: "AI需求趋势视频晨报",
+  videoDescription: "围绕最新一期 AI 需求趋势简报生成的视频摘要。",
+  videoPosterUrl: "/uploads/ai-trends/2026-06-19/poster.jpg",
+  videoDurationSeconds: 48,
   status: "published" as const
 };
 
@@ -80,6 +86,11 @@ const validBriefing: AiTrendBriefingRecord = {
     sources: validSourceSignals,
     demandBreakdowns: validDemandBreakdowns
   },
+  videoUrl: "/uploads/ai-trends/2026-06-19/briefing.mp4",
+  videoTitle: "AI需求趋势视频晨报",
+  videoDescription: "围绕最新一期 AI 需求趋势简报生成的视频摘要。",
+  videoPosterUrl: "/uploads/ai-trends/2026-06-19/poster.jpg",
+  videoDurationSeconds: 48,
   status: "published",
   publishedAt: new Date("2026-06-19T00:00:00.000Z"),
   isIncludedInTopicPage: true,
@@ -115,7 +126,11 @@ describe("AI trend briefing helpers", () => {
     expect(validateAiTrendBriefingInput(validInput)).toMatchObject({
       slug: "2026-06-19",
       title: validInput.title,
-      status: "published"
+      status: "published",
+      isIncludedInTopicPage: true,
+      videoUrl: "/api/uploads/ai-trends/2026-06-19/briefing.mp4",
+      videoPosterUrl: "/api/uploads/ai-trends/2026-06-19/poster.jpg",
+      videoDurationSeconds: 48
     });
   });
 
@@ -129,7 +144,6 @@ describe("AI trend briefing helpers", () => {
     ).toEqual(validSourceSignals);
   });
 
-
   it("normalizes structured demand breakdowns for second-level scenario ranking", () => {
     expect(
       normalizeAiTrendDemandBreakdowns([
@@ -139,14 +153,16 @@ describe("AI trend briefing helpers", () => {
       ])
     ).toEqual(validDemandBreakdowns);
   });
+
   it("keeps full HTML out of public views and includes it for logged-in users", () => {
     const publicView = toAiTrendBriefingView(validBriefing, false);
     expect(publicView).not.toHaveProperty("fullHtml");
     expect(publicView.sourceSignals).toEqual(validSourceSignals);
     expect(publicView.demandBreakdowns).toEqual(validDemandBreakdowns);
+    expect(publicView.videoUrl).toBe("/api/uploads/ai-trends/2026-06-19/briefing.mp4");
+    expect(publicView.videoTitle).toBe("AI需求趋势视频晨报");
     expect(toAiTrendBriefingView(validBriefing, true)).toHaveProperty("fullHtml", validBriefing.fullHtml);
   });
-
 
   it("accepts demand breakdowns in publish input without requiring a database migration", () => {
     const data = validateAiTrendBriefingInput(validInput);
@@ -157,9 +173,16 @@ describe("AI trend briefing helpers", () => {
       demandBreakdowns: validDemandBreakdowns
     });
   });
+
   it("builds login URLs that return to the requested daily report", () => {
     expect(buildAiTrendLoginUrl("2026-06-19")).toBe("/login?next=%2Fai-trends%2Fdaily%2F2026-06-19");
     expect(buildAiTrendLoginUrl("2026-06-19", "en")).toBe("/en/login?next=%2Fen%2Fai-trends%2Fdaily%2F2026-06-19");
+  });
+
+  it("detects whether a briefing has a renderable video", () => {
+    expect(hasRenderableAiTrendVideo({ videoUrl: null })).toBe(false);
+    expect(hasRenderableAiTrendVideo({ videoUrl: "" })).toBe(false);
+    expect(hasRenderableAiTrendVideo({ videoUrl: "/uploads/ai-trends/demo.mp4" })).toBe(true);
   });
 
   it("builds English-safe trend briefings when stored content is only available in Chinese", () => {
@@ -172,5 +195,22 @@ describe("AI trend briefing helpers", () => {
     expect(localized.sourceSignals[0]?.observedSignal).not.toMatch(/[\u3400-\u9fff]/);
     expect(localized.fullHtml).toContain("AI Demand Briefing");
     expect(localized.fullHtml).not.toMatch(/[\u3400-\u9fff]/);
+  });
+
+  it("normalizes serialized date fields before topic-page rendering", () => {
+    const publicView = toAiTrendBriefingView(
+      {
+        ...validBriefing,
+        date: "2026-06-19T00:00:00.000Z" as unknown as Date,
+        publishedAt: "2026-06-19T00:00:00.000Z" as unknown as Date,
+        createdAt: "2026-06-19T00:00:00.000Z" as unknown as Date,
+        updatedAt: "2026-06-19T00:00:00.000Z" as unknown as Date
+      },
+      false
+    );
+
+    expect(publicView.date).toBeInstanceOf(Date);
+    expect(publicView.publishedAt).toBeInstanceOf(Date);
+    expect(publicView.publishedAt?.toISOString()).toBe("2026-06-19T00:00:00.000Z");
   });
 });

@@ -38,6 +38,16 @@ describe("AI trend briefing source contracts", () => {
     expect(topicPage).toContain("buildMetaDescription(copy.description, undefined, 150)");
   });
 
+  it("renders the latest video briefing above demand ranking and emits additive video schema", () => {
+    const topicPage = read("src/app/ai-trends/page-shell.tsx");
+
+    expect(exists("src/components/ai-trend-video-briefing.tsx")).toBe(true);
+    expect(topicPage).toContain("getLatestPublishedAiTrendBriefingWithVideo");
+    expect(topicPage).toContain("AiTrendVideoBriefing");
+    expect(topicPage.indexOf("AiTrendVideoBriefing")).toBeLessThan(topicPage.indexOf("copy.demandTitle"));
+    expect(topicPage).toContain('"@type": "VideoObject"');
+  });
+
   it("sets noindex follow metadata on daily archive and daily detail pages", () => {
     const archiveShell = read("src/app/ai-trends/daily/page-shell.tsx");
     const detailShell = read("src/app/ai-trends/daily/[date]/page-shell.tsx");
