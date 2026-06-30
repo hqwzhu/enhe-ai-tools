@@ -125,13 +125,31 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("const heroVelocityTexts =");
     expect(page).not.toContain("texts={heroVelocityTexts}");
     expect(page).toContain('import { HomeLiquidEtherBackground } from "@/components/home/home-liquid-ether-background";');
+    expect(page).toContain('import DecryptedText from "@/components/home/decrypted-text";');
     expect(page).not.toContain('<p className="home-hero-brand">ENHE AI</p>');
     expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
-    expect(page).toContain("<p className=\"home-hero-positioning\">{heroIntro}</p>");
+    expect(page).toContain('<p className="home-hero-positioning">');
+    expect(page).toContain("text={heroIntro}");
+    expect(page).toContain('animateOn="view"');
+    expect(page).toContain("useOriginalCharsOnly");
+    expect(page).toContain("home-hero-decrypted-text");
     expect(css).not.toContain(".home-hero-brand");
     expect(css).toContain(".home-hero-title-simple");
+    expect(css).toContain(".home-hero-decrypted-text");
+    expect(css).toContain(".home-hero-encrypted-letter");
     expect(css).toContain("font-size: clamp(2.7rem, 7.4vw, 6.1rem)");
     expect(css).toContain(".site-brand-logo-dark {\n  opacity: 1;\n  filter: brightness(0) invert(1)");
+  });
+
+  it("uses DecryptedText as a visual-only hero slogan upgrade with reduced-motion fallback", () => {
+    const component = readFileSync(new URL("../components/home/decrypted-text.tsx", import.meta.url), "utf8");
+
+    expect(component).toContain('import { motion, useReducedMotion } from "motion/react";');
+    expect(component).toContain("const shouldReduceMotion = useReducedMotion();");
+    expect(component).toContain("<span style={styles.srOnly}>{text}</span>");
+    expect(component).toContain("if (shouldReduceMotion) {");
+    expect(component).toContain("{text}");
+    expect(component).toContain("Adapted from React Bits DecryptedText");
   });
 
   it("uses simplified product cards in the homepage featured preview without changing the full card contract", () => {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
+import DecryptedText from "@/components/home/decrypted-text";
 import { HomeLiquidEtherBackground } from "@/components/home/home-liquid-ether-background";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
@@ -222,7 +223,20 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
           <div className="home-hero-stage">
             <div className="home-hero-centered">
               <h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>
-              <p className="home-hero-positioning">{heroIntro}</p>
+              <p className="home-hero-positioning">
+                <DecryptedText
+                  text={heroIntro}
+                  speed={34}
+                  maxIterations={12}
+                  sequential
+                  revealDirection="center"
+                  useOriginalCharsOnly
+                  animateOn="view"
+                  className="home-hero-decrypted-letter"
+                  parentClassName="home-hero-decrypted-text"
+                  encryptedClassName="home-hero-encrypted-letter"
+                />
+              </p>
 
               <div className="home-hero-actions">
                 <ButtonLink href={buildLocalePath("/software", forceLocale)} variant="primary" className="home-hero-cta home-hero-cta-primary">

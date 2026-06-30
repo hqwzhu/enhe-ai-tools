@@ -1749,6 +1749,34 @@ select option:disabled {
   text-align: center;
 }
 
+.home-hero-decrypted-text {
+  display: inline-block;
+  max-width: 100%;
+  text-wrap: balance;
+  text-shadow:
+    0 0 18px rgba(65, 197, 219, 0.16),
+    0 0 42px rgba(65, 197, 219, 0.08);
+}
+
+.home-hero-decrypted-letter,
+.home-hero-encrypted-letter {
+  display: inline;
+  letter-spacing: inherit;
+}
+
+.home-hero-decrypted-letter {
+  color: color-mix(in srgb, var(--marketing-text) 88%, var(--marketing-accent));
+}
+
+.home-hero-encrypted-letter {
+  color: var(--marketing-accent);
+  font-family: var(--font-heading-en);
+  opacity: 0.78;
+  text-shadow:
+    0 0 10px rgba(65, 197, 219, 0.36),
+    0 0 26px rgba(65, 197, 219, 0.16);
+}
+
 .home-hero-path-strip {
   display: grid;
   width: min(940px, 92vw);
