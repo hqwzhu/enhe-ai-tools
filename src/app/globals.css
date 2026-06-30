@@ -159,6 +159,18 @@ html[lang='en-US'] :is(h1, h2, h3, .home-hero-title) {
   font-family: var(--font-heading-en);
 }
 
+.site-header-transparent :is(
+  .site-nav-link,
+  .site-login-link,
+  .site-admin-link,
+  .site-user-chip,
+  .site-user-center-cta,
+  .site-language-switcher a
+) {
+  font-family: 'Microsoft YaHei', 'Microsoft YaHei UI', sans-serif;
+  font-weight: 400;
+}
+
 body::before,
 body::after {
   position: fixed;
@@ -2641,17 +2653,11 @@ select option:disabled {
   display: flex;
   min-height: clamp(92px, 12vw, 150px);
   align-items: end;
-  gap: clamp(1rem, 2vw, 2rem);
+  justify-content: flex-start;
+  gap: 0;
   margin-top: clamp(2rem, 4vw, 3.25rem);
   padding-top: 1.25rem;
   opacity: 0.48;
-}
-
-.site-footer-gradient-icon {
-  width: clamp(58px, 8vw, 104px);
-  height: auto;
-  flex: none;
-  filter: brightness(0) invert(1) drop-shadow(0 28px 52px rgba(65, 197, 219, 0.26));
 }
 
 .site-footer-gradient-word {

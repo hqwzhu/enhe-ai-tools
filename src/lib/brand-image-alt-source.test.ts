@@ -14,6 +14,7 @@ describe("brand image alt text", () => {
     const source = readFileSync(join(process.cwd(), "src/components/site-footer.tsx"), "utf8");
 
     expect(source).not.toContain('alt=""');
-    expect(source).toContain("alt={`${siteName} gradient logo`}");
+    expect(source).toContain("alt={`${siteName} logo`}");
+    expect(source).not.toContain("site-footer-gradient-icon");
   });
 });
