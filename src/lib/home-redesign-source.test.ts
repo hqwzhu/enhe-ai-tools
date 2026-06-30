@@ -141,7 +141,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".text-pressure-title");
     expect(css).toContain(".home-hero-decrypted-text");
     expect(css).toContain(".home-hero-encrypted-letter");
-    expect(css).toContain("font-size: clamp(2.7rem, 7.4vw, 6.1rem)");
+    expect(css).toContain("font-size: clamp(4.05rem, 11.1vw, 9.15rem)");
     expect(css).toContain(".site-brand-logo-dark {\n  opacity: 1;\n  filter: brightness(0) invert(1)");
   });
 
@@ -228,7 +228,8 @@ describe("homepage SaaS redesign source", () => {
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
     expect(css).toContain(".home-hero-title-simple");
-    expect(css).toContain("font-size: clamp(2.7rem, 7.4vw, 6.1rem)");
+    expect(css).toContain("font-size: clamp(4.05rem, 11.1vw, 9.15rem)");
+    expect(css).toContain("font-size: clamp(4.05rem, 22vw, 6.375rem)");
     expect(css).toContain("gap: 0.58em;");
   });
 

@@ -1617,7 +1617,7 @@ select option:disabled {
 
 .home-hero-title-simple {
   max-width: 920px;
-  font-size: clamp(2.7rem, 7.4vw, 6.1rem);
+  font-size: clamp(4.05rem, 11.1vw, 9.15rem);
   line-height: 1.05;
 }
 
@@ -3206,6 +3206,10 @@ select option:disabled {
     font-size: clamp(3.45rem, 15.8vw, 4.25rem);
     gap: 0.58em;
     line-height: 1.04;
+  }
+
+  .home-hero-title-simple {
+    font-size: clamp(4.05rem, 22vw, 6.375rem);
   }
 
   .home-hero-title-emphasis {
