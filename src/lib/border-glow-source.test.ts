@@ -22,6 +22,10 @@ describe("global card border glow source contract", () => {
     expect(controllerSource).toContain('".tool-detail-copy-card"');
     expect(controllerSource).toContain("getEdgeProximity");
     expect(controllerSource).toContain("getCursorAngle");
+    expect(controllerSource).toContain("const rafRef = useRef<number | null>(null)");
+    expect(controllerSource).toContain("latestPointerEventRef.current = event");
+    expect(controllerSource).toContain("window.requestAnimationFrame(renderGlowFrame)");
+    expect(controllerSource).toContain("window.cancelAnimationFrame");
     expect(controllerSource).toContain('card.style.setProperty("--edge-proximity"');
     expect(controllerSource).toContain('card.style.setProperty("--cursor-angle"');
     expect(controllerSource).toContain('card.style.setProperty("--border-glow-strength"');

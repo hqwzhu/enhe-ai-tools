@@ -56,6 +56,8 @@ interface LiquidEtherWebGL {
 }
 
 const defaultColors = ['#5227FF', '#FF9FFC', '#B497CF'];
+const MAX_RENDER_PIXEL_RATIO = 1.35;
+const HIGH_REFRESH_FRAME_INTERVAL = 1000 / 65;
 
 export default function LiquidEther({
   mouseForce = 20,
@@ -135,9 +137,13 @@ export default function LiquidEther({
       clock: THREE.Clock | null = null;
       init(container: HTMLElement) {
         this.container = container;
-        this.pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        this.pixelRatio = Math.min(window.devicePixelRatio || 1, MAX_RENDER_PIXEL_RATIO);
         this.resize();
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        this.renderer = new THREE.WebGLRenderer({
+          alpha: true,
+          antialias: false,
+          powerPreference: 'high-performance'
+        });
         // Always transparent
         this.renderer.autoClear = false;
         this.renderer.setClearColor(new THREE.Color(0x000000), 0);
@@ -153,10 +159,16 @@ export default function LiquidEther({
       resize() {
         if (!this.container) return;
         const rect = this.container.getBoundingClientRect();
+        const nextPixelRatio = Math.min(window.devicePixelRatio || 1, MAX_RENDER_PIXEL_RATIO);
+        const pixelRatioChanged = nextPixelRatio !== this.pixelRatio;
+        this.pixelRatio = nextPixelRatio;
         this.width = Math.max(1, Math.floor(rect.width));
         this.height = Math.max(1, Math.floor(rect.height));
         this.aspect = this.width / this.height;
-        if (this.renderer) this.renderer.setSize(this.width, this.height, false);
+        if (this.renderer) {
+          if (pixelRatioChanged) this.renderer.setPixelRatio(this.pixelRatio);
+          this.renderer.setSize(this.width, this.height, false);
+        }
       }
       update() {
         if (!this.clock) return;
@@ -1008,6 +1020,8 @@ export default function LiquidEther({
       autoDriver?: AutoDriver;
       lastUserInteraction = performance.now();
       running = false;
+      lastRenderTime = 0;
+      minFrameInterval = HIGH_REFRESH_FRAME_INTERVAL;
       private _loop = this.loop.bind(this);
       private _resize = this.resize.bind(this);
       private _onVisibility?: () => void;
@@ -1056,7 +1070,11 @@ export default function LiquidEther({
       }
       loop() {
         if (!this.running) return;
-        this.render();
+        const now = performance.now();
+        if (now - this.lastRenderTime >= this.minFrameInterval) {
+          this.lastRenderTime = now;
+          this.render();
+        }
         rafRef.current = requestAnimationFrame(this._loop);
       }
       start() {

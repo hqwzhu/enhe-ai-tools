@@ -56,6 +56,15 @@
   font-weight: 400 900;
 }
 
+@font-face {
+  font-family: 'Roboto Flex ENHE';
+  src: url('/fonts/roboto-flex/roboto-flex-latin-variable.ttf') format('truetype');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 100 1000;
+  font-stretch: 25% 151%;
+}
+
 @theme {
   --font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI', Arial, Helvetica, sans-serif;
 }
@@ -1619,6 +1628,73 @@ select option:disabled {
   max-width: 920px;
   font-size: clamp(2.7rem, 7.4vw, 6.1rem);
   line-height: 1.05;
+}
+
+.home-hero-title-pressure {
+  width: min(100%, 640px);
+  min-height: clamp(4.1rem, 9.1vw, 7.2rem);
+  align-items: center;
+  justify-items: center;
+  overflow: visible;
+}
+
+.text-pressure-container {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: clamp(4.1rem, 9.1vw, 7.2rem);
+  background: transparent;
+}
+
+.text-pressure-title {
+  display: block;
+  width: 100%;
+  margin: 0;
+  color: var(--text-pressure-color, #ffffff);
+  text-align: center;
+  text-transform: uppercase;
+  user-select: none;
+  white-space: nowrap;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.72),
+    0 18px 58px rgba(65, 197, 219, 0.24);
+}
+
+.text-pressure-title > span {
+  display: inline-block;
+  color: var(--text-pressure-color, #ffffff);
+  will-change: font-variation-settings, opacity;
+}
+
+.text-pressure-title > span[data-space='true'] {
+  width: 0.18em;
+  flex: 0 0 0.18em;
+}
+
+.text-pressure-flex {
+  display: flex;
+  justify-content: space-between;
+}
+
+.text-pressure-stroke > span {
+  position: relative;
+}
+
+.text-pressure-stroke > span::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: transparent;
+  content: attr(data-char);
+  -webkit-text-stroke: 3px var(--text-pressure-stroke-color, #41c5db);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-pressure-title > span {
+    will-change: auto;
+  }
 }
 
 .home-hero-title > span {
@@ -3206,6 +3282,21 @@ select option:disabled {
     font-size: clamp(3.45rem, 15.8vw, 4.25rem);
     gap: 0.58em;
     line-height: 1.04;
+  }
+
+  .home-hero-title-pressure {
+    width: min(100%, 21.5rem);
+    min-height: 4.4rem;
+  }
+
+  .text-pressure-container {
+    height: 4.4rem;
+  }
+
+  .text-pressure-title {
+    text-shadow:
+      0 0 1px rgba(255, 255, 255, 0.68),
+      0 12px 38px rgba(65, 197, 219, 0.2);
   }
 
   .home-hero-title-emphasis {

@@ -97,6 +97,8 @@ function findGlowCard(target: EventTarget | null) {
 export function BorderGlowController() {
   const activeCardRef = useRef<HTMLElement | null>(null);
   const enabledRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
+  const latestPointerEventRef = useRef<PointerEvent | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -105,19 +107,34 @@ export function BorderGlowController() {
 
     const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const stopFrame = () => {
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
 
     const syncEnabled = () => {
       const nextEnabled = !coarsePointerQuery.matches && !reducedMotionQuery.matches;
       enabledRef.current = nextEnabled;
 
       if (!nextEnabled) {
+        stopFrame();
+        latestPointerEventRef.current = null;
         resetCard(activeCardRef.current);
         activeCardRef.current = null;
       }
     };
 
-    const handlePointerMove = (event: PointerEvent) => {
+    const renderGlowFrame = () => {
+      rafRef.current = null;
+
       if (!enabledRef.current) {
+        return;
+      }
+
+      const event = latestPointerEventRef.current;
+      if (!event) {
         return;
       }
 
@@ -145,6 +162,18 @@ export function BorderGlowController() {
       card.style.setProperty("--cursor-angle", `${angle.toFixed(3)}deg`);
     };
 
+    const handlePointerMove = (event: PointerEvent) => {
+      if (!enabledRef.current) {
+        return;
+      }
+
+      latestPointerEventRef.current = event;
+
+      if (rafRef.current === null) {
+        rafRef.current = window.requestAnimationFrame(renderGlowFrame);
+      }
+    };
+
     const handlePointerOut = (event: PointerEvent) => {
       const card = activeCardRef.current;
 
@@ -155,12 +184,16 @@ export function BorderGlowController() {
       const nextTarget = event.relatedTarget;
 
       if (!(nextTarget instanceof Element) || !card.contains(nextTarget)) {
+        stopFrame();
+        latestPointerEventRef.current = null;
         resetCard(card);
         activeCardRef.current = null;
       }
     };
 
     const handleWindowBlur = () => {
+      stopFrame();
+      latestPointerEventRef.current = null;
       resetCard(activeCardRef.current);
       activeCardRef.current = null;
     };
@@ -180,6 +213,8 @@ export function BorderGlowController() {
       document.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerout", handlePointerOut);
       window.removeEventListener("blur", handleWindowBlur);
+      stopFrame();
+      latestPointerEventRef.current = null;
       resetCard(activeCardRef.current);
     };
   }, []);

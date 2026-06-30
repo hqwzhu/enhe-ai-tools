@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import DecryptedText from "@/components/home/decrypted-text";
 import { HomeLiquidEtherBackground } from "@/components/home/home-liquid-ether-background";
+import TextPressure from "@/components/home/text-pressure";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
@@ -222,7 +223,21 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
             <div className="home-hero-centered">
-              <h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>
+              <h1 className="home-hero-title home-hero-title-simple home-hero-title-pressure">
+                <TextPressure
+                  text={heroTitle}
+                  fontFamily="Roboto Flex ENHE"
+                  flex
+                  alpha={false}
+                  stroke={false}
+                  width
+                  weight
+                  italic
+                  textColor="#ffffff"
+                  strokeColor="#41c5db"
+                  minFontSize={36}
+                />
+              </h1>
               <p className="home-hero-positioning">
                 <DecryptedText
                   text={heroIntro}
