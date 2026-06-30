@@ -278,8 +278,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
           <div className="home-product-preview backdrop-blur-xl backdrop-saturate-150">
             <div className="home-product-preview-header">
               <div>
-                <p>{t.home.featuredContentTitle}</p>
-                <h2>{t.home.featuredContentIntro}</h2>
+                <h2>{t.home.featuredContentTitle}</h2>
               </div>
             </div>
             {recommendedTools.length > 0 ? (

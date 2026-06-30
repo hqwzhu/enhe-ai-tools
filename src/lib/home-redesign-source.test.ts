@@ -54,7 +54,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain('className="home-workflow-shell"');
     expect(page).not.toContain('className="home-byox-spotlight"');
     expect(page).toContain("t.home.featuredContentTitle");
-    expect(page).toContain("t.home.featuredContentIntro");
+    expect(page).not.toContain("t.home.featuredContentIntro");
     expect(page).not.toContain("take: 40");
     expect(page).not.toContain("recommendedTools.slice(previewTools.length)");
     expect(page).toContain("getHomeRecommendedTools");
