@@ -274,17 +274,29 @@ export function AboutPageShell({ forceLocale }: { forceLocale: Locale }) {
           </div>
         </section>
 
-        <section className="glass mt-8 rounded-2xl p-6">
-          <SectionTitle title={copy.faqTitle} />
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {copy.faq.map((item) => (
-              <article key={item.question} className="rounded-2xl border border-white/10 bg-white/8 p-5">
-                <h2 className="text-lg font-black leading-snug text-[var(--marketing-text)]">{item.question}</h2>
-                <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.answer}</p>
-              </article>
-            ))}
+        <details className="content-fold glass mt-8">
+          <summary>
+            <div className="content-fold-summary-copy">
+              <h2 className="text-2xl font-black text-[var(--marketing-text)]">{copy.faqTitle}</h2>
+            </div>
+          </summary>
+          <div className="content-fold-body">
+            <div className="grid gap-4 md:grid-cols-2">
+              {copy.faq.map((item) => (
+                <details key={item.question} className="content-fold">
+                  <summary>
+                    <h3 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
+                      {item.question}
+                    </h3>
+                  </summary>
+                  <div className="content-fold-body">
+                    <p className="text-sm leading-7 text-[var(--marketing-muted)]">{item.answer}</p>
+                  </div>
+                </details>
+              ))}
+            </div>
           </div>
-        </section>
+        </details>
       </Container>
     </main>
   );

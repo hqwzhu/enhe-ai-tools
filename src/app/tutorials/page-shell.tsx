@@ -128,7 +128,16 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
               : "使用教程的作用是减少购买、部署或咨询账号服务前的试错成本，让你先看清准备条件、操作步骤和常见问题。"}
           </p>
         </div>
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <details className="content-fold mt-5">
+          <summary>
+            <div className="content-fold-summary-copy">
+              <h2 className="text-xl font-black text-[var(--marketing-text)]">
+                {tutorialGuidance.title}
+              </h2>
+            </div>
+          </summary>
+          <div className="content-fold-body">
+            <div className="grid gap-4 md:grid-cols-3">
           {[
             { title: forceLocale === "en" ? "Workflow steps" : "学习路径", text: tutorialGuidance.workflowSteps },
             { title: forceLocale === "en" ? "Common errors" : "常见问题", text: tutorialGuidance.commonErrors },
@@ -139,7 +148,9 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
               <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.text}</p>
             </article>
           ))}
-        </div>
+            </div>
+          </div>
+        </details>
         <div className="mt-5 flex flex-wrap gap-3">
           {[
             { label: forceLocale === "en" ? "Choose software" : "选择 AI 软件", href: "/software" },
@@ -174,19 +185,29 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
           );
         })}
       </div>
-      <section className="surface-panel mt-8 p-6">
+      <details className="content-fold surface-panel mt-8">
+        <summary>
+          <div className="content-fold-summary-copy">
         <h2 className="text-2xl font-semibold text-[var(--marketing-text)]">
           {forceLocale === "en" ? "Tutorial FAQ" : "使用教程常见问题"}
         </h2>
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          </div>
+        </summary>
+        <div className="content-fold-body">
+        <div className="grid gap-4 md:grid-cols-3">
           {faqItems.map((item) => (
-            <article key={item.question} className="rounded-2xl border border-white/10 bg-white/8 p-4">
-              <h3 className="font-semibold leading-snug text-[var(--marketing-text)]">{item.question}</h3>
-              <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.answer}</p>
-            </article>
+            <details key={item.question} className="content-fold">
+              <summary>
+                <h3 className="font-semibold leading-snug text-[var(--marketing-text)]">{item.question}</h3>
+              </summary>
+              <div className="content-fold-body">
+                <p className="text-sm leading-7 text-[var(--marketing-muted)]">{item.answer}</p>
+              </div>
+            </details>
           ))}
         </div>
-      </section>
+        </div>
+      </details>
       </main>
     </Container>
   );
