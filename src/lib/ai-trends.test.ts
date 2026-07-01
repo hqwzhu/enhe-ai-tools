@@ -134,6 +134,17 @@ describe("AI trend briefing helpers", () => {
     });
   });
 
+  it("rejects encoding-corrupted Chinese briefing text before publish or render", () => {
+    expect(() =>
+      validateAiTrendBriefingInput({
+        ...validInput,
+        title: "AI ????????????? AI ??????",
+        summary: "???? OpenAI?Stanford HAI?PwC?Microsoft?Anthropic?Similarweb ??????",
+        coreConclusion: "?????????AI ??????????????????"
+      })
+    ).toThrow(/encoding-corrupted/i);
+  });
+
   it("normalizes source signals and drops invalid rows", () => {
     expect(
       normalizeAiTrendSourceSignals([

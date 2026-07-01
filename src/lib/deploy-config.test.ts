@@ -20,9 +20,13 @@ describe("server deployment compose config", () => {
 
   it("builds the app image from the repository root", () => {
     const compose = readFileSync(resolve(root, "deploy/enhe-ai-tools/docker-compose.yml"), "utf8");
+    const dockerfile = readFileSync(resolve(root, "deploy/enhe-ai-tools/Dockerfile"), "utf8");
 
     expect(compose).toContain("context: ../..");
     expect(compose).toContain("dockerfile: deploy/enhe-ai-tools/Dockerfile");
+    expect(compose).toContain("AI_TRENDS_REVALIDATE_TOKEN: ${AI_TRENDS_REVALIDATE_TOKEN:-}");
+    expect(dockerfile).toContain("COPY --from=builder /app/src ./src");
+    expect(dockerfile).toContain("COPY --from=builder /app/tsconfig.json ./tsconfig.json");
   });
 
   it("keeps the shared Tencent Cloud nginx proxy aligned with admin upload limits", () => {

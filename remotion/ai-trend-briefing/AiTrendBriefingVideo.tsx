@@ -1,5 +1,15 @@
-﻿import React from "react";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import React from "react";
+import {
+  AbsoluteFill,
+  Easing,
+  cancelRender,
+  continueRender,
+  delayRender,
+  interpolate,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig
+} from "remotion";
 import type { AiTrendVideoProps } from "./types";
 
 const palette = {
@@ -12,6 +22,83 @@ const palette = {
   muted: "#b6c5d4",
   line: "rgba(255,255,255,0.12)"
 };
+
+const miSansStylesheetHrefs = [
+  staticFile("fonts/misans/MiSans-Regular.min.css"),
+  staticFile("fonts/misans/MiSans-Semibold.min.css"),
+  staticFile("fonts/misans/MiSans-Bold.min.css")
+];
+
+let miSansReadyPromise: Promise<void> | null = null;
+
+function loadStylesheet(href: string) {
+  return new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector(`link[data-ai-trend-font="${href}"]`) as HTMLLinkElement | null;
+    if (existing) {
+      if (existing.dataset.loaded === "true") {
+        resolve();
+        return;
+      }
+
+      const handleLoad = () => {
+        cleanup();
+        resolve();
+      };
+      const handleError = () => {
+        cleanup();
+        reject(new Error(`Failed to load font stylesheet: ${href}`));
+      };
+      const cleanup = () => {
+        existing.removeEventListener("load", handleLoad);
+        existing.removeEventListener("error", handleError);
+      };
+
+      existing.addEventListener("load", handleLoad);
+      existing.addEventListener("error", handleError);
+      return;
+    }
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.dataset.aiTrendFont = href;
+    link.onload = () => {
+      link.dataset.loaded = "true";
+      resolve();
+    };
+    link.onerror = () => reject(new Error(`Failed to load font stylesheet: ${href}`));
+    document.head.appendChild(link);
+  });
+}
+
+function ensureMiSansFonts() {
+  if (typeof document === "undefined") {
+    return Promise.resolve();
+  }
+
+  if (!miSansReadyPromise) {
+    miSansReadyPromise = Promise.all(miSansStylesheetHrefs.map((href) => loadStylesheet(href)))
+      .then(async () => {
+        if (document.fonts?.load) {
+          await Promise.all([
+            document.fonts.load("400 32px MiSans", "AI需求趋势核心结论"),
+            document.fonts.load("520 32px MiSans", "公开信号高频方向"),
+            document.fonts.load("630 32px MiSans", "本段焦点需求热度摘要")
+          ]);
+        }
+
+        if (document.fonts?.ready) {
+          await document.fonts.ready;
+        }
+      })
+      .catch((error) => {
+        miSansReadyPromise = null;
+        throw error;
+      });
+  }
+
+  return miSansReadyPromise;
+}
 
 function fadeUp(frame: number, start: number, distance = 28) {
   return {
@@ -39,15 +126,42 @@ export const AiTrendBriefingVideo: React.FC<AiTrendVideoProps> = ({
 }) => {
   const frame = useCurrentFrame();
   const { width } = useVideoConfig();
+  const [fontsReady, setFontsReady] = React.useState(false);
+  const [fontHandle] = React.useState(() => delayRender("Load AI trend video fonts"));
   const activeIndex = Math.min(scenes.length - 1, Math.floor(frame / 90));
   const scene = scenes[activeIndex] ?? scenes[0];
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    ensureMiSansFonts()
+      .then(() => {
+        if (cancelled) {
+          return;
+        }
+
+        setFontsReady(true);
+        continueRender(fontHandle);
+      })
+      .catch((error) => {
+        cancelRender(fontHandle, error instanceof Error ? error : new Error(String(error)));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fontHandle]);
+
+  if (!fontsReady) {
+    return null;
+  }
 
   return (
     <AbsoluteFill
       style={{
         background: `radial-gradient(circle at top left, ${palette.soft} 0%, ${palette.ink} 54%, #050b12 100%)`,
         color: palette.text,
-        fontFamily: '"Microsoft YaHei","PingFang SC","Noto Sans SC","Segoe UI",sans-serif'
+        fontFamily: '"MiSans","Microsoft YaHei","PingFang SC","Noto Sans SC","Segoe UI",sans-serif'
       }}
     >
       <AbsoluteFill

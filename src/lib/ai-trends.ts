@@ -226,6 +226,26 @@ function hasCjk(value: string | null | undefined) {
   return /[\u3400-\u9fff]/.test(String(value ?? ""));
 }
 
+function hasSuspiciousQuestionMarks(value: string) {
+  const questionMarkCount = (value.match(/\?/g) ?? []).length;
+  return /\?{3,}/.test(value) || questionMarkCount >= 6;
+}
+
+function assertNoCorruptedAiTrendText(fieldName: string, value: string | null | undefined) {
+  const normalized = normalizeText(value);
+  if (!normalized) return;
+
+  const looksCorrupted =
+    normalized.includes("\uFFFD") ||
+    (hasSuspiciousQuestionMarks(normalized) && !hasCjk(normalized));
+
+  if (looksCorrupted) {
+    throw new Error(
+      `AI trend briefing ${fieldName} appears encoding-corrupted. Regenerate the source artifact as UTF-8 before publishing.`
+    );
+  }
+}
+
 function normalizeEnglishSentence(value: string) {
   const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
   return normalized;
@@ -424,6 +444,35 @@ export function validateAiTrendBriefingInput(input: AiTrendBriefingPublishInput)
   if (!coreConclusion) {
     throw new Error("AI trend briefing core conclusion is required.");
   }
+
+  assertNoCorruptedAiTrendText("title", title);
+  assertNoCorruptedAiTrendText("summary", summary);
+  assertNoCorruptedAiTrendText("coreConclusion", coreConclusion);
+  (input.publicHighlights ?? []).forEach((item, index) => {
+    assertNoCorruptedAiTrendText(`publicHighlights[${index}]`, normalizeText(item));
+  });
+  demandBreakdowns.forEach((breakdown, breakdownIndex) => {
+    assertNoCorruptedAiTrendText(`demandBreakdowns[${breakdownIndex}].direction`, breakdown.direction);
+    assertNoCorruptedAiTrendText(`demandBreakdowns[${breakdownIndex}].summary`, breakdown.summary);
+    breakdown.scenarios.forEach((scenario, scenarioIndex) => {
+      assertNoCorruptedAiTrendText(
+        `demandBreakdowns[${breakdownIndex}].scenarios[${scenarioIndex}].name`,
+        scenario.name
+      );
+      assertNoCorruptedAiTrendText(
+        `demandBreakdowns[${breakdownIndex}].scenarios[${scenarioIndex}].painPoint`,
+        scenario.painPoint
+      );
+      assertNoCorruptedAiTrendText(
+        `demandBreakdowns[${breakdownIndex}].scenarios[${scenarioIndex}].aiValue`,
+        scenario.aiValue
+      );
+      assertNoCorruptedAiTrendText(
+        `demandBreakdowns[${breakdownIndex}].scenarios[${scenarioIndex}].productOpportunity`,
+        scenario.productOpportunity
+      );
+    });
+  });
 
   if (status === "published" && !sourceSignals.length) {
     throw new Error("Published AI trend briefing requires at least one source signal.");
