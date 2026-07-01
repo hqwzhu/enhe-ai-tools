@@ -31,7 +31,7 @@ export function HomeParticlesBackground() {
   return (
     <Particles
       particleColors={HERO_PARTICLE_COLORS}
-      particleCount={200}
+      particleCount={600}
       particleSpread={10}
       speed={0.1}
       particleBaseSize={100}

@@ -125,6 +125,18 @@ enum NewsStatus {
   archived
 }
 
+enum ProductDemoStatus {
+  draft
+  published
+  archived
+}
+
+enum ProductDemoCategory {
+  software
+  skill_learning
+  account_service
+}
+
 enum AiTrendBriefingStatus {
   draft
   published
@@ -295,10 +307,48 @@ model Tool {
   tagLinks          ToolTagLink[]
   faqs              ToolFaq[]
   changelogs        ToolChangelog[]
+  productDemos      ProductDemo[]
 
   @@index([type, status])
   @@index([isHomeRecommended, status, sortOrder])
   @@map("tools")
+}
+
+model ProductDemo {
+  id                 String              @id @default(cuid())
+  title              String
+  slug               String              @unique
+  description        String
+  category           ProductDemoCategory
+  tags               String[]            @default([])
+  coverImage         String              @map("cover_image")
+  coverAlt           String              @map("cover_alt")
+  videoUrl           String?             @map("video_url")
+  videoDuration      String?             @map("video_duration")
+  uploadDate         DateTime?           @map("upload_date")
+  transcript         String?
+  faq                Json                @default("[]")
+  productType        String?             @map("product_type")
+  relatedProductId   String?             @map("related_product_id")
+  relatedProductSlug String?             @map("related_product_slug")
+  relatedProductUrl  String?             @map("related_product_url")
+  demoUrl            String?             @map("demo_url")
+  tutorialUrl        String?             @map("tutorial_url")
+  isFeaturedOnHome   Boolean             @default(false) @map("is_featured_on_home")
+  sortOrder          Int                 @default(0) @map("sort_order")
+  status             ProductDemoStatus   @default(draft)
+  seoTitle           String?             @map("seo_title")
+  seoDescription     String?             @map("seo_description")
+  canonicalUrl       String?             @map("canonical_url")
+  publishedAt        DateTime?           @map("published_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  relatedProduct     Tool?               @relation(fields: [relatedProductId], references: [id], onDelete: SetNull)
+
+  @@index([status, isFeaturedOnHome, sortOrder])
+  @@index([category, status, sortOrder])
+  @@index([relatedProductId])
+  @@map("product_demos")
 }
 
 model ToolTag {

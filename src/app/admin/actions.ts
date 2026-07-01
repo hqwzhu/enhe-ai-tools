@@ -57,6 +57,7 @@ import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
 import { refundZpayTransactionForOrder } from "@/lib/zpay-orders";
 import { generateAiNewsEnglishDraft } from "@/lib/ai-news-translation";
+import { buildProductDemoPath } from "@/lib/product-demos";
 import type { AiNewsTranslationActionState } from "@/app/admin/ai-news-translation-panel";
 
 const idSchema = z.string().min(1);
@@ -1612,6 +1613,202 @@ function parseTopicJsonRows(
     return JSON.parse(JSON.stringify(parseTopicDelimitedRows(text, "source"))) as Prisma.InputJsonValue;
   }
   return JSON.parse(JSON.stringify(parseTopicDelimitedRows(text, "action"))) as Prisma.InputJsonValue;
+}
+
+function parseProductDemoDateField(value: FormDataEntryValue | null) {
+  const text = parseOptionalString(value);
+  if (!text) return null;
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parseProductDemoFaqRows(value: FormDataEntryValue | null) {
+  const rows = String(value ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [question = "", ...answerParts] = line.split("|");
+      const answer = answerParts.join("|");
+      return {
+        question: question.trim(),
+        answer: answer.trim()
+      };
+    })
+    .filter((item) => item.question && item.answer);
+
+  return JSON.parse(JSON.stringify(rows)) as Prisma.InputJsonValue;
+}
+
+const productDemoSlugSchema = z
+  .string()
+  .min(1, "slug 必填。")
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug 只能包含小写英文、数字和短横线。");
+
+async function assertUniqueProductDemoSlug(slug: string, id?: string | null) {
+  const existing = await prisma.productDemo.findFirst({
+    where: { slug, ...(id ? { id: { not: id } } : {}) },
+    select: { id: true }
+  });
+  if (existing) throw new Error("slug 已存在，请更换一个唯一 slug。");
+}
+
+function revalidateProductDemoPaths(slug?: string | null) {
+  revalidateTag("public-product-demos");
+  revalidateTag("public-home");
+  revalidatePath("/");
+  revalidatePath("/en");
+  revalidatePath("/product-demos");
+  revalidatePath("/en/product-demos");
+  revalidatePath("/admin/product-demos");
+  revalidatePath("/sitemap.xml");
+  if (slug) {
+    revalidatePath(buildProductDemoPath(slug, "zh"));
+    revalidatePath(buildProductDemoPath(slug, "en"));
+  }
+}
+
+export async function upsertProductDemoAction(formData: FormData) {
+  const admin = await requireAdmin();
+  let savedId = parseOptionalString(formData.get("id"));
+  const returnTo = parseOptionalString(formData.get("returnTo")) ?? "/admin/product-demos";
+
+  try {
+    const id = savedId;
+    const title = z.string().min(1, "标题必填。").parse(formData.get("title"));
+    const slug = productDemoSlugSchema.parse(String(formData.get("slug") ?? "").trim());
+    await assertUniqueProductDemoSlug(slug, id);
+    const status = z.enum(["draft", "published", "archived"]).parse(formData.get("status") ?? "draft");
+    const category = z.enum(["software", "skill_learning", "account_service"]).parse(formData.get("category") ?? "software");
+    const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `product-demo-cover-${slug}`);
+    const coverImage = uploadedCoverImage ?? z.string().min(1, "封面图必填。").parse(formData.get("coverImage"));
+    const coverAlt = z.string().min(1, "封面 Alt 必填。").parse(formData.get("coverAlt"));
+    const description = z.string().min(1, "描述必填。").parse(formData.get("description"));
+    const videoUrl = parseOptionalString(formData.get("videoUrl"));
+    const relatedProductId = parseOptionalString(formData.get("relatedProductId"));
+    const relatedProductUrlInput = parseOptionalString(formData.get("relatedProductUrl"));
+    const demoUrl = parseOptionalString(formData.get("demoUrl"));
+    const relatedProduct = relatedProductId
+      ? await prisma.tool.findUnique({
+          where: { id: relatedProductId },
+          select: { id: true, slug: true, name: true, englishName: true, type: true }
+        })
+      : null;
+    const relatedProductUrl = relatedProduct
+      ? buildCanonicalToolPath(relatedProduct, "zh")
+      : relatedProductUrlInput;
+
+    if (relatedProductId && !relatedProduct) {
+      throw new Error("关联产品不存在，请重新选择。");
+    }
+    if (status === "published" && !videoUrl) {
+      throw new Error("已发布状态必须填写视频地址。");
+    }
+    if (status === "published" && !relatedProductId && !relatedProductUrl && !demoUrl) {
+      throw new Error("已发布状态必须有关联产品、关联产品链接或演示链接。");
+    }
+
+    const publishedAt = parseProductDemoDateField(formData.get("publishedAt")) ?? (status === "published" ? new Date() : null);
+    const data = {
+      title,
+      slug,
+      description,
+      category,
+      tags: parseTagNames(String(formData.get("tags") ?? "")),
+      coverImage,
+      coverAlt,
+      videoUrl,
+      videoDuration: parseOptionalString(formData.get("videoDuration")),
+      uploadDate: parseProductDemoDateField(formData.get("uploadDate")),
+      transcript: parseOptionalString(formData.get("transcript")),
+      faq: parseProductDemoFaqRows(formData.get("faq")),
+      productType: parseOptionalString(formData.get("productType")),
+      relatedProductId,
+      relatedProductSlug: relatedProduct?.slug ?? parseOptionalString(formData.get("relatedProductSlug")),
+      relatedProductUrl,
+      demoUrl,
+      tutorialUrl: parseOptionalString(formData.get("tutorialUrl")),
+      isFeaturedOnHome: parseBooleanField(formData.get("isFeaturedOnHome")),
+      sortOrder: parseNumberField(formData.get("sortOrder"), 0),
+      status,
+      seoTitle: parseOptionalString(formData.get("seoTitle")),
+      seoDescription: parseOptionalString(formData.get("seoDescription")),
+      canonicalUrl: parseOptionalString(formData.get("canonicalUrl")),
+      publishedAt
+    };
+
+    if (id) {
+      await prisma.productDemo.update({ where: { id }, data });
+      savedId = id;
+    } else {
+      const created = await prisma.productDemo.create({ data });
+      savedId = created.id;
+    }
+    if (!savedId) throw new Error("产品演示保存失败。");
+
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: id ? "product_demo.update" : "product_demo.create",
+      targetType: "product_demo",
+      targetId: savedId,
+      summary: id ? "Updated product demo." : "Created product demo.",
+      metadata: { title, slug, status, isFeaturedOnHome: data.isFeaturedOnHome }
+    });
+
+    revalidateProductDemoPaths(slug);
+    if (status === "published") {
+      const urls = ["/product-demos", buildProductDemoPath(slug, "zh")];
+      await notifyIndexNow(urls);
+      await notifyBaiduSearch(urls, { source: "admin-product-demo-upsert", demoId: savedId });
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "保存产品演示失败，请检查表单内容。";
+    redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(`/admin/product-demos/${savedId}?saved=1`);
+}
+
+export async function archiveProductDemoAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const demo = await prisma.productDemo.update({
+    where: { id },
+    data: { status: "archived", isFeaturedOnHome: false },
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "product_demo.archive",
+    targetType: "product_demo",
+    targetId: id,
+    summary: "Archived product demo.",
+    metadata: { title: demo.title, slug: demo.slug }
+  });
+
+  revalidateProductDemoPaths(demo.slug);
+  redirect("/admin/product-demos?archived=1");
+}
+
+export async function deleteProductDemoAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const demo = await prisma.productDemo.delete({
+    where: { id },
+    select: { id: true, title: true, slug: true, status: true }
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "product_demo.delete",
+    targetType: "product_demo",
+    targetId: id,
+    summary: "Deleted product demo.",
+    metadata: { title: demo.title, slug: demo.slug, status: demo.status }
+  });
+
+  revalidateProductDemoPaths(demo.slug);
+  redirect("/admin/product-demos?deleted=1");
 }
 
 async function resolveUniqueNewsTopicSlug(input: {

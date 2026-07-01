@@ -6,6 +6,9 @@ const prismaMock = {
   },
   newsArticle: {
     findMany: vi.fn()
+  },
+  productDemo: {
+    findMany: vi.fn()
   }
 };
 
@@ -17,6 +20,8 @@ describe("sitemap canonical URL contract", () => {
   beforeEach(() => {
     prismaMock.tool.findMany.mockReset();
     prismaMock.newsArticle.findMany.mockReset();
+    prismaMock.productDemo.findMany.mockReset();
+    prismaMock.productDemo.findMany.mockResolvedValue([]);
     process.env.APP_URL = "https://www.enhe-tech.com.cn";
     process.env.NEXT_PUBLIC_APP_URL = "https://www.enhe-tech.com.cn";
   });
@@ -71,6 +76,7 @@ describe("sitemap canonical URL contract", () => {
     expect(urls).toContain("https://www.enhe-tech.com.cn/software");
     expect(urls).toContain("https://www.enhe-tech.com.cn/account-services");
     expect(urls).toContain("https://www.enhe-tech.com.cn/skill-learning");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/product-demos");
     expect(urls).toContain("https://www.enhe-tech.com.cn/software/ai-voice-generator-flexible-edition");
     expect(urls).toContain("https://www.enhe-tech.com.cn/account-services/chatgpt-support");
     expect(urls).toContain("https://www.enhe-tech.com.cn/skill-learning/prompt-course");
@@ -234,5 +240,26 @@ describe("sitemap canonical URL contract", () => {
 
     expect(byUrl.get("https://www.enhe-tech.com.cn/software/workflow-app")?.lastModified).toBe(toolUpdatedAt);
     expect(byUrl.get("https://www.enhe-tech.com.cn/ai-news/agent-news")?.lastModified).toBe(newsUpdatedAt);
+  });
+
+  it("includes only published product demo pages from the product demo query", async () => {
+    const demoUpdatedAt = new Date("2026-07-01T03:04:05.000Z");
+    prismaMock.tool.findMany.mockResolvedValue([]);
+    prismaMock.newsArticle.findMany.mockResolvedValue([]);
+    prismaMock.productDemo.findMany.mockResolvedValue([
+      {
+        slug: "ai-voice-demo",
+        updatedAt: demoUpdatedAt
+      }
+    ]);
+
+    const { default: sitemap } = await import("@/app/sitemap");
+    const entries = await sitemap();
+    const byUrl = new Map(entries.map((entry) => [entry.url, entry]));
+
+    expect(byUrl.get("https://www.enhe-tech.com.cn/product-demos/ai-voice-demo")?.lastModified).toBe(demoUpdatedAt);
+    expect(byUrl.get("https://www.enhe-tech.com.cn/en/product-demos/ai-voice-demo")?.alternates?.languages?.["zh-CN"]).toBe(
+      "https://www.enhe-tech.com.cn/product-demos/ai-voice-demo",
+    );
   });
 });

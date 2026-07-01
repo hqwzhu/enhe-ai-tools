@@ -44,6 +44,8 @@ const staticRoutes = [
   "/en/account-services",
   "/skill-learning",
   "/en/skill-learning",
+  "/product-demos",
+  "/en/product-demos",
   "/pricing",
   "/en/pricing",
   "/tutorials",
@@ -136,6 +138,8 @@ const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
   "/en/account-services": new Date("2026-06-17T00:00:00.000Z"),
   "/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
   "/en/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
+  "/product-demos": new Date("2026-07-01T00:00:00.000Z"),
+  "/en/product-demos": new Date("2026-07-01T00:00:00.000Z"),
   "/pricing": new Date("2026-06-17T00:00:00.000Z"),
   "/en/pricing": new Date("2026-06-17T00:00:00.000Z"),
   "/tutorials": new Date("2026-06-17T00:00:00.000Z"),
@@ -193,7 +197,7 @@ function isKnownAiNewsTopicPath(path: string) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [tools, newsArticles, publicAiNewsTopics] = await Promise.all([
+  const [tools, newsArticles, productDemos, publicAiNewsTopics] = await Promise.all([
     prisma.tool
       .findMany({
         where: { status: "published" },
@@ -219,6 +223,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           englishSummary: true,
           englishContent: true,
         },
+      })
+      .catch(() => []),
+    prisma.productDemo
+      .findMany({
+        where: { status: "published" },
+        select: { slug: true, updatedAt: true },
+        orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
       })
       .catch(() => []),
     getPublicAiNewsTopics().catch(() => aiNewsTopics),
@@ -328,6 +339,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
         changeFrequency: "weekly" as const,
         priority: route.priority,
+      }));
+    }),
+    ...productDemos.flatMap((demo) => {
+      const canonicalPath = `/product-demos/${demo.slug}`;
+      return [canonicalPath, `/en/product-demos/${demo.slug}`].map((path) => ({
+        url: absoluteUrl(path),
+        lastModified: demo.updatedAt,
+        alternates: {
+          languages: buildAvailableLanguageAlternates(canonicalPath, ["zh", "en"]),
+        },
+        changeFrequency: "weekly" as const,
+        priority: path.startsWith("/en/") ? 0.68 : 0.74,
       }));
     }),
   ];

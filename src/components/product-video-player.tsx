@@ -90,7 +90,7 @@ export function ProductVideoPlayer({
         loop
         controls
         playsInline
-        preload="metadata"
+        preload="none"
         poster={poster ?? undefined}
       >
         {fallbackText}

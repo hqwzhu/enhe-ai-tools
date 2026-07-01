@@ -4,10 +4,12 @@ import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import DecryptedText from "@/components/home/decrypted-text";
 import { HomeParticlesBackground } from "@/components/home/home-particles-background";
+import { ProductDemoCard } from "@/components/product-demo-card";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getHomeRecommendedTools } from "@/lib/public-content";
+import { getHomeProductDemos } from "@/lib/product-demos";
 import {
   buildBreadcrumbSchema,
   buildFaqSchema,
@@ -181,7 +183,10 @@ export async function generateHomePageMetadata(forceLocale: Locale): Promise<Met
 }
 
 export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
-  const recommendedTools = await getHomeRecommendedTools();
+  const [recommendedTools, homeProductDemos] = await Promise.all([
+    getHomeRecommendedTools(),
+    getHomeProductDemos(),
+  ]);
   const t = getDictionary(forceLocale);
   const heroTitle =
     forceLocale === "en"
@@ -267,6 +272,35 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
           </div>
         </Container>
       </section>
+
+      {homeProductDemos.length ? (
+        <section className="home-product-demo-shell" aria-labelledby="home-product-demo-title">
+          <Container className="home-hero-reference-frame">
+            <div className="home-product-preview home-product-demo-panel backdrop-blur-xl backdrop-saturate-150">
+              <div className="home-product-preview-header">
+                <div>
+                  <p>{forceLocale === "en" ? "Product workflow videos" : "产品工作流视频"}</p>
+                  <h2 id="home-product-demo-title">{forceLocale === "en" ? "Product Effect Demos" : "产品效果演示"}</h2>
+                </div>
+                <Link href={buildLocalePath("/product-demos", forceLocale)} className="home-preview-link rounded-full border px-4 py-2 text-sm font-semibold">
+                  {forceLocale === "en" ? "View all demos" : "查看全部演示"}
+                  <ArrowUpRight size={15} aria-hidden="true" />
+                </Link>
+              </div>
+              <p className="home-product-demo-intro">
+                {forceLocale === "en"
+                  ? "Use videos to quickly understand the real effect of AI tools: view the workflow first, then choose the right product."
+                  : "用视频快速了解 AI 工具的真实使用效果，先看工作流，再选择适合自己的产品。"}
+              </p>
+              <div className="home-product-demo-grid">
+                {homeProductDemos.map((demo) => (
+                  <ProductDemoCard key={demo.id} demo={demo} locale={forceLocale} variant="home" />
+                ))}
+              </div>
+            </div>
+          </Container>
+        </section>
+      ) : null}
 
       <section id="updates" className="home-featured-shell" aria-label="ENHE AI recommended content preview">
         <Container className="home-hero-reference-frame">
