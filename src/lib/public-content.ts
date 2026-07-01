@@ -8,7 +8,7 @@ import {
   type AiNewsKeywordCandidate,
   type AiNewsKeywordInterventionRule,
 } from "@/lib/ai-news-discovery";
-import { prisma } from "@/lib/db";
+import { isRecoverablePrismaReadError, prisma } from "@/lib/db";
 import {
   getCanonicalAiNewsSlug,
   getCanonicalToolSlug,
@@ -35,17 +35,7 @@ type PublicSlugMatch = {
 };
 
 function isRecoverablePublicReadError(error: unknown) {
-  if (!(error instanceof Error)) return false;
-
-  const errorWithCode = error as Error & { code?: unknown };
-  const code = typeof errorWithCode.code === "string" ? errorWithCode.code : "";
-  const message = error.message;
-
-  return (
-    code === "P1001" ||
-    /Can't reach database server/i.test(message) ||
-    /ECONNREFUSED/i.test(message)
-  );
+  return isRecoverablePrismaReadError(error);
 }
 
 const getCachedHomeRecommendedTools = unstable_cache(

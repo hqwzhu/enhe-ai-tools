@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import type { AiTrendBriefingStatus, Prisma } from "@prisma/client";
-import { prisma } from "@/lib/db";
+import { isRecoverablePrismaReadError, prisma } from "@/lib/db";
 import { normalizeMediaSrc } from "@/lib/media";
 
 export type AiTrendSourceSignal = {
@@ -176,19 +176,7 @@ function isHttpUrl(value: string) {
 }
 
 function isRecoverableAiTrendReadError(error: unknown) {
-  if (!(error instanceof Error)) return false;
-
-  const candidate = error as Error & { code?: unknown; meta?: { table?: unknown } };
-  const code = typeof candidate.code === "string" ? candidate.code : "";
-  const message = error.message;
-
-  return (
-    code === "P1001" ||
-    code === "P2021" ||
-    /Can't reach database server/i.test(message) ||
-    /ECONNREFUSED/i.test(message) ||
-    (typeof candidate.meta?.table === "string" && candidate.meta.table.includes("ai_trend_briefings"))
-  );
+  return isRecoverablePrismaReadError(error, { missingTables: ["ai_trend_briefings"] });
 }
 
 export function isValidAiTrendDateSlug(value: string) {

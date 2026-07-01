@@ -8,7 +8,8 @@ vi.mock("next/cache", () => ({
   unstable_cache: (fn: (...args: unknown[]) => unknown) => fn
 }));
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@/lib/db", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/db")>()),
   prisma: {
     siteSetting: {
       findMany: db.findMany
@@ -24,6 +25,17 @@ describe("settings data access fallback", () => {
 
   it("returns an empty settings map when Prisma cannot reach the database", async () => {
     const error = Object.assign(new Error("Can't reach database server at `db:5432`"), { code: "P1001" });
+    db.findMany.mockRejectedValue(error);
+
+    const { getSettingsMap } = await import("@/lib/settings");
+
+    await expect(getSettingsMap()).resolves.toEqual({});
+  });
+
+  it("returns an empty settings map when DATABASE_URL is unavailable during build", async () => {
+    const error = Object.assign(new Error("Environment variable not found: DATABASE_URL."), {
+      name: "PrismaClientInitializationError"
+    });
     db.findMany.mockRejectedValue(error);
 
     const { getSettingsMap } = await import("@/lib/settings");

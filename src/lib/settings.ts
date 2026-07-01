@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/db";
+import { isRecoverablePrismaReadError, prisma } from "@/lib/db";
 import type { Locale } from "@/lib/i18n";
 import { defaultBrandIcon } from "@/lib/seo";
 
@@ -30,13 +30,7 @@ const legacyHomeHeroIntrosEn = [
 const legacyTextLogo = "ENHE";
 
 function isRecoverableSettingsReadError(error: unknown) {
-  if (!(error instanceof Error)) return false;
-
-  const errorWithCode = error as Error & { code?: unknown };
-  const code = typeof errorWithCode.code === "string" ? errorWithCode.code : "";
-  const message = error.message;
-
-  return code === "P1001" || /Can't reach database server/i.test(message) || /ECONNREFUSED/i.test(message);
+  return isRecoverablePrismaReadError(error);
 }
 
 const getCachedSettingsMap = unstable_cache(
