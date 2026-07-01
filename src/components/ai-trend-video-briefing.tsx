@@ -51,9 +51,9 @@ export function AiTrendVideoBriefing({
   const text = copy[locale];
 
   return (
-    <section className="surface-panel-soft mt-10 overflow-hidden p-6 md:p-7" aria-labelledby="ai-trend-video-briefing-title">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:items-start">
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/35">
+    <section className="ai-trend-video-briefing surface-panel-soft mt-10 overflow-hidden p-6 md:p-7" aria-labelledby="ai-trend-video-briefing-title">
+      <div className="ai-trend-video-briefing-grid grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:items-start">
+        <div className="ai-trend-video-briefing-media overflow-hidden rounded-2xl border border-white/10 bg-black/35">
           <ProductVideoPlayer
             src={videoUrl}
             title={videoTitle || title}
@@ -63,7 +63,7 @@ export function AiTrendVideoBriefing({
           />
         </div>
 
-        <div className="flex h-full flex-col justify-between">
+        <div className="ai-trend-video-briefing-copy flex h-full flex-col justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--marketing-accent)]">
               {text.badge}

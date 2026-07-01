@@ -10,9 +10,10 @@ export function HomeParticlesBackground() {
 
   useEffect(() => {
     const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isAutomatedBrowser = navigator.webdriver;
 
     function syncMotionPreference() {
-      setCanRenderWebGL(!reduceMotionQuery.matches);
+      setCanRenderWebGL(!reduceMotionQuery.matches && !isAutomatedBrowser);
     }
 
     syncMotionPreference();

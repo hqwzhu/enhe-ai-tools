@@ -166,6 +166,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('import { HomeParticlesBackground } from "@/components/home/home-particles-background";');
     expect(page).toContain("<HomeParticlesBackground />");
     expect(background).toContain('window.matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(background).toContain("navigator.webdriver");
     expect(background).toContain('return <div className="home-particles-fallback" />;');
     expect(background).toContain('const HERO_PARTICLE_COLORS = ["#13c4e2"];');
     expect(background).toContain("particleColors={HERO_PARTICLE_COLORS}");

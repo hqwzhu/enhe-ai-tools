@@ -2789,6 +2789,22 @@ select option:disabled {
   background: #000000;
 }
 
+.ai-trend-video-briefing,
+.ai-trend-video-briefing *,
+.ai-trend-video-briefing-grid,
+.ai-trend-video-briefing-media,
+.ai-trend-video-briefing-copy {
+  min-width: 0;
+}
+
+.ai-trend-video-briefing {
+  max-width: 100%;
+}
+
+.ai-trend-video-briefing :is(h2, h3, p, a, time) {
+  overflow-wrap: anywhere;
+}
+
 .tool-detail-video-play {
   position: absolute;
   right: 16px;
@@ -3140,6 +3156,20 @@ select option:disabled {
 }
 
 @media (max-width: 640px) {
+  .ai-trend-video-briefing {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .ai-trend-video-briefing-grid,
+  .ai-trend-video-briefing-media,
+  .ai-trend-video-briefing-copy,
+  .ai-trend-video-briefing .tool-detail-video-stage,
+  .ai-trend-video-briefing video {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .fade-in {
     padding-top: 68px;
   }
