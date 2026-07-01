@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import DecryptedText from "@/components/home/decrypted-text";
-import { HomeLiquidEtherBackground } from "@/components/home/home-liquid-ether-background";
+import { HomeParticlesBackground } from "@/components/home/home-particles-background";
 import { ButtonLink, Container } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
@@ -215,7 +215,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
       <StructuredData data={[breadcrumbSchema, webPageSchema, faqSchema]} />
       <section className="home-hero-shell">
         <div className="home-hero-liquid-layer" aria-hidden="true">
-          <HomeLiquidEtherBackground />
+          <HomeParticlesBackground />
         </div>
         <div className="home-hero-liquid-overlay" aria-hidden="true" />
         <div className="home-hero-liquid-vignette" aria-hidden="true" />

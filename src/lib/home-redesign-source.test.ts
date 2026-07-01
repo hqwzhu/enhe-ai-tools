@@ -10,7 +10,7 @@ describe("homepage SaaS redesign source", () => {
 
     expect(page).toContain('className="home-page-shell"');
     expect(page).toContain("home-hero-shell");
-    expect(page).toContain("HomeLiquidEtherBackground");
+    expect(page).toContain("HomeParticlesBackground");
     expect(page).toContain('className="home-hero-liquid-layer"');
     expect(page).toContain('aria-hidden="true"');
     expect(page).toContain("home-hero-stage");
@@ -95,8 +95,8 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("--font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain(".home-page-shell");
     expect(css).toContain(".home-hero-liquid-layer");
-    expect(css).toContain(".liquid-ether-container");
-    expect(css).toContain(".home-liquid-ether-fallback");
+    expect(css).toContain(".particles-container");
+    expect(css).toContain(".home-particles-fallback");
     expect(css).toContain(".home-hero-stage");
     expect(css).toContain(".home-hero-centered");
     expect(css).toContain(".home-hero-title-simple");
@@ -126,7 +126,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain('import { ScrollVelocity } from "@/components/scroll-velocity";');
     expect(page).not.toContain("const heroVelocityTexts =");
     expect(page).not.toContain("texts={heroVelocityTexts}");
-    expect(page).toContain('import { HomeLiquidEtherBackground } from "@/components/home/home-liquid-ether-background";');
+    expect(page).toContain('import { HomeParticlesBackground } from "@/components/home/home-particles-background";');
     expect(page).toContain('import DecryptedText from "@/components/home/decrypted-text";');
     expect(page).not.toContain('import TextPressure from "@/components/home/text-pressure";');
     expect(page).not.toContain('<p className="home-hero-brand">ENHE AI</p>');
@@ -157,18 +157,34 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain("Roboto Flex ENHE");
   });
 
-  it("keeps LiquidEther visually active with bounded WebGL render cost", () => {
-    const component = readFileSync(new URL("../components/home/liquid-ether.tsx", import.meta.url), "utf8");
+  it("uses the React Bits Particles hero background with reduced-motion fallback", () => {
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+    const background = readFileSync(new URL("../components/home/home-particles-background.tsx", import.meta.url), "utf8");
+    const component = readFileSync(new URL("../components/home/particles.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
-    expect(component).toContain("const MAX_RENDER_PIXEL_RATIO = 1.35");
-    expect(component).toContain("Math.min(window.devicePixelRatio || 1, MAX_RENDER_PIXEL_RATIO)");
-    expect(component).toContain("powerPreference: 'high-performance'");
-    expect(component).toContain("antialias: false");
-    expect(component).toContain("const HIGH_REFRESH_FRAME_INTERVAL = 1000 / 65");
-    expect(component).toContain("minFrameInterval = HIGH_REFRESH_FRAME_INTERVAL");
-    expect(component).toContain("now - this.lastRenderTime >= this.minFrameInterval");
-    expect(component).toContain("new IntersectionObserver");
-    expect(component).toContain("webglRef.current.pause()");
+    expect(page).toContain('import { HomeParticlesBackground } from "@/components/home/home-particles-background";');
+    expect(page).toContain("<HomeParticlesBackground />");
+    expect(background).toContain('window.matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(background).toContain('return <div className="home-particles-fallback" />;');
+    expect(background).toContain('const HERO_PARTICLE_COLORS = ["#13c4e2"];');
+    expect(background).toContain("particleColors={HERO_PARTICLE_COLORS}");
+    expect(background).toContain("particleCount={200}");
+    expect(background).toContain("particleSpread={10}");
+    expect(background).toContain("speed={0.1}");
+    expect(background).toContain("particleBaseSize={100}");
+    expect(background).toContain("moveParticlesOnHover");
+    expect(background).toContain("alphaParticles={false}");
+    expect(background).toContain("disableRotation={false}");
+    expect(background).toContain("pixelRatio={1}");
+    expect(component).toContain('import { Camera, Geometry, Mesh, Program, Renderer } from "ogl";');
+    expect(component).toContain("Adapted from React Bits Particles");
+    expect(component).toContain("requestAnimationFrame(update)");
+    expect(component).toContain("cancelAnimationFrame(animationFrameId)");
+    expect(component).toContain('container.addEventListener("mousemove", handleMouseMove)');
+    expect(css).toContain(".particles-container");
+    expect(css).toContain(".home-particles-canvas");
+    expect(css).toContain(".home-particles-fallback");
   });
 
   it("uses DecryptedText as a visual-only hero slogan upgrade with reduced-motion fallback", () => {

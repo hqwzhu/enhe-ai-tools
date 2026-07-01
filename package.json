@@ -33,6 +33,7 @@
     "motion": "^12.40.0",
     "next": "^15.3.2",
     "nodemailer": "^8.0.10",
+    "ogl": "^1.0.11",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.3.0",
