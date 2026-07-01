@@ -2805,6 +2805,25 @@ select option:disabled {
   overflow-wrap: anywhere;
 }
 
+.ai-trends-recent-briefings,
+.ai-trends-recent-briefings *,
+.ai-trends-recent-briefings-grid,
+.ai-trends-recent-briefing-card {
+  min-width: 0;
+}
+
+.ai-trends-recent-briefings,
+.ai-trends-recent-briefings-grid,
+.ai-trends-recent-briefing-card {
+  max-width: 100%;
+}
+
+.ai-trends-recent-briefing-title,
+.ai-trends-recent-briefing-summary {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .tool-detail-video-play {
   position: absolute;
   right: 16px;
@@ -3166,6 +3185,15 @@ select option:disabled {
   .ai-trend-video-briefing-copy,
   .ai-trend-video-briefing .tool-detail-video-stage,
   .ai-trend-video-briefing video {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .ai-trends-recent-briefings,
+  .ai-trends-recent-briefings-grid,
+  .ai-trends-recent-briefing-card,
+  .ai-trends-recent-briefing-title,
+  .ai-trends-recent-briefing-summary {
     width: 100%;
     max-width: 100%;
   }

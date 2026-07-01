@@ -652,21 +652,21 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
           </section>
         </section>
 
-        <section className="mt-12">
+        <section className="ai-trends-recent-briefings mt-12">
         <SectionTitle title={copy.recentTitle} intro={copy.recentIntro} />
         {recentBriefings.length ? (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="ai-trends-recent-briefings-grid grid gap-4 md:grid-cols-3">
             {recentBriefings.map((briefing) => (
               <Link
                 key={briefing.id}
                 href={buildLocalePath(`/ai-trends/daily/${briefing.slug}`, forceLocale)}
-                className="surface-panel-soft group block p-5 transition hover:border-[var(--marketing-accent)]/45"
+                className="ai-trends-recent-briefing-card surface-panel-soft group block p-5 transition hover:border-[var(--marketing-accent)]/45"
               >
                 <time className="text-xs font-bold text-[var(--marketing-accent)]" dateTime={briefing.slug}>
                   {briefing.slug}
                 </time>
-                <h2 className="mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">{briefing.title}</h2>
-                <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--marketing-muted)]">{briefing.coreConclusion}</p>
+                <h2 className="ai-trends-recent-briefing-title mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">{briefing.title}</h2>
+                <p className="ai-trends-recent-briefing-summary mt-3 line-clamp-3 text-sm leading-7 text-[var(--marketing-muted)]">{briefing.coreConclusion}</p>
                 <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[var(--marketing-accent)]">
                   {copy.readSummary} <ArrowUpRight size={16} strokeWidth={1.8} aria-hidden="true" />
                 </span>
