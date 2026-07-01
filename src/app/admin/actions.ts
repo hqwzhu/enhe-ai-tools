@@ -1702,7 +1702,7 @@ export async function upsertProductDemoAction(formData: FormData) {
       throw new Error("关联产品不存在，请重新选择。");
     }
     if (status === "published" && !videoUrl) {
-      throw new Error("已发布状态必须填写视频地址。");
+      throw new Error("已发布状态必须上传本地视频。");
     }
     if (status === "published" && !relatedProductId && !relatedProductUrl && !demoUrl) {
       throw new Error("已发布状态必须有关联产品、关联产品链接或演示链接。");

@@ -17,9 +17,10 @@ describe("product demo feature source contract", () => {
     expect(card).not.toContain("<video");
   });
 
-  it("adds admin CRUD actions and validation for managed product demos", () => {
+  it("adds admin CRUD actions and local video upload for managed product demos", () => {
     const actions = readFileSync(new URL("../app/admin/actions.ts", import.meta.url), "utf8");
     const editor = readFileSync(new URL("../app/admin/product-demo-editor.tsx", import.meta.url), "utf8");
+    const uploadField = readFileSync(new URL("../app/admin/product-demo-video-upload-field.tsx", import.meta.url), "utf8");
     const adminLayout = readFileSync(new URL("../app/admin/layout.tsx", import.meta.url), "utf8");
 
     expect(adminLayout).toContain('["productDemos", "/admin/product-demos"]');
@@ -27,8 +28,13 @@ describe("product demo feature source contract", () => {
     expect(actions).toContain("export async function archiveProductDemoAction");
     expect(actions).toContain("export async function deleteProductDemoAction");
     expect(actions).toContain("productDemoSlugSchema");
-    expect(actions).toContain("已发布状态必须填写视频地址");
-    expect(actions).toContain("已发布状态必须有关联产品");
+    expect(actions).not.toContain('formData.get("videoFile")');
+    expect(uploadField).toContain("product-demo-videos/${slug ||");
+    expect(editor).toContain("ProductDemoVideoUploadField");
+    expect(editor).not.toContain('<input name="videoUrl" defaultValue={demo?.videoUrl ?? ""}');
+    expect(uploadField).not.toContain('name="videoFile"');
+    expect(uploadField).toContain('name="videoUrl"');
+    expect(uploadField).toContain('type="hidden"');
     expect(editor).toContain('name="coverImageFile"');
     expect(editor).toContain('name="isFeaturedOnHome"');
     expect(editor).toContain('name="relatedProductId"');

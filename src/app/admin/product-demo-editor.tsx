@@ -5,6 +5,7 @@ import {
   upsertProductDemoAction,
 } from "@/app/admin/actions";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
+import { ProductDemoVideoUploadField } from "@/app/admin/product-demo-video-upload-field";
 import { buildCanonicalToolPath } from "@/lib/public-slugs";
 
 type ProductDemoWithProduct = Prisma.ProductDemoGetPayload<{
@@ -93,8 +94,8 @@ export function ProductDemoEditor({ demo, tools }: ProductDemoEditorProps) {
         <Field label="封面 Alt 文案">
           <input name="coverAlt" required defaultValue={demo?.coverAlt ?? ""} className={inputClass} />
         </Field>
-        <Field label="视频地址 URL" className="md:col-span-2">
-          <input name="videoUrl" defaultValue={demo?.videoUrl ?? ""} placeholder="已发布状态必填，草稿可留空" className={inputClass} />
+        <Field label="本地上传视频" className="md:col-span-2">
+          <ProductDemoVideoUploadField currentUrl={demo?.videoUrl} inputClass={inputClass} slug={demo?.slug} />
         </Field>
         <Field label="视频时长（ISO 8601，如 PT2M30S）">
           <input name="videoDuration" defaultValue={demo?.videoDuration ?? ""} className={inputClass} />
@@ -163,7 +164,7 @@ export function ProductDemoEditor({ demo, tools }: ProductDemoEditorProps) {
         <div className="glass rounded-2xl p-5">
           <h2 className="text-lg font-black text-[var(--marketing-text)]">发布校验</h2>
           <p className="mt-2 text-sm leading-6 text-[var(--marketing-muted)]">
-            发布状态需要标题、slug、描述、封面、Alt、视频地址，并且至少配置关联产品、产品链接或演示链接。
+            发布状态需要标题、slug、描述、封面、Alt、本地上传视频，并且至少配置关联产品、产品链接或演示链接。
           </p>
         </div>
         <ReferencePanel
