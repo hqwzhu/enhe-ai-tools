@@ -29,6 +29,22 @@ const miSansStylesheetHrefs = [
   staticFile("fonts/misans/MiSans-Bold.min.css")
 ];
 
+const fontWarmupTexts = [
+  "AI\u9700\u6c42\u8d8b\u52bf\u6838\u5fc3\u7ed3\u8bba",
+  "\u516c\u5f00\u4fe1\u53f7\u9ad8\u9891\u65b9\u5411",
+  "\u672c\u6bb5\u7126\u70b9\u9700\u6c42\u70ed\u5ea6\u6458\u8981"
+] as const;
+
+const labels = {
+  publishedAt: "\u53d1\u5e03\u65e5\u671f",
+  sourceSignals: "\u516c\u5f00\u4fe1\u53f7",
+  coreConclusion: "\u6838\u5fc3\u7ed3\u8bba",
+  sceneFocus: "\u672c\u6bb5\u7126\u70b9",
+  demandHeat: "\u9700\u6c42\u70ed\u5ea6",
+  directions: "\u9ad8\u9891\u65b9\u5411",
+  summary: "\u6458\u8981"
+} as const;
+
 let miSansReadyPromise: Promise<void> | null = null;
 
 function loadStylesheet(href: string) {
@@ -81,9 +97,9 @@ function ensureMiSansFonts() {
       .then(async () => {
         if (document.fonts?.load) {
           await Promise.all([
-            document.fonts.load("400 32px MiSans", "AI需求趋势核心结论"),
-            document.fonts.load("520 32px MiSans", "公开信号高频方向"),
-            document.fonts.load("630 32px MiSans", "本段焦点需求热度摘要")
+            document.fonts.load("400 32px MiSans", fontWarmupTexts[0]),
+            document.fonts.load("520 32px MiSans", fontWarmupTexts[1]),
+            document.fonts.load("630 32px MiSans", fontWarmupTexts[2])
           ]);
         }
 
@@ -144,7 +160,8 @@ export const AiTrendBriefingVideo: React.FC<AiTrendVideoProps> = ({
         continueRender(fontHandle);
       })
       .catch((error) => {
-        cancelRender(fontHandle, error instanceof Error ? error : new Error(String(error)));
+        console.error("Failed to load AI trend video fonts.", error);
+        cancelRender(fontHandle);
       });
 
     return () => {
@@ -229,9 +246,9 @@ export const AiTrendBriefingVideo: React.FC<AiTrendVideoProps> = ({
                 border: `1px solid ${palette.line}`
               }}
             >
-              <div style={{ fontSize: 18, color: palette.muted, fontWeight: 700 }}>发布日期</div>
+              <div style={{ fontSize: 18, color: palette.muted, fontWeight: 700 }}>{labels.publishedAt}</div>
               <div style={{ marginTop: 10, fontSize: 30, fontWeight: 900 }}>{date}</div>
-              <div style={{ marginTop: 18, fontSize: 18, color: palette.muted, fontWeight: 700 }}>公开信号</div>
+              <div style={{ marginTop: 18, fontSize: 18, color: palette.muted, fontWeight: 700 }}>{labels.sourceSignals}</div>
               <div style={{ marginTop: 10, fontSize: 30, fontWeight: 900 }}>{sourceCount}</div>
             </div>
           </div>
@@ -246,7 +263,7 @@ export const AiTrendBriefingVideo: React.FC<AiTrendVideoProps> = ({
               background: "linear-gradient(135deg, rgba(255,122,24,0.16), rgba(255,255,255,0.04))"
             }}
           >
-            <div style={{ fontSize: 22, fontWeight: 800, color: palette.accentSoft }}>核心结论</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: palette.accentSoft }}>{labels.coreConclusion}</div>
             <p style={{ margin: "14px 0 0", fontSize: 32, lineHeight: 1.5, fontWeight: 700 }}>{coreConclusion}</p>
           </div>
         </div>
@@ -261,13 +278,13 @@ export const AiTrendBriefingVideo: React.FC<AiTrendVideoProps> = ({
               padding: 28
             }}
           >
-            <div style={{ fontSize: 22, fontWeight: 800, color: palette.accentSoft }}>本段焦点</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: palette.accentSoft }}>{labels.sceneFocus}</div>
             <h2 style={{ margin: "14px 0 0", fontSize: 44, lineHeight: 1.15, fontWeight: 900 }}>{scene?.title}</h2>
             <p style={{ margin: "16px 0 0", fontSize: 28, lineHeight: 1.55, color: palette.muted }}>{scene?.body}</p>
             {typeof scene?.heat === "number" ? (
               <div style={{ marginTop: 22 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 18, color: palette.muted, fontWeight: 700 }}>
-                  <span>需求热度</span>
+                  <span>{labels.demandHeat}</span>
                   <span>{scene.heat}</span>
                 </div>
                 <div
@@ -305,7 +322,7 @@ export const AiTrendBriefingVideo: React.FC<AiTrendVideoProps> = ({
             }}
           >
             <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: palette.accentSoft }}>高频方向</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: palette.accentSoft }}>{labels.directions}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 16 }}>
                 {directions.map((direction) => (
                   <div
@@ -326,7 +343,7 @@ export const AiTrendBriefingVideo: React.FC<AiTrendVideoProps> = ({
             </div>
 
             <div style={{ marginTop: 28 }}>
-              <div style={{ fontSize: 20, color: palette.muted, fontWeight: 700 }}>摘要</div>
+              <div style={{ fontSize: 20, color: palette.muted, fontWeight: 700 }}>{labels.summary}</div>
               <p style={{ margin: "12px 0 0", fontSize: 24, lineHeight: 1.6, color: palette.text }}>{summary}</p>
             </div>
           </div>
