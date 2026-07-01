@@ -4,13 +4,18 @@ import { AdminSection, DangerButton, SubmitButton } from "@/app/admin/admin-ui";
 import { getAiNewsTopicPath } from "@/lib/ai-news-topics";
 import { prisma } from "@/lib/db";
 
-function isMissingNewsTopicTableError(error: unknown) {
-  if (!error || typeof error !== "object") return false;
-  const candidate = error as { code?: unknown; meta?: { table?: unknown } };
+export const dynamic = "force-dynamic";
+
+function isRecoverableNewsTopicReadError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  const candidate = error as Error & { code?: unknown; meta?: { table?: unknown } };
   return (
-    candidate.code === "P2021" &&
-    typeof candidate.meta?.table === "string" &&
-    candidate.meta.table.includes("news_topics")
+    (candidate.code === "P2021" &&
+      typeof candidate.meta?.table === "string" &&
+      candidate.meta.table.includes("news_topics")) ||
+    candidate.code === "P1001" ||
+    /Can't reach database server/i.test(candidate.message) ||
+    /ECONNREFUSED/i.test(candidate.message)
   );
 }
 
@@ -20,7 +25,7 @@ async function getNewsTopics() {
       orderBy: [{ status: "asc" }, { sortOrder: "asc" }, { updatedAt: "desc" }],
     });
   } catch (error) {
-    if (isMissingNewsTopicTableError(error)) return [];
+    if (isRecoverableNewsTopicReadError(error)) return [];
     throw error;
   }
 }
