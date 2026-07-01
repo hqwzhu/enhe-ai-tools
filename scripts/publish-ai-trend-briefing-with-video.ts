@@ -1,6 +1,9 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { resolve } from "node:path";
+import { materializeAiTrendBriefingArtifacts } from "./write-ai-trend-briefing-artifacts";
+import type { AiTrendBriefingPublishInput } from "@/lib/ai-trends";
+import { readFile } from "node:fs/promises";
 
 const execFileAsync = promisify(execFile);
 
@@ -15,27 +18,46 @@ function readArg(name: string) {
 }
 
 async function main() {
+  const inputFile = readArg("--input-file");
   const date = readArg("--date");
-  const summaryFile = readArg("--summary-file");
-  const htmlFile = readArg("--file");
+  const summaryFileArg = readArg("--summary-file");
+  const htmlFileArg = readArg("--file");
   const mode = readArg("--mode") ?? "published";
-
-  if (!date) throw new Error("Missing --date.");
-  if (!summaryFile) throw new Error("Missing --summary-file.");
-  if (!htmlFile) throw new Error("Missing --file.");
+  const outputDir = readArg("--output-dir");
+  const baseName = readArg("--base-name");
 
   const node = process.execPath;
   const root = process.cwd();
-  const videoResultFile = resolve(root, "logs", `${date}.video.result.json`);
+  let resolvedDate = date;
+  let summaryFile = summaryFileArg ? resolve(root, summaryFileArg) : null;
+  let htmlFile = htmlFileArg ? resolve(root, htmlFileArg) : null;
+
+  if (inputFile) {
+    const inputText = await readFile(resolve(root, inputFile), "utf8");
+    const input = JSON.parse(inputText) as AiTrendBriefingPublishInput;
+    const artifacts = await materializeAiTrendBriefingArtifacts(input, {
+      outputDir: outputDir ? resolve(root, outputDir) : undefined,
+      baseName: baseName ?? undefined
+    });
+    resolvedDate = artifacts.date;
+    summaryFile = artifacts.summaryFile;
+    htmlFile = artifacts.htmlFile;
+  }
+
+  if (!resolvedDate) throw new Error("Missing --date.");
+  if (!summaryFile) throw new Error("Missing --summary-file.");
+  if (!htmlFile) throw new Error("Missing --file.");
+
+  const videoResultFile = resolve(root, "logs", `${resolvedDate}.video.result.json`);
 
   const renderArgs = [
     "--import",
     "tsx",
     resolve(root, "scripts", "generate-ai-trend-briefing-video.ts"),
     "--date",
-    date,
+    resolvedDate,
     "--summary-file",
-    resolve(root, summaryFile),
+    summaryFile,
     "--output-file",
     videoResultFile
   ];
@@ -61,9 +83,9 @@ async function main() {
     "tsx",
     resolve(root, "scripts", "publish-ai-trend-briefing-html.ts"),
     "--file",
-    resolve(root, htmlFile),
+    htmlFile,
     "--summary-file",
-    resolve(root, summaryFile),
+    summaryFile,
     "--mode",
     mode,
     "--include-in-topic-page",
