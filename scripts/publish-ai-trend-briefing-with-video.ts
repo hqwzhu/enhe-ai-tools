@@ -17,6 +17,14 @@ function readArg(name: string) {
   return value;
 }
 
+function readBooleanArg(name: string) {
+  const value = readArg(name);
+  if (value === null) return false;
+  if (value === "true") return true;
+  if (value === "false") return false;
+  throw new Error(`Invalid ${name} ${value}. Expected true or false.`);
+}
+
 async function main() {
   const inputFile = readArg("--input-file");
   const date = readArg("--date");
@@ -25,6 +33,7 @@ async function main() {
   const mode = readArg("--mode") ?? "published";
   const outputDir = readArg("--output-dir");
   const baseName = readArg("--base-name");
+  const sendEmail = readBooleanArg("--send-email");
 
   const node = process.execPath;
   const root = process.cwd();
@@ -115,6 +124,23 @@ async function main() {
 
   process.stdout.write(renderResult.stdout);
   process.stdout.write(publishResult.stdout);
+
+  if (sendEmail) {
+    const emailArgs = [
+      "--import",
+      "tsx",
+      resolve(root, "scripts", "send-ai-trend-briefing-email.ts"),
+      "--file",
+      htmlFile,
+      "--summary-file",
+      summaryFile
+    ];
+    const emailResult = await execFileAsync(node, emailArgs, {
+      cwd: root,
+      maxBuffer: 10 * 1024 * 1024
+    });
+    process.stdout.write(emailResult.stdout);
+  }
 }
 
 main().catch((error) => {
