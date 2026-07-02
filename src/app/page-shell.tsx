@@ -289,7 +289,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               <p className="home-product-demo-intro">
                 {forceLocale === "en"
                   ? "Quickly understand the real-world effect of AI tools."
-                  : "快速了解 AI 工具的真实使用效果"}
+                  : "快速了解 AI 应用的真实使用效果"}
               </p>
               <div className="home-product-demo-grid">
                 {homeProductDemos.map((demo) => (
