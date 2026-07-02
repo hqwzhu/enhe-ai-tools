@@ -74,10 +74,13 @@ describe("product demo feature source contract", () => {
 
     expect(productDemos).toContain("getLocalizedProductDemoTitle");
     expect(productDemos).toContain("getLocalizedProductDemoDescription");
+    expect(productDemos).toContain("getLocalizedProductDemoCoverAlt");
     expect(productDemos).toContain("getProductDemoSchemaUploadDate");
     expect(card).toContain("getLocalizedProductDemoTitle");
     expect(card).toContain("getLocalizedProductDemoDescription");
+    expect(card).toContain("getLocalizedProductDemoCoverAlt");
     expect(card).toContain("getLocalizedProductDemoTags");
+    expect(card).not.toContain("alt={demo.coverAlt}");
     expect(css).toContain(".site-back-nav");
     expect(css).toContain("position: relative");
     expect(css).toContain("padding: calc(72px + 1rem) 1rem 0");

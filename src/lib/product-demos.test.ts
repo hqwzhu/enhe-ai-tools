@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildProductDemoVideoObjectSchema,
+  getLocalizedProductDemoCoverAlt,
   getLocalizedProductDemoDescription,
   getLocalizedProductDemoProductType,
   getLocalizedProductDemoTags,
@@ -86,12 +87,21 @@ describe("product demo localization and schema helpers", () => {
     expect(getLocalizedProductDemoTags(demo, "en")).toEqual(["Image Face Swap"]);
   });
 
+  it("uses explicit localized cover alt blocks", () => {
+    const demo = makeDemo({
+      coverAlt: "[[zh]]\u4e2d\u6587\u5c01\u9762\u56fe[[/zh]][[en]]English demo cover image[[/en]]",
+    });
+
+    expect(getLocalizedProductDemoCoverAlt(demo, "en")).toBe("English demo cover image");
+  });
+
   it("generates readable English card copy when demo fields are Chinese-only", () => {
-    const demo = makeDemo();
+    const demo = makeDemo({ coverAlt: "\u4eba\u50cf\u9762\u90e8\u66f4\u6362AI\u5de5\u5177" });
 
     expect(getLocalizedProductDemoTitle(demo, "en")).toBe("FaceSwap Studio AI Demo");
     expect(getLocalizedProductDemoDescription(demo, "en")).toContain("FaceSwap Studio AI");
     expect(getLocalizedProductDemoProductType(demo, "en")).toBe("AI Video Generation / AI Image Generation / AI Agent");
     expect(getLocalizedProductDemoTags(demo, "en")).toEqual(["Image Face Swap", "AI Face Swap"]);
+    expect(getLocalizedProductDemoCoverAlt(demo, "en")).toBe("FaceSwap Studio AI Demo cover image");
   });
 });

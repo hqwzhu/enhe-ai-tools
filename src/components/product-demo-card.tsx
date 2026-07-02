@@ -7,6 +7,7 @@ import {
   buildProductDemoPath,
   getProductDemoCategoryLabel,
   getProductDemoCoverImage,
+  getLocalizedProductDemoCoverAlt,
   getLocalizedProductDemoDescription,
   getLocalizedProductDemoProductType,
   getLocalizedProductDemoTags,
@@ -25,6 +26,7 @@ export function ProductDemoCard({ demo, locale, variant = "listing" }: ProductDe
   const productHref = getProductDemoRelatedProductHref(demo, locale);
   const demoHref = buildProductDemoPath(demo.slug, locale);
   const localizedTitle = getLocalizedProductDemoTitle(demo, locale);
+  const localizedCoverAlt = getLocalizedProductDemoCoverAlt(demo, locale);
   const localizedDescription = getLocalizedProductDemoDescription(demo, locale);
   const localizedProductType = getLocalizedProductDemoProductType(demo, locale);
   const tags = getLocalizedProductDemoTags(demo, locale).slice(0, variant === "home" ? 3 : 5);
@@ -37,7 +39,7 @@ export function ProductDemoCard({ demo, locale, variant = "listing" }: ProductDe
         {coverImage ? (
           <Image
             src={coverImage}
-            alt={demo.coverAlt}
+            alt={localizedCoverAlt}
             fill
             className="object-cover"
             sizes={variant === "home" ? "(min-width: 1024px) 390px, 84vw" : "(min-width: 1024px) 420px, 90vw"}

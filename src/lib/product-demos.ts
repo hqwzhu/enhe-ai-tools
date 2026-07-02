@@ -269,6 +269,13 @@ export function getLocalizedProductDemoTags(demo: PublicProductDemo, locale: Loc
   );
 }
 
+export function getLocalizedProductDemoCoverAlt(demo: PublicProductDemo, locale: Locale) {
+  const coverAlt = resolveLocalizedPlainCopy(demo.coverAlt, locale);
+  if (locale === "zh") return coverAlt || getLocalizedProductDemoTitle(demo, locale);
+  if (isReadableEnglish(coverAlt, 2)) return coverAlt;
+  return `${getLocalizedProductDemoTitle(demo, "en")} cover image`;
+}
+
 export function getProductDemoTitle(demo: Pick<PublicProductDemo, "title">) {
   return demo.title;
 }
