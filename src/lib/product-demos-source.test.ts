@@ -10,6 +10,12 @@ describe("product demo feature source contract", () => {
     expect(home).toContain("getHomeProductDemos");
     expect(home).toContain("homeProductDemos.length");
     expect(home).toContain("ProductDemoCard");
+    expect(home).toContain("工具功能演示");
+    expect(home).toContain("Tool Function Demos");
+    expect(home).toContain("快速了解 AI 工具的真实使用效果");
+    expect(home).not.toContain("产品工作流视频");
+    expect(home).not.toContain("Product workflow videos");
+    expect(home).not.toContain("先看工作流，再选择适合自己的产品");
     expect(productDemos).toContain("take: 3");
     expect(productDemos).toContain('status: "published"');
     expect(productDemos).toContain("isFeaturedOnHome: true");
@@ -36,6 +42,7 @@ describe("product demo feature source contract", () => {
     expect(uploadField).toContain('name="videoUrl"');
     expect(uploadField).toContain('type="hidden"');
     expect(editor).toContain('name="coverImageFile"');
+    expect(editor).not.toContain("封面 Alt 文案");
     expect(editor).toContain('name="isFeaturedOnHome"');
     expect(editor).toContain('name="relatedProductId"');
   });
@@ -58,5 +65,23 @@ describe("product demo feature source contract", () => {
     expect(robots).toContain('"/product-demos"');
     expect(seo).toContain("^\\/product-demos$");
     expect(seo).toContain("^\\/product-demos\\/.+$");
+  });
+
+  it("keeps product demo cards localized and avoids back-navigation overlap", () => {
+    const productDemos = readFileSync(new URL("./product-demos.ts", import.meta.url), "utf8");
+    const card = readFileSync(new URL("../components/product-demo-card.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+
+    expect(productDemos).toContain("getLocalizedProductDemoTitle");
+    expect(productDemos).toContain("getLocalizedProductDemoDescription");
+    expect(productDemos).toContain("getProductDemoSchemaUploadDate");
+    expect(card).toContain("getLocalizedProductDemoTitle");
+    expect(card).toContain("getLocalizedProductDemoDescription");
+    expect(card).toContain("getLocalizedProductDemoTags");
+    expect(css).toContain(".site-back-nav");
+    expect(css).toContain("position: relative");
+    expect(css).toContain("padding: calc(72px + 1rem) 1rem 0");
+    expect(css).toContain(".product-demo-card p");
+    expect(css).toContain("font-weight: 400");
   });
 });

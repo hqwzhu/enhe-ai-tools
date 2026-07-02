@@ -7,6 +7,7 @@ import type { Locale } from "@/lib/dictionaries";
 import {
   buildProductDemoListingPath,
   getPublicProductDemos,
+  getLocalizedProductDemoTitle,
   getProductDemoCategoryLabel,
   normalizeProductDemoCategory,
   productDemoCategories,
@@ -23,7 +24,7 @@ export const productDemoListingPageRevalidate = 300;
 
 const listingCopy = {
   zh: {
-    title: "产品效果演示",
+    title: "工具功能演示",
     intro: "通过视频了解 ENHE AI 工具、AI智能体、本地部署应用、AI语音、AI视频和AI工作流的真实使用效果。",
     description: "通过视频了解 ENHE AI 工具、AI智能体、本地部署应用、AI语音、AI视频和AI工作流的真实使用效果。",
     all: "全部",
@@ -31,7 +32,7 @@ const listingCopy = {
     emptyText: "后台发布产品演示后，这里会自动展示已上线内容。",
   },
   en: {
-    title: "Product Effect Demos",
+    title: "Tool Function Demos",
     intro: "Watch real ENHE AI tool workflows, AI agents, local apps, AI voice, AI video, and practical automation demos.",
     description: "Watch real ENHE AI tool workflows, AI agents, local apps, AI voice, AI video, and practical automation demos.",
     all: "All",
@@ -43,7 +44,7 @@ const listingCopy = {
 export async function generateProductDemoListingMetadata(forceLocale: Locale): Promise<Metadata> {
   const copy = listingCopy[forceLocale];
   return buildPageMetadata({
-    title: forceLocale === "en" ? "Product Effect Demos - ENHE AI" : "产品效果演示 - 恩禾ENHE AI",
+    title: forceLocale === "en" ? "Tool Function Demos - ENHE AI" : "工具功能演示 - 恩禾ENHE AI",
     description:
       forceLocale === "en"
         ? copy.description
@@ -83,7 +84,7 @@ export async function ProductDemoListingPageShell({
       itemListElement: demos.map((demo, index) => ({
         "@type": "ListItem",
         position: index + 1,
-        name: demo.title,
+        name: getLocalizedProductDemoTitle(demo, forceLocale),
         url: absoluteUrl(buildLocalePath(`/product-demos/${demo.slug}`, forceLocale)),
       })),
     },

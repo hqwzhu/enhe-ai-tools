@@ -11,11 +11,13 @@ import {
   buildProductDemoMetadataTitle,
   buildProductDemoPath,
   buildProductDemoVideoObjectSchema,
+  getLocalizedProductDemoDescription,
+  getLocalizedProductDemoProductType,
+  getLocalizedProductDemoTags,
+  getLocalizedProductDemoTitle,
   getProductDemoCategoryLabel,
   getProductDemoCoverImage,
-  getProductDemoDescription,
   getProductDemoRelatedProductHref,
-  getProductDemoTitle,
   getProductDemoVideoUrl,
   getPublicProductDemoBySlug,
   parseProductDemoFaq,
@@ -35,7 +37,7 @@ export const productDemoDetailPageRevalidate = 300;
 
 const detailCopy = {
   zh: {
-    listing: "产品效果演示",
+    listing: "工具功能演示",
     productIntro: "产品简短介绍",
     shows: "这个视频展示了什么？",
     audience: "这个产品适合谁？",
@@ -53,7 +55,7 @@ const detailCopy = {
     sourceText: "本页面用于展示 ENHE AI 产品演示内容，视频、文字稿、FAQ 与关联产品由后台维护。",
   },
   en: {
-    listing: "Product Demos",
+    listing: "Tool Function Demos",
     productIntro: "Product summary",
     shows: "What does this video show?",
     audience: "Who is this product for?",
@@ -96,7 +98,7 @@ export async function generateProductDemoDetailMetadata(
 
   const metadata = buildPageMetadata({
     title: buildProductDemoMetadataTitle(demo, forceLocale),
-    description: getProductDemoDescription(demo),
+    description: getLocalizedProductDemoDescription(demo, forceLocale),
     path,
     image: getProductDemoCoverImage(demo),
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
@@ -126,6 +128,10 @@ export async function ProductDemoDetailPageShell({ slug, forceLocale }: ProductD
   const copy = detailCopy[forceLocale];
   const coverImage = getProductDemoCoverImage(demo);
   const videoUrl = getProductDemoVideoUrl(demo);
+  const localizedTitle = getLocalizedProductDemoTitle(demo, forceLocale);
+  const localizedDescription = getLocalizedProductDemoDescription(demo, forceLocale);
+  const localizedProductType = getLocalizedProductDemoProductType(demo, forceLocale);
+  const localizedTags = getLocalizedProductDemoTags(demo, forceLocale);
   const faqItems = parseProductDemoFaq(demo.faq);
   const relatedProductHref = getProductDemoRelatedProductHref(demo, forceLocale);
   const relatedProduct = demo.relatedProduct;
@@ -167,9 +173,9 @@ export async function ProductDemoDetailPageShell({ slug, forceLocale }: ProductD
         })
     : null;
   const functionItems = [
-    demo.productType,
-    ...demo.tags,
-    relatedProduct?.category?.name,
+    localizedProductType,
+    ...localizedTags,
+    getProductDemoCategoryLabel(demo.category, forceLocale),
   ].filter((item): item is string => Boolean(item));
 
   return (
@@ -192,8 +198,8 @@ export async function ProductDemoDetailPageShell({ slug, forceLocale }: ProductD
         <article className="product-demo-detail-hero">
           <SectionTitle
             as="h1"
-            title={getProductDemoTitle(demo)}
-            intro={getProductDemoDescription(demo)}
+            title={localizedTitle}
+            intro={localizedDescription}
           />
           <div className="product-demo-video-frame">
             {videoUrl ? (
@@ -212,11 +218,11 @@ export async function ProductDemoDetailPageShell({ slug, forceLocale }: ProductD
             <div className="grid gap-4">
               <section className="product-demo-detail-section">
                 <h2>{copy.productIntro}</h2>
-                <p>{demo.description}</p>
+                <p>{localizedDescription}</p>
               </section>
               <section className="product-demo-detail-section">
                 <h2>{copy.shows}</h2>
-                <p>{demo.transcript || demo.description}</p>
+                <p>{demo.transcript || localizedDescription}</p>
               </section>
               <section className="product-demo-detail-section">
                 <h2>{copy.audience}</h2>
@@ -235,7 +241,7 @@ export async function ProductDemoDetailPageShell({ slug, forceLocale }: ProductD
                     ))}
                   </ul>
                 ) : (
-                  <p>{demo.description}</p>
+                  <p>{localizedDescription}</p>
                 )}
               </section>
               <section className="product-demo-detail-section">
@@ -278,7 +284,7 @@ export async function ProductDemoDetailPageShell({ slug, forceLocale }: ProductD
             <aside className="product-demo-sidebar">
               <section className="product-demo-detail-section">
                 <h2>{copy.relatedProduct}</h2>
-                <p>{relatedProduct?.shortDescription ?? demo.description}</p>
+                <p>{relatedProduct?.shortDescription ?? localizedDescription}</p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <ButtonLink href={relatedProductHref} className="product-demo-primary-link">
                     {copy.viewProduct}

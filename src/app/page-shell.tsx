@@ -279,8 +279,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
             <div className="home-product-preview home-product-demo-panel backdrop-blur-xl backdrop-saturate-150">
               <div className="home-product-preview-header">
                 <div>
-                  <p>{forceLocale === "en" ? "Product workflow videos" : "产品工作流视频"}</p>
-                  <h2 id="home-product-demo-title">{forceLocale === "en" ? "Product Effect Demos" : "产品效果演示"}</h2>
+                  <h2 id="home-product-demo-title">{forceLocale === "en" ? "Tool Function Demos" : "工具功能演示"}</h2>
                 </div>
                 <Link href={buildLocalePath("/product-demos", forceLocale)} className="home-preview-link rounded-full border px-4 py-2 text-sm font-semibold">
                   {forceLocale === "en" ? "View all demos" : "查看全部演示"}
@@ -289,8 +288,8 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               </div>
               <p className="home-product-demo-intro">
                 {forceLocale === "en"
-                  ? "Use videos to quickly understand the real effect of AI tools: view the workflow first, then choose the right product."
-                  : "用视频快速了解 AI 工具的真实使用效果，先看工作流，再选择适合自己的产品。"}
+                  ? "Quickly understand the real-world effect of AI tools."
+                  : "快速了解 AI 工具的真实使用效果"}
               </p>
               <div className="home-product-demo-grid">
                 {homeProductDemos.map((demo) => (

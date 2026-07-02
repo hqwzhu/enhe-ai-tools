@@ -1,0 +1,97 @@
+import { describe, expect, it } from "vitest";
+import {
+  buildProductDemoVideoObjectSchema,
+  getLocalizedProductDemoDescription,
+  getLocalizedProductDemoProductType,
+  getLocalizedProductDemoTags,
+  getLocalizedProductDemoTitle,
+  getProductDemoSchemaUploadDate,
+  type PublicProductDemo,
+} from "@/lib/product-demos";
+
+function makeDemo(overrides: Partial<PublicProductDemo> = {}) {
+  return {
+    id: "demo-1",
+    title: "人像面部更换AI工具 | AI智能体",
+    slug: "faceswap-studio-ai-demo",
+    description:
+      "软件支持图片与视频素材导入，可用于授权素材的人像面部合成工具、素材融合处理、画面增强、高清修复和导出。",
+    category: "software",
+    tags: ["图片换脸", "AI Face Swap"],
+    coverImage: "/uploads/product-demos/faceswap-cover.png",
+    coverAlt: "FaceSwap Studio AI demo cover",
+    videoUrl: "/uploads/product-demo-videos/faceswap-demo.mp4",
+    videoDuration: "PT1M20S",
+    uploadDate: null,
+    publishedAt: "2026-06-01T10:20:00.000Z",
+    createdAt: "2026-05-01T00:00:00.000Z",
+    updatedAt: "2026-06-01T10:20:00.000Z",
+    productType: "AI生成视频 | AI生成图片 | 智能体",
+    relatedProductUrl: null,
+    relatedProductSlug: "faceswap-studio-ai",
+    demoUrl: null,
+    tutorialUrl: null,
+    isFeaturedOnHome: true,
+    sortOrder: 0,
+    status: "published",
+    transcript: null,
+    faq: [],
+    seoTitle: null,
+    seoDescription: null,
+    canonicalUrl: null,
+    relatedProductId: "tool-1",
+    relatedProduct: {
+      id: "tool-1",
+      name: "人像面部更换AI工具",
+      englishName: "FaceSwap Studio AI",
+      slug: "faceswap-studio-ai",
+      type: "software",
+      shortDescription: "FaceSwap Studio AI helps review face-swap workflows before purchase.",
+      content: "",
+      coverImage: "/uploads/product-demos/faceswap-cover.png",
+      downloadPrice: 0,
+      category: { id: "cat-1", name: "AI软件应用", slug: "ai-software", sortOrder: 0 },
+      priceSpecs: [],
+      tutorials: [],
+    },
+    ...overrides,
+  } as unknown as PublicProductDemo;
+}
+
+describe("product demo localization and schema helpers", () => {
+  it("serializes cached string dates for VideoObject uploadDate", () => {
+    const demo = makeDemo();
+
+    expect(getProductDemoSchemaUploadDate(demo)).toBe("2026-06-01T10:20:00.000Z");
+    expect(() => buildProductDemoVideoObjectSchema(demo, "en")).not.toThrow();
+    expect(buildProductDemoVideoObjectSchema(demo, "en")).toMatchObject({
+      "@type": "VideoObject",
+      uploadDate: "2026-06-01T10:20:00.000Z",
+      inLanguage: "en-US",
+    });
+  });
+
+  it("uses explicit localized blocks before generated English fallbacks", () => {
+    const demo = makeDemo({
+      title: "[[zh]]中文演示标题[[/zh]]\n[[en]]English demo title[[/en]]",
+      description: "[[zh]]中文演示简介[[/zh]]\n[[en]]English demo description for cards.[[/en]]",
+      productType: "[[zh]]AI生成视频[[/zh]][[en]]AI Video Generation[[/en]]",
+      tags: ["[[zh]]图片换脸[[/zh]][[en]]Image Face Swap[[/en]]"],
+    });
+
+    expect(getLocalizedProductDemoTitle(demo, "zh")).toBe("中文演示标题");
+    expect(getLocalizedProductDemoTitle(demo, "en")).toBe("English demo title");
+    expect(getLocalizedProductDemoDescription(demo, "en")).toBe("English demo description for cards.");
+    expect(getLocalizedProductDemoProductType(demo, "en")).toBe("AI Video Generation");
+    expect(getLocalizedProductDemoTags(demo, "en")).toEqual(["Image Face Swap"]);
+  });
+
+  it("generates readable English card copy when demo fields are Chinese-only", () => {
+    const demo = makeDemo();
+
+    expect(getLocalizedProductDemoTitle(demo, "en")).toBe("FaceSwap Studio AI Demo");
+    expect(getLocalizedProductDemoDescription(demo, "en")).toContain("FaceSwap Studio AI");
+    expect(getLocalizedProductDemoProductType(demo, "en")).toBe("AI Video Generation / AI Image Generation / AI Agent");
+    expect(getLocalizedProductDemoTags(demo, "en")).toEqual(["Image Face Swap", "AI Face Swap"]);
+  });
+});

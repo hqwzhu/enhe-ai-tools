@@ -7,6 +7,10 @@ import {
   buildProductDemoPath,
   getProductDemoCategoryLabel,
   getProductDemoCoverImage,
+  getLocalizedProductDemoDescription,
+  getLocalizedProductDemoProductType,
+  getLocalizedProductDemoTags,
+  getLocalizedProductDemoTitle,
   getProductDemoRelatedProductHref,
 } from "@/lib/product-demos";
 
@@ -20,13 +24,16 @@ export function ProductDemoCard({ demo, locale, variant = "listing" }: ProductDe
   const coverImage = getProductDemoCoverImage(demo);
   const productHref = getProductDemoRelatedProductHref(demo, locale);
   const demoHref = buildProductDemoPath(demo.slug, locale);
-  const tags = demo.tags.slice(0, variant === "home" ? 3 : 5);
+  const localizedTitle = getLocalizedProductDemoTitle(demo, locale);
+  const localizedDescription = getLocalizedProductDemoDescription(demo, locale);
+  const localizedProductType = getLocalizedProductDemoProductType(demo, locale);
+  const tags = getLocalizedProductDemoTags(demo, locale).slice(0, variant === "home" ? 3 : 5);
   const productLabel = locale === "en" ? "View product" : "查看产品";
   const demoLabel = locale === "en" ? "Watch demo" : "观看演示";
 
   return (
     <article className="product-demo-card surface-panel">
-      <Link href={demoHref} className="product-demo-card-media" aria-label={`${demoLabel}: ${demo.title}`}>
+      <Link href={demoHref} className="product-demo-card-media" aria-label={`${demoLabel}: ${localizedTitle}`}>
         {coverImage ? (
           <Image
             src={coverImage}
@@ -48,12 +55,12 @@ export function ProductDemoCard({ demo, locale, variant = "listing" }: ProductDe
       <div className="product-demo-card-body">
         <div className="product-demo-card-meta">
           <span>{getProductDemoCategoryLabel(demo.category, locale)}</span>
-          {demo.productType ? <span>{demo.productType}</span> : null}
+          {localizedProductType ? <span>{localizedProductType}</span> : null}
         </div>
         <h3>
-          <Link href={demoHref}>{demo.title}</Link>
+          <Link href={demoHref}>{localizedTitle}</Link>
         </h3>
-        <p>{demo.description}</p>
+        <p>{localizedDescription}</p>
         {tags.length ? (
           <div className="product-demo-card-tags" aria-label={locale === "en" ? "Keywords" : "关键词标签"}>
             {tags.map((tag) => (

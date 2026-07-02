@@ -91,9 +91,6 @@ export function ProductDemoEditor({ demo, tools }: ProductDemoEditorProps) {
         <Field label="上传封面图">
           <input name="coverImageFile" type="file" accept="image/*" className={inputClass} />
         </Field>
-        <Field label="封面 Alt 文案">
-          <input name="coverAlt" required defaultValue={demo?.coverAlt ?? ""} className={inputClass} />
-        </Field>
         <Field label="本地上传视频" className="md:col-span-2">
           <ProductDemoVideoUploadField currentUrl={demo?.videoUrl} inputClass={inputClass} slug={demo?.slug} />
         </Field>
@@ -164,7 +161,7 @@ export function ProductDemoEditor({ demo, tools }: ProductDemoEditorProps) {
         <div className="glass rounded-2xl p-5">
           <h2 className="text-lg font-black text-[var(--marketing-text)]">发布校验</h2>
           <p className="mt-2 text-sm leading-6 text-[var(--marketing-muted)]">
-            发布状态需要标题、slug、描述、封面、Alt、本地上传视频，并且至少配置关联产品、产品链接或演示链接。
+            发布状态需要标题、slug、描述、封面、本地上传视频，并且至少配置关联产品、产品链接或演示链接。
           </p>
         </div>
         <ReferencePanel

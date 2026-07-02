@@ -1682,7 +1682,7 @@ export async function upsertProductDemoAction(formData: FormData) {
     const category = z.enum(["software", "skill_learning", "account_service"]).parse(formData.get("category") ?? "software");
     const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `product-demo-cover-${slug}`);
     const coverImage = uploadedCoverImage ?? z.string().min(1, "封面图必填。").parse(formData.get("coverImage"));
-    const coverAlt = z.string().min(1, "封面 Alt 必填。").parse(formData.get("coverAlt"));
+    const coverAlt = parseOptionalString(formData.get("coverAlt")) ?? title;
     const description = z.string().min(1, "描述必填。").parse(formData.get("description"));
     const videoUrl = parseOptionalString(formData.get("videoUrl"));
     const relatedProductId = parseOptionalString(formData.get("relatedProductId"));
