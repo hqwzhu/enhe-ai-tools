@@ -2,7 +2,8 @@ import { unstable_cache } from "next/cache";
 import type { Prisma, ProductDemoCategory } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { Locale } from "@/lib/dictionaries";
-import { normalizeImageSrc, normalizeMediaSrc } from "@/lib/media";
+import { normalizeImageSrc } from "@/lib/media";
+import { resolveProductVideoSrc } from "@/lib/product-video";
 import { buildCanonicalToolPath } from "@/lib/public-slugs";
 import {
   absoluteUrl,
@@ -107,7 +108,7 @@ export function getProductDemoCoverImage(demo: Pick<PublicProductDemo, "coverIma
 }
 
 export function getProductDemoVideoUrl(demo: Pick<PublicProductDemo, "videoUrl">) {
-  return normalizeMediaSrc(demo.videoUrl);
+  return resolveProductVideoSrc(demo.videoUrl);
 }
 
 export function getProductDemoRelatedProductHref(

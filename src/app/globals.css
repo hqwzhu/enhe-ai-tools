@@ -2351,12 +2351,17 @@ select option:disabled {
   background: #07101e;
 }
 
-.product-demo-card-media img {
+.product-demo-card-media img,
+.product-demo-card-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   opacity: 0.9;
   transition: opacity 220ms ease, transform 360ms ease;
 }
 
-.product-demo-card:hover .product-demo-card-media img {
+.product-demo-card:hover .product-demo-card-media img,
+.product-demo-card:hover .product-demo-card-media video {
   opacity: 1;
   transform: scale(1.035);
 }

@@ -7,6 +7,7 @@ import {
   getLocalizedProductDemoTags,
   getLocalizedProductDemoTitle,
   getProductDemoSchemaUploadDate,
+  getProductDemoVideoUrl,
   type PublicProductDemo,
 } from "@/lib/product-demos";
 
@@ -70,6 +71,16 @@ describe("product demo localization and schema helpers", () => {
       uploadDate: "2026-06-01T10:20:00.000Z",
       inLanguage: "en-US",
     });
+  });
+
+  it("routes private COS demo videos through the playable site proxy", () => {
+    const demo = makeDemo({
+      videoUrl: "cos://enhe-ai-tools-1303691623/tool-videos/product-demo-videos/ai-video/demo.mp4",
+    });
+
+    expect(getProductDemoVideoUrl(demo)).toBe(
+      "/api/tool-videos?src=cos%3A%2F%2Fenhe-ai-tools-1303691623%2Ftool-videos%2Fproduct-demo-videos%2Fai-video%2Fdemo.mp4",
+    );
   });
 
   it("uses explicit localized blocks before generated English fallbacks", () => {
