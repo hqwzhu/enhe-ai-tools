@@ -10,7 +10,7 @@ describe("product demo feature source contract", () => {
     expect(home).toContain("getHomeProductDemos");
     expect(home).toContain("homeProductDemos.length");
     expect(home).toContain("ProductDemoCard");
-    expect(home).toContain("工具功能演示");
+    expect(home).toContain("AI应用功能演示");
     expect(home).toContain("Tool Function Demos");
     expect(home).toContain("快速了解 AI 工具的真实使用效果");
     expect(home).not.toContain("产品工作流视频");
