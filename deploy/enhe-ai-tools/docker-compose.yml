@@ -54,6 +54,7 @@ services:
       - "3001:3000"
     volumes:
       - ./uploads:/app/public/uploads
+      - ./secrets:/app/secrets:ro
     networks:
       - enhe-ai-tools-net
 
