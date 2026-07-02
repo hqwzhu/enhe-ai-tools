@@ -21,9 +21,9 @@ const companyContact = {
 
 const footerSocialLinks: { label: string; href?: string; icon: LucideIcon }[] = [
   { label: "Gmail", href: companyContact.emailHref, icon: Mail },
-  { label: "小红书", icon: NotebookText },
+  { label: "小红书", href: companyContact.phoneHref, icon: NotebookText },
   { label: "抖音", icon: Music2 },
-  { label: "YouTube", icon: Youtube }
+  { label: "YouTube", href: "https://www.youtube.com/@ENHE-AI", icon: Youtube }
 ];
 
 export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
@@ -104,7 +104,10 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
                 ? "AI news, trend analysis, software apps, account guidance, skill learning, and tutorials in one ENHE AI hub."
                 : "汇集AI前沿资讯、AI趋势分析、AI软件应用、AI账号服务、AI技能学习与使用教程，让用户从信息判断走向可执行成果。"}
             </p>
-            <div className="site-footer-socials" aria-label={locale === "en" ? "ENHE AI social channels" : "ENHE AI 社交渠道"}>
+          </div>
+
+          <div className="site-footer-newsletter" aria-label={locale === "en" ? "ENHE AI contact channels" : "ENHE AI 联系渠道"}>
+            <div className="site-footer-newsletter-socials">
               {footerSocialLinks.map(({ label, href, icon: Icon }) =>
                 href ? (
                   <a key={label} href={href} className="site-footer-social-link cursor-target" aria-label={label}>
@@ -117,13 +120,6 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
                 )
               )}
             </div>
-          </div>
-
-          <div className="site-footer-newsletter" aria-label={locale === "en" ? "Contact ENHE AI" : "联系 ENHE AI"}>
-            <p className="site-footer-kicker">{locale === "en" ? "Contact" : "联系咨询"}</p>
-            <a href={companyContact.emailHref} className="site-footer-contact-button cursor-target">
-              {companyContact.email}
-            </a>
           </div>
         </div>
 

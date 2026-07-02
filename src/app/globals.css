@@ -2860,6 +2860,13 @@ select option:disabled {
   margin-top: 22px;
 }
 
+.site-footer-newsletter-socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 .site-footer-social-link {
   display: inline-flex;
   width: 42px;
@@ -3150,6 +3157,14 @@ select option:disabled {
   opacity: 0;
 }
 
+.tool-detail-payment-method-grid {
+  max-width: 100%;
+}
+
+.tool-detail-payment-help {
+  max-width: 100%;
+}
+
 .tool-detail-mobile-toc {
   display: none;
 }
@@ -3168,6 +3183,10 @@ select option:disabled {
 }
 
 @media (min-width: 768px) {
+  .tool-detail-payment-help {
+    white-space: nowrap;
+  }
+
   .tool-detail-mobile-disclosure > .tool-detail-disclosure-body {
     display: block !important;
   }
@@ -3327,6 +3346,10 @@ select option:disabled {
 
   .site-footer-newsletter {
     justify-items: start;
+  }
+
+  .site-footer-newsletter-socials {
+    justify-content: flex-start;
   }
 
   .site-footer-bottom {

@@ -213,6 +213,7 @@ export async function ToolDetailPageShell({
     toolLocalizationInput,
     forceLocale,
   );
+  const visibleFaqPreview = visibleFaqs.slice(0, 3);
   const visibleChangelogs = tool.changelogs;
   const visibleComments = tool.comments;
   const isAccountService = tool.type === "online";
@@ -311,6 +312,7 @@ export async function ToolDetailPageShell({
   const tutorialVideos = visibleTutorials.filter(
     (tutorial) => tutorial.videoUrl,
   );
+  const hasTutorialSection = isSkillLearning || visibleTutorials.length > 0;
   const supportEmail = td.supportEmailValue;
   const publicChangelogFallback =
     forceLocale === "en"
@@ -372,7 +374,7 @@ export async function ToolDetailPageShell({
   });
   const aggregateRating = null;
   const schemaContent = {
-    faq: visibleFaqs.map((item) => ({
+    faq: visibleFaqPreview.map((item) => ({
       question: item.question,
       answer: item.answer,
     })),
@@ -430,10 +432,14 @@ export async function ToolDetailPageShell({
   const detailNavItems = [
     { href: "#tool-purchase", label: purchaseButtonLabel },
     { href: "#tool-intro", label: introTitle },
-    {
-      href: "#tool-tutorials",
-      label: isSkillLearning ? td.courseContentTitle : td.tutorialsTitle,
-    },
+    ...(hasTutorialSection
+      ? [
+          {
+            href: "#tool-tutorials",
+            label: isSkillLearning ? td.courseContentTitle : td.tutorialsTitle,
+          },
+        ]
+      : []),
     { href: "#tool-faq", label: td.faqTitle },
     { href: "#tool-related", label: td.relatedTitle },
   ];
@@ -657,8 +663,8 @@ export async function ToolDetailPageShell({
                           </div>
                         </fieldset>
                       ) : null}
-                      <div className="grid gap-3 sm:grid-cols-[minmax(180px,220px)_auto] sm:items-end">
-                        <div>
+                      <div className="tool-detail-payment-method-grid grid gap-3">
+                        <div className="max-w-[560px]">
                           <label
                             id={paymentMethodLabelId}
                             htmlFor="tool-purchase-payment-method"
@@ -685,7 +691,7 @@ export async function ToolDetailPageShell({
                           </select>
                           <p
                             id={paymentMethodHelpId}
-                            className="mt-2 text-xs leading-5 text-[#8F9DB2]"
+                            className="tool-detail-payment-help mt-2 text-xs leading-5 text-[#8F9DB2]"
                           >
                             {forceLocale === "en"
                               ? "Choose the method you will use on the payment page."
@@ -693,7 +699,7 @@ export async function ToolDetailPageShell({
                           </p>
                         </div>
                         <FormSubmitButton
-                          className="w-full sm:w-auto"
+                          className="w-full sm:w-auto sm:justify-self-start"
                           pendingLabel={
                             forceLocale === "en"
                               ? "Generating payment QR..."
@@ -952,9 +958,11 @@ export async function ToolDetailPageShell({
             </div>
           </details>
 
+          {hasTutorialSection ? (
           <details
             id="tool-tutorials"
             className="tool-detail-mobile-disclosure glass scroll-mt-24 rounded-2xl p-7"
+            open
           >
             <summary className="tool-detail-disclosure-summary">
               {isSkillLearning ? td.courseContentTitle : td.tutorialsTitle}
@@ -1020,19 +1028,16 @@ export async function ToolDetailPageShell({
               )}
             </div>
           </details>
+          ) : null}
 
-          <details
+          <section
             id="tool-faq"
-            className="tool-detail-mobile-disclosure glass scroll-mt-24 rounded-2xl p-7"
+            className="tool-detail-faq-card glass scroll-mt-24 rounded-2xl p-7"
           >
-            <summary className="tool-detail-disclosure-summary">
-              {td.faqTitle}
-            </summary>
-            <div className="tool-detail-disclosure-body">
-              <SectionTitle title={td.faqTitle} />
-              <div className="mt-5 grid gap-3">
-              {visibleFaqs.length ? (
-                visibleFaqs.map((faq) => (
+            <SectionTitle title={td.faqTitle} />
+            <div className="mt-5 grid gap-3">
+              {visibleFaqPreview.length ? (
+                visibleFaqPreview.map((faq) => (
                   <details
                     key={faq.id}
                     className="rounded-2xl border border-white/10 bg-white/8 p-5"
@@ -1050,9 +1055,8 @@ export async function ToolDetailPageShell({
                   {publicFaqFallback}
                 </p>
               )}
-              </div>
             </div>
-          </details>
+          </section>
 
           <section className="glass rounded-2xl p-7">
             <SectionTitle title={td.commentsTitle} />
