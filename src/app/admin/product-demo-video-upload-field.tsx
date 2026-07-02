@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
+import { parseProductDemoVideoUploadResponse } from "@/lib/product-demo-video-upload-response";
 
 type UploadState = {
   status: "idle" | "uploading" | "success" | "error";
@@ -78,20 +79,19 @@ export function ProductDemoVideoUploadField({
       setError("上传失败：网络连接中断，请稍后重试。");
     };
 
-    xhr.onload = () => {
-      let payload: { videoUrl?: string; message?: string } = {};
-      try {
-        payload = JSON.parse(xhr.responseText || "{}");
-      } catch {
-        payload = {};
-      }
+    xhr.onabort = () => {
+      setError("上传已取消，请重新选择视频文件。");
+    };
 
-      if (xhr.status >= 200 && xhr.status < 300 && payload.videoUrl) {
-        setVideoUrl(payload.videoUrl);
+    xhr.onload = () => {
+      const uploadResponse = parseProductDemoVideoUploadResponse(xhr.responseText, xhr.status);
+
+      if (uploadResponse.ok) {
+        setVideoUrl(uploadResponse.videoUrl);
         setState({
           status: "success",
           progress: 100,
-          message: payload.message ?? "视频上传成功，请保存产品演示。",
+          message: uploadResponse.message ?? "视频上传成功，请保存产品演示。",
         });
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
@@ -100,11 +100,15 @@ export function ProductDemoVideoUploadField({
       setState({
         status: "error",
         progress: 0,
-        message: payload.message ? `上传失败：${payload.message}` : `上传失败：服务器返回 ${xhr.status}`,
+        message: uploadResponse.message,
       });
     };
 
-    xhr.send(formData);
+    try {
+      xhr.send(formData);
+    } catch {
+      setError("上传失败：浏览器无法发送该视频文件，请压缩后重试。");
+    }
   }
 
   const barColor = state.status === "error" ? "bg-red-300" : "bg-[var(--marketing-accent)]";
