@@ -23,7 +23,6 @@ import {
   parseProductDemoFaq,
 } from "@/lib/product-demos";
 import {
-  absoluteUrl,
   buildBreadcrumbSchema,
   buildFaqSchema,
   buildLocalePath,
@@ -96,7 +95,7 @@ export async function generateProductDemoDetailMetadata(
     });
   }
 
-  const metadata = buildPageMetadata({
+  return buildPageMetadata({
     title: buildProductDemoMetadataTitle(demo, forceLocale),
     description: getLocalizedProductDemoDescription(demo, forceLocale),
     path,
@@ -104,21 +103,6 @@ export async function generateProductDemoDetailMetadata(
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,
   });
-  const customCanonicalUrl = demo.canonicalUrl ? absoluteUrl(demo.canonicalUrl) : null;
-
-  if (!customCanonicalUrl) return metadata;
-
-  return {
-    ...metadata,
-    alternates: {
-      ...metadata.alternates,
-      canonical: customCanonicalUrl,
-    },
-    openGraph: {
-      ...metadata.openGraph,
-      url: customCanonicalUrl,
-    },
-  };
 }
 
 export async function ProductDemoDetailPageShell({ slug, forceLocale }: ProductDemoDetailPageShellProps) {

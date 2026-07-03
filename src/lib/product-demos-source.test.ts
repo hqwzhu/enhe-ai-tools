@@ -66,6 +66,8 @@ describe("product demo feature source contract", () => {
     expect(detail).toContain("buildBreadcrumbSchema");
     expect(detail).toContain("buildProductStructuredData");
     expect(detail).toContain('preload="metadata"');
+    expect(detail).not.toContain("customCanonicalUrl");
+    expect(detail).not.toContain("demo.canonicalUrl ? absoluteUrl");
     expect(sitemap).toContain("prisma.productDemo");
     expect(sitemap).toContain('where: { status: "published" }');
     expect(robots).toContain('"/product-demos"');
