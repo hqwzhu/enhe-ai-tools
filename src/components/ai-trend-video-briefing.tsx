@@ -60,6 +60,7 @@ export function AiTrendVideoBriefing({
             fallbackText={text.fallbackText}
             playLabel={text.playLabel}
             poster={videoPosterUrl}
+            deferUntilClicked
           />
         </div>
 

@@ -8,6 +8,7 @@ type ProductVideoPlayerProps = {
   fallbackText: string;
   playLabel: string;
   poster?: string | null;
+  deferUntilClicked?: boolean;
 };
 
 export function ProductVideoPlayer({
@@ -16,11 +17,15 @@ export function ProductVideoPlayer({
   fallbackText,
   playLabel,
   poster,
+  deferUntilClicked = false,
 }: ProductVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [needsGesture, setNeedsGesture] = useState(false);
+  const [activated, setActivated] = useState(!deferUntilClicked);
 
   useEffect(() => {
+    if (!activated) return;
+
     const video = videoRef.current;
     if (!video) return;
 
@@ -64,9 +69,14 @@ export function ProductVideoPlayer({
       cancelled = true;
       observer.disconnect();
     };
-  }, [src]);
+  }, [src, activated]);
 
   const handlePlayClick = async () => {
+    if (!activated) {
+      setActivated(true);
+      return;
+    }
+
     const video = videoRef.current;
     if (!video) return;
     try {
@@ -77,6 +87,26 @@ export function ProductVideoPlayer({
       setNeedsGesture(true);
     }
   };
+
+  if (!activated) {
+    return (
+      <button
+        type="button"
+        className="tool-detail-video-stage tool-detail-video-preview cursor-target"
+        aria-label={playLabel}
+        onClick={handlePlayClick}
+      >
+        <span
+          className="aspect-video w-full bg-black"
+          style={poster ? { backgroundImage: `url(${poster})` } : undefined}
+          aria-hidden="true"
+        />
+        <span className="tool-detail-video-play">
+          {playLabel}
+        </span>
+      </button>
+    );
+  }
 
   return (
     <div className="tool-detail-video-stage">

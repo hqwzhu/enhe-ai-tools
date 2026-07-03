@@ -7,7 +7,6 @@ import {
   buildProductDemoPath,
   getProductDemoCategoryLabel,
   getProductDemoCoverImage,
-  getProductDemoVideoUrl,
   getLocalizedProductDemoCoverAlt,
   getLocalizedProductDemoDescription,
   getLocalizedProductDemoProductType,
@@ -24,7 +23,6 @@ type ProductDemoCardProps = {
 
 export function ProductDemoCard({ demo, locale, variant = "listing" }: ProductDemoCardProps) {
   const coverImage = getProductDemoCoverImage(demo);
-  const videoSrc = variant === "home" ? getProductDemoVideoUrl(demo) : null;
   const productHref = getProductDemoRelatedProductHref(demo, locale);
   const demoHref = buildProductDemoPath(demo.slug, locale);
   const localizedTitle = getLocalizedProductDemoTitle(demo, locale);
@@ -38,20 +36,7 @@ export function ProductDemoCard({ demo, locale, variant = "listing" }: ProductDe
   return (
     <article className="product-demo-card surface-panel">
       <Link href={demoHref} className="product-demo-card-media" aria-label={`${demoLabel}: ${localizedTitle}`}>
-        {videoSrc ? (
-          <video
-            src={videoSrc}
-            aria-label={`${localizedTitle} ${demoLabel}`}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster={coverImage ?? undefined}
-          >
-            {demoLabel}
-          </video>
-        ) : coverImage ? (
+        {coverImage ? (
           <Image
             src={coverImage}
             alt={localizedCoverAlt}
@@ -63,12 +48,10 @@ export function ProductDemoCard({ demo, locale, variant = "listing" }: ProductDe
         ) : (
           <div className="product-demo-card-placeholder" aria-hidden="true" />
         )}
-        {!videoSrc ? (
-          <span className="product-demo-card-play">
-            <PlayCircle size={18} aria-hidden="true" />
-            {demoLabel}
-          </span>
-        ) : null}
+        <span className="product-demo-card-play">
+          <PlayCircle size={18} aria-hidden="true" />
+          {demoLabel}
+        </span>
       </Link>
 
       <div className="product-demo-card-body">

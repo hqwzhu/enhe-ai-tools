@@ -84,7 +84,7 @@ describe("tool product video source", () => {
     expect(actions).toContain("videoDescription3:");
   });
 
-  it("renders up to three product videos before the product image gallery on public detail pages", () => {
+  it("renders click-to-play product video previews before the product image gallery on public detail pages", () => {
     const detail = readProjectFile("src/app/tools/[slug]/page-shell.tsx");
     const helper = readProjectFile("src/lib/product-video.ts");
     const player = readProjectFile("src/components/product-video-player.tsx");
@@ -93,7 +93,10 @@ describe("tool product video source", () => {
     expect(detail).toContain("tool-detail-product-video");
     expect(detail).toContain("ProductVideoPlayer");
     expect(detail.indexOf("tool-detail-product-video")).toBeLessThan(detail.indexOf("tool-detail-product-gallery"));
+    expect(detail).toContain("deferUntilClicked");
     expect(player).toContain("<video");
+    expect(player).toContain("deferUntilClicked");
+    expect(player).toContain("if (!activated)");
     expect(player).toContain("autoPlay");
     expect(player).toContain("controls");
     expect(player).toContain("muted");

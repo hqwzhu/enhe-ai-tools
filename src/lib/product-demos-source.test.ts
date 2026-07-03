@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("product demo feature source contract", () => {
-  it("renders homepage product demos from cached backend data with muted autoplay videos", () => {
+  it("renders homepage product demos from cached backend data with poster links instead of inline videos", () => {
     const home = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const productDemos = readFileSync(new URL("./product-demos.ts", import.meta.url), "utf8");
     const card = readFileSync(new URL("../components/product-demo-card.tsx", import.meta.url), "utf8");
@@ -20,13 +20,13 @@ describe("product demo feature source contract", () => {
     expect(productDemos).toContain('status: "published"');
     expect(productDemos).toContain("isFeaturedOnHome: true");
     expect(card).toContain("next/image");
-    expect(card).toContain("getProductDemoVideoUrl");
-    expect(card).toContain("<video");
-    expect(card).toContain("autoPlay");
-    expect(card).toContain("muted");
-    expect(card).toContain("loop");
-    expect(card).toContain("playsInline");
-    expect(card).not.toContain('controls');
+    expect(card).not.toContain("getProductDemoVideoUrl");
+    expect(card).not.toContain("<video");
+    expect(card).not.toContain("autoPlay");
+    expect(card).not.toContain("muted");
+    expect(card).not.toContain("loop");
+    expect(card).not.toContain("playsInline");
+    expect(card).toContain("PlayCircle");
   });
 
   it("adds admin CRUD actions and local video upload for managed product demos", () => {
@@ -87,7 +87,7 @@ describe("product demo feature source contract", () => {
     expect(card).toContain("getLocalizedProductDemoCoverAlt");
     expect(card).toContain("getLocalizedProductDemoTags");
     expect(card).not.toContain("alt={demo.coverAlt}");
-    expect(css).toContain(".product-demo-card-media video");
+    expect(css).not.toContain(".product-demo-card-media video");
     expect(css).toContain(".site-back-nav");
     expect(css).toContain("position: relative");
     expect(css).toContain("padding: calc(72px + 1rem) 1rem 0");

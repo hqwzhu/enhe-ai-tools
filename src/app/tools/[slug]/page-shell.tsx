@@ -906,6 +906,8 @@ export async function ToolDetailPageShell({
                         : "您的浏览器不支持内嵌视频播放。"
                     }
                     playLabel={forceLocale === "en" ? "Play product video" : "播放产品视频"}
+                    poster={coverImage}
+                    deferUntilClicked
                   />
                   {video.title || video.description ? (
                     <div className="border-t border-white/10 bg-white/6 p-5">

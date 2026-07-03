@@ -38,15 +38,17 @@ describe("AI trend briefing source contracts", () => {
     expect(topicPage).toContain("buildMetaDescription(copy.description, undefined, 150)");
   });
 
-  it("renders the latest video briefing above demand ranking and emits additive video schema", () => {
+  it("renders the latest video briefing above demand ranking without marking the hub as a video watch page", () => {
     const topicPage = read("src/app/ai-trends/page-shell.tsx");
+    const videoBriefing = read("src/components/ai-trend-video-briefing.tsx");
     const videoTemplate = read("remotion/ai-trend-briefing/AiTrendBriefingVideo.tsx");
 
     expect(exists("src/components/ai-trend-video-briefing.tsx")).toBe(true);
     expect(topicPage).toContain("getLatestPublishedAiTrendBriefingWithVideo");
     expect(topicPage).toContain("AiTrendVideoBriefing");
     expect(topicPage.indexOf("AiTrendVideoBriefing")).toBeLessThan(topicPage.indexOf("copy.demandTitle"));
-    expect(topicPage).toContain('"@type": "VideoObject"');
+    expect(topicPage).not.toContain('"@type": "VideoObject"');
+    expect(videoBriefing).toContain("deferUntilClicked");
     expect(videoTemplate).toContain("MiSans-Regular.min.css");
     expect(videoTemplate).toContain("document.fonts?.ready");
     expect(videoTemplate).toContain('"MiSans","Microsoft YaHei"');

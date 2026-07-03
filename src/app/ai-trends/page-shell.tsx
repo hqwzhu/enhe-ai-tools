@@ -140,13 +140,6 @@ const aiTrendsSourceLinks = [
   },
 ] as const;
 
-function toIsoDateString(value: Date | string | null | undefined) {
-  if (!value) return null;
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString();
-}
-
 const aiTrendsFaqItems = {
   zh: [
     {
@@ -448,30 +441,11 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
       answer: item.answer,
     })),
   });
-  const videoSchema = latestVideoBriefing
-    ? {
-        "@context": "https://schema.org",
-        "@type": "VideoObject",
-        name: latestVideoBriefing.videoTitle || latestVideoBriefing.title,
-        description: latestVideoBriefing.videoDescription || latestVideoBriefing.coreConclusion,
-        contentUrl: absoluteUrl(latestVideoBriefing.videoUrl ?? "/"),
-        ...(latestVideoBriefing.videoPosterUrl
-          ? { thumbnailUrl: [absoluteUrl(latestVideoBriefing.videoPosterUrl)] }
-          : {}),
-        uploadDate:
-          toIsoDateString(latestVideoBriefing.publishedAt ?? latestVideoBriefing.date) ??
-          new Date().toISOString(),
-        ...(latestVideoBriefing.videoDurationSeconds
-          ? { duration: `PT${latestVideoBriefing.videoDurationSeconds}S` }
-          : {})
-      }
-    : null;
-
   return (
     <main>
       <Container className="py-14">
         <StructuredData
-          data={[breadcrumbSchema, collectionSchema, webPageSchema, faqSchema, ...(videoSchema ? [videoSchema] : [])]}
+          data={[breadcrumbSchema, collectionSchema, webPageSchema, faqSchema]}
         />
         <section className="surface-panel overflow-hidden p-7 md:p-10">
         <div className="max-w-4xl">
