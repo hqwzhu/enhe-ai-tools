@@ -59,6 +59,13 @@ type NewsArticle = NonNullable<
   Awaited<ReturnType<typeof getPublicNewsArticleBySlug>>
 >;
 
+const removedProductHrefReplacements: Record<string, string> = {
+  "/software/lumios-personal-ai-companion":
+    "/ai-news/chatbox-to-personal-ai-companion-desktop-execution",
+  "/en/software/lumios-personal-ai-companion":
+    "/en/ai-news/chatbox-to-personal-ai-companion-desktop-execution",
+};
+
 export const aiNewsDetailPageRevalidate = publicPageCacheSeconds;
 
 export async function generateAiNewsDetailPageMetadata(
@@ -713,10 +720,12 @@ function InlineParts({ parts }: { parts: NewsInlinePart[] }) {
     <>
       {parts.map((part, index) => {
         if (part.type === "link") {
+          const href = normalizeAiNewsInternalHref(part.href);
+
           return (
             <Link
-              key={`${part.href}-${index}`}
-              href={part.href}
+              key={`${href}-${index}`}
+              href={href}
               className="font-semibold text-[var(--marketing-accent)] underline decoration-[var(--marketing-accent)]/35 underline-offset-4 transition hover:decoration-[var(--marketing-accent)]"
             >
               <span dangerouslySetInnerHTML={{ __html: part.text }} />
@@ -733,6 +742,37 @@ function InlineParts({ parts }: { parts: NewsInlinePart[] }) {
       })}
     </>
   );
+}
+
+function normalizeAiNewsInternalHref(href: string) {
+  const path = extractSameSitePath(href);
+
+  if (!path) {
+    return href;
+  }
+
+  const normalizedPath = path.endsWith("/") ? path.slice(0, -1) : path;
+  return removedProductHrefReplacements[normalizedPath] ?? href;
+}
+
+function extractSameSitePath(href: string) {
+  if (href.startsWith("/")) {
+    return href;
+  }
+
+  try {
+    const url = new URL(href);
+    if (
+      url.hostname === "www.enhe-tech.com.cn" ||
+      url.hostname === "enhe-tech.com.cn"
+    ) {
+      return url.pathname;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }
 
 function buildKeywordContainsOr(keywords: string[], fields: string[]) {
