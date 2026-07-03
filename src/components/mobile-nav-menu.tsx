@@ -28,7 +28,7 @@ export function MobileNavMenu({
   navItems,
   showAdmin,
   loginItem,
-  userCenterItem = ["User Center", "/user"],
+  userCenterItem,
   languageItems = []
 }: MobileNavMenuProps) {
   return (
@@ -65,9 +65,11 @@ export function MobileNavMenu({
             {loginItem[0]}
           </PrefetchLink>
         ) : null}
-        <PrefetchLink href={userCenterItem[1]} className="mobile-nav-link mobile-nav-user-center cursor-target">
-          {userCenterItem[0]}
-        </PrefetchLink>
+        {userCenterItem ? (
+          <PrefetchLink href={userCenterItem[1]} className="mobile-nav-link mobile-nav-user-center cursor-target">
+            {userCenterItem[0]}
+          </PrefetchLink>
+        ) : null}
         {languageItems.length ? (
           <div className="mobile-nav-language" aria-label="Language">
             {languageItems.map((item) => (

@@ -203,7 +203,7 @@ export function buildLanguageSwitcherHref(path: string, locale: Locale) {
     return withLocaleSwitch(buildLocalePath("/", locale));
   }
 
-  return withLocaleSwitch(buildLocalePath(path, locale));
+  return buildLocalePath(path, locale);
 }
 
 export function buildLanguageAlternates(path = "/") {

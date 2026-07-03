@@ -4,17 +4,17 @@ import { buildLanguageSwitcherHref, buildLocalePath } from "@/lib/seo";
 
 describe("buildLanguageSwitcherHref", () => {
   it("keeps localized public routes on the matching page", () => {
-    expect(buildLanguageSwitcherHref("/", "en")).toBe("/en?locale=en");
-    expect(buildLanguageSwitcherHref("/en", "zh")).toBe("/?locale=zh");
-    expect(buildLanguageSwitcherHref("/software", "en")).toBe("/en/software?locale=en");
-    expect(buildLanguageSwitcherHref("/en/software", "zh")).toBe("/software?locale=zh");
-    expect(buildLanguageSwitcherHref("/software/demo-tool", "en")).toBe("/en/software/demo-tool?locale=en");
-    expect(buildLanguageSwitcherHref("/skill-learning/demo-course", "en")).toBe("/en/skill-learning/demo-course?locale=en");
-    expect(buildLanguageSwitcherHref("/account-services/demo-service", "en")).toBe("/en/account-services/demo-service?locale=en");
-    expect(buildLanguageSwitcherHref("/ai-trends", "en")).toBe("/en/ai-trends?locale=en");
-    expect(buildLanguageSwitcherHref("/en/ai-trends", "zh")).toBe("/ai-trends?locale=zh");
-    expect(buildLanguageSwitcherHref("/ai-trends/daily/2026-06-19", "en")).toBe("/en/ai-trends/daily/2026-06-19?locale=en");
-    expect(buildLanguageSwitcherHref("/en/legal/privacy-policy", "zh")).toBe("/legal/privacy-policy?locale=zh");
+    expect(buildLanguageSwitcherHref("/", "en")).toBe("/en");
+    expect(buildLanguageSwitcherHref("/en", "zh")).toBe("/");
+    expect(buildLanguageSwitcherHref("/software", "en")).toBe("/en/software");
+    expect(buildLanguageSwitcherHref("/en/software", "zh")).toBe("/software");
+    expect(buildLanguageSwitcherHref("/software/demo-tool", "en")).toBe("/en/software/demo-tool");
+    expect(buildLanguageSwitcherHref("/skill-learning/demo-course", "en")).toBe("/en/skill-learning/demo-course");
+    expect(buildLanguageSwitcherHref("/account-services/demo-service", "en")).toBe("/en/account-services/demo-service");
+    expect(buildLanguageSwitcherHref("/ai-trends", "en")).toBe("/en/ai-trends");
+    expect(buildLanguageSwitcherHref("/en/ai-trends", "zh")).toBe("/ai-trends");
+    expect(buildLanguageSwitcherHref("/ai-trends/daily/2026-06-19", "en")).toBe("/en/ai-trends/daily/2026-06-19");
+    expect(buildLanguageSwitcherHref("/en/legal/privacy-policy", "zh")).toBe("/legal/privacy-policy");
   });
 
   it("keeps same-path locale routes in place while still triggering explicit locale switching", () => {
@@ -28,11 +28,11 @@ describe("buildLanguageSwitcherHref", () => {
     expect(buildLanguageSwitcherHref("/orders/order-1/pay", "zh")).toBe(
       "/orders/order-1/pay?locale=zh",
     );
-    expect(buildLanguageSwitcherHref("/login", "en")).toBe("/en/login?locale=en");
-    expect(buildLanguageSwitcherHref("/en/login", "zh")).toBe("/login?locale=zh");
-    expect(buildLanguageSwitcherHref("/register", "en")).toBe("/en/register?locale=en");
-    expect(buildLanguageSwitcherHref("/user", "en")).toBe("/en/user?locale=en");
-    expect(buildLanguageSwitcherHref("/en/user", "zh")).toBe("/user?locale=zh");
+    expect(buildLanguageSwitcherHref("/login", "en")).toBe("/en/login");
+    expect(buildLanguageSwitcherHref("/en/login", "zh")).toBe("/login");
+    expect(buildLanguageSwitcherHref("/register", "en")).toBe("/en/register");
+    expect(buildLanguageSwitcherHref("/user", "en")).toBe("/en/user");
+    expect(buildLanguageSwitcherHref("/en/user", "zh")).toBe("/user");
     expect(buildLanguageSwitcherHref("/relay", "zh")).toBe("/?locale=zh");
   });
 });

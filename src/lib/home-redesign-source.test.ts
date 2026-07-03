@@ -77,7 +77,7 @@ describe("homepage SaaS redesign source", () => {
 
     expect(header).toContain("t.nav.home");
     expect(header).toContain("t.nav.login");
-    expect(header).toContain("{t.nav.user}");
+    expect(header).toContain("user: t.nav.user");
 
     expect(dictionaries).toContain('titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来"');
     expect(dictionaries).toContain('titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future"');

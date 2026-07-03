@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
       { source: "/en/software/zfb", destination: "/en/software/zfb-transfer-link-qr-code-generator", statusCode: 301 },
       { source: "/skill-learning/ai-ai-ilo5a5", destination: "/skill-learning/ai-monetization-side-hustle-course", statusCode: 301 },
       { source: "/en/skill-learning/ai-ai-ilo5a5", destination: "/en/skill-learning/ai-monetization-side-hustle-course", statusCode: 301 },
+      { source: "/software/lumios-personal-ai-companion", destination: "/ai-news/chatbox-to-personal-ai-companion-desktop-execution", statusCode: 301 },
+      { source: "/en/software/lumios-personal-ai-companion", destination: "/en/ai-news/chatbox-to-personal-ai-companion-desktop-execution", statusCode: 301 },
       { source: "/okf", destination: "/okf/index.md", statusCode: 308 },
       { source: "/okf/", destination: "/okf/index.md", statusCode: 308 },
       { source: "/online-tools", destination: "/account-services", statusCode: 301 },

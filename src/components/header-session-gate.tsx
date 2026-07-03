@@ -47,7 +47,7 @@ export function HeaderSessionGate({
       navItems={navItems}
       showAdmin={user?.role === "admin"}
       loginItem={[labels.login, buildLocalePath("/login", locale)]}
-      userCenterItem={[labels.user, buildLocalePath("/user", locale)]}
+      userCenterItem={user ? [labels.user, buildLocalePath("/user", locale)] : undefined}
       languageItems={languageItems}
     />
   );

@@ -11,12 +11,16 @@ describe("seo phase two source contracts", () => {
     const enLayout = read("src/app/en/layout.tsx");
     const publicChrome = read("src/components/public-site-chrome.tsx");
     const header = read("src/components/site-header.tsx");
+    const headerSessionGate = read("src/components/header-session-gate.tsx");
+    const headerAccountControls = read("src/components/header-account-controls.tsx");
     const footer = read("src/components/site-footer.tsx");
 
     expect(enLayout).toContain("RootDocument");
     expect(enLayout).toContain('lang="en-US"');
     expect(publicChrome).toContain("buildLanguageAlternates");
-    expect(header).toContain('href={buildLocalePath("/user", locale)}');
+    expect(header).not.toContain('href={buildLocalePath("/user", locale)}');
+    expect(headerSessionGate).toContain('userCenterItem={user ? [labels.user, buildLocalePath("/user", locale)] : undefined}');
+    expect(headerAccountControls).toContain('const userPath = buildLocalePath("/user", locale);');
     expect(header).toContain('href={buildLocalePath("/login", locale)}');
     expect(footer).toContain("buildLocalePath");
   });
@@ -41,7 +45,8 @@ describe("seo phase two source contracts", () => {
     const seo = read("src/lib/seo.ts");
 
     expect(publicChrome).toContain('inLanguage: forceLocale === "en" ? "en-US" : "zh-CN"');
-    expect(layout).toContain("/images/brand/enhe-icon-gradient-white-bg-cropped.png");
+    expect(layout).toContain("icons:");
+    expect(seo).toContain('export const defaultBrandIcon = "/images/brand/enhe-icon-gradient-white-bg-cropped.png"');
     expect(seo).toContain('export const defaultOgImage = "/images/brand/enhe-icon-gradient-transparent-cropped.png"');
   });
 
