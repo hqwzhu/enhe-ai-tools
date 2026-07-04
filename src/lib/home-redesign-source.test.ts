@@ -105,6 +105,9 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-outcome-shell");
     expect(css).toContain(".home-outcome-grid");
     expect(css).toContain(".home-product-path-grid");
+    expect(css).toContain(".home-product-path-grid .home-outcome-card {\n  min-height: clamp(158px, 12vw, 176px);");
+    expect(css).toContain("justify-content: center;\n  row-gap: 0.45rem;");
+    expect(css).toContain(".home-product-path-grid .home-outcome-card h3 {\n  margin: 0 0 0.55rem;");
     expect(css).toContain(".home-support-shell");
     expect(css).toContain(".home-seo-disclosure");
     expect(css).toContain("overflow-x: clip");

@@ -2061,7 +2061,13 @@ select option:disabled {
 }
 
 .home-product-path-grid .home-outcome-card {
-  min-height: 214px;
+  min-height: clamp(158px, 12vw, 176px);
+  justify-content: center;
+  row-gap: 0.45rem;
+}
+
+.home-product-path-grid .home-outcome-card h3 {
+  margin: 0 0 0.55rem;
 }
 
 .home-workflow-panel,
