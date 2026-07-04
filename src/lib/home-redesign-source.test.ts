@@ -147,6 +147,22 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".site-brand-logo-dark {\n  opacity: 1;\n  filter: brightness(0) invert(1)");
   });
 
+  it("uses demand-first homepage cards without the old action labels", () => {
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+
+    expect(page).toContain('forceLocale === "en" ? "Choose by need" : "按需求选择"');
+    expect(page).toContain('title: "提升工作效率"');
+    expect(page).toContain("办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件");
+    expect(page).toContain('title: "生成图片/视频/音频"');
+    expect(page).toContain("AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理");
+    expect(page).toContain('title: "改变你未来的AI"');
+    expect(page).toContain("AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现");
+    expect(page).not.toContain("进入软件货架");
+    expect(page).not.toContain("选择课程");
+    expect(page).not.toContain("查看服务");
+    expect(page).not.toContain("<span>{item.action}</span>");
+  });
+
   it("keeps the homepage hero title as static DOM text after removing TextPressure", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");

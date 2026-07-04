@@ -64,42 +64,36 @@ const homeFaqItems = {
 const homeProductPaths = {
   zh: [
     {
-      title: "提升效率",
-      description: "文档、运营、研究、办公和自动化任务，先找到能减少重复工作的工具。",
+      title: "提升工作效率",
+      description: "办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件",
       href: "/software",
-      action: "进入软件货架",
     },
     {
-      title: "创作内容",
-      description: "写作、图片、视频、音频和脚本创作，按产出目标选择工具与教程。",
+      title: "生成图片/视频/音频",
+      description: "AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理",
       href: "/skill-learning",
-      action: "选择课程",
     },
     {
-      title: "安全可控",
-      description: "处理敏感素材、账号信息或长期流程时，先确认隐私、稳定和服务边界。",
+      title: "改变你未来的AI",
+      description: "AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现",
       href: "/account-services",
-      action: "查看服务",
     },
   ],
   en: [
     {
-      title: "Work faster",
-      description: "Find tools for documents, operations, research, office tasks, and automation.",
+      title: "Improve work efficiency",
+      description: "Office productivity tools, file processing tools, system utilities, data analysis tools, productivity, AI desktop software",
       href: "/software",
-      action: "Open software shelf",
     },
     {
-      title: "Create content",
-      description: "Choose tools and tutorials by writing, image, video, audio, script, or publishing output.",
+      title: "Generate image/video/audio",
+      description: "AI video tools, AI image tools, AI audio tools, video generation, voice generation, video/image processing",
       href: "/skill-learning",
-      action: "Choose courses",
     },
     {
-      title: "Use AI safely",
-      description: "Check privacy, stability, access, and service boundaries for sensitive or long-term workflows.",
+      title: "AI that changes your future",
+      description: "AI agents, practical AI tools for daily life, agents, account subscriptions, subscription upgrades, AI prompts, AI side-income workflows",
       href: "/account-services",
-      action: "View services",
     },
   ],
 } as const;
@@ -259,12 +253,11 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
       <section className="home-outcome-shell" aria-labelledby="home-outcome-title">
         <Container className="home-hero-reference-frame">
           <div className="home-section-heading">
-            <h2 id="home-outcome-title">{forceLocale === "en" ? "Choose by task" : "按任务选择"}</h2>
+            <h2 id="home-outcome-title">{forceLocale === "en" ? "Choose by need" : "按需求选择"}</h2>
           </div>
           <div className="home-outcome-grid home-product-path-grid">
             {homeProductPaths[forceLocale].map((item) => (
               <Link key={item.title} href={buildLocalePath(item.href, forceLocale)} className="home-outcome-card">
-                <span>{item.action}</span>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
               </Link>
