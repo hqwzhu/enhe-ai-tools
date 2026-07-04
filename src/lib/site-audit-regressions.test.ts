@@ -12,8 +12,10 @@ function read(path: string) {
 
 describe("site audit regression coverage", () => {
   it("keeps homepage and listing metadata broad enough for current SEO targets", () => {
-    expect(buildHomeMetadataTitle("zh", dictionaries.zh.brand)).toContain("AI前沿资讯");
-    expect(buildHomeMetadataTitle("en", dictionaries.en.brand)).toContain("AI News");
+    expect(buildHomeMetadataTitle("zh", dictionaries.zh.brand)).toContain("真实任务");
+    expect(buildHomeMetadataTitle("zh", dictionaries.zh.brand)).toContain("安全可控");
+    expect(buildHomeMetadataTitle("en", dictionaries.en.brand)).toContain("Real Tasks");
+    expect(buildHomeMetadataTitle("en", dictionaries.en.brand)).toContain("Safer AI");
 
     expect(dictionaries.zh.listing.softwareIntro.length).toBeGreaterThanOrEqual(50);
     expect(dictionaries.zh.listing.onlineIntro.length).toBeGreaterThanOrEqual(50);

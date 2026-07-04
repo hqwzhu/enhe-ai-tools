@@ -102,8 +102,8 @@ describe("seo helpers", () => {
   });
 
   it("builds homepage titles as brand plus business scope", () => {
-    expect(buildHomeMetadataTitle("en", "ENHE AI")).toBe("ENHE AI | AI News, Apps, Accounts & Courses");
-    expect(buildHomeMetadataTitle("zh", "恩禾 ENHE AI")).toBe("恩禾 ENHE AI | AI前沿资讯、软件应用、账号服务与技能学习");
+    expect(buildHomeMetadataTitle("en", "ENHE AI")).toBe("ENHE AI | Real Tasks, Safer AI Workflows");
+    expect(buildHomeMetadataTitle("zh", "恩禾 ENHE AI")).toBe("恩禾 ENHE AI | 真实任务、AI工具与安全可控路径");
   });
 
   it("builds stronger meta descriptions for core public pages", () => {

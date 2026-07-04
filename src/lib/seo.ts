@@ -5,7 +5,7 @@ import { localeSwitchQueryName } from "@/lib/locale-routing";
 export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
 export const siteName = "ENHE AI";
 export const defaultSiteDescription =
-  "Live in symbiosis with AI, awaken in this era, and define the future through creation.";
+  "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, and choose safer AI paths.";
 export const defaultBrandIcon = "/images/brand/enhe-icon-gradient-white-bg-cropped.png";
 export const defaultOgImage = "/images/brand/enhe-icon-gradient-transparent-cropped.png";
 
@@ -298,8 +298,8 @@ export function buildMetadataTitle({
 export function buildHomeMetadataTitle(locale: Locale, brand = siteName) {
   const scope =
     locale === "en"
-      ? "AI News, Apps, Accounts & Courses"
-      : "AI前沿资讯、软件应用、账号服务与技能学习";
+      ? "Real Tasks, Safer AI Workflows"
+      : "真实任务、AI工具与安全可控路径";
   return truncateText(
     `${normalizeWhitespace(brand)} | ${scope}`,
     locale === "en" ? 62 : 64,
@@ -326,10 +326,10 @@ export function buildHomeMetaDescription(
   }
 
   if (locale === "en") {
-    return "ENHE AI helps young AI users and creators track AI news, compare software apps, review account services, learn courses, and choose tools faster.";
+    return "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, choose tools, and keep privacy clearer.";
   }
 
-  return "恩禾 ENHE AI 面向年轻AI用户与创作者，聚合AI前沿资讯、AI软件应用、账号服务、技能课程、价格说明与实用教程，提供工具对比、购买指引和实战内容，帮助你快速理解趋势、选择工具、提升效率并把创意落地。";
+  return "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能和解决工具选择问题；需要处理敏感素材、长期流程或隐私边界时，优先提供安全、隐私和稳定的可控 AI 路径。";
 }
 
 export function buildListingMetaDescription(
@@ -344,13 +344,13 @@ export function buildListingMetaDescription(
 ) {
   const zhDescriptions = {
     software:
-      "精选AI软件应用、本地部署工具、桌面效率软件和创作辅助工具，覆盖内容生产、运营自动化、音视频处理与日常工作流，提供价格、教程、下载线索、适用场景和工具对比，帮助你更快完成实际任务。",
+      "按真实任务选择AI软件应用：提升效率、创作内容、整理资料、处理素材或搭建更安全、私密、稳定的工作流。查看适用场景、价格、教程、交付边界和适合人群，先判断是否能解决当前任务。",
     "account-services":
-      "浏览AI账号服务咨询、AI工具订阅与账号使用支持，查看服务范围、交付说明、合规使用建议、价格线索、售后边界、适合人群和使用前检查项。使用第三方平台前，请以对应平台官方政策为准。",
+      "了解AI工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则。先确认任务、服务范围、价格、售后、合规提醒、使用风险和替代路径，再决定是否咨询或购买。",
     "skill-learning":
-      "学习AI提示词、AI工具实战、本地部署、自动化流程和内容创作课程，查看课程报价、适合人群、学习路径、教程内容、实战案例和工具组合建议，把AI能力转化为可复用的工作技能。",
+      "围绕真实任务学习AI提示词、工具实战、自动化流程、内容创作和更可控的AI使用方法。沉淀文档、素材、工作流和可复用技能，减少试错时间，让学习直接服务工作和创作。",
     "ai-news":
-      "关注全球AI智能体、开源模型、本地部署AI应用、AI工具、技能教程与行业趋势，快速获取创作者和AI用户需要的前沿信号，把AI变化转化为实际生产力。",
+      "阅读AI前沿资讯和趋势解读，理解工具、模型和平台变化对工作效率、内容创作、资料整理、学习技能和安全使用的实际影响。",
     pricing:
       "查看ENHE AI软件、课程与账号服务报价结构、购买流程、权益说明、支付审核、交付方式、售后边界、退款规则、适合人群和服务范围，购买前先确认价格与使用方式。",
     tutorials:

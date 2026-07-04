@@ -21,11 +21,20 @@ describe("AI GEO foundations", () => {
 
     const llms = read("public/llms.txt");
     expect(llms).toContain("# 恩禾 ENHE AI");
+    expect(llms).toContain(
+      "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能、解决工具选择和使用问题。在需要处理敏感素材、长期稳定流程或隐私边界时，提供更可控的AI工具和路径。",
+    );
+    expect(llms).toContain("User needs ENHE AI helps with");
+    expect(llms).toContain("work faster");
+    expect(llms).toContain("create content");
+    expect(llms).toContain("protect sensitive material");
+    expect(llms).toContain("safe, private, and stable AI use");
     expect(llms).toContain("https://www.enhe-tech.com.cn/ai-news");
     expect(llms).toContain("https://www.enhe-tech.com.cn/about");
     expect(llms).toContain("https://www.enhe-tech.com.cn/okf/index.md");
-    expect(llms).toContain("AI agents");
-    expect(llms).toContain("AI account service guidance");
+    expect(llms).not.toContain(
+      "主要关注 AI 智能体、本地部署 AI 应用、AI 软件工具、AI 账号服务",
+    );
 
     const pricing = read("public/pricing.md");
     expect(pricing).toContain("AI software apps");
@@ -35,11 +44,13 @@ describe("AI GEO foundations", () => {
     const okfIndex = read("public/okf/index.md");
     expect(okfIndex).toContain("type: KnowledgeBundle");
     expect(okfIndex).toContain("[ENHE AI overview](./enhe-ai-overview.md)");
-    expect(okfIndex).toContain("GEO Query Coverage");
+    expect(okfIndex).toContain("User-Need Query Coverage");
+    expect(okfIndex).toContain("提升工作效率");
+    expect(okfIndex).toContain("安全、隐私、稳定");
     expect(okfIndex).toContain("Content-to-Action Map");
 
     const softwareOkf = read("public/okf/software/index.md");
-    expect(softwareOkf).toContain("AI Agent Tool Recommendation Answer");
+    expect(softwareOkf).toContain("Safe, Private, And Stable AI Use Answer");
     expect(softwareOkf).toContain("Recommendation Dimensions");
     expect(softwareOkf).toContain("FAQ For Answer Engines");
     expect(softwareOkf).toContain("Source And Schema Notes");
@@ -192,9 +203,9 @@ describe("AI GEO foundations", () => {
     expect(pageShell).toContain("const heroIntro =");
     expect(pageShell).toContain('forceLocale === "en"');
     expect(pageShell).toContain("ENHE AI");
-    expect(pageShell).toContain("探索 AI 智能体、AI 工具与AI 技能，让 AI 成为你的效率伙伴，重塑你的未来。");
-    expect(pageShell).toContain("Explore AI agents, AI tools, and AI skills. Make AI your productivity partner and reshape your future.");
-    expect(dictionaries).toContain('titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来"');
-    expect(dictionaries).toContain('titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future"');
+    expect(pageShell).toContain("把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。");
+    expect(pageShell).toContain("Use AI for real tasks: work faster, create content, organize material, and solve concrete problems.");
+    expect(dictionaries).toContain('titleSecondLine: "把 AI 用到真实任务里，让工作、创作和学习更可控"');
+    expect(dictionaries).toContain('titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows"');
   });
 });

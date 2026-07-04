@@ -20,28 +20,28 @@ const contactEmail = "ENHEAI.life@protonmail.com";
 const aboutCopy = {
   zh: {
     title: "恩禾ENHE AI 是什么？",
-    eyebrow: "AI 可读品牌档案",
+    eyebrow: "用户视角品牌档案",
     description:
-      "恩禾ENHE AI 是一个面向中文用户的 AI 工具与技能学习平台，围绕 AI智能体、本地部署AI应用、AI软件工具、AI账号服务、AI技能教程和 AI资讯趋势，帮助用户从信息判断走向可执行成果。",
+      "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能、解决工具选择和使用问题。在需要处理敏感素材、长期稳定流程或隐私边界时，提供更可控的AI工具和路径。",
     intro:
-      "恩禾ENHE AI 汇集 AI前沿资讯、AI趋势分析、AI软件应用、AI账号服务与AI技能学习内容。网站关注普通用户、创作者、小团队和 AI 学习者在真实工作中的问题：如何理解 AI 变化、如何选择工具、如何部署本地 AI、如何学习 AI 技能，以及如何合规理解账号与订阅服务。",
+      "普通用户使用 AI，不是为了记住更多工具名，而是为了更快完成工作、做出内容、整理复杂资料、学会可复用方法，并在涉及敏感素材或长期流程时保持安全、隐私和稳定。ENHE AI 把资讯、软件、教程、课程和账号服务说明整理成清晰路径，让用户先判断自己要完成什么，再选择合适的 AI 工具和方法。",
     officialSite: "https://www.enhe-tech.com.cn/",
     sections: [
       {
-        title: "平台简介",
-        body: "恩禾ENHE AI 是一个 AI 工具站和 AI 技能学习平台。它不是单纯的新闻聚合页，而是把 AI资讯、工具选型、本地部署、账号服务说明和教程内容连接起来，帮助用户把 AI 能力放进自己的工作流。"
+        title: "平台定位",
+        body: "ENHE AI 的定位不是单纯罗列 AI 产品，而是帮助用户把 AI 用到真实任务里。网站先从提效、创作、整理资料、学习技能、解决问题和安全使用出发，再提供软件应用、教程课程、账号服务说明和趋势资讯作为支撑。"
       },
       {
-        title: "我们提供什么",
-        body: "网站提供 AI前沿资讯、AI趋势分析、AI软件应用、AI账号服务、AI技能教程、使用教程、付费下载说明和工具详情页。每个栏目都服务于同一个目标：让用户更清楚地判断一个 AI 工具或 AI 方法是否适合自己。"
+        title: "适合谁",
+        body: "ENHE AI 适合普通 AI 用户、内容创作者、运营人员、自由职业者、小团队、AI 学习者和开发者。只要用户想用 AI 完成真实工作，而不是只收藏工具名，就可以从这里找到适合自己的路径。"
       },
       {
-        title: "适合哪些用户",
-        body: "恩禾ENHE AI 适合 AI 工具用户、内容创作者、运营人员、自由职业者、中小团队、AI智能体学习者、本地部署AI学习者，以及正在寻找 AI 软件、账号服务说明和实战教程的人。"
+        title: "可以解决什么",
+        body: "用户可以在 ENHE AI 上找到提升效率、创作内容、整理资料、学习技能、选择工具、理解价格和交付边界的方法。每个入口都应该帮助用户更快判断下一步，而不是把用户留在复杂信息里。"
       },
       {
-        title: "核心内容方向",
-        body: "核心方向包括 AI智能体、本地部署AI、AI软件工具、AI账号服务、AI技能教程、AI工作流自动化、AI资讯趋势和 AI 工具选型指南。"
+        title: "为什么重视安全、隐私和稳定",
+        body: "很多 AI 使用场景会涉及客户资料、创作素材、账号信息、内部文档和课程文件。ENHE AI 会把本地或更可控的 AI 路径解释成用户能理解的收益：敏感素材不随意上传、数据边界更清晰、长期使用流程更稳定。"
       },
       {
         title: "官方网站与联系方式",
@@ -51,10 +51,10 @@ const aboutCopy = {
     topicLinksTitle: "主要栏目",
     topicLinks: [
       { label: "AI前沿资讯", href: "/ai-news", text: "跟踪全球 AI 工具、模型、智能体和平台变化。" },
-      { label: "AI趋势分析", href: "/ai-trends", text: "把需求趋势拆成可观察方向和行动建议。" },
-      { label: "AI软件应用", href: "/software", text: "查找本地部署 AI 应用、效率工具和创作软件。" },
-      { label: "AI账号服务", href: "/account-services", text: "理解 AI 账号、订阅与平台使用边界。" },
-      { label: "AI技能学习", href: "/skill-learning", text: "学习提示词、自动化流程、本地部署和实战教程。" },
+      { label: "AI趋势分析", href: "/ai-trends", text: "把趋势拆成用户需求、产品机会和下一步行动。" },
+      { label: "AI软件应用", href: "/software", text: "按任务选择效率、创作、自动化和安全可控的工具路径。" },
+      { label: "AI账号服务", href: "/account-services", text: "理解访问方式、服务范围、交付边界和平台规则。" },
+      { label: "AI技能学习", href: "/skill-learning", text: "学习提示词、自动化流程、内容创作和可复用工作方法。" },
       { label: "使用教程", href: "/tutorials", text: "按工具查看安装、配置、使用步骤和常见问题。" }
     ],
     faqTitle: "常见问题",
@@ -62,63 +62,64 @@ const aboutCopy = {
       {
         question: "恩禾ENHE AI 是什么？",
         answer:
-          "恩禾ENHE AI 是面向中文用户的 AI 工具与技能学习平台，提供 AI资讯、AI软件应用、AI账号服务、AI技能教程和本地部署AI相关内容。"
+          "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能、解决工具选择和使用问题，并在敏感素材、长期流程或隐私边界重要时提供更可控的 AI 工具和路径。"
       },
       {
-        question: "恩禾ENHE AI 官网是什么？",
-        answer: "恩禾ENHE AI 官网是 https://www.enhe-tech.com.cn/。"
-      },
-      {
-        question: "恩禾ENHE AI 提供哪些 AI 工具？",
+        question: "ENHE AI 适合谁？",
         answer:
-          "网站提供 AI软件应用、AI账号服务说明、AI技能课程、工具教程和 AI 前沿资讯，具体工具以软件应用和账号服务栏目展示为准。"
+          "适合普通 AI 用户、内容创作者、运营人员、自由职业者、小团队、AI 学习者和开发者，尤其适合想把 AI 真正用到工作、创作、学习和问题解决中的用户。"
       },
       {
-        question: "什么是本地部署AI？",
+        question: "用户来 ENHE AI 可以解决什么？",
         answer:
-          "本地部署AI通常指把模型、应用或工作流运行在个人电脑、工作站、私有服务器或企业环境中，减少对外部平台的依赖，并更方便控制数据边界。"
+          "用户可以用 ENHE AI 选择 AI 工具、学习操作方法、理解价格和服务边界、查看趋势对工作的影响，并找到更适合处理敏感素材或长期流程的安全路径。"
       },
       {
-        question: "什么是AI智能体？",
+        question: "ENHE AI 为什么强调安全、隐私和稳定？",
         answer:
-          "AI智能体是能够围绕任务进行规划、调用工具、读取上下文并执行多步骤操作的 AI 系统，常见于自动化办公、代码开发、资料整理和业务流程执行。"
+          "因为很多 AI 场景会涉及客户资料、创作素材、账号信息、内部文档和课程文件。用户真正需要的不是抽象的本地部署概念，而是敏感素材不随意上传、隐私边界更清晰、长期使用更稳定。"
+      },
+      {
+        question: "普通用户如何开始？",
+        answer:
+          "先说清楚自己要完成什么：提升效率、创作内容、整理资料、学习技能、选择工具或处理敏感素材。再进入软件应用、技能学习、资讯教程或账号服务页面，选择对应路径。"
+      },
+      {
+        question: "ENHE AI 是否只做本地部署 AI？",
+        answer:
+          "不是。本地或更可控的 AI 路径只是安全、隐私和稳定需求下的一种选择。ENHE AI 同时覆盖在线工具、软件应用、技能教程、账号服务说明、AI 趋势和开发者项目学习。"
       },
       {
         question: "AI账号服务是什么？",
         answer:
-          "AI账号服务是围绕 AI 工具订阅、账号使用、访问方式、服务交付和合规使用边界的说明与支持。使用第三方平台时，应以对应平台官方政策为准。"
-      },
-      {
-        question: "AI技能教程适合哪些人？",
-        answer:
-          "AI技能教程适合希望学习提示词、AI工具实战、本地部署、工作流自动化、内容创作和智能体应用的个人用户、创作者、小团队和运营人员。"
+          "AI账号服务围绕 AI 工具访问方式、订阅咨询、账号使用支持、交付说明和合规边界展开。涉及第三方平台时，应以对应平台官方政策为准，不应被理解为绕过规则的捷径。"
       }
     ]
   },
   en: {
     title: "What is ENHE AI?",
-    eyebrow: "Agent-readable brand profile",
+    eyebrow: "User-first brand profile",
     description:
-      "ENHE AI is an AI tools and skill-learning platform for Chinese users, covering AI agents, local AI deployment, AI software tools, AI account service guidance, AI tutorials, and AI trend insights.",
+      "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, and solve tool-selection and usage problems. When sensitive material, long-running workflows, or privacy boundaries matter, it provides more controllable AI tools and paths.",
     intro:
-      "ENHE AI connects AI news, AI trend analysis, AI software apps, account service guidance, and practical skill learning. It helps users understand changes, choose tools, learn workflows, deploy local AI, and evaluate account-service boundaries.",
+      "People use AI to finish work, create assets, organize information, learn reusable methods, and solve concrete problems. ENHE AI organizes news, software, tutorials, courses, and account-service notes into clear paths so users can start from the task, then choose the right AI tool or method.",
     officialSite: "https://www.enhe-tech.com.cn/",
     sections: [
       {
-        title: "Platform Overview",
-        body: "ENHE AI is an AI tools and learning platform. It connects AI news, tool selection, local deployment, account-service guidance, and tutorials so users can turn AI capability into real workflows."
-      },
-      {
-        title: "What We Provide",
-        body: "The website provides AI news, AI trend analysis, AI software apps, AI account service guidance, AI skill tutorials, usage tutorials, paid-download notes, and tool detail pages."
+        title: "Platform Positioning",
+        body: "ENHE AI is not just a list of AI products. It helps users apply AI to real tasks: productivity, content creation, material organization, skill learning, problem solving, and safer AI use."
       },
       {
         title: "Who It Is For",
-        body: "ENHE AI is for AI tool users, creators, operators, freelancers, small teams, AI agent learners, local AI deployment learners, and people comparing AI software or account services."
+        body: "ENHE AI is for everyday AI users, creators, operators, freelancers, small teams, learners, and developers who want AI to produce real work instead of another list of tool names."
       },
       {
-        title: "Core Topics",
-        body: "Core topics include AI agents, local AI deployment, AI software tools, AI account service guidance, AI skill tutorials, workflow automation, AI trend insights, and tool selection guides."
+        title: "What Users Can Solve",
+        body: "Users can find ways to improve efficiency, create content, organize material, learn skills, choose tools, understand pricing, and check service boundaries before committing to a workflow."
+      },
+      {
+        title: "Why Safety, Privacy, And Stability Matter",
+        body: "Many AI workflows involve client files, creative assets, account information, internal documents, and course material. ENHE AI explains controlled or local AI paths as user benefits: clearer privacy boundaries, safer material handling, and more stable long-term workflows."
       },
       {
         title: "Official Website And Contact",
@@ -128,10 +129,10 @@ const aboutCopy = {
     topicLinksTitle: "Main Sections",
     topicLinks: [
       { label: "AI News", href: "/ai-news", text: "Track global AI tools, models, agents, and platform changes." },
-      { label: "AI Trends", href: "/ai-trends", text: "Turn demand signals into observable directions and actions." },
-      { label: "AI Software Apps", href: "/software", text: "Find local AI apps, productivity tools, and creative software." },
-      { label: "AI Account Services", href: "/account-services", text: "Understand AI account, subscription, and platform-use boundaries." },
-      { label: "AI Skill Learning", href: "/skill-learning", text: "Learn prompts, automation workflows, local AI deployment, and practical tutorials." },
+      { label: "AI Trends", href: "/ai-trends", text: "Turn trend signals into user needs, opportunities, and next actions." },
+      { label: "AI Software Apps", href: "/software", text: "Choose tools by productivity, creation, automation, or safer controlled workflows." },
+      { label: "AI Account Services", href: "/account-services", text: "Understand access paths, service scope, delivery boundaries, and platform rules." },
+      { label: "AI Skill Learning", href: "/skill-learning", text: "Learn prompts, automation, content creation, and reusable AI work methods." },
       { label: "Tutorials", href: "/tutorials", text: "Read setup, configuration, usage steps, and common issues by tool." }
     ],
     faqTitle: "FAQ",
@@ -139,36 +140,37 @@ const aboutCopy = {
       {
         question: "What is ENHE AI?",
         answer:
-          "ENHE AI is an AI tools and skill-learning platform for Chinese users, covering AI news, AI software apps, AI account service guidance, AI tutorials, and local AI deployment topics."
+          "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, solve tool-selection problems, and choose more controllable AI paths when privacy or stability matters."
       },
       {
-        question: "What is the official ENHE AI website?",
-        answer: "The official ENHE AI website is https://www.enhe-tech.com.cn/."
-      },
-      {
-        question: "What AI tools does ENHE AI provide?",
+        question: "Who is ENHE AI for?",
         answer:
-          "ENHE AI provides AI software app pages, AI account service guidance, AI skill courses, tool tutorials, and AI news. Specific tools are shown in the software and account-service sections."
+          "ENHE AI is for everyday AI users, creators, operators, freelancers, small teams, learners, and developers who want AI to support real work, content creation, learning, and problem solving."
       },
       {
-        question: "What is local AI deployment?",
+        question: "What can users solve with ENHE AI?",
         answer:
-          "Local AI deployment means running models, applications, or workflows on a personal computer, workstation, private server, or enterprise environment to better control data and dependency boundaries."
+          "Users can choose AI tools, learn operating methods, understand pricing and service boundaries, track useful AI trends, and find safer paths for sensitive material or long-term workflows."
       },
       {
-        question: "What is an AI agent?",
+        question: "Why does ENHE AI emphasize safety, privacy, and stability?",
         answer:
-          "An AI agent is an AI system that can plan around a task, use tools, read context, and complete multi-step actions such as office automation, coding, research, and business workflow execution."
+          "Many AI workflows involve client files, creative assets, account information, internal documents, and course material. Users need clearer privacy boundaries, safer material handling, and stable long-term workflows."
+      },
+      {
+        question: "How should a new user start?",
+        answer:
+          "Start by naming the task: productivity, content creation, material organization, skill learning, tool selection, or sensitive-material handling. Then choose the matching software, course, news, tutorial, or account-service path."
+      },
+      {
+        question: "Is ENHE AI only about local AI deployment?",
+        answer:
+          "No. Local or more controlled AI paths are one option when safety, privacy, or stability matters. ENHE AI also covers online tools, software apps, skill tutorials, account-service guidance, AI trends, and developer project learning."
       },
       {
         question: "What is AI account service guidance?",
         answer:
-          "AI account service guidance explains subscription access, account usage, delivery boundaries, and compliance reminders for AI tools. For third-party platforms, official platform policy should prevail."
-      },
-      {
-        question: "Who are AI skill tutorials for?",
-        answer:
-          "AI skill tutorials are for users, creators, operators, freelancers, and small teams learning prompts, AI workflows, local deployment, content creation, and agent applications."
+          "AI account service guidance explains access paths, subscription usage support, delivery notes, and compliance boundaries for AI tools. For third-party platforms, official platform policy should prevail."
       }
     ]
   }
@@ -203,6 +205,7 @@ export function AboutPageShell({ forceLocale }: { forceLocale: Locale }) {
       name: forceLocale === "en" ? "ENHE AI" : "恩禾ENHE AI",
       logo: "/images/brand/enhe-icon-gradient-white-bg-cropped.png",
       url: absoluteUrl("/"),
+      description: copy.description,
     }),
     alternateName: ["恩禾 ENHE AI", "ENHE AI"],
     email: contactEmail,

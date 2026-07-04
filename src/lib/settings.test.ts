@@ -12,10 +12,10 @@ import {
 } from "@/lib/settings";
 
 describe("public site settings", () => {
-  const currentHeroSubtitle = "Symbiosis · Awakening · Creation";
-  const currentHeroIntro = "与 AI 共生，在时代中觉醒，用创造定义未来。";
-  const currentHeroSubtitleEn = "Symbiosis · Awakening · Creation";
-  const currentHeroIntroEn = "Live in symbiosis with AI, awaken in this era, and define the future through creation.";
+  const currentHeroSubtitle = "真实任务 · 高效创作 · 安全可控";
+  const currentHeroIntro = "把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。";
+  const currentHeroSubtitleEn = "Real Tasks · Creation · Safer AI";
+  const currentHeroIntroEn = "Use AI for real tasks: work faster, create content, organize material, and solve concrete problems.";
 
   it("uses explicit site settings when present", () => {
     const settings = {

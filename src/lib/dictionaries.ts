@@ -34,12 +34,12 @@ export const dictionaries = {
       en: "EN"
     },
     home: {
-      eyebrow: "Symbiosis · Awakening · Creation",
+      eyebrow: "真实任务 · 高效创作 · 安全可控",
       title: "ENHE AI",
-      titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来",
-      titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future",
-      intro: "与 AI 共生，在时代中觉醒，用创造定义未来。",
-      positioning: "恩禾 ENHE AI 是面向中文用户的 AI 工具与技能学习平台，聚合 AI工具、本地部署AI应用、AI智能体、AI技能教程、AI账号服务和 AI最新资讯，帮助用户把 AI 信息转化为可执行成果。",
+      titleSecondLine: "把 AI 用到真实任务里，让工作、创作和学习更可控",
+      titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows",
+      intro: "把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。",
+      positioning: "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能、解决工具选择和使用问题。在需要处理敏感素材、长期稳定流程或隐私边界时，提供更可控的AI工具和路径。",
       softwareButton: "AI软件应用",
       onlineButton: "AI账号服务",
       skillLearningButton: "AI技能学习",
@@ -53,10 +53,10 @@ export const dictionaries = {
       featuredContentEmpty: "先从 AI前沿资讯、软件应用、账号服务和技能学习入口开始探索。",
       featuredSoftwareEyebrow: "AI Software Apps",
       featuredSoftwareTitle: "精选AI软件应用",
-      featuredSoftwareIntro: "面向高频桌面任务的 AI 软件应用，帮你把 AI 能力落到每天的真实工作里。",
+      featuredSoftwareIntro: "按任务选择 AI 软件，把效率、创作、自动化和安全处理需求落到真实工作里。",
       onlineToolsEyebrow: "AI Account Services",
       onlineToolsTitle: "精选AI账号服务",
-      onlineToolsIntro: "精选 AI 账号、会员权益和服务交付，帮你更快获得可用的 AI 能力。"
+      onlineToolsIntro: "先看访问方式、平台规则和服务边界，再判断是否需要账号服务支持。"
     },
     toolCard: {
       uncategorized: "未分类",
@@ -87,11 +87,11 @@ export const dictionaries = {
     },
     listing: {
       softwareTitle: "AI软件应用",
-      softwareIntro: "精选本地部署 AI 应用、AI效率工具、桌面软件和创作辅助工具，帮助你把重复流程交给 AI，提高工作、运营和内容生产效率。",
+      softwareIntro: "按真实任务选择 AI软件应用：提升效率、创作内容、整理资料、处理素材或搭建更安全、私密、稳定的工作流。先看适用场景、价格、教程和交付边界，再决定是否使用。",
       onlineTitle: "AI账号服务",
-      onlineIntro: "浏览 AI工具订阅与账号使用支持服务，了解合规使用建议、服务内容、价格说明和交付边界，使用前请遵守对应平台规则。",
+      onlineIntro: "了解 AI工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则。先确认任务、价格、服务范围和合规提醒，再决定是否咨询。",
       skillLearningTitle: "AI技能学习",
-      skillLearningIntro: "学习 AI提示词、AI工具实战、自动化流程、本地部署和内容创作课程，用清晰教程把 AI 能力转化为可复用的技能。",
+      skillLearningIntro: "围绕真实任务学习 AI：提示词、工具实战、自动化流程、内容创作和更可控的 AI 使用方法，用课程与教程沉淀可复用技能。",
       searchPlaceholder: "搜索关键词",
       allCategories: "全部分类",
       allAccess: "全部权限",
@@ -385,12 +385,12 @@ export const dictionaries = {
       en: "EN"
     },
     home: {
-      eyebrow: "Symbiosis · Awakening · Creation",
+      eyebrow: "Real Tasks · Creation · Safer AI",
       title: "ENHE AI",
-      titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来",
-      titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future",
-      intro: "Live in symbiosis with AI, awaken in this era, and define the future through creation.",
-      positioning: "ENHE AI is an AI tools and skill-learning platform for Chinese users, covering AI tools, local AI deployment apps, AI agents, AI skill tutorials, AI account service guidance, and the latest AI news.",
+      titleSecondLine: "把 AI 用到真实任务里，让工作、创作和学习更可控",
+      titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows",
+      intro: "Use AI for real tasks: work faster, create content, organize material, and solve concrete problems.",
+      positioning: "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, and solve tool-selection and usage problems. When sensitive material, long-running workflows, or privacy boundaries matter, it provides more controllable AI tools and paths.",
       softwareButton: "AI Software Apps",
       onlineButton: "AI Account Services",
       skillLearningButton: "AI Skill Learning",
@@ -404,10 +404,10 @@ export const dictionaries = {
       featuredContentEmpty: "Start with AI news, software apps, account services, and skill learning.",
       featuredSoftwareEyebrow: "AI Software Apps",
       featuredSoftwareTitle: "Featured AI Software Apps",
-      featuredSoftwareIntro: "AI software apps for frequent workflows, turning AI capability into everyday execution.",
+      featuredSoftwareIntro: "Choose AI software by task: productivity, creation, automation, material processing, or safer controlled workflows.",
       onlineToolsEyebrow: "AI Account Services",
       onlineToolsTitle: "Featured AI Account Services",
-      onlineToolsIntro: "Browse AI accounts, membership benefits, and service delivery options for faster access to usable AI capability."
+      onlineToolsIntro: "Review access paths, platform rules, delivery boundaries, and support scope before requesting account-service guidance."
     },
     toolCard: {
       uncategorized: "Uncategorized",
@@ -438,11 +438,11 @@ export const dictionaries = {
     },
     listing: {
       softwareTitle: "AI Software Apps",
-      softwareIntro: "Download AI software apps. Subcategories are managed from the admin panel.",
+      softwareIntro: "Choose AI software by real task: work faster, create content, organize material, process assets, or build safer, private, and stable workflows. Review use cases, pricing, tutorials, and delivery scope first.",
       onlineTitle: "AI Account Services",
-      onlineIntro: "Browse AI account services, pricing, and delivery notes.",
+      onlineIntro: "Review AI tool access paths, subscription guidance, account usage support, delivery boundaries, pricing notes, and platform-policy reminders before requesting service help.",
       skillLearningTitle: "AI Skill Learning",
-      skillLearningIntro: "Purchase AI skill courses to unlock step-by-step tutorials and practical guides.",
+      skillLearningIntro: "Learn AI around real tasks: prompts, tool workflows, automation, content creation, and safer AI methods, then turn lessons into reusable work skills.",
       searchPlaceholder: "Search keywords",
       allCategories: "All categories",
       allAccess: "All access",

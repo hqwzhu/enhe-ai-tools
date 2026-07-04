@@ -29,34 +29,34 @@ const homeFaqItems = {
     {
       question: "恩禾 ENHE AI 是什么？",
       answer:
-        "恩禾 ENHE AI 是面向中文用户的 AI 工具与技能学习平台，聚合 AI前沿资讯、AI趋势分析、AI软件应用、AI账号服务、AI技能学习和使用教程，帮助用户把 AI 信息转化为可执行成果。",
+        "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能、解决工具选择和使用问题。在需要处理敏感素材、长期稳定流程或隐私边界时，提供更可控的AI工具和路径。",
     },
     {
       question: "新用户应该从哪里开始使用 ENHE AI？",
       answer:
-        "如果还不确定方向，建议先看 AI前沿资讯和趋势分析；如果已有明确任务，可以直接进入 AI软件应用或 AI技能学习，再根据访问和订阅需求查看 AI账号服务。",
+        "先从要完成的任务开始：提效、创作、整理资料、学习技能或处理敏感素材。任务明确后，再进入 AI软件应用、AI技能学习、AI前沿资讯或 AI账号服务页面选择合适路径。",
     },
     {
-      question: "ENHE AI 如何帮助用户提升 AI 工具转化率？",
+      question: "ENHE AI 为什么强调安全、隐私和稳定？",
       answer:
-        "ENHE AI 把趋势、工具、教程、课程和账号服务连接起来，让用户从判断需求开始，逐步完成工具选择、方法学习、实际交付和合规使用确认。",
+        "普通用户使用 AI 时，常会处理客户资料、创作素材、账号信息、内部文档和课程文件。ENHE AI 会把本地或更可控的 AI 路径解释成安全、隐私和稳定收益，帮助用户减少盲目上传和反复试错。",
     },
   ],
   en: [
     {
       question: "What is ENHE AI?",
       answer:
-        "ENHE AI is an AI tools and skill-learning platform for Chinese users. It brings together AI news, trend analysis, software apps, account service guidance, skill courses, and tutorials so users can turn AI information into practical outcomes.",
+        "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, and solve tool-selection and usage problems. When sensitive material, long-running workflows, or privacy boundaries matter, it provides more controllable AI tools and paths.",
     },
     {
       question: "Where should new users start on ENHE AI?",
       answer:
-        "If the direction is unclear, start with AI news and trend analysis. If the task is already clear, go to AI software apps or AI skill learning, then review account-service guidance when access or subscription support is needed.",
+        "Start from the task: productivity, content creation, material organization, skill learning, or sensitive-material handling. Then choose AI software apps, AI skill learning, AI news, or account-service guidance as the matching path.",
     },
     {
-      question: "How does ENHE AI help users convert AI tools into results?",
+      question: "Why does ENHE AI emphasize safety, privacy, and stability?",
       answer:
-        "ENHE AI connects trends, tools, tutorials, courses, and account guidance so users can move from demand judgment to tool choice, skill learning, practical delivery, and compliant usage.",
+        "AI users often work with client files, creative assets, account information, internal documents, and course material. ENHE AI explains local or more controlled AI paths as safety, privacy, and stability benefits, not as abstract technical features.",
     },
   ],
 } as const;
@@ -64,40 +64,40 @@ const homeFaqItems = {
 const homeProductPaths = {
   zh: [
     {
-      title: "AI 软件应用",
-      description: "本地部署、内容创作、效率工具和自动化软件，先按任务筛选。",
+      title: "提升效率",
+      description: "文档、运营、研究、办公和自动化任务，先找到能减少重复工作的工具。",
       href: "/software",
       action: "进入软件货架",
     },
     {
-      title: "AI 技能学习",
-      description: "提示词、工作流、课程和项目路线，把工具变成可复用能力。",
+      title: "创作内容",
+      description: "写作、图片、视频、音频和脚本创作，按产出目标选择工具与教程。",
       href: "/skill-learning",
       action: "选择课程",
     },
     {
-      title: "AI 账号服务",
-      description: "购买前确认访问方式、服务边界、价格说明和平台规则。",
+      title: "安全可控",
+      description: "处理敏感素材、账号信息或长期流程时，先确认隐私、稳定和服务边界。",
       href: "/account-services",
       action: "查看服务",
     },
   ],
   en: [
     {
-      title: "AI Software Apps",
-      description: "Local AI, creator tools, productivity apps, and automation software by task.",
+      title: "Work faster",
+      description: "Find tools for documents, operations, research, office tasks, and automation.",
       href: "/software",
       action: "Open software shelf",
     },
     {
-      title: "AI Skill Learning",
-      description: "Prompts, workflows, courses, and project routes for reusable AI skills.",
+      title: "Create content",
+      description: "Choose tools and tutorials by writing, image, video, audio, script, or publishing output.",
       href: "/skill-learning",
       action: "Choose courses",
     },
     {
-      title: "AI Account Services",
-      description: "Review access paths, service scope, pricing notes, and platform rules before purchase.",
+      title: "Use AI safely",
+      description: "Check privacy, stability, access, and service boundaries for sensitive or long-term workflows.",
       href: "/account-services",
       action: "View services",
     },
@@ -194,8 +194,8 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
       : "ENHE AI";
   const heroIntro =
     forceLocale === "en"
-      ? "Explore AI agents, AI tools, and AI skills. Make AI your productivity partner and reshape your future."
-      : "探索 AI 智能体、AI 工具与AI 技能，让 AI 成为你的效率伙伴，重塑你的未来。";
+      ? "Use AI for real tasks: work faster, create content, organize material, and solve concrete problems."
+      : "把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。";
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
   });
@@ -259,7 +259,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
       <section className="home-outcome-shell" aria-labelledby="home-outcome-title">
         <Container className="home-hero-reference-frame">
           <div className="home-section-heading">
-            <h2 id="home-outcome-title">{forceLocale === "en" ? "Choose by product type" : "按产品类型选择"}</h2>
+            <h2 id="home-outcome-title">{forceLocale === "en" ? "Choose by task" : "按任务选择"}</h2>
           </div>
           <div className="home-outcome-grid home-product-path-grid">
             {homeProductPaths[forceLocale].map((item) => (

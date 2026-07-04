@@ -398,7 +398,9 @@ function looksLikeGenericAiNewsDescription(value: string) {
     text ===
       "live in symbiosis with ai, awaken in this era, and define the future through creation." ||
     text.includes("live in symbiosis with ai, awaken in this era") ||
-    text.includes("define the future through creation")
+    text.includes("define the future through creation") ||
+    text.includes("enhe ai helps users apply ai to real tasks") ||
+    text.includes("work faster, create content, organize material")
   );
 }
 

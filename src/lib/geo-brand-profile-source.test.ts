@@ -19,9 +19,15 @@ describe("GEO brand profile source contracts", () => {
     expect(exists("src/app/(zh-public)/about/page.tsx")).toBe(true);
     expect(exists("src/app/en/about/page.tsx")).toBe(true);
     expect(about).toContain("恩禾ENHE AI 是什么？");
-    expect(about).toContain("AI智能体");
-    expect(about).toContain("本地部署AI");
-    expect(about).toContain("AI账号服务");
+    expect(about).toContain(
+      "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能、解决工具选择和使用问题。在需要处理敏感素材、长期稳定流程或隐私边界时，提供更可控的AI工具和路径。",
+    );
+    expect(about).toContain("安全、隐私和稳定");
+    expect(about).toContain("普通用户如何开始");
+    expect(about).toContain("适合谁");
+    expect(about).not.toContain(
+      "围绕 AI智能体、本地部署AI应用、AI软件工具、AI账号服务",
+    );
     expect(about).toContain("buildFaqSchema");
     expect(about).toContain('"@type": "AboutPage"');
     expect(about).toContain("contactPoint");
@@ -48,16 +54,20 @@ describe("GEO brand profile source contracts", () => {
     expect(rootLayout).toContain("el.id = \"ttzz\"");
   });
 
-  it("states the homepage positioning with core GEO keywords above the fold", () => {
+  it("states the homepage positioning from user needs while keeping GEO context secondary", () => {
     const homeShell = read("src/app/page-shell.tsx");
     const dictionaries = read("src/lib/dictionaries.ts");
 
     expect(homeShell).toContain("home-hero-positioning");
     expect(homeShell).toContain("buildBreadcrumbSchema");
     expect(homeShell).toContain("<StructuredData data={[breadcrumbSchema, webPageSchema, faqSchema]} />");
-    for (const term of ["AI工具", "本地部署AI应用", "AI智能体", "AI技能教程", "AI账号服务", "AI最新资讯"]) {
+    for (const term of ["真实任务", "更快完成工作", "创作内容", "整理资料", "学习技能", "解决工具选择", "隐私边界", "更可控的AI工具和路径"]) {
       expect(dictionaries).toContain(term);
     }
+    expect(dictionaries).toContain("AI软件应用");
+    expect(dictionaries).toContain("AI账号服务");
+    expect(dictionaries).toContain("AI前沿资讯");
+    expect(dictionaries).not.toContain("本地部署AI应用、AI智能体、AI技能教程、AI账号服务和 AI最新资讯");
   });
 
   it("adds clear 301 redirects for weak public slugs", () => {

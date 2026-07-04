@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("homepage SaaS redesign source", () => {
-  it("uses a simplified product-first homepage while keeping recommended tools and SEO support links", () => {
+  it("uses a simplified task-first homepage while keeping recommended tools and SEO support links", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
     const dictionaries = readFileSync(new URL("../lib/dictionaries.ts", import.meta.url), "utf8");
@@ -22,8 +22,8 @@ describe("homepage SaaS redesign source", () => {
     expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-outcome-shell"));
     expect(page).toContain("const heroTitle =");
     expect(page).toContain("ENHE AI");
-    expect(page).toContain("探索 AI 智能体、AI 工具与AI 技能，让 AI 成为你的效率伙伴，重塑你的未来。");
-    expect(page).toContain("Explore AI agents, AI tools, and AI skills. Make AI your productivity partner and reshape your future.");
+    expect(page).toContain("把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。");
+    expect(page).toContain("Use AI for real tasks: work faster, create content, organize material, and solve concrete problems.");
     expect(page).toContain("const heroIntro =");
     expect(page).not.toContain("home-hero-metrics");
     expect(page).not.toContain("t.home.metricsExploreTitle");
@@ -79,8 +79,8 @@ describe("homepage SaaS redesign source", () => {
     expect(header).toContain("t.nav.login");
     expect(header).toContain("user: t.nav.user");
 
-    expect(dictionaries).toContain('titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来"');
-    expect(dictionaries).toContain('titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future"');
+    expect(dictionaries).toContain('titleSecondLine: "把 AI 用到真实任务里，让工作、创作和学习更可控"');
+    expect(dictionaries).toContain('titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows"');
     expect(dictionaries).toContain('metricsExploreTitle: "Explore Freely"');
     expect(dictionaries).toContain('metricsExplore: "Open More Possibilities with AI"');
     expect(dictionaries).toContain('featuredContentTitle: "Featured Content"');
@@ -119,7 +119,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-hero-scroll-cue");
   });
 
-  it("uses a product-first sales hero instead of marquee-heavy bilingual motion", () => {
+  it("uses a task-first sales hero instead of marquee-heavy bilingual motion", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 

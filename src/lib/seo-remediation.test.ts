@@ -82,11 +82,11 @@ describe("SEO remediation helpers", () => {
     const enDescription = buildHomeMetaDescription("en");
 
     expect(zhDescription.length).toBeGreaterThanOrEqual(70);
-    expect(zhDescription).toContain("AI前沿资讯");
-    expect(zhDescription).toContain("AI软件应用");
+    expect(zhDescription).toContain("真实任务");
+    expect(zhDescription).toContain("安全、隐私和稳定");
     expect(enDescription.length).toBeGreaterThanOrEqual(120);
-    expect(enDescription).toContain("AI news");
-    expect(enDescription).toContain("account service");
+    expect(enDescription).toContain("real tasks");
+    expect(enDescription).toContain("privacy");
   });
 
   it("sanitizes account-service compliance risk copy before rendering or using it in metadata", () => {
