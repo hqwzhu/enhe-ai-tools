@@ -11,6 +11,8 @@ describe("buildLanguageSwitcherHref", () => {
     expect(buildLanguageSwitcherHref("/software/demo-tool", "en")).toBe("/en/software/demo-tool");
     expect(buildLanguageSwitcherHref("/skill-learning/demo-course", "en")).toBe("/en/skill-learning/demo-course");
     expect(buildLanguageSwitcherHref("/account-services/demo-service", "en")).toBe("/en/account-services/demo-service");
+    expect(buildLanguageSwitcherHref("/product-paths/work-efficiency", "en")).toBe("/en/product-paths/work-efficiency");
+    expect(buildLanguageSwitcherHref("/en/product-paths/media-generation", "zh")).toBe("/product-paths/media-generation");
     expect(buildLanguageSwitcherHref("/ai-trends", "en")).toBe("/en/ai-trends");
     expect(buildLanguageSwitcherHref("/en/ai-trends", "zh")).toBe("/ai-trends");
     expect(buildLanguageSwitcherHref("/ai-trends/daily/2026-06-19", "en")).toBe("/en/ai-trends/daily/2026-06-19");

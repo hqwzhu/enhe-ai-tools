@@ -66,34 +66,34 @@ const homeProductPaths = {
     {
       title: "提升工作效率",
       description: "办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件",
-      href: "/software",
+      href: "/product-paths/work-efficiency",
     },
     {
       title: "生成图片/视频/音频",
       description: "AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理",
-      href: "/skill-learning",
+      href: "/product-paths/media-generation",
     },
     {
       title: "改变你未来的AI",
       description: "AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现",
-      href: "/account-services",
+      href: "/product-paths/future-ai",
     },
   ],
   en: [
     {
       title: "Improve work efficiency",
       description: "Office productivity tools, file processing tools, system utilities, data analysis tools, productivity, AI desktop software",
-      href: "/software",
+      href: "/product-paths/work-efficiency",
     },
     {
       title: "Generate image/video/audio",
       description: "AI video tools, AI image tools, AI audio tools, video generation, voice generation, video/image processing",
-      href: "/skill-learning",
+      href: "/product-paths/media-generation",
     },
     {
       title: "AI that changes your future",
       description: "AI agents, practical AI tools for daily life, agents, account subscriptions, subscription upgrades, AI prompts, AI side-income workflows",
-      href: "/account-services",
+      href: "/product-paths/future-ai",
     },
   ],
 } as const;

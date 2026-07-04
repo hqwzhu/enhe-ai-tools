@@ -90,6 +90,10 @@ export function getBackNavigationParentHref(pathname: string) {
     return withLocale(localePrefix, "/ai-trends/daily");
   }
 
+  if (segments[0] === "product-paths") {
+    return withLocale(localePrefix, "/");
+  }
+
   if (segments[0] === "legal") {
     return withLocale(localePrefix, "/");
   }

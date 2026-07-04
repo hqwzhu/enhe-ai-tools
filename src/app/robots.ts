@@ -20,6 +20,7 @@ const publicAllow = [
   "/software",
   "/account-services",
   "/skill-learning",
+  "/product-paths",
   "/product-demos",
   "/api/uploads/",
 ];

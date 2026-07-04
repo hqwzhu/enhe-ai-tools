@@ -144,6 +144,46 @@ const getCachedPublicToolListing = unstable_cache(
   { revalidate: publicContentRevalidate, tags: ["public-tools"] },
 );
 
+const getCachedPublicToolsByCategoryNames = unstable_cache(
+  async (categoryNames: string[]) => {
+    const normalizedCategoryNames = categoryNames
+      .map((name) => name.trim())
+      .filter(Boolean);
+
+    if (!normalizedCategoryNames.length) return [];
+
+    try {
+      return await prisma.tool.findMany({
+        where: {
+          status: "published",
+          category: {
+            is: {
+              name: { in: normalizedCategoryNames },
+              status: "active",
+            },
+          },
+        },
+        include: {
+          category: true,
+          priceSpecs: {
+            where: { status: "active" },
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          },
+        },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      });
+    } catch (error) {
+      if (isRecoverablePublicReadError(error)) {
+        return [];
+      }
+
+      throw error;
+    }
+  },
+  ["public-product-path-tools"],
+  { revalidate: publicContentRevalidate, tags: ["public-tools"] },
+);
+
 const getCachedPublicTutorials = unstable_cache(
   async () => {
     try {
@@ -692,6 +732,10 @@ export async function getPublicToolListing(
   sort?: string,
 ) {
   return getCachedPublicToolListing(type, categoryId, keyword, paid, sort);
+}
+
+export async function getPublicToolsByCategoryNames(categoryNames: string[]) {
+  return getCachedPublicToolsByCategoryNames(categoryNames);
 }
 
 export async function getPublicTutorials() {

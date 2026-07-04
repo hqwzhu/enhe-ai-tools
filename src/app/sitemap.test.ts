@@ -77,6 +77,12 @@ describe("sitemap canonical URL contract", () => {
     expect(urls).toContain("https://www.enhe-tech.com.cn/account-services");
     expect(urls).toContain("https://www.enhe-tech.com.cn/skill-learning");
     expect(urls).toContain("https://www.enhe-tech.com.cn/product-demos");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/product-paths/work-efficiency");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/product-paths/media-generation");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/product-paths/future-ai");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/en/product-paths/work-efficiency");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/en/product-paths/media-generation");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/en/product-paths/future-ai");
     expect(urls).toContain("https://www.enhe-tech.com.cn/software/ai-voice-generator-flexible-edition");
     expect(urls).toContain("https://www.enhe-tech.com.cn/account-services/chatgpt-support");
     expect(urls).toContain("https://www.enhe-tech.com.cn/skill-learning/prompt-course");

@@ -67,7 +67,7 @@ describe("Google Search Console SEO source contract", () => {
       expect(robots).toContain(blockedPath);
     }
 
-    for (const publicPath of ["/ai-news", "/software", "/skill-learning", "/account-services"]) {
+    for (const publicPath of ["/ai-news", "/software", "/skill-learning", "/account-services", "/product-paths"]) {
       expect(robots).toContain(`"${publicPath}"`);
     }
   });

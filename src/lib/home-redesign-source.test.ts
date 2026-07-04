@@ -62,12 +62,12 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("getHomeRecommendedTools");
     expect(page).toContain("getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro)");
     expect(page).not.toContain('href="/account-services" variant="ghost" className="home-preview-link"');
-    expect(page).toContain('href: "/software"');
-    expect(page).toContain('href: "/account-services"');
+    expect(page).toContain('href: "/product-paths/work-efficiency"');
+    expect(page).toContain('href: "/product-paths/media-generation"');
+    expect(page).toContain('href: "/product-paths/future-ai"');
     expect(page).toContain('href: "/ai-news"');
     expect(page).toContain('href: "/ai-trends"');
     expect(page).toContain('href: "/ai-topics"');
-    expect(page).toContain('href: "/skill-learning"');
     expect(page).toContain("home-product-preview backdrop-blur-xl backdrop-saturate-150");
     expect(page).not.toContain("HeroLogoMark");
     expect(page).not.toContain("enhe-orbital-system");
@@ -155,11 +155,17 @@ describe("homepage SaaS redesign source", () => {
 
     expect(page).toContain('forceLocale === "en" ? "Choose by need" : "按需求选择"');
     expect(page).toContain('title: "提升工作效率"');
+    expect(page).toContain('href: "/product-paths/work-efficiency"');
     expect(page).toContain("办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件");
     expect(page).toContain('title: "生成图片/视频/音频"');
+    expect(page).toContain('href: "/product-paths/media-generation"');
     expect(page).toContain("AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理");
     expect(page).toContain('title: "改变你未来的AI"');
+    expect(page).toContain('href: "/product-paths/future-ai"');
     expect(page).toContain("AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现");
+    expect(page).not.toContain('title: "提升工作效率",\n      description: "办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件",\n      href: "/software"');
+    expect(page).not.toContain('title: "生成图片/视频/音频",\n      description: "AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理",\n      href: "/skill-learning"');
+    expect(page).not.toContain('title: "改变你未来的AI",\n      description: "AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现",\n      href: "/account-services"');
     expect(page).not.toContain("进入软件货架");
     expect(page).not.toContain("选择课程");
     expect(page).not.toContain("查看服务");

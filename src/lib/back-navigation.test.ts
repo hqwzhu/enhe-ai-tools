@@ -26,6 +26,8 @@ describe("back navigation", () => {
     expect(getBackNavigationParentHref("/skill-learning/prompt-course")).toBe("/skill-learning");
     expect(getBackNavigationParentHref("/ai-news/ai-task-scheduling")).toBe("/ai-news");
     expect(getBackNavigationParentHref("/en/ai-news/topics/local-ai")).toBe("/en/ai-news");
+    expect(getBackNavigationParentHref("/product-paths/work-efficiency")).toBe("/");
+    expect(getBackNavigationParentHref("/en/product-paths/media-generation")).toBe("/en");
     expect(getBackNavigationParentHref("/ai-trends/daily/2026-06-24")).toBe("/ai-trends/daily");
     expect(getBackNavigationParentHref("/legal/privacy-policy")).toBe("/");
   });
