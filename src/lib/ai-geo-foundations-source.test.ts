@@ -37,9 +37,11 @@ describe("AI GEO foundations", () => {
     );
 
     const pricing = read("public/pricing.md");
-    expect(pricing).toContain("AI software apps");
+    expect(pricing).toContain("## Product-level offers");
+    expect(pricing).toContain("- Type: AI software app");
     expect(pricing).toContain("AI account service guidance");
-    expect(pricing).toContain("AI skill courses");
+    expect(pricing).toContain("- Type: AI skill course");
+    expect(pricing).toContain("https://www.enhe-tech.com.cn/software/windows-ai");
 
     const okfIndex = read("public/okf/index.md");
     expect(okfIndex).toContain("type: KnowledgeBundle");

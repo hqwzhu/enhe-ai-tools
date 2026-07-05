@@ -315,22 +315,28 @@ function SkillLearningOutcomeBlock({ forceLocale }: { forceLocale: Locale }) {
             ? "From AI skills to repeatable workflows"
             : "从 AI 技能到可复用工作流"}
         </h2>
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <div className="skill-learning-outcome-fold-list mt-5">
           {sections.map((section, index) => (
-            <article
+            <details
               key={section.title}
-              className="rounded-2xl border border-white/10 bg-white/7 p-4"
+              className="content-fold"
             >
-              <span className="text-xs font-black uppercase tracking-[0.22em] text-[var(--marketing-accent)]">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <h3 className="mt-3 text-base font-black leading-snug text-[var(--marketing-text)]">
-                {section.title}
-              </h3>
-              <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
-                {section.body}
-              </p>
-            </article>
+              <summary>
+                <div className="content-fold-summary-copy">
+                  <span className="text-xs font-black text-[var(--marketing-accent)]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                    {section.title}
+                  </h3>
+                </div>
+              </summary>
+              <div className="content-fold-body">
+                <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                  {section.body}
+                </p>
+              </div>
+            </details>
           ))}
         </div>
       </div>
@@ -386,34 +392,44 @@ function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
 
   return (
     <section className="glass rounded-2xl p-6">
-      <div className="mb-5 grid gap-3 md:grid-cols-3">
+      <div className="skill-learning-path-fold-list">
         {pathItems.map((item) => (
-          <article key={item.label} className="rounded-2xl border border-[var(--marketing-accent)]/24 bg-[var(--marketing-accent)]/10 p-4">
-            <span className="grid size-8 place-items-center rounded-full bg-[var(--marketing-accent)] text-sm font-black text-white">
-              {item.label}
-            </span>
-            <h2 className="mt-3 text-base font-black leading-snug text-[var(--marketing-text)]">
-              {item.title}
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--marketing-muted)]">
-              {item.body}
-            </p>
-          </article>
+          <details key={item.label} className="content-fold">
+            <summary>
+              <div className="content-fold-summary-copy">
+                <span className="text-xs font-black text-[var(--marketing-accent)]">
+                  {item.label}
+                </span>
+                <h2 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                  {item.title}
+                </h2>
+              </div>
+            </summary>
+            <div className="content-fold-body">
+              <p className="text-sm leading-6 text-[var(--marketing-muted)]">
+                {item.body}
+              </p>
+            </div>
+          </details>
         ))}
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="skill-learning-geo-fold-list">
         {sections.map((section) => (
-          <article
+          <details
             key={section.title}
-            className="rounded-2xl border border-white/10 bg-white/8 p-5"
+            className="content-fold"
           >
-            <h2 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
-              {section.title}
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
-              {section.body}
-            </p>
-          </article>
+            <summary>
+              <h2 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
+                {section.title}
+              </h2>
+            </summary>
+            <div className="content-fold-body">
+              <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                {section.body}
+              </p>
+            </div>
+          </details>
         ))}
       </div>
       <div className="mt-5 flex flex-wrap gap-3">

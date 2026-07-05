@@ -11,6 +11,7 @@ import {
   resolveLocalizedToolCategoryName,
   resolveLocalizedToolIdentity
 } from "@/lib/tool-localization";
+import { getVisibleToolMetrics } from "@/lib/tool-metrics";
 import { getPrimaryToolPrice, type ToolPriceSpecStatus } from "@/lib/tool-price-specs";
 
 type ToolCardProps = {
@@ -71,6 +72,10 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
         ? t.toolCard.deliveryService
         : t.toolCard.deliveryCourse;
   const primaryActionLabel = showPrice ? t.toolCard.compareBeforeBuy : t.toolCard.getFreeTool;
+  const visibleMetrics = getVisibleToolMetrics({
+    downloadCount: tool.downloadCount,
+    usageCount: tool.usageCount,
+  });
 
   return (
     <PrefetchLink href={buildCanonicalToolPath(tool, locale)} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
@@ -145,17 +150,21 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
           </div>
         ) : null}
         <div className="mt-6 flex items-center justify-between gap-4 text-xs text-[var(--marketing-muted)]">
-          <span className="inline-flex items-center gap-3">
-            <span className="inline-flex items-center gap-1">
-              <Download size={14} />
-              {tool.downloadCount}
+          {visibleMetrics.length ? (
+            <span className="inline-flex items-center gap-3">
+              {visibleMetrics.map((metric) => (
+                <span key={metric.type} className="inline-flex items-center gap-1">
+                  {metric.type === "download" ? (
+                    <Download size={14} />
+                  ) : (
+                    <MousePointer2 size={14} />
+                  )}
+                  {metric.count}
+                </span>
+              ))}
             </span>
-            <span className="inline-flex items-center gap-1">
-              <MousePointer2 size={14} />
-              {tool.usageCount}
-            </span>
-          </span>
-          <span className="tool-card-primary-action">
+          ) : null}
+          <span className="tool-card-primary-action ml-auto">
             {primaryActionLabel}
             <ArrowUpRight size={14} aria-hidden="true" />
           </span>

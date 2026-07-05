@@ -24,13 +24,21 @@ describe("locale routing", () => {
     expect(inferLocaleFromRequest(headers({ "accept-language": "fr-FR,fr;q=0.9,en;q=0.8" }))).toBe("en");
   });
 
-  it("redirects only human root requests that prefer English", () => {
+  it("keeps the public root path on stable Chinese by default", () => {
     expect(
       shouldRedirectRootToEnglish({
         pathname: "/",
         headers: headers({ "cf-ipcountry": "US", "user-agent": "Mozilla/5.0" }),
       }),
-    ).toBe(true);
+    ).toBe(false);
+
+    expect(
+      shouldRedirectRootToEnglish({
+        pathname: "/",
+        cookieLocale: "en",
+        headers: headers({ "cf-ipcountry": "US", "user-agent": "Mozilla/5.0" }),
+      }),
+    ).toBe(false);
 
     expect(
       shouldRedirectRootToEnglish({

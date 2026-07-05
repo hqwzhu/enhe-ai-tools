@@ -118,9 +118,5 @@ export function shouldRedirectRootToEnglish(input: {
   headers: Headers;
 }) {
   if (input.pathname !== "/") return false;
-  if (isSearchOrAiCrawler(input.headers.get("user-agent"))) return false;
-  if (input.cookieLocale === "zh") return false;
-  if (input.cookieLocale === "en") return true;
-
-  return inferLocaleFromRequest(input.headers) === "en";
+  return false;
 }

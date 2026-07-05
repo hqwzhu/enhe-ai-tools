@@ -4,12 +4,12 @@ import { ArrowRight, PackageOpen } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import { Container, SectionTitle } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
+import { getPricingOfferItems } from "@/lib/pricing-offers";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
   buildListingMetaDescription,
-  buildLocalePath,
   buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
@@ -20,7 +20,7 @@ export async function generatePricingPageMetadata(forceLocale: Locale): Promise<
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
     title: buildMetadataTitle({
-      pageTitle: forceLocale === "en" ? "Paid downloads" : "付费下载",
+      pageTitle: forceLocale === "en" ? "Pricing and purchase guide" : "报价与购买入口",
       brand: t.brand
     }),
     description: buildListingMetaDescription("pricing", forceLocale),
@@ -30,50 +30,20 @@ export async function generatePricingPageMetadata(forceLocale: Locale): Promise<
   });
 }
 
+function getSchemaItemType(type: "software" | "account_service" | "course") {
+  if (type === "software") return "SoftwareApplication";
+  if (type === "course") return "Course";
+  return "Service";
+}
+
+function formatPrice(price: number) {
+  return price.toFixed(2);
+}
+
 function buildPricingOfferCatalogSchema(forceLocale: Locale) {
   const isEnglish = forceLocale === "en";
-  const pricingUrl = absoluteUrl(buildLocalePath("/pricing", forceLocale));
-  const offerItems = isEnglish
-    ? [
-        {
-          name: "AI software paid downloads",
-          description:
-            "Per-tool AI software downloads with price, access scope, and unlock notes shown on each software detail page.",
-          url: absoluteUrl(buildLocalePath("/software", forceLocale)),
-        },
-        {
-          name: "AI skill courses",
-          description:
-            "Practical AI skill courses with current price, course scope, tutorials, and learning access shown on each course detail page.",
-          url: absoluteUrl(buildLocalePath("/skill-learning", forceLocale)),
-        },
-        {
-          name: "AI account service guidance",
-          description:
-            "AI account subscription and usage guidance with service scope, delivery notes, and platform-policy reminders shown on each service detail page.",
-          url: absoluteUrl(buildLocalePath("/account-services", forceLocale)),
-        },
-      ]
-    : [
-        {
-          name: "AI软件付费下载",
-          description:
-            "按具体AI软件单独报价，价格、权益范围、解锁说明和下载方式以各软件详情页为准。",
-          url: absoluteUrl(buildLocalePath("/software", forceLocale)),
-        },
-        {
-          name: "AI技能课程",
-          description:
-            "AI技能课程按课程详情页展示当前报价、课程范围、教程内容和学习权限。",
-          url: absoluteUrl(buildLocalePath("/skill-learning", forceLocale)),
-        },
-        {
-          name: "AI账号服务咨询",
-          description:
-            "AI账号订阅与使用支持按服务详情页展示服务范围、交付说明和平台规则提醒。",
-          url: absoluteUrl(buildLocalePath("/account-services", forceLocale)),
-        },
-      ];
+  const pricingUrl = absoluteUrl(forceLocale === "en" ? "/en/pricing" : "/pricing");
+  const pricingOfferItemsForLocale = getPricingOfferItems(forceLocale);
 
   return {
     "@context": "https://schema.org",
@@ -87,19 +57,20 @@ function buildPricingOfferCatalogSchema(forceLocale: Locale) {
       name: "ENHE AI",
       url: absoluteUrl("/"),
     },
-    itemListElement: offerItems.map((item, index) => ({
+    itemListElement: pricingOfferItemsForLocale.map((item, index) => ({
       "@type": "Offer",
       position: index + 1,
-      name: item.name,
-      description: item.description,
+      name: item.localized.name,
+      description: item.localized.description,
+      price: formatPrice(item.price),
       priceCurrency: "CNY",
       availability: "https://schema.org/InStock",
-      url: item.url,
+      url: absoluteUrl(item.path),
       itemOffered: {
-        "@type": "Service",
-        name: item.name,
-        description: item.description,
-        url: item.url,
+        "@type": getSchemaItemType(item.type),
+        name: item.localized.name,
+        description: item.localized.description,
+        url: absoluteUrl(item.path),
       },
     })),
   };
@@ -107,31 +78,44 @@ function buildPricingOfferCatalogSchema(forceLocale: Locale) {
 
 export async function PricingPageShell({ forceLocale }: { forceLocale: Locale }) {
   const t = getDictionary(forceLocale);
+  const pricingOfferItemsForLocale = getPricingOfferItems(forceLocale);
   const copy =
     forceLocale === "en"
       ? {
-          title: "AI tool purchase guide",
+          title: "AI pricing and purchase entry",
           intro:
-            "Paid downloads are now purchased per tool. Open a software detail page, confirm the price, submit payment proof, and the download link will appear after review approval.",
-          cardTitle: "Buy from the software page",
-          cardText: "Each paid desktop app has its own price and unlocks only that app's download-link content.",
-          cta: "View AI software apps",
+            "Review current prices, delivery notes, and support boundaries before opening the matching product, course, or service page.",
+          cardTitle: "Buy from the detail page",
+          cardText:
+            "Each paid item has its own price, access scope, and review workflow. The detail page is the final source before purchase.",
+          cta: "Browse all products",
+          currentPrice: "Current price",
+          viewOffer: "View details",
           guidanceTitle: "Before you buy",
-          purchaseGuidance: "Open the software, course, or service detail page first. The detail page shows the current price, access scope, delivery notes, and related guidance.",
-          paymentReview: "After payment, submit the required proof through the page workflow. ENHE AI reviews the order and unlocks the matching download, course, or service access after approval.",
-          afterSalesBoundary: "Paid access follows the description on each detail page. Third-party platform services must follow the official rules of that platform, and support is limited to usage guidance and delivery assistance."
+          purchaseGuidance:
+            "Open the matching detail page first. Confirm the price, access scope, system or platform requirements, and delivery notes.",
+          paymentReview:
+            "After payment, submit the required proof through the page workflow. ENHE AI reviews the order and unlocks the matching access after approval.",
+          afterSalesBoundary:
+            "Paid access follows the description on each detail page. Third-party platform services must follow the official rules of that platform.",
         }
       : {
-          title: "AI 工具购买说明",
+          title: "AI报价与购买入口",
           intro:
-            "ENHE AI 现在改为按具体软件付费下载。进入软件详情页确认价格，提交付款凭证，后台审核通过后即可查看该软件的下载链接内容。",
-          cardTitle: "前往AI软件应用购买",
-          cardText: "每个收费软件都有独立价格，购买后只解锁该软件的下载链接内容。",
-          cta: "查看AI软件应用",
+            "购买前先看清当前价格、交付方式和服务边界，再进入对应的软件、课程或服务详情页操作。",
+          cardTitle: "从详情页确认后购买",
+          cardText:
+            "每个付费项目都有独立价格、权益范围和审核流程。下单前以对应详情页说明为准。",
+          cta: "浏览全部产品",
+          currentPrice: "当前价格",
+          viewOffer: "查看详情",
           guidanceTitle: "购买前需要确认",
-          purchaseGuidance: "请先进入软件、课程或服务详情页，查看当前价格、权益范围、交付方式与相关使用说明。",
-          paymentReview: "完成支付后，按页面流程提交相应凭证。ENHE AI 审核通过后，会解锁对应的下载、课程或服务权限。",
-          afterSalesBoundary: "付费权益以各详情页说明为准。涉及第三方平台的服务，请以对应平台官方规则为准，支持范围以使用建议与交付协助为主。"
+          purchaseGuidance:
+            "请先进入对应详情页，确认价格、权益范围、设备或平台要求、交付方式与相关使用说明。",
+          paymentReview:
+            "完成支付后，按页面流程提交相应凭证。ENHE AI 审核通过后，会解锁对应的下载、课程或服务权限。",
+          afterSalesBoundary:
+            "付费权益以各详情页说明为准。涉及第三方平台的服务，请以对应平台官方规则为准。",
         };
   const breadcrumbSchema = buildBreadcrumbSchema({
     schemaType: "BreadcrumbList",
@@ -145,38 +129,87 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
   return (
     <main>
       <Container className="py-14">
-      <StructuredData data={[breadcrumbSchema, pricingOfferCatalogSchema]} />
-      <SectionTitle as="h1" title={copy.title} intro={copy.intro} />
-      <section className="surface-panel mt-8 p-7">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-4">
-            <PackageOpen className="mt-1 text-[var(--marketing-accent)]" size={28} />
-            <div>
-              <h2 className="text-2xl font-bold text-[var(--marketing-text)]">{copy.cardTitle}</h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--marketing-muted)]">{copy.cardText}</p>
+        <StructuredData data={[breadcrumbSchema, pricingOfferCatalogSchema]} />
+        <SectionTitle as="h1" title={copy.title} intro={copy.intro} />
+
+        <section className="surface-panel mt-8 p-7">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-4">
+              <PackageOpen className="mt-1 text-[var(--marketing-accent)]" size={28} />
+              <div>
+                <h2 className="text-2xl font-bold text-[var(--marketing-text)]">{copy.cardTitle}</h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--marketing-muted)]">{copy.cardText}</p>
+              </div>
             </div>
+            <Link
+              href={forceLocale === "en" ? "/en/software" : "/software"}
+              className="purchase-guide-button inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold !text-[#050505] transition"
+            >
+              {copy.cta}
+              <ArrowRight size={16} />
+            </Link>
           </div>
-          <Link
-            href={forceLocale === "en" ? "/en/software" : "/software"}
-            className="purchase-guide-button inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold !text-[#050505] transition"
-          >
-            {copy.cta}
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
-        {[
-          { title: copy.guidanceTitle, text: copy.purchaseGuidance },
-          { title: forceLocale === "en" ? "Payment review" : "支付审核", text: copy.paymentReview },
-          { title: forceLocale === "en" ? "Support boundary" : "售后边界", text: copy.afterSalesBoundary }
-        ].map((item) => (
-          <article key={item.title} className="surface-panel p-5">
-            <h2 className="text-lg font-semibold text-[var(--marketing-text)]">{item.title}</h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.text}</p>
-          </article>
-        ))}
-      </section>
+        </section>
+
+        <section className="mt-8 grid gap-4 lg:grid-cols-2">
+          {pricingOfferItemsForLocale.map((item) => (
+            <article key={item.slug} className="surface-panel p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-[var(--marketing-accent)]">
+                    {item.localized.category}
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold text-[var(--marketing-text)]">
+                    {item.localized.name}
+                  </h2>
+                  <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
+                    {item.localized.description}
+                  </p>
+                  <p className="mt-3 text-xs leading-6 text-[var(--marketing-soft-text)]">
+                    {item.localized.delivery}
+                  </p>
+                </div>
+                <div className="shrink-0 rounded-2xl border border-white/10 bg-white/6 px-4 py-3">
+                  <span className="block text-xs font-semibold text-[var(--marketing-muted)]">
+                    {copy.currentPrice}
+                  </span>
+                  <strong className="mt-1 block text-lg text-[var(--marketing-text)]">
+                    ¥{formatPrice(item.price)}
+                  </strong>
+                </div>
+              </div>
+              <Link
+                href={item.path}
+                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[var(--marketing-accent)]"
+              >
+                {copy.viewOffer}
+                <ArrowRight size={15} />
+              </Link>
+            </article>
+          ))}
+        </section>
+
+        <details className="content-fold pricing-guidance-fold">
+          <summary>
+            <div className="content-fold-summary-copy">
+              <h2 className="text-lg font-semibold text-[var(--marketing-text)]">
+                {copy.guidanceTitle}
+              </h2>
+            </div>
+          </summary>
+          <div className="content-fold-body pricing-guidance-grid">
+          {[
+            { title: copy.guidanceTitle, text: copy.purchaseGuidance },
+            { title: forceLocale === "en" ? "Payment review" : "支付审核", text: copy.paymentReview },
+            { title: forceLocale === "en" ? "Support boundary" : "售后边界", text: copy.afterSalesBoundary }
+          ].map((item) => (
+            <article key={item.title} className="surface-panel p-5">
+              <h2 className="text-lg font-semibold text-[var(--marketing-text)]">{item.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.text}</p>
+            </article>
+          ))}
+          </div>
+        </details>
       </Container>
     </main>
   );

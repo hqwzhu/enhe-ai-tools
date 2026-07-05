@@ -340,8 +340,7 @@ export async function SoftwarePageShell({
           title={t.listing.softwareTitle}
           intro={t.listing.softwareIntro}
         />
-        <ListingDecisionStrip forceLocale={forceLocale} />
-        <ListingTrustNote forceLocale={forceLocale} />
+        <ListingGuidanceFold forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
           <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
@@ -364,6 +363,24 @@ export async function SoftwarePageShell({
         </ProductSeoDisclosure>
       </Container>
     </main>
+  );
+}
+
+function ListingGuidanceFold({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <details className="content-fold listing-guidance-fold">
+      <summary>
+        <div className="content-fold-summary-copy">
+          <h2 className="text-base font-black text-[var(--marketing-text)]">
+            {forceLocale === "en" ? "Tool selection notes" : "工具选择提示"}
+          </h2>
+        </div>
+      </summary>
+      <div className="content-fold-body">
+        <ListingDecisionStrip forceLocale={forceLocale} />
+        <ListingTrustNote forceLocale={forceLocale} />
+      </div>
+    </details>
   );
 }
 

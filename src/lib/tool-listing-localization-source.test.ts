@@ -23,11 +23,17 @@ describe("tool listing localization source", () => {
     const skillLearningSource = readFileSync(join(process.cwd(), "src/app/skill-learning/page-shell.tsx"), "utf8");
     const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    for (const source of [softwareSource, accountServicesSource, skillLearningSource]) {
+    for (const source of [softwareSource, accountServicesSource]) {
+      expect(source).toContain("<ListingGuidanceFold forceLocale={forceLocale} />");
+      expect(source.indexOf("<ListingGuidanceFold")).toBeLessThan(source.indexOf("<FilterBar"));
       expect(source).toContain("<ListingDecisionStrip");
-      expect(source.indexOf("<ListingDecisionStrip")).toBeLessThan(source.indexOf("<FilterBar"));
       expect(source).toContain('className="listing-grid mt-8 grid gap-5 md:grid-cols-3"');
     }
+    expect(skillLearningSource).toContain("<ListingDecisionStrip");
+    expect(skillLearningSource.indexOf("<ListingDecisionStrip")).toBeLessThan(
+      skillLearningSource.indexOf("<FilterBar"),
+    );
+    expect(skillLearningSource).toContain('className="listing-grid mt-8 grid gap-5 md:grid-cols-3"');
 
     expect(toolCardSource).toContain("const commerceLabel =");
     expect(toolCardSource).toContain("const deliveryLabel =");
@@ -40,18 +46,26 @@ describe("tool listing localization source", () => {
     expect(css).toContain(".tool-card-primary-action");
   });
 
-  it("keeps P2 trust notes compact and visible before filtering", () => {
+  it("keeps P2 trust notes compact and reachable before filtering", () => {
     const softwareSource = readFileSync(join(process.cwd(), "src/app/software/page-shell.tsx"), "utf8");
     const accountServicesSource = readFileSync(join(process.cwd(), "src/app/account-services/page-shell.tsx"), "utf8");
     const skillLearningSource = readFileSync(join(process.cwd(), "src/app/skill-learning/page-shell.tsx"), "utf8");
     const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
 
-    for (const source of [softwareSource, accountServicesSource, skillLearningSource]) {
+    for (const source of [softwareSource, accountServicesSource]) {
+      expect(source).toContain("<ListingGuidanceFold forceLocale={forceLocale} />");
+      expect(source.indexOf("<ListingGuidanceFold")).toBeLessThan(source.indexOf("<FilterBar"));
       expect(source).toContain("ListingTrustNote");
       expect(source).toContain('className="listing-trust-note"');
-      expect(source.indexOf("<ListingTrustNote")).toBeGreaterThan(source.indexOf("<ListingDecisionStrip"));
-      expect(source.indexOf("<ListingTrustNote")).toBeLessThan(source.indexOf("<FilterBar"));
     }
+    expect(skillLearningSource).toContain("ListingTrustNote");
+    expect(skillLearningSource).toContain('className="listing-trust-note"');
+    expect(skillLearningSource.indexOf("<ListingTrustNote")).toBeGreaterThan(
+      skillLearningSource.indexOf("<ListingDecisionStrip"),
+    );
+    expect(skillLearningSource.indexOf("<ListingTrustNote")).toBeLessThan(
+      skillLearningSource.indexOf("<FilterBar"),
+    );
 
     expect(softwareSource).toContain("Price and delivery are visible before purchase.");
     expect(accountServicesSource).toContain("Official platform rules remain the final source.");

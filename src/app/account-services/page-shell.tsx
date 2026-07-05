@@ -192,8 +192,7 @@ export async function AccountServicesPageShell({
           title={t.listing.onlineTitle}
           intro={t.listing.onlineIntro}
         />
-        <ListingDecisionStrip forceLocale={forceLocale} />
-        <ListingTrustNote forceLocale={forceLocale} />
+        <ListingGuidanceFold forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
           <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
@@ -215,6 +214,24 @@ export async function AccountServicesPageShell({
         </ProductSeoDisclosure>
       </Container>
     </main>
+  );
+}
+
+function ListingGuidanceFold({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <details className="content-fold listing-guidance-fold">
+      <summary>
+        <div className="content-fold-summary-copy">
+          <h2 className="text-base font-black text-[var(--marketing-text)]">
+            {forceLocale === "en" ? "Service consultation notes" : "服务咨询提示"}
+          </h2>
+        </div>
+      </summary>
+      <div className="content-fold-body">
+        <ListingDecisionStrip forceLocale={forceLocale} />
+        <ListingTrustNote forceLocale={forceLocale} />
+      </div>
+    </details>
   );
 }
 

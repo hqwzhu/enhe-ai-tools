@@ -55,6 +55,7 @@ import {
   linkifyDownloadLinkContent,
   resolveSoftwareDownloadCtaHref,
 } from "@/lib/tool-download-link";
+import { getVisibleToolMetrics } from "@/lib/tool-metrics";
 
 export const toolDetailPageRevalidate = publicPageCacheSeconds;
 
@@ -237,6 +238,16 @@ export async function ToolDetailPageShell({
   const servicePrice = getPrimaryToolPrice(
     activePriceSpecs,
     tool.downloadPrice,
+  );
+  const visibleToolMetrics = getVisibleToolMetrics({
+    downloadCount: tool.downloadCount,
+    usageCount: tool.usageCount,
+  });
+  const visibleDownloadMetric = visibleToolMetrics.find(
+    (metric) => metric.type === "download",
+  );
+  const visibleUsageMetric = visibleToolMetrics.find(
+    (metric) => metric.type === "usage",
   );
   const paidSoftware =
     tool.type === "software" && tool.isDownloadPaid && servicePrice > 0;
@@ -548,10 +559,12 @@ export async function ToolDetailPageShell({
                         label={td.serviceType}
                         value={localizedCategoryName ?? td.uncategorized}
                       />
-                      <Info
-                        label={td.usageCount}
-                        value={String(tool.usageCount)}
-                      />
+                      {visibleUsageMetric ? (
+                        <Info
+                          label={td.usageCount}
+                          value={String(visibleUsageMetric.count)}
+                        />
+                      ) : null}
                       <Info label={td.supportEmail} value={supportEmail} />
                     </>
                   ) : (
@@ -564,14 +577,18 @@ export async function ToolDetailPageShell({
                         label={td.systemRequirement}
                         value={tool.systemRequirement ?? td.browser}
                       />
-                      <Info
-                        label={td.downloadCount}
-                        value={String(tool.downloadCount)}
-                      />
-                      <Info
-                        label={td.usageCount}
-                        value={String(tool.usageCount)}
-                      />
+                      {visibleDownloadMetric ? (
+                        <Info
+                          label={td.downloadCount}
+                          value={String(visibleDownloadMetric.count)}
+                        />
+                      ) : null}
+                      {visibleUsageMetric ? (
+                        <Info
+                          label={td.usageCount}
+                          value={String(visibleUsageMetric.count)}
+                        />
+                      ) : null}
                     </>
                   )}
                 </div>

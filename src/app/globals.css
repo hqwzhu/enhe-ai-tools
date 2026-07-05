@@ -624,6 +624,49 @@ select option:disabled {
   padding: 0 1.15rem 1.15rem;
 }
 
+.listing-guidance-fold {
+  margin: 1.25rem 0 1rem;
+}
+
+.listing-guidance-fold .content-fold-body {
+  display: grid;
+  gap: 1rem;
+}
+
+.listing-guidance-fold .listing-decision-strip {
+  margin: 0;
+}
+
+.listing-guidance-fold .listing-trust-note {
+  margin: 0;
+}
+
+.pricing-guidance-fold {
+  margin-top: 1.5rem;
+}
+
+.pricing-guidance-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .pricing-guidance-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.skill-learning-path-fold-list,
+.skill-learning-geo-fold-list,
+.skill-learning-outcome-fold-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.skill-learning-geo-fold-list {
+  margin-top: 0.85rem;
+}
+
 .listing-decision-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3264,7 +3307,8 @@ select option:disabled {
   .home-product-demo-grid {
     display: flex;
     gap: 14px;
-    margin-right: -1rem;
+    max-width: 100%;
+    margin-right: 0;
     overflow-x: auto;
     padding: 0 1rem 0.25rem 0;
     scroll-padding-left: 0;
@@ -4021,6 +4065,10 @@ select option:disabled {
 .byox-route-seo,
 .byox-support-grid {
   margin-top: 2rem;
+}
+
+.byox-fit-fold .byox-fit-grid {
+  margin-top: 0;
 }
 
 .byox-quick-panel {

@@ -391,24 +391,26 @@ export function BuildYourOwnXPageShell({ forceLocale }: { forceLocale: Locale })
           <p>{text.answer}</p>
         </section>
 
-        <section className="byox-fit-grid">
-          <article className="surface-panel-soft">
-            <h2>{text.audienceTitle}</h2>
-            <ul>
-              {audienceItems[forceLocale].map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </article>
-          <article className="surface-panel-soft">
-            <h2>{text.outcomesTitle}</h2>
-            <ul>
-              {outcomeItems[forceLocale].map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </article>
-        </section>
+        <ContentFold title={text.audienceTitle} className="byox-fit-fold">
+          <section className="byox-fit-grid">
+            <article className="surface-panel-soft">
+              <h2>{text.audienceTitle}</h2>
+              <ul>
+                {audienceItems[forceLocale].map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+            <article className="surface-panel-soft">
+              <h2>{text.outcomesTitle}</h2>
+              <ul>
+                {outcomeItems[forceLocale].map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          </section>
+        </ContentFold>
 
         <BuildYourOwnXNavigator
           locale={forceLocale}

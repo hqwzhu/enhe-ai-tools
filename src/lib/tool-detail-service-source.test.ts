@@ -25,7 +25,7 @@ describe("tool detail service purchase source", () => {
     expect(source).toContain('"{price}"');
     expect(source).toContain("Number(servicePrice).toFixed(2)");
     expect(source).not.toContain("(isAccountService ? td.buyService : td.buyDownload).replace");
-    expect(dictionary).toContain('buyService: "Buy service"');
+    expect(dictionary).toContain('buyService: "Consult and buy service"');
   });
 
   it("does not render product screenshots inside black image frames", () => {

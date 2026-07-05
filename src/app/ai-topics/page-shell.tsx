@@ -217,11 +217,8 @@ export function AiTopicDetailPageShell({
           </p>
         </section>
 
-        <section className="mt-8">
-          <h2 className="text-2xl font-black text-[var(--marketing-text)]">
-            {text.intents}
-          </h2>
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <TopicContentFold title={text.intents}>
+          <div className="ai-topic-intent-grid mt-5 grid gap-4 md:grid-cols-3">
             {content.intents.map((intent) => (
               <Link
                 key={intent.title}
@@ -237,12 +234,9 @@ export function AiTopicDetailPageShell({
               </Link>
             ))}
           </div>
-        </section>
+        </TopicContentFold>
 
-        <section className="glass mt-8 rounded-2xl p-6">
-          <h2 className="text-2xl font-black text-[var(--marketing-text)]">
-            {text.comparison}
-          </h2>
+        <TopicContentFold title={text.comparison} className="ai-topic-comparison-fold">
           <div className="mt-5 hidden overflow-x-auto md:block">
             <table className="w-full min-w-[760px] border-separate border-spacing-0 overflow-hidden rounded-2xl border border-white/10 text-left text-sm">
               <thead>
@@ -299,7 +293,7 @@ export function AiTopicDetailPageShell({
               </article>
             ))}
           </div>
-        </section>
+        </TopicContentFold>
 
         <section className="mt-8 grid gap-5 lg:grid-cols-[1fr_0.78fr]">
           <div className="surface-panel p-6">
@@ -354,5 +348,25 @@ export function AiTopicDetailPageShell({
         </section>
       </Container>
     </main>
+  );
+}
+
+function TopicContentFold({
+  title,
+  className,
+  children,
+}: React.PropsWithChildren<{
+  title: string;
+  className?: string;
+}>) {
+  return (
+    <details className={`content-fold mt-8 ${className ?? ""}`}>
+      <summary>
+        <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+          {title}
+        </h2>
+      </summary>
+      <div className="content-fold-body">{children}</div>
+    </details>
   );
 }
