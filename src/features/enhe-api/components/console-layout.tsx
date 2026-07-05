@@ -27,7 +27,13 @@ const consoleNavItems: Array<{ label: string; href: string; icon: LucideIcon }> 
   { label: "配置文档", href: "/user/api/docs", icon: BookOpen }
 ];
 
-export function ApiConsoleLayout({ children }: React.PropsWithChildren) {
+type ApiDeveloperStatus = "active" | "suspended" | "closed";
+
+export function ApiConsoleLayout({
+  children,
+  developerStatus = "active",
+  restrictedReason
+}: React.PropsWithChildren<{ developerStatus?: ApiDeveloperStatus; restrictedReason?: string | null }>) {
   const pathname = usePathname();
 
   return (
@@ -71,7 +77,31 @@ export function ApiConsoleLayout({ children }: React.PropsWithChildren) {
           })}
         </nav>
       </aside>
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0 space-y-6">
+        {developerStatus !== "active" ? <RestrictedStatusNotice status={developerStatus} reason={restrictedReason} /> : null}
+        {children}
+      </div>
     </main>
+  );
+}
+
+function RestrictedStatusNotice({ status, reason }: { status: Exclude<ApiDeveloperStatus, "active">; reason?: string | null }) {
+  const copy =
+    status === "suspended"
+      ? {
+          title: "ENHE API 能力已暂停",
+          text: "你的开发者资料当前处于 suspended 状态。你仍可查看控制台、账单、文档和状态信息，但新的 API 运行时请求将被限制。"
+        }
+      : {
+          title: "ENHE API 能力已关闭",
+          text: "你的开发者资料当前处于 closed 状态。你仍可查看历史信息和配置文档，但 API 运行时能力不可用。"
+        };
+
+  return (
+    <div className="rounded-2xl border border-red-300/25 bg-red-400/10 px-5 py-4 text-sm leading-6 text-red-100">
+      <p className="font-black">{copy.title}</p>
+      <p className="mt-1">{copy.text}</p>
+      {reason ? <p className="mt-2 text-red-100/80">限制原因：{reason}</p> : null}
+    </div>
   );
 }

@@ -59,9 +59,11 @@ export function MetricCard({ label, value, helper }: { label: string; value: str
   );
 }
 
-export function StatusBadge({ status }: { status: "active" | "revoked" | "paid" | "processing" | "manual" | "pending" | "qualified" | "rewarded" | "review" | "success" | "warning" | "error" }) {
+export function StatusBadge({ status }: { status: "active" | "suspended" | "closed" | "revoked" | "paid" | "processing" | "manual" | "pending" | "qualified" | "rewarded" | "review" | "success" | "warning" | "error" }) {
   const labelMap: Record<typeof status, string> = {
     active: "启用",
+    suspended: "已暂停",
+    closed: "已关闭",
     revoked: "已撤销",
     paid: "已支付",
     processing: "处理中",
@@ -77,8 +79,10 @@ export function StatusBadge({ status }: { status: "active" | "revoked" | "paid" 
   const tone =
     status === "active" || status === "paid" || status === "rewarded" || status === "success"
       ? "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[var(--marketing-accent)]"
-      : status === "revoked" || status === "error"
+      : status === "revoked" || status === "closed" || status === "error"
         ? "border-red-300/25 bg-red-400/10 text-red-200"
+        : status === "suspended"
+          ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
         : "border-white/14 bg-white/8 text-[var(--marketing-muted)]";
 
   return <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-xs font-black", tone)}>{labelMap[status]}</span>;

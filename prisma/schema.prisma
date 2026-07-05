@@ -17,6 +17,12 @@ enum UserStatus {
   disabled
 }
 
+enum ApiDeveloperProfileStatus {
+  active
+  suspended
+  closed
+}
+
 enum PlanStatus {
   active
   disabled
@@ -161,6 +167,13 @@ enum GeoRecommendationStatus {
   dismissed
 }
 
+enum BaiduPushQueueStatus {
+  pending
+  processing
+  succeeded
+  failed
+}
+
 model User {
   id              String          @id @default(cuid())
   email           String?         @unique
@@ -190,8 +203,9 @@ model User {
     notifications    Notification[]
     newsletterEmail     String?   @map("newsletter_email")
     acceptEmailUpdates  Boolean   @default(true) @map("accept_email_updates")
-    newsFavorites    NewsArticleFavorite[]
-    newsLikes        NewsArticleLike[]
+  newsFavorites    NewsArticleFavorite[]
+  newsLikes        NewsArticleLike[]
+  apiDeveloperProfile ApiDeveloperProfile?
 
   @@map("users")
 }
@@ -258,6 +272,9 @@ model Tool {
   content           String
   coverImage        String?        @map("cover_image")
   screenshots       String[]       @default([])
+  videoUrl          String?        @map("video_url")
+  videoTitle        String?        @map("video_title")
+  videoDescription  String?        @map("video_description")
   version           String?
   systemRequirement String?        @map("system_requirement")
   isVipRequired     Boolean        @default(true) @map("is_vip_required")
@@ -691,6 +708,24 @@ model AdminAuditLog {
   @@map("admin_audit_logs")
 }
 
+model BaiduPushQueueItem {
+  id            String               @id @default(cuid())
+  url           String               @unique
+  status        BaiduPushQueueStatus @default(pending)
+  attemptCount  Int                  @default(0) @map("attempt_count")
+  nextAttemptAt DateTime             @map("next_attempt_at")
+  lastAttemptAt DateTime?            @map("last_attempt_at")
+  lastStatus    Int?                 @map("last_status")
+  lastResponse  Json?                @map("last_response")
+  lastError     String?              @map("last_error")
+  context       Json?
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+
+  @@index([status, nextAttemptAt])
+  @@map("baidu_push_queue_items")
+}
+
 model Notification {
   id        String    @id @default(cuid())
   userId    String    @map("user_id")
@@ -704,6 +739,24 @@ model Notification {
 
   @@index([userId, readAt, createdAt])
   @@map("notifications")
+}
+
+model ApiDeveloperProfile {
+  id              String                    @id @default(cuid())
+  userId          String                    @unique @map("user_id")
+  developerId     String                    @unique @map("developer_id")
+  displayName     String                    @map("display_name")
+  emailSnapshot   String?                   @map("email_snapshot")
+  status          ApiDeveloperProfileStatus @default(active)
+  suspendedReason String?                   @map("suspended_reason")
+  suspendedAt     DateTime?                 @map("suspended_at")
+  closedAt        DateTime?                 @map("closed_at")
+  createdAt       DateTime                  @default(now()) @map("created_at")
+  updatedAt       DateTime                  @updatedAt @map("updated_at")
+  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@map("api_developer_profiles")
 }
 
 model Session {
@@ -904,6 +957,11 @@ model AiTrendBriefing {
   publicHighlights      String[]               @default([]) @map("public_highlights")
   fullHtml              String                 @map("full_html")
   sourceSignals         Json?                  @map("source_signals")
+  videoUrl              String?                @map("video_url")
+  videoTitle            String?                @map("video_title")
+  videoDescription      String?                @map("video_description")
+  videoPosterUrl        String?                @map("video_poster_url")
+  videoDurationSeconds  Int?                   @map("video_duration_seconds")
   status                AiTrendBriefingStatus  @default(draft)
   publishedAt           DateTime?              @map("published_at")
   isIncludedInTopicPage Boolean                @default(false) @map("is_included_in_topic_page")
