@@ -19,7 +19,10 @@ export const analyticsEventNames = [
   "payment_review_rejected",
   "order_receipt_submitted",
   "search_ai_news",
-  "seo_landing_view"
+  "seo_landing_view",
+  "validation_ai_prompt_kit_cta_click",
+  "validation_faceswap_cta_click",
+  "validation_ai_video_cta_click"
 ] as const;
 
 export type AnalyticsEventName = (typeof analyticsEventNames)[number];

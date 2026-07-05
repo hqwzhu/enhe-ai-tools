@@ -35,6 +35,9 @@ describe("analytics funnel helpers", () => {
   it("validates only known event names", () => {
     expect(isAnalyticsEventName("refund_request_submitted")).toBe(true);
     expect(isAnalyticsEventName("search_ai_news")).toBe(true);
+    expect(isAnalyticsEventName("validation_ai_prompt_kit_cta_click")).toBe(true);
+    expect(isAnalyticsEventName("validation_faceswap_cta_click")).toBe(true);
+    expect(isAnalyticsEventName("validation_ai_video_cta_click")).toBe(true);
     expect(isAnalyticsEventName("unknown_event")).toBe(false);
   });
 

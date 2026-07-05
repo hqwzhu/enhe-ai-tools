@@ -1,0 +1,12 @@
+{
+  "inputType": "server_deployment_result_input",
+  "targetDate": "2026-07-03",
+  "serverCommandsCompleted": false,
+  "dockerCommandsCompleted": false,
+  "nginxCommandsCompleted": false,
+  "deployedAt": null,
+  "commandSummaries": [],
+  "failures": [],
+  "evidence": [],
+  "notes": ""
+}
