@@ -121,6 +121,18 @@ describe("publish-ai-trend-briefing-html script", () => {
     expect(result.stdout).not.toContain("\uFEFF");
   });
 
+  it("rejects localhost APP_URL when production publishing is required", async () => {
+    const { htmlFile, summaryFile } = await createFiles();
+
+    const result = await runScript(
+      ["--file", htmlFile, "--summary-file", summaryFile, "--mode", "published", "--require-production-target", "--dry-run"],
+      { APP_URL: "http://localhost:3000", NEXT_PUBLIC_APP_URL: "http://localhost:3000" }
+    );
+
+    expect(result.code).toBe(1);
+    expect(result.stderr.toLowerCase()).toContain("production");
+  });
+
   it("accepts optional video metadata during dry-run validation", async () => {
     const { htmlFile, summaryFile } = await createFiles();
 

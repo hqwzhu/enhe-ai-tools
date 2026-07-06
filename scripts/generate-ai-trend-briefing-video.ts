@@ -22,6 +22,7 @@ export type GeneratedAiTrendVideo = {
 type ParsedArgs = {
   date: string;
   summaryFile: string | null;
+  htmlFile: string | null;
   outputFile: string | null;
   outputDir: string | null;
   videoUrl: string | null;
@@ -46,6 +47,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
   return {
     date,
     summaryFile: read("--summary-file"),
+    htmlFile: read("--file"),
     outputFile: read("--output-file"),
     outputDir: read("--output-dir"),
     videoUrl: read("--video-url"),
@@ -266,15 +268,22 @@ async function main() {
 
   const summaryText = await readFile(resolve(args.summaryFile), "utf8");
   const summary = JSON.parse(normalizeCliJsonText(summaryText)) as AiTrendBriefingPublishInput;
+  const html = args.htmlFile ? await readFile(resolve(args.htmlFile), "utf8") : null;
 
-  const result = await runVideoGeneration(summary, {
-    gracefulFailure: true,
-    videoUrl: args.videoUrl,
-    posterUrl: args.posterUrl,
-    durationSeconds: args.durationSeconds ? Number.parseInt(args.durationSeconds, 10) : null,
-    outputFile: args.outputFile,
-    outputDir: args.outputDir
-  });
+  const result = await runVideoGeneration(
+    {
+      ...summary,
+      ...(html ? { fullHtml: stripUtf8Bom(html) } : {})
+    },
+    {
+      gracefulFailure: true,
+      videoUrl: args.videoUrl,
+      posterUrl: args.posterUrl,
+      durationSeconds: args.durationSeconds ? Number.parseInt(args.durationSeconds, 10) : null,
+      outputFile: args.outputFile,
+      outputDir: args.outputDir
+    }
+  );
 
   if (args.outputFile) {
     await ensureDir(dirname(resolve(args.outputFile)));

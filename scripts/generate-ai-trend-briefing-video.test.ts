@@ -50,6 +50,14 @@ describe("generate-ai-trend-briefing-video script helpers", () => {
     expect(() => parseArgs([])).toThrow(/date/i);
   });
 
+  it("parses an optional HTML file path for summary-only automation artifacts", () => {
+    expect(parseArgs(["--date", "2026-06-30", "--summary-file", "summary.json", "--file", "briefing.html"])).toMatchObject({
+      date: "2026-06-30",
+      summaryFile: "summary.json",
+      htmlFile: "briefing.html"
+    });
+  });
+
   it("builds a compact video summary payload from briefing input", () => {
     expect(buildVideoSummaryPayload(validInput).title).toBe(validInput.title);
     expect(buildVideoSummaryPayload(validInput).directions).toEqual(["工作效率"]);

@@ -22,6 +22,16 @@ function hasFlag(name: string) {
   return process.argv.includes(name);
 }
 
+function isLocalAppUrl(value: string | undefined) {
+  if (!value?.trim()) return true;
+  try {
+    const url = new URL(value);
+    return ["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(url.hostname);
+  } catch {
+    return true;
+  }
+}
+
 function normalizeOptionalArg(name: string) {
   const value = readArg(name);
   if (value === null) return null;
@@ -79,6 +89,9 @@ async function main() {
   const videoPosterUrl = normalizeOptionalArg("--video-poster-url");
   const videoDurationSecondsArg = normalizeOptionalArg("--video-duration-seconds");
   const includeInTopicPage = parseOptionalBooleanArg("--include-in-topic-page");
+  if (hasFlag("--require-production-target") && (isLocalAppUrl(process.env.APP_URL) || isLocalAppUrl(process.env.NEXT_PUBLIC_APP_URL))) {
+    throw new Error("Production publishing requires non-local APP_URL and NEXT_PUBLIC_APP_URL.");
+  }
 
   const [html, summaryText] = await Promise.all([
     readFile(resolve(file), "utf8"),
