@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "ENHE AI account access",
+  title: "Sign in to ENHE AI for purchases, downloads, and learning",
   robots: {
     index: false,
     follow: true,

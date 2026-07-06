@@ -7,7 +7,7 @@ import { getCurrentLocale } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   ...sharedRootMetadata,
-  title: "ENHE AI account access",
+  title: "登录或注册 ENHE AI 账号，管理购买、下载和学习进度",
   robots: {
     index: false,
     follow: true,

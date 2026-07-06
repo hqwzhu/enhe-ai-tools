@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "ENHE AI user center",
+  title: "ENHE AI user center for orders, downloads, courses, and account settings",
   robots: {
     index: false,
     follow: true,

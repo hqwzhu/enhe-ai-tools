@@ -15,10 +15,12 @@ describe("short metadata remediation source contracts", () => {
       "src/app/en/user/layout.tsx",
     ]) {
       const source = read(path);
+      const title = source.match(/title:\s*"([^"]+)"/)?.[1] ?? "";
 
       expect(source).toContain("robots");
       expect(source).toContain("index: false");
       expect(source).toContain("follow: true");
+      expect(title.length).toBeGreaterThanOrEqual(25);
     }
   });
 
