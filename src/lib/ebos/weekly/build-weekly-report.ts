@@ -76,7 +76,10 @@ export async function buildWeeklyEbosReport(options: EbosWeeklyReportOptions = {
     options.productionDeploymentPreflightReport,
     options.productionDeploymentApprovalGate,
     options.deploymentExecutionStatus,
-    options.deploymentOperatorChecklist
+    options.deploymentOperatorChecklist,
+    options.externalPublishingStatus,
+    options.syntheticFailureScenarioStatus,
+    options.optimizedValidationPageRedeployStatus
   );
   const nextPlanSection = report.sections.find((section) => section.key === "next_plan");
   if (nextPlanSection) {
@@ -100,7 +103,10 @@ export async function buildWeeklyEbosReport(options: EbosWeeklyReportOptions = {
     nextWeekPlan,
     dataSourceStatus,
     snapshot,
-    deploymentExecutionStatus: options.deploymentExecutionStatus
+    deploymentExecutionStatus: options.deploymentExecutionStatus,
+    externalPublishingStatus: options.externalPublishingStatus,
+    syntheticFailureScenarioStatus: options.syntheticFailureScenarioStatus,
+    optimizedValidationPageRedeployStatus: options.optimizedValidationPageRedeployStatus
   };
 }
 

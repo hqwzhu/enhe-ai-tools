@@ -22,6 +22,9 @@ import {
   readLatestDeploymentExecutionStatus
 } from "@/lib/ebos/deployment-execution";
 import { readLatestDeploymentOperatorChecklist } from "@/lib/ebos/deployment-operator";
+import { readExternalPublishingStatusForDate } from "@/lib/ebos/external-publishing";
+import { readSyntheticFailureScenarioStatusForDate } from "@/lib/ebos/synthetic-scenarios";
+import { readOptimizedValidationPageRedeployStatusForDate } from "@/lib/ebos/post-launch";
 
 function readArg(name: string) {
   const index = process.argv.indexOf(name);
@@ -54,6 +57,9 @@ async function main() {
   const productionDeploymentApprovalGate = await readLatestDeploymentApprovalGate({ targetDate });
   const deploymentExecutionStatus = await readLatestDeploymentExecutionStatus({ targetDate });
   const deploymentOperatorChecklist = await readLatestDeploymentOperatorChecklist({ targetDate });
+  const externalPublishingStatus = await readExternalPublishingStatusForDate({ targetDate });
+  const syntheticFailureScenarioStatus = await readSyntheticFailureScenarioStatusForDate({ targetDate });
+  const optimizedValidationPageRedeployStatus = await readOptimizedValidationPageRedeployStatusForDate({ targetDate: formatDateKey(targetDate) });
   const review = await buildMonthlyEbosReview({
     targetDate,
     decisionReport: decision?.report,
@@ -64,7 +70,10 @@ async function main() {
     productionDeploymentPreflightReport: productionDeploymentPreflight?.report,
     productionDeploymentApprovalGate: productionDeploymentApprovalGate?.report,
     deploymentExecutionStatus: deploymentExecutionStatus?.status,
-    deploymentOperatorChecklist: deploymentOperatorChecklist?.report
+    deploymentOperatorChecklist: deploymentOperatorChecklist?.report,
+    externalPublishingStatus,
+    syntheticFailureScenarioStatus,
+    optimizedValidationPageRedeployStatus
   });
   const markdown = renderMonthlyReviewMarkdown(review);
   const html = renderMonthlyReviewHtml(review);
@@ -131,7 +140,25 @@ async function main() {
     console.log(`- Deployment operator safeToProceed: ${deploymentOperatorChecklist.report.commandAudit.safeToProceed}`);
     console.log(`- Deployment operator manualRequiredCommands: ${deploymentOperatorChecklist.report.commandAudit.manualRequiredCommands.length}`);
   }
+  console.log(`- External publishing status used: yes`);
+  console.log(`- External publishing status: ${externalPublishingStatus.status}`);
+  console.log(`- External publishing hasRealSignals: ${externalPublishingStatus.hasRealSignals}`);
+  console.log(`- External publishing canBackfill: ${externalPublishingStatus.canBackfill}`);
+  console.log(`- Synthetic failure scenario used: ${syntheticFailureScenarioStatus.status === "generated" ? "yes" : "no"}`);
+  if (syntheticFailureScenarioStatus.status === "generated") {
+    console.log(`- Synthetic failure scenario simulated: ${syntheticFailureScenarioStatus.simulated}`);
+    console.log(`- Synthetic simulatedRevenue: ${syntheticFailureScenarioStatus.simulatedRevenue}`);
+    console.log(`- Synthetic simulatedPaidOrders: ${syntheticFailureScenarioStatus.simulatedPaidOrders}`);
+    console.log(`- Synthetic optimization implementation completed: ${syntheticFailureScenarioStatus.optimizationImplementationCompleted === true}`);
+  }
+  console.log(`- Optimized validation page redeploy status used: yes`);
+  console.log(`- Optimized validation page redeployed: ${optimizedValidationPageRedeployStatus.redeployed}`);
+  console.log(`- Optimized validation page redeploy status: ${optimizedValidationPageRedeployStatus.status}`);
   console.log("- Next: run npx tsx scripts/index-ebos-evidence.ts to refresh the EBOS evidence catalog.");
+}
+
+function formatDateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 main().catch((error) => {

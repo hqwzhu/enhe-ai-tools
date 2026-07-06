@@ -28,7 +28,8 @@ function gate(deploymentStatus: EbosDeploymentApprovalGate["deploymentStatus"]):
 
 function executionStatus(
   deploymentStatus: EbosDeploymentExecutionStatus["deploymentStatus"],
-  approvedByUser = deploymentStatus !== "awaiting_approval"
+  approvedByUser = deploymentStatus !== "awaiting_approval",
+  postLaunchCheckStatus: EbosDeploymentExecutionStatus["postLaunchCheckStatus"] = "not_run"
 ): EbosDeploymentExecutionStatus {
   return {
     statusType: "production_deployment_execution_status",
@@ -41,7 +42,7 @@ function executionStatus(
     serverCommandsRun: [],
     dockerCommandsRun: [],
     verificationCommandsRun: [],
-    postLaunchCheckStatus: "not_run",
+    postLaunchCheckStatus,
     notes: [],
     warnings: []
   };
@@ -73,6 +74,52 @@ describe("monthly plan deployment approval gate integration", () => {
 
     expect(plan.codexTasks[0]).toEqual(expect.objectContaining({
       title: expect.stringContaining("开始真实外部渠道发布和数据回填")
+    }));
+  });
+
+  test("references pending verification as EBOS post-launch live check task", () => {
+    const plan = generateMonthlyReviewPlan({
+      evidenceEntries: [],
+      missingKinds: [],
+      openActionItemsCount: 0,
+      sampleIsThin: false,
+      productionDeploymentApprovalGate: gate("awaiting_approval"),
+      deploymentExecutionStatus: executionStatus("deployed_pending_verification")
+    });
+
+    expect(plan.codexTasks[0]).toEqual(expect.objectContaining({
+      title: "Run EBOS post-launch live check",
+      reason: expect.stringContaining("verify-ebos-production-deployment")
+    }));
+  });
+
+  test("prioritizes failed EBOS post-launch route fixes", () => {
+    const plan = generateMonthlyReviewPlan({
+      evidenceEntries: [],
+      missingKinds: [],
+      openActionItemsCount: 0,
+      sampleIsThin: false,
+      productionDeploymentApprovalGate: gate("awaiting_approval"),
+      deploymentExecutionStatus: executionStatus("deployed_pending_verification", true, "failed")
+    });
+
+    expect(plan.codexTasks[0]).toEqual(expect.objectContaining({
+      title: "Fix failed EBOS post-launch live check routes"
+    }));
+  });
+
+  test("verified execution status recommends external channel data backfill", () => {
+    const plan = generateMonthlyReviewPlan({
+      evidenceEntries: [],
+      missingKinds: [],
+      openActionItemsCount: 0,
+      sampleIsThin: false,
+      productionDeploymentApprovalGate: gate("awaiting_approval"),
+      deploymentExecutionStatus: executionStatus("verified", true, "passed")
+    });
+
+    expect(plan.codexTasks[0]).toEqual(expect.objectContaining({
+      reason: expect.stringContaining("real external channel publishing and validation data intake")
     }));
   });
 

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, Container, SectionTitle } from "@/components/ui";
 import type { Locale } from "@/lib/dictionaries";
@@ -14,87 +15,175 @@ const supportEmail = "ENHEAI.life@protonmail.com";
 
 const content = {
   zh: {
-    metaTitle: "ENHE AI Prompt Kit｜AI工具站运营提示词包",
-    metaDescription: "面向 AI 工具站运营者、独立开发者和数字产品卖家的运营提示词包验证页，包含产品页、SEO/GEO、上架、竞品分析和周复盘 Prompt。",
-    eyebrow: "Validation Offer",
-    title: "ENHE AI Prompt Kit｜AI工具站运营提示词包",
-    subtitle: "把产品页文案、SEO/GEO、平台上架、竞品分析和每周复盘整理成可复制的 Prompt 文档，先用最小交付验证真实需求。",
-    primaryCta: "邮件咨询交付内容",
-    secondaryCta: "查看现有工具",
-    tertiaryCta: "了解价格测试",
-    summaryTitle: "不是自动赚钱工具，是运营交付模板",
-    summary:
-      "这个验证页用于确认是否有人需要一套可直接复制、可按产品场景改写的 AI 工具站运营 Prompt。当前不承诺排名、收入或自动增长，只验证点击、咨询和预售意向。",
-    audiences: ["AI 工具站运营者", "独立开发者", "数字产品卖家", "内容创作者", "SEO/GEO 运营者"],
+    metaTitle: "ENHE AI Prompt Kit | AI 提示词模板包验证页",
+    metaDescription:
+      "一套面向 AI 工具站运营、自媒体、电商上架、SEO/GEO 和 AI 工具开发规划的实用提示词模板包验证页，包含免费样例、完整交付物和验证阶段价格测试。",
+    eyebrow: "AI Prompt Kit 验证页",
+    title: "一套帮你快速生成产品文案、SEO 内容和 AI 工具方案的实用提示词模板包",
+    subtitle:
+      "解决不会写产品介绍、SEO/GEO 内容、平台发布文案、AI 工具开发提示词，以及不知道怎么把 AI 用到副业项目里的问题。",
+    primaryCta: "免费领取 5 个 Prompt 样例",
+    secondaryCta: "我想试用完整模板包",
+    tertiaryCta: "我想要适合我项目的 Prompt",
+    previewTitle: "先免费领取 5 个高频 Prompt 模板",
+    previewIntro: "先看能不能直接用，再决定是否需要完整模板包。",
+    samplePrompts: [
+      {
+        title: "产品介绍生成 Prompt",
+        description: "把产品名称、目标用户、核心功能和使用场景改成一段可发布的产品介绍。"
+      },
+      {
+        title: "SEO 标题/描述生成 Prompt",
+        description: "根据关键词、用户意图和页面类型，生成可测试的 title 与 meta description。"
+      },
+      {
+        title: "小红书种草笔记 Prompt",
+        description: "把一个工具或模板包写成适合收藏、评论和私信咨询的笔记草稿。"
+      },
+      {
+        title: "闲鱼商品文案 Prompt",
+        description: "生成标题、详情、交付说明、退款边界和合规提示，适合手动上架前检查。"
+      },
+      {
+        title: "AI 工具开发需求 Prompt",
+        description: "把一个副业想法整理成用户、功能、页面、数据和验收标准。"
+      }
+    ],
+    deliverablesTitle: "完整包交付物",
+    deliverablesIntro: "验证阶段先确认需求，再决定是否扩展为正式产品。",
     deliverables: [
-      "产品页文案 Prompt",
-      "SEO 标题/描述 Prompt",
-      "FAQ 生成 Prompt",
-      "小红书/闲鱼/淘宝/Whop 上架 Prompt",
-      "AI 产品需求挖掘 Prompt",
-      "竞品分析 Prompt",
-      "每周复盘 Prompt"
+      "100+ Prompt 模板",
+      "内容创作 / SEO / GEO / 产品上架 / AI 工具开发 / 私域运营 / 数字产品变现",
+      "中英文双语版本",
+      "Markdown / PDF / Notion 可整理格式",
+      "可直接复制使用",
+      "后续持续更新"
     ],
+    fitTitle: "适合谁 / 不适合谁",
+    fitUsers: [
+      "AI 工具站运营者",
+      "自媒体创作者",
+      "电商、闲鱼、淘宝卖家",
+      "SEO/GEO 内容运营",
+      "想做 AI 副业的人"
+    ],
+    notFitUsers: [
+      "想要一键暴富的人",
+      "不愿意自己执行测试的人",
+      "完全不愿意改文案的人"
+    ],
+    pricingTitle: "验证阶段价格测试",
+    pricingIntro: "以下价格只用于验证付费意愿，不代表最终正式价格。",
+    pricingTiers: [
+      { name: "免费样例包", price: "0 元", description: "5 个高频 Prompt 样例，用于确认是否值得继续试用。" },
+      { name: "入门模板包", price: "19 元", description: "适合先解决产品介绍、SEO 标题和发布文案。" },
+      { name: "完整模板包", price: "49 元", description: "覆盖 100+ 模板和中英文双语版本。" },
+      { name: "商业场景包", price: "99 元", description: "面向具体项目、上架渠道和 AI 工具开发规划。" }
+    ],
+    scenariosTitle: "具体能解决什么",
     scenarios: [
-      "为一个新 AI 小工具快速整理产品页和 FAQ",
-      "把已有工具改成更清晰的价格、交付和咨询入口",
-      "为小红书、闲鱼、淘宝或 Whop 准备合规上架草稿",
-      "每周复盘流量、点击、咨询和收入信号"
+      "不会写产品介绍时，快速生成更清楚的卖点和使用场景。",
+      "不会写 SEO/GEO 内容时，先生成页面结构、标题、描述和 FAQ。",
+      "不会写小红书、闲鱼、淘宝发布文案时，先得到可审核草稿。",
+      "不会设计 AI 工具开发提示词时，把想法整理成需求和验收标准。",
+      "不知道怎么把 AI 用到副业项目里时，用模板把执行步骤拆清楚。"
     ],
-    prices: ["￥19 体验版", "￥29 标准版", "￥39 带复盘版"],
     faq: [
-      ["这套 Prompt 包适合谁？", "适合已经有 AI 工具、数字产品或内容方向，但缺少产品页、上架文案、SEO/GEO 结构和复盘模板的人。"],
-      ["交付形式是什么？", "最小交付为 Markdown、PDF 和可复制 Prompt 文档。正式交付范围以咨询确认后的版本为准。"],
-      ["会承诺排名或收入吗？", "不会。它只提供运营提示词和文案结构，不承诺搜索排名、平台流量、订单或收入。"],
-      ["可以用于哪些平台？", "可用于官网产品页、小红书笔记、闲鱼/淘宝详情页、Whop listing、私域介绍和每周复盘。"],
-      ["是否包含定制服务？", "当前验证版优先验证标准化模板需求。定制改写可以作为后续版本单独确认。"],
-      ["购买前可以先看目录吗？", "可以通过邮件咨询目录、适用场景和交付边界。"],
-      ["是否适合非技术用户？", "适合。文档会尽量用可复制、可替换变量的方式组织，不要求写代码。"],
-      ["如何判断这次验证是否成功？", "观察页面浏览、CTA 点击、咨询、预售意向和真实付款，不用主观感觉判断。"]
+      ["这套 Prompt 包适合谁？", "适合已经有 AI 工具、数字产品、内容方向或电商上架需求，但缺少可复制文案结构的人。"],
+      ["免费样例会包含什么？", "包含产品介绍、SEO 标题/描述、小红书笔记、闲鱼商品文案和 AI 工具开发需求 5 个高频 Prompt。"],
+      ["完整包是否已经最终定价？", "没有。0/19/49/99 元只是验证阶段价格测试，用于观察真实咨询和付费意愿。"],
+      ["会承诺排名、流量或收益吗？", "不会。模板只是效率辅助，结果需要人工审核和真实执行，不保证收益、平台流量或订单。"],
+      ["是否适合非技术用户？", "适合。文档会用可复制、可替换变量的方式组织，不要求会写代码。"],
+      ["如何判断这次验证是否成功？", "只看真实页面访问、CTA 点击、咨询、订单、收入、退款和用户反馈，不用主观感觉判断。"]
     ],
-    compliance: "合规提示：不承诺收益、不承诺排名、不承诺自动赚钱；所有真实点击、咨询、订单和收入都需要实际发生后再记录。",
-    contactNote: "邮件咨询时建议说明：你的产品类型、准备发布的平台、希望先解决的文案问题。"
+    compliance:
+      "合规提示：模板仅作为效率辅助，结果需要人工审核；不保证收益，不承诺平台流量、排名或订单。所有浏览、点击、咨询、订单、收入、退款和用户反馈都必须真实发生后再记录。",
+    contactNote: "邮件咨询时建议说明：你的项目类型、准备发布的平台、最想先解决的文案问题。"
   },
   en: {
-    metaTitle: "ENHE AI Prompt Kit | AI Tool Site Operations Prompt Pack",
-    metaDescription: "A validation landing page for an AI tool-site operations prompt pack covering product copy, SEO/GEO, marketplace listings, competitor analysis, and weekly review prompts.",
-    eyebrow: "Validation Offer",
-    title: "ENHE AI Prompt Kit | AI Tool Site Operations Prompt Pack",
-    subtitle: "Reusable prompts for product pages, SEO/GEO, marketplace listings, competitor review, and weekly operating reviews. This page validates real demand before a heavier product build.",
-    primaryCta: "Ask about the deliverables",
-    secondaryCta: "Browse existing tools",
-    tertiaryCta: "Review price test",
-    summaryTitle: "Operations prompts, not an income promise",
-    summary:
-      "This validation page checks whether operators need a copy-ready prompt document for AI tool sites. It does not promise ranking, traffic, orders, revenue, or automatic growth.",
-    audiences: ["AI tool-site operators", "Independent developers", "Digital product sellers", "Content creators", "SEO/GEO operators"],
+    metaTitle: "ENHE AI Prompt Kit | Prompt Templates for AI Operators",
+    metaDescription:
+      "A validation page for a practical AI Prompt Kit covering product copy, SEO/GEO, product listings, AI tool planning, digital product launch copy, free sample prompts, and pricing validation.",
+    eyebrow: "AI Prompt Kit Validation",
+    title: "Prompt templates for product copy, SEO content, listings, and AI tool planning",
+    subtitle:
+      "For digital product builders, AI creators, and SEO operators who need clearer copy, launch drafts, and repeatable AI workflows.",
+    primaryCta: "Get 5 free sample prompts",
+    secondaryCta: "Try the full prompt pack",
+    tertiaryCta: "Get prompts for my project",
+    previewTitle: "Free sample prompts",
+    previewIntro: "Start with five practical prompts before deciding whether the full pack is useful.",
+    samplePrompts: [
+      {
+        title: "Product intro prompt",
+        description: "Turn a product name, audience, features, and use case into a publishable product intro."
+      },
+      {
+        title: "SEO title and description prompt",
+        description: "Generate testable titles and meta descriptions from keywords, intent, and page type."
+      },
+      {
+        title: "Social launch note prompt",
+        description: "Draft a save-worthy note for creators and side-project builders."
+      },
+      {
+        title: "Product listing prompt",
+        description: "Create listing copy with delivery scope, refund boundaries, and compliance notes."
+      },
+      {
+        title: "AI tool planning prompt",
+        description: "Convert an AI product idea into users, features, pages, data, and acceptance criteria."
+      }
+    ],
+    deliverablesTitle: "Full pack deliverables",
+    deliverablesIntro: "The validation stage tests real demand before turning this into a larger product.",
     deliverables: [
-      "Product page copy prompt",
-      "SEO title and description prompt",
-      "FAQ generation prompt",
-      "Marketplace listing prompt",
-      "AI product demand-mining prompt",
-      "Competitor analysis prompt",
-      "Weekly review prompt"
+      "100+ prompt templates",
+      "Content creation / SEO / GEO / product listings / AI tool planning / private traffic / digital product launch",
+      "Chinese and English versions",
+      "Markdown / PDF / Notion-ready organization",
+      "Copy-ready templates",
+      "Ongoing updates"
     ],
+    fitTitle: "Who it fits / who it does not fit",
+    fitUsers: [
+      "AI tool operators",
+      "Digital product creators",
+      "SEO/GEO operators",
+      "Marketplace sellers",
+      "Builders testing AI side projects"
+    ],
+    notFitUsers: [
+      "People expecting guaranteed income",
+      "People who do not want to run real tests",
+      "People who refuse to review or rewrite copy"
+    ],
+    pricingTitle: "Pricing validation",
+    pricingIntro: "These are validation-stage price points, not final public pricing.",
+    pricingTiers: [
+      { name: "Free sample pack", price: "CNY 0", description: "Five practical prompts to judge fit." },
+      { name: "Starter pack", price: "CNY 19", description: "For product intro, SEO copy, and launch drafts." },
+      { name: "Full template pack", price: "CNY 49", description: "100+ bilingual templates organized for direct use." },
+      { name: "Business scenario pack", price: "CNY 99", description: "For specific projects, listing channels, and AI tool planning." }
+    ],
+    scenariosTitle: "What it helps you create",
     scenarios: [
-      "Draft a clear product page and FAQ for a new AI tool",
-      "Improve offer, pricing, delivery, and consultation entry for an existing tool",
-      "Prepare compliant drafts for marketplaces and social notes",
-      "Review weekly views, clicks, leads, revenue, and next actions"
+      "Turn a vague product idea into clear value proposition copy.",
+      "Draft SEO/GEO titles, descriptions, page outlines, and FAQ blocks.",
+      "Prepare product listing drafts for manual review before publishing.",
+      "Plan AI tool requirements with users, flows, data, and acceptance checks.",
+      "Run a small digital product launch without starting from a blank page."
     ],
-    prices: ["CNY 19 starter", "CNY 29 standard", "CNY 39 review pack"],
     faq: [
-      ["Who is this for?", "It is for builders and operators who have an AI tool, digital product, or content offer but need clearer copy, listing structure, SEO/GEO prompts, and review templates."],
-      ["What is delivered?", "The minimum delivery is Markdown, PDF, and copy-ready prompt documents. The final scope is confirmed before delivery."],
-      ["Does it promise rankings or revenue?", "No. It provides operating prompts and copy structure only. It does not promise search ranking, traffic, orders, or revenue."],
-      ["Which platforms can it support?", "It can support website product pages, social posts, Xianyu/Taobao-style listings, Whop listings, private messages, and weekly reviews."],
-      ["Is customization included?", "The validation version focuses on standardized templates. Custom rewriting can be scoped separately later."],
-      ["Can I review the outline first?", "Yes. Email ENHE with your product type, target platform, and current copy problem."],
-      ["Is it suitable for non-technical users?", "Yes. The prompts are organized as copy-ready blocks with replaceable variables."],
-      ["How will this validation be judged?", "By observed page views, CTA clicks, inquiries, presale intent, and real payments, not by assumptions."]
+      ["Who is this for?", "It is for AI creators, digital product builders, marketplace sellers, and SEO operators who need reusable copy and planning prompts."],
+      ["What is included in the free sample?", "Five sample prompts for product intros, SEO metadata, social launch notes, product listings, and AI tool planning."],
+      ["Is the pricing final?", "No. CNY 0/19/49/99 are pricing validation points used to observe real interest and purchase intent."],
+      ["Does it promise rankings or revenue?", "No. Templates are productivity aids. Human review is required, and there is no income, traffic, ranking, or order guarantee."],
+      ["Is it useful for non-technical users?", "Yes. The prompts are written as copy-ready blocks with replaceable variables."],
+      ["How will validation be judged?", "By real page views, CTA clicks, inquiries, orders, revenue, refunds, and user feedback only."]
     ],
-    compliance: "Compliance note: no income, ranking, or automatic-growth promise. Real clicks, inquiries, orders, and revenue must be recorded only after they happen.",
+    compliance:
+      "Compliance note: templates are productivity aids only and require human review. No income, platform traffic, ranking, or order guarantee is made. Real clicks, inquiries, orders, revenue, refunds, and feedback must be recorded only after they happen.",
     contactNote: "When emailing, include your product type, target platform, and the copy problem you want to solve first."
   }
 } as const;
@@ -129,46 +218,25 @@ export function ValidationAiPromptKitPage({ locale }: { locale: Locale }) {
       <Container className="py-14">
         <StructuredData data={[breadcrumbSchema, faqSchema]} />
 
-        <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <section className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
           <div>
             <Badge>{copy.eyebrow}</Badge>
-            <h1 className="mt-6 text-4xl font-black leading-tight tracking-normal text-[var(--marketing-text)] md:text-5xl">
+            <h1 className="mt-6 max-w-4xl text-4xl font-black leading-tight tracking-normal text-[var(--marketing-text)] md:text-5xl">
               {copy.title}
             </h1>
             <p className="mt-5 max-w-3xl text-base leading-8 text-[var(--marketing-muted)] md:text-lg">
               {copy.subtitle}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                href={mailHref}
-                className="cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-[#050505] bg-[#050505] px-5 py-3 text-sm font-bold text-white shadow-[0_14px_34px_rgba(0,0,0,0.22)] transition hover:bg-[#161616]"
-                data-analytics-event="validation_ai_prompt_kit_cta_click"
-                data-analytics-entity-type="validation_offer"
-                data-analytics-entity-id="ai-prompt-kit"
-                data-analytics-meta-surface="hero_primary"
-              >
+              <TrackedCta href={mailHref} surface="hero_free_sample" primary>
                 {copy.primaryCta}
-              </Link>
-              <Link
-                href={buildLocalePath("/software", locale)}
-                className="cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-white/14 bg-white/7 px-5 py-3 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
-                data-analytics-event="validation_ai_prompt_kit_cta_click"
-                data-analytics-entity-type="validation_offer"
-                data-analytics-entity-id="ai-prompt-kit"
-                data-analytics-meta-surface="hero_software"
-              >
+              </TrackedCta>
+              <TrackedCta href="#deliverables" surface="hero_full_pack">
                 {copy.secondaryCta}
-              </Link>
-              <Link
-                href="#price-test"
-                className="cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-white/14 bg-white/7 px-5 py-3 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
-                data-analytics-event="validation_ai_prompt_kit_cta_click"
-                data-analytics-entity-type="validation_offer"
-                data-analytics-entity-id="ai-prompt-kit"
-                data-analytics-meta-surface="hero_price"
-              >
+              </TrackedCta>
+              <TrackedCta href={mailHref} surface="hero_project_prompt">
                 {copy.tertiaryCta}
-              </Link>
+              </TrackedCta>
             </div>
           </div>
 
@@ -183,13 +251,47 @@ export function ValidationAiPromptKitPage({ locale }: { locale: Locale }) {
                 unoptimized
               />
               <div>
-                <p className="text-sm font-bold text-[var(--marketing-accent)]">Prompt Pack Preview</p>
-                <p className="mt-1 text-sm text-[var(--marketing-muted)]">Markdown / PDF / Copy-ready document</p>
+                <p className="text-sm font-bold text-[var(--marketing-accent)]">
+                  {locale === "en" ? "Prompt pack preview" : "模板包预览"}
+                </p>
+                <p className="mt-1 text-sm text-[var(--marketing-muted)]">
+                  Markdown / PDF / Notion
+                </p>
               </div>
             </div>
             <div className="mt-6 grid gap-3">
-              {copy.deliverables.slice(0, 5).map((item) => (
-                <div key={item} className="rounded-xl border border-white/10 bg-white/8 p-4 text-sm font-semibold text-[var(--marketing-text)]">
+              {copy.samplePrompts.slice(0, 3).map((item) => (
+                <article key={item.title} className="rounded-xl border border-white/10 bg-white/8 p-4">
+                  <h2 className="text-sm font-black text-[var(--marketing-text)]">{item.title}</h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--marketing-muted)]">{item.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="free-samples" className="glass mt-10 scroll-mt-24 rounded-2xl p-7">
+          <SectionTitle title={copy.previewTitle} intro={copy.previewIntro} />
+          <div className="grid gap-4 md:grid-cols-2">
+            {copy.samplePrompts.map((item) => (
+              <article key={item.title} className="rounded-xl border border-white/10 bg-white/8 p-5">
+                <h2 className="text-base font-black text-[var(--marketing-text)]">{item.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-10 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="glass rounded-2xl p-7">
+            <SectionTitle title={copy.scenariosTitle} />
+            <SimpleList items={copy.scenarios} />
+          </div>
+          <div id="deliverables" className="glass scroll-mt-24 rounded-2xl p-7">
+            <SectionTitle title={copy.deliverablesTitle} intro={copy.deliverablesIntro} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              {copy.deliverables.map((item) => (
+                <div key={item} className="rounded-xl border border-white/10 bg-white/8 p-4 text-sm leading-6 text-[var(--marketing-muted)]">
                   {item}
                 </div>
               ))}
@@ -198,33 +300,23 @@ export function ValidationAiPromptKitPage({ locale }: { locale: Locale }) {
         </section>
 
         <section className="glass mt-10 rounded-2xl p-7">
-          <SectionTitle title={copy.summaryTitle} intro={copy.summary} />
-          <div className="grid gap-4 md:grid-cols-2">
-            <InfoList title={locale === "en" ? "Best-fit users" : "适合人群"} items={copy.audiences} />
-            <InfoList title={locale === "en" ? "Use cases" : "使用场景"} items={copy.scenarios} />
+          <SectionTitle title={copy.fitTitle} />
+          <div className="grid gap-5 md:grid-cols-2">
+            <InfoList title={locale === "en" ? "Best fit" : "适合"} items={copy.fitUsers} />
+            <InfoList title={locale === "en" ? "Not a fit" : "不适合"} items={copy.notFitUsers} />
           </div>
         </section>
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div id="price-test" className="glass scroll-mt-24 rounded-2xl p-7">
-            <SectionTitle title={locale === "en" ? "Price test" : "价格测试"} intro={locale === "en" ? "The prices are validation options, not a fixed public checkout." : "以下价格用于验证意向，不代表已经开通自动支付。"} />
-            <div className="grid gap-3">
-              {copy.prices.map((price) => (
-                <div key={price} className="rounded-xl border border-white/10 bg-white/8 p-4 text-base font-black text-[var(--marketing-text)]">
-                  {price}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="glass rounded-2xl p-7">
-            <SectionTitle title={locale === "en" ? "Deliverables" : "交付内容"} />
-            <div className="grid gap-3 sm:grid-cols-2">
-              {copy.deliverables.map((item) => (
-                <div key={item} className="rounded-xl border border-white/10 bg-white/8 p-4 text-sm leading-6 text-[var(--marketing-muted)]">
-                  {item}
-                </div>
-              ))}
-            </div>
+        <section id="price-test" className="glass mt-10 scroll-mt-24 rounded-2xl p-7">
+          <SectionTitle title={copy.pricingTitle} intro={copy.pricingIntro} />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {copy.pricingTiers.map((tier) => (
+              <article key={tier.name} className="rounded-xl border border-white/10 bg-white/8 p-5">
+                <p className="text-sm font-bold text-[var(--marketing-accent)]">{tier.name}</p>
+                <p className="mt-3 text-2xl font-black text-[var(--marketing-text)]">{tier.price}</p>
+                <p className="mt-3 text-sm leading-6 text-[var(--marketing-muted)]">{tier.description}</p>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -243,19 +335,46 @@ export function ValidationAiPromptKitPage({ locale }: { locale: Locale }) {
         <section id="contact-note" className="glass mt-10 rounded-2xl p-7">
           <SectionTitle title={locale === "en" ? "Compliance and next step" : "合规提示与下一步"} intro={copy.compliance} />
           <p className="text-sm leading-7 text-[var(--marketing-muted)]">{copy.contactNote}</p>
-          <Link
-            href={mailHref}
-            className="mt-5 inline-flex min-h-11 items-center rounded-full border border-[#050505] bg-[#050505] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#161616]"
-            data-analytics-event="validation_ai_prompt_kit_cta_click"
-            data-analytics-entity-type="validation_offer"
-            data-analytics-entity-id="ai-prompt-kit"
-            data-analytics-meta-surface="bottom_contact"
-          >
-            {copy.primaryCta}
-          </Link>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <TrackedCta href={mailHref} surface="bottom_free_sample" primary>
+              {copy.primaryCta}
+            </TrackedCta>
+            <TrackedCta href={mailHref} surface="bottom_project_prompt">
+              {copy.tertiaryCta}
+            </TrackedCta>
+          </div>
         </section>
       </Container>
     </main>
+  );
+}
+
+function TrackedCta({
+  href,
+  surface,
+  primary = false,
+  children
+}: {
+  href: string;
+  surface: string;
+  primary?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={
+        primary
+          ? "cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-[#050505] bg-[#050505] px-5 py-3 text-sm font-bold text-white shadow-[0_14px_34px_rgba(0,0,0,0.22)] transition hover:bg-[#161616]"
+          : "cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-white/14 bg-white/7 px-5 py-3 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+      }
+      data-analytics-event="validation_ai_prompt_kit_cta_click"
+      data-analytics-entity-type="validation_offer"
+      data-analytics-entity-id="ai-prompt-kit"
+      data-analytics-meta-surface={surface}
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -263,11 +382,17 @@ function InfoList({ title, items }: { title: string; items: readonly string[] })
   return (
     <div className="rounded-2xl border border-white/10 bg-white/8 p-5">
       <h2 className="text-lg font-black text-[var(--marketing-text)]">{title}</h2>
-      <ul className="mt-4 space-y-2 text-sm leading-6 text-[var(--marketing-muted)]">
-        {items.map((item) => (
-          <li key={item}>- {item}</li>
-        ))}
-      </ul>
+      <SimpleList items={items} />
     </div>
+  );
+}
+
+function SimpleList({ items }: { items: readonly string[] }) {
+  return (
+    <ul className="mt-4 space-y-2 text-sm leading-6 text-[var(--marketing-muted)]">
+      {items.map((item) => (
+        <li key={item}>- {item}</li>
+      ))}
+    </ul>
   );
 }

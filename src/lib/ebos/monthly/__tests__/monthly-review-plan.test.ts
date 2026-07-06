@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
 import type { EbosEvidenceCatalogEntry } from "../../evidence";
+import type { EbosDeploymentExecutionStatus } from "../../deployment-execution";
+import type { EbosExternalPublishingStatusSummary } from "../../external-publishing";
+import type { EbosSyntheticScenarioStatusSummary } from "../../synthetic-scenarios";
 import { generateMonthlyReviewPlan } from "../monthly-review-plan";
 
 function entry(kind: EbosEvidenceCatalogEntry["evidenceKind"], overrides: Partial<EbosEvidenceCatalogEntry> = {}): EbosEvidenceCatalogEntry {
@@ -18,6 +21,59 @@ function entry(kind: EbosEvidenceCatalogEntry["evidenceKind"], overrides: Partia
     errorsCount: 0,
     actionItemsCount: 0,
     validationStatus: "valid",
+    ...overrides
+  };
+}
+
+function verifiedDeploymentStatus(): EbosDeploymentExecutionStatus {
+  return {
+    statusType: "production_deployment_execution_status",
+    targetDate: "2026-07-03",
+    updatedAt: "2026-07-05T00:00:00.000Z",
+    deploymentStatus: "verified",
+    approvedByUser: true,
+    localCommandsRun: [],
+    serverCommandsRun: [],
+    dockerCommandsRun: [],
+    verificationCommandsRun: [],
+    postLaunchCheckStatus: "passed",
+    notes: [],
+    warnings: []
+  };
+}
+
+function externalStatus(overrides: Partial<EbosExternalPublishingStatusSummary>): EbosExternalPublishingStatusSummary {
+  return {
+    status: "waiting_real_data",
+    channelsCount: 6,
+    publishAssetsCount: 6,
+    publishCoverage: 0,
+    dataCoverage: 0,
+    hasRealSignals: false,
+    canBackfill: false,
+    warnings: [],
+    blockers: [],
+    summary: "External publish result input exists, but no real external data has been recorded yet.",
+    ...overrides
+  };
+}
+
+function syntheticStatus(overrides: Partial<EbosSyntheticScenarioStatusSummary> = {}): EbosSyntheticScenarioStatusSummary {
+  return {
+    status: "generated",
+    targetDate: "2026-07-03",
+    synthetic: true,
+    simulated: true,
+    scenarioPath: "reports/ebos/external-publishing/simulations/2026-07-03-synthetic-failure-scenario.json",
+    analysisPath: "reports/ebos/external-publishing/simulations/2026-07-03-synthetic-failure-analysis.json",
+    optimizationPlanPath: "reports/ebos/external-publishing/simulations/2026-07-03-synthetic-optimization-plan.json",
+    simulatedRevenue: 0,
+    simulatedPaidOrders: 0,
+    likelyFailureReasonsCount: 9,
+    priorityFixesCount: 7,
+    nextExperimentActionsCount: 7,
+    warnings: ["This is synthetic data.", "Do not backfill as real data."],
+    summary: "Synthetic failure scenario exists. Treat it as simulated planning input only.",
     ...overrides
   };
 }
@@ -224,5 +280,100 @@ describe("generateMonthlyReviewPlan", () => {
     expect(plan.codexTasks).toContainEqual(expect.objectContaining({
       title: expect.stringContaining("低成本验证市场机会")
     }));
+  });
+
+  test("references external publishing waiting state", () => {
+    const plan = generateMonthlyReviewPlan({
+      evidenceEntries: [entry("weekly_report")],
+      missingKinds: [],
+      openActionItemsCount: 0,
+      sampleIsThin: false,
+      deploymentExecutionStatus: verifiedDeploymentStatus(),
+      externalPublishingStatus: externalStatus({
+        status: "waiting_real_data",
+        hasRealSignals: false,
+        canBackfill: false
+      })
+    });
+
+    expect(plan.codexTasks).toContainEqual(expect.objectContaining({
+      title: expect.stringContaining("等待真实外部渠道数据")
+    }));
+  });
+
+  test("references external publishing backfill state", () => {
+    const plan = generateMonthlyReviewPlan({
+      evidenceEntries: [entry("weekly_report")],
+      missingKinds: [],
+      openActionItemsCount: 0,
+      sampleIsThin: false,
+      deploymentExecutionStatus: verifiedDeploymentStatus(),
+      externalPublishingStatus: externalStatus({
+        status: "ready_to_backfill",
+        hasRealSignals: true,
+        canBackfill: true,
+        dataCoverage: 17,
+        summary: "External publish result input contains real observed signals."
+      })
+    });
+
+    expect(plan.codexTasks).toContainEqual(expect.objectContaining({
+      title: expect.stringContaining("backfill")
+    }));
+  });
+
+  test("references synthetic failure scenario without changing real external signal state", () => {
+    const external = externalStatus({
+      status: "waiting_real_data",
+      hasRealSignals: false,
+      canBackfill: false
+    });
+    const plan = generateMonthlyReviewPlan({
+      evidenceEntries: [entry("weekly_report")],
+      missingKinds: [],
+      openActionItemsCount: 0,
+      sampleIsThin: false,
+      deploymentExecutionStatus: verifiedDeploymentStatus(),
+      externalPublishingStatus: external,
+      syntheticFailureScenarioStatus: syntheticStatus()
+    });
+
+    expect(external.hasRealSignals).toBe(false);
+    expect(external.canBackfill).toBe(false);
+    expect(plan.codexTasks[0]).toEqual(expect.objectContaining({
+      title: expect.stringContaining("simulated"),
+      reason: expect.stringContaining("simulatedRevenue=0")
+    }));
+  });
+
+  test("marks synthetic optimization completed while still waiting for real data", () => {
+    const external = externalStatus({
+      status: "waiting_real_data",
+      hasRealSignals: false,
+      canBackfill: false
+    });
+    const plan = generateMonthlyReviewPlan({
+      evidenceEntries: [entry("weekly_report")],
+      missingKinds: [],
+      openActionItemsCount: 0,
+      sampleIsThin: false,
+      deploymentExecutionStatus: verifiedDeploymentStatus(),
+      externalPublishingStatus: external,
+      syntheticFailureScenarioStatus: syntheticStatus({
+        optimizationImplementationPath: "reports/ebos/external-publishing/simulations/2026-07-03-synthetic-optimization-implementation.json",
+        optimizationImplementationCompleted: true,
+        implementedFixesCount: 7,
+        nextRealValidationActionsCount: 6
+      })
+    });
+
+    expect(external.hasRealSignals).toBe(false);
+    expect(external.canBackfill).toBe(false);
+    expect(plan.codexTasks[0]).toEqual(expect.objectContaining({
+      title: expect.stringContaining("real publishing validation"),
+      reason: expect.stringContaining("implementedFixes=7")
+    }));
+    expect(plan.codexTasks[0]?.reason).toContain("hasRealSignals=false");
+    expect(plan.codexTasks[0]?.reason).toContain("canBackfill=false");
   });
 });

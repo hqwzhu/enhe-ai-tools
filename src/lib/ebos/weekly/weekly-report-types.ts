@@ -26,6 +26,9 @@ import type {
   EbosDeploymentExecutionStatus
 } from "../deployment-execution";
 import type { EbosDeploymentOperatorChecklistReport } from "../deployment-operator";
+import type { EbosExternalPublishingStatusSummary } from "../external-publishing";
+import type { EbosSyntheticScenarioStatusSummary } from "../synthetic-scenarios";
+import type { EbosOptimizedValidationPageRedeployStatusSummary } from "../post-launch";
 
 export type EbosWeeklyReportOptions = {
   targetDate?: Date;
@@ -45,6 +48,9 @@ export type EbosWeeklyReportOptions = {
   productionDeploymentApprovalGate?: EbosDeploymentApprovalGate;
   deploymentExecutionStatus?: EbosDeploymentExecutionStatus;
   deploymentOperatorChecklist?: EbosDeploymentOperatorChecklistReport;
+  externalPublishingStatus?: EbosExternalPublishingStatusSummary;
+  syntheticFailureScenarioStatus?: EbosSyntheticScenarioStatusSummary;
+  optimizedValidationPageRedeployStatus?: EbosOptimizedValidationPageRedeployStatusSummary;
 };
 
 export type EbosWeeklyPlan = {
@@ -60,4 +66,7 @@ export type EbosWeeklyReportResult = {
   dataSourceStatus: EbosDataSourceState[];
   snapshot: EbosInternalDatabaseSnapshot;
   deploymentExecutionStatus?: EbosDeploymentExecutionStatus;
+  externalPublishingStatus?: EbosExternalPublishingStatusSummary;
+  syntheticFailureScenarioStatus?: EbosSyntheticScenarioStatusSummary;
+  optimizedValidationPageRedeployStatus?: EbosOptimizedValidationPageRedeployStatusSummary;
 };

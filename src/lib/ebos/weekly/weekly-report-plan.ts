@@ -12,6 +12,9 @@ import type {
   EbosDeploymentExecutionStatus
 } from "../deployment-execution";
 import type { EbosDeploymentOperatorChecklistReport } from "../deployment-operator";
+import type { EbosExternalPublishingStatusSummary } from "../external-publishing";
+import type { EbosSyntheticScenarioStatusSummary } from "../synthetic-scenarios";
+import type { EbosOptimizedValidationPageRedeployStatusSummary } from "../post-launch";
 import type { EbosWeeklyPlan } from "./weekly-report-types";
 
 function actionItem(input: Omit<EbosActionItem, "status">): EbosActionItem {
@@ -140,7 +143,10 @@ export function generateNextWeekPlan(
   productionDeploymentPreflightReport?: EbosProductionDeploymentPreflightReport,
   productionDeploymentApprovalGate?: EbosDeploymentApprovalGate,
   deploymentExecutionStatus?: EbosDeploymentExecutionStatus,
-  deploymentOperatorChecklist?: EbosDeploymentOperatorChecklistReport
+  deploymentOperatorChecklist?: EbosDeploymentOperatorChecklistReport,
+  externalPublishingStatus?: EbosExternalPublishingStatusSummary,
+  syntheticFailureScenarioStatus?: EbosSyntheticScenarioStatusSummary,
+  optimizedValidationPageRedeployStatus?: EbosOptimizedValidationPageRedeployStatusSummary
 ): EbosWeeklyPlan {
   const actionItems: EbosActionItem[] = [];
   const revenueScore = sectionScore(report, "revenue");
@@ -176,6 +182,9 @@ export function generateNextWeekPlan(
   addProductionDeploymentPreflightPriority(productionDeploymentPreflightReport, okrs, actionItems);
   addProductionDeploymentApprovalGatePriority(productionDeploymentApprovalGate, deploymentExecutionStatus, okrs, actionItems);
   addDeploymentOperatorChecklistPriority(deploymentOperatorChecklist, okrs, actionItems);
+  addOptimizedRedeployPriority(optimizedValidationPageRedeployStatus, deploymentExecutionStatus, okrs, actionItems);
+  addExternalPublishingPriority(externalPublishingStatus, deploymentExecutionStatus, okrs, actionItems);
+  addSyntheticFailureScenarioPriority(syntheticFailureScenarioStatus, externalPublishingStatus, deploymentExecutionStatus, okrs, actionItems);
 
   if (revenueIsCritical) {
     actionItems.push(
@@ -327,6 +336,192 @@ export function generateNextWeekPlan(
   };
 }
 
+function addOptimizedRedeployPriority(
+  status: EbosOptimizedValidationPageRedeployStatusSummary | undefined,
+  deploymentExecutionStatus: EbosDeploymentExecutionStatus | undefined,
+  okrs: EbosOKR[],
+  actionItems: EbosActionItem[]
+) {
+  if (deploymentExecutionStatus?.deploymentStatus !== "verified") return;
+  if (!status || status.status === "not_generated") return;
+
+  if (status.redeployed) {
+    okrs.unshift({
+      objective: "Optimized validation page redeployed; move to real external publishing",
+      keyResults: [
+        { title: "optimized validation page redeployed", target: 1, unit: "status", status: "done" },
+        { title: "deploymentStatus remains verified", target: 1, unit: "status", status: "done" },
+        { title: "externalPublishingStatus remains waiting_real_data until real signals exist", target: 1, unit: "guardrail", status: "not_started" }
+      ]
+    });
+    actionItems.unshift(actionItem({
+      title: "Optimized validation page redeployed",
+      description: `${status.summary} deploymentStatus=${status.deploymentStatus ?? "unknown"}; optimizedContentCheckStatus=${status.optimizedContentCheckStatus ?? "unknown"}; postLaunchCheckStatus=${status.postLaunchCheckStatus ?? "unknown"}. Next step is real external publishing, not more simulation.`,
+      priority: "high",
+      sectionKey: "next_plan",
+      effort: "low",
+      confidence: "complete",
+      verification: "Weekly report references optimized validation page redeployed while external publishing remains waiting_real_data until observed metrics exist."
+    }));
+    return;
+  }
+
+  actionItems.unshift(actionItem({
+    title: "Finish optimized validation page redeploy",
+    description: `${status.summary} gitPushResult=${status.gitPushResult ?? "unknown"}; gitPullResult=${status.gitPullResult ?? "unknown"}; dockerBuildResult=${status.dockerBuildResult ?? "unknown"}; dockerUpResult=${status.dockerUpResult ?? "unknown"}; nginxReloadResult=${status.nginxReloadResult ?? "unknown"}; optimizedContentCheckStatus=${status.optimizedContentCheckStatus ?? "unknown"}.`,
+    priority: "high",
+    sectionKey: "next_plan",
+    effort: "low",
+    confidence: "partial",
+    verification: "Optimized redeploy report shows redeployed=true and production content check passed."
+  }));
+}
+
+function addSyntheticFailureScenarioPriority(
+  syntheticStatus: EbosSyntheticScenarioStatusSummary | undefined,
+  externalStatus: EbosExternalPublishingStatusSummary | undefined,
+  deploymentExecutionStatus: EbosDeploymentExecutionStatus | undefined,
+  okrs: EbosOKR[],
+  actionItems: EbosActionItem[]
+) {
+  if (deploymentExecutionStatus?.deploymentStatus !== "verified") return;
+  if (!syntheticStatus || syntheticStatus.status !== "generated" || !syntheticStatus.synthetic) return;
+  if (externalStatus?.hasRealSignals || externalStatus?.canBackfill) return;
+
+  if (syntheticStatus.optimizationImplementationCompleted) {
+    okrs.unshift({
+      objective: "Move from synthetic optimization to real external publishing validation",
+      keyResults: [
+        { title: "Confirm synthetic optimization implementation completed", target: 1, unit: "report", status: "not_started" },
+        { title: "Publish or contact at least one real external channel", target: 1, unit: "channel", status: "not_started" },
+        { title: "Keep hasRealSignals=false until real channel data exists", target: 1, unit: "guardrail", status: "not_started" }
+      ]
+    });
+    actionItems.unshift(actionItem({
+      title: "Start real publishing validation after synthetic optimization",
+      description: `${syntheticStatus.summary} implementedFixes=${syntheticStatus.implementedFixesCount ?? 0}; nextRealValidationActions=${syntheticStatus.nextRealValidationActionsCount ?? 0}; externalPublishingStatus=${externalStatus?.status ?? "unknown"}; hasRealSignals=false; canBackfill=false.`,
+      priority: "high",
+      sectionKey: "next_plan",
+      effort: "low",
+      confidence: "complete",
+      verification: "Weekly report references synthetic optimization implementation completed while external publishing remains waiting_real_data."
+    }));
+    return;
+  }
+
+  okrs.unshift({
+    objective: "Use simulated failure scenario before real external publishing",
+    keyResults: [
+      { title: "Review synthetic failure analysis as simulated planning input only", target: 1, unit: "review", status: "not_started" },
+      { title: "Apply top page/copy/offer fixes before the next real channel sprint", target: 3, unit: "fix", status: "not_started" },
+      { title: "Keep hasRealSignals=false until real channel data exists", target: 1, unit: "guardrail", status: "not_started" }
+    ]
+  });
+  actionItems.unshift(actionItem({
+    title: "Review simulated failure scenario before real publishing",
+    description: `${syntheticStatus.summary} simulatedRevenue=${syntheticStatus.simulatedRevenue}; simulatedPaidOrders=${syntheticStatus.simulatedPaidOrders}; priorityFixes=${syntheticStatus.priorityFixesCount}. This is simulated and must not be backfilled as real data.`,
+    priority: "high",
+    sectionKey: "next_plan",
+    effort: "low",
+    confidence: "complete",
+    verification: "Weekly report references synthetic=true while external publishing remains hasRealSignals=false and canBackfill=false."
+  }));
+}
+
+function addExternalPublishingPriority(
+  status: EbosExternalPublishingStatusSummary | undefined,
+  deploymentExecutionStatus: EbosDeploymentExecutionStatus | undefined,
+  okrs: EbosOKR[],
+  actionItems: EbosActionItem[]
+) {
+  if (deploymentExecutionStatus?.deploymentStatus !== "verified") return;
+  if (!status) return;
+
+  if (status.status === "not_generated") {
+    actionItems.unshift(actionItem({
+      title: "Generate external channel publishing pack",
+      description: "deploymentStatus=verified but external publishing pack is not generated yet. Generate copy-ready channel assets and result input without inventing data.",
+      priority: "high",
+      sectionKey: "next_plan",
+      effort: "low",
+      confidence: "complete",
+      verification: "reports/ebos/external-publishing/packs and inputs contain the generated publishing pack and result template."
+    }));
+    return;
+  }
+
+  if (status.status === "waiting_real_data" || status.status === "pack_generated" || status.status === "result_input_waiting") {
+    okrs.unshift({
+      objective: "等待真实外部渠道数据",
+      keyResults: [
+        { title: "Publish AI Prompt Kit on at least one real external channel", target: 1, unit: "channel", status: "not_started" },
+        { title: "Keep unobserved external metrics at 0", target: 1, unit: "input", status: "not_started" }
+      ]
+    });
+    actionItems.unshift(actionItem({
+      title: "等待真实外部渠道数据",
+      description: `${status.summary} publishCoverage=${status.publishCoverage}; dataCoverage=${status.dataCoverage}. Do not apply backfill until hasRealSignals=true.`,
+      priority: "high",
+      sectionKey: "next_plan",
+      effort: "low",
+      confidence: "complete",
+      verification: "check-ebos-external-publish-results reports hasRealSignals=true before backfill apply."
+    }));
+    return;
+  }
+
+  if (status.status === "ready_to_backfill") {
+    actionItems.unshift(actionItem({
+      title: "执行外部数据 dry-run 回填",
+      description: `${status.summary} canBackfill=${String(status.canBackfill)}. Run dry-run first and apply only after reviewing warnings and blockers.`,
+      priority: "high",
+      sectionKey: "next_plan",
+      effort: "low",
+      confidence: "complete",
+      verification: "backfill-ebos-external-channel-data dry-run report exists; --apply is used only after review."
+    }));
+    return;
+  }
+
+  if (status.status === "backfill_dry_run") {
+    actionItems.unshift(actionItem({
+      title: "Review external publishing backfill dry-run",
+      description: status.summary,
+      priority: "high",
+      sectionKey: "next_plan",
+      effort: "low",
+      confidence: "complete",
+      verification: "Backfill report is reviewed and apply is run only if data is real and blockers=0."
+    }));
+    return;
+  }
+
+  if (status.status === "backfilled") {
+    actionItems.unshift(actionItem({
+      title: "Refresh validation, revenue, and decision reports after external data backfill",
+      description: status.summary,
+      priority: "high",
+      sectionKey: "next_plan",
+      effort: "low",
+      confidence: "complete",
+      verification: "validation/revenue/decision/weekly/monthly reports are regenerated after external channel data backfill."
+    }));
+    return;
+  }
+
+  if (status.status === "blocked") {
+    actionItems.unshift(actionItem({
+      title: "Fix external publish result blockers",
+      description: status.blockers.join("; ") || status.summary,
+      priority: "high",
+      sectionKey: "next_plan",
+      effort: "low",
+      confidence: "complete",
+      verification: "check-ebos-external-publish-results reports blockers=0."
+    }));
+  }
+}
+
 function addDeploymentOperatorChecklistPriority(
   checklist: EbosDeploymentOperatorChecklistReport | undefined,
   okrs: EbosOKR[],
@@ -400,9 +595,22 @@ function addProductionDeploymentApprovalGatePriority(
   }
 
   if (deploymentStatus === "deployed_pending_verification") {
+    if (executionStatus?.postLaunchCheckStatus === "failed") {
+      actionItems.unshift(actionItem({
+        title: "Fix failed EBOS post-launch live check routes",
+        description: "Deployment is pending verification and the recorded post-launch check failed; fix failed public routes before marking verified.",
+        priority: "high",
+        sectionKey: "next_plan",
+        effort: "low",
+        confidence: "complete",
+        verification: "run-ebos-post-launch-live-check reports passed and verify-ebos-production-deployment moves deploymentStatus to verified."
+      }));
+      return;
+    }
+
     actionItems.unshift(actionItem({
-      title: "运行 post-launch check",
-      description: "Deployment is pending verification; run check-ebos-validation-post-launch before claiming verified status or collecting external metrics.",
+      title: "Run EBOS post-launch live check",
+      description: "Deployment is pending verification; run run-ebos-post-launch-live-check and verify-ebos-production-deployment before claiming verified status or collecting external metrics.",
       priority: "high",
       sectionKey: "next_plan",
       effort: "low",
@@ -547,7 +755,7 @@ function addProductionDeploymentPreflightPriority(
       sectionKey: "next_plan",
       effort: "medium",
       confidence: "complete",
-      verification: "Production deployment is explicitly confirmed and check-ebos-validation-post-launch reports passed routes."
+      verification: "Production deployment is explicitly confirmed and run-ebos-post-launch-live-check reports passed routes."
     }));
     return;
   }

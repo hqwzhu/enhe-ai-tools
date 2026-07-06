@@ -43,7 +43,10 @@ export async function buildMonthlyEbosReview(
     productionDeploymentPreflightReport: options.productionDeploymentPreflightReport,
     productionDeploymentApprovalGate: options.productionDeploymentApprovalGate,
     deploymentExecutionStatus: options.deploymentExecutionStatus,
-    deploymentOperatorChecklist: options.deploymentOperatorChecklist
+    deploymentOperatorChecklist: options.deploymentOperatorChecklist,
+    externalPublishingStatus: options.externalPublishingStatus,
+    syntheticFailureScenarioStatus: options.syntheticFailureScenarioStatus,
+    optimizedValidationPageRedeployStatus: options.optimizedValidationPageRedeployStatus
   });
   const majorWins = buildMajorWins(evidenceEntries);
   const majorRisks = buildMajorRisks(evidenceEntries, catalog, dataGaps);
@@ -78,7 +81,10 @@ export async function buildMonthlyEbosReview(
     dataGaps,
     warnings,
     actionItems: plan.actionItems,
-    deploymentExecutionStatus: options.deploymentExecutionStatus
+    deploymentExecutionStatus: options.deploymentExecutionStatus,
+    externalPublishingStatus: options.externalPublishingStatus,
+    syntheticFailureScenarioStatus: options.syntheticFailureScenarioStatus,
+    optimizedValidationPageRedeployStatus: options.optimizedValidationPageRedeployStatus
   };
 }
 

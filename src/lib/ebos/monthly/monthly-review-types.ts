@@ -17,6 +17,9 @@ import type {
   EbosDeploymentExecutionStatus
 } from "../deployment-execution";
 import type { EbosDeploymentOperatorChecklistReport } from "../deployment-operator";
+import type { EbosExternalPublishingStatusSummary } from "../external-publishing";
+import type { EbosSyntheticScenarioStatusSummary } from "../synthetic-scenarios";
+import type { EbosOptimizedValidationPageRedeployStatusSummary } from "../post-launch";
 
 export type EbosMonthlyEvidenceUsed = {
   catalogEntryId: string;
@@ -69,6 +72,9 @@ export type EbosMonthlyReview = {
   warnings: EbosEvidenceWarning[];
   actionItems: EbosEvidenceActionItem[];
   deploymentExecutionStatus?: EbosDeploymentExecutionStatus;
+  externalPublishingStatus?: EbosExternalPublishingStatusSummary;
+  syntheticFailureScenarioStatus?: EbosSyntheticScenarioStatusSummary;
+  optimizedValidationPageRedeployStatus?: EbosOptimizedValidationPageRedeployStatusSummary;
 };
 
 export type EbosMonthlyReviewBuildOptions = {
@@ -84,6 +90,9 @@ export type EbosMonthlyReviewBuildOptions = {
   productionDeploymentApprovalGate?: EbosDeploymentApprovalGate;
   deploymentExecutionStatus?: EbosDeploymentExecutionStatus;
   deploymentOperatorChecklist?: EbosDeploymentOperatorChecklistReport;
+  externalPublishingStatus?: EbosExternalPublishingStatusSummary;
+  syntheticFailureScenarioStatus?: EbosSyntheticScenarioStatusSummary;
+  optimizedValidationPageRedeployStatus?: EbosOptimizedValidationPageRedeployStatusSummary;
   manualInput?: {
     executiveNote?: string;
   };

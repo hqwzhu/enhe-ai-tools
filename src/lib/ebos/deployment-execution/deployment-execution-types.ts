@@ -89,6 +89,7 @@ export type EbosDeploymentExecutionStatus = {
   postLaunchCheckStatus: EbosDeploymentPostLaunchCheckStatus;
   deployedCommit?: string;
   deployedAt?: string;
+  verifiedAt?: string;
   notes: string[];
   warnings: string[];
 };

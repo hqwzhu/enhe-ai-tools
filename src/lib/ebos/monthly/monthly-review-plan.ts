@@ -16,6 +16,9 @@ import type {
   EbosDeploymentExecutionStatus
 } from "../deployment-execution";
 import type { EbosDeploymentOperatorChecklistReport } from "../deployment-operator";
+import type { EbosExternalPublishingStatusSummary } from "../external-publishing";
+import type { EbosSyntheticScenarioStatusSummary } from "../synthetic-scenarios";
+import type { EbosOptimizedValidationPageRedeployStatusSummary } from "../post-launch";
 import type {
   EbosMonthlyDecision,
   EbosMonthlyReviewPlan
@@ -35,6 +38,9 @@ export type GenerateMonthlyReviewPlanOptions = {
   productionDeploymentApprovalGate?: EbosDeploymentApprovalGate;
   deploymentExecutionStatus?: EbosDeploymentExecutionStatus;
   deploymentOperatorChecklist?: EbosDeploymentOperatorChecklistReport;
+  externalPublishingStatus?: EbosExternalPublishingStatusSummary;
+  syntheticFailureScenarioStatus?: EbosSyntheticScenarioStatusSummary;
+  optimizedValidationPageRedeployStatus?: EbosOptimizedValidationPageRedeployStatusSummary;
 };
 
 export function generateMonthlyReviewPlan(
@@ -56,6 +62,9 @@ export function generateMonthlyReviewPlan(
   addProductionDeploymentPreflightTasks(options.productionDeploymentPreflightReport, nextMonthOKRs, codexTasks);
   addProductionDeploymentApprovalGateTasks(options.productionDeploymentApprovalGate, options.deploymentExecutionStatus, nextMonthOKRs, codexTasks);
   addDeploymentOperatorChecklistTasks(options.deploymentOperatorChecklist, nextMonthOKRs, codexTasks);
+  addOptimizedRedeployTasks(options.optimizedValidationPageRedeployStatus, options.deploymentExecutionStatus, nextMonthOKRs, codexTasks);
+  addExternalPublishingTasks(options.externalPublishingStatus, options.deploymentExecutionStatus, nextMonthOKRs, codexTasks);
+  addSyntheticFailureScenarioTasks(options.syntheticFailureScenarioStatus, options.externalPublishingStatus, options.deploymentExecutionStatus, nextMonthOKRs, codexTasks);
 
   if (options.sampleIsThin) {
     nextMonthOKRs.push(okr("补齐经营证据链", [
@@ -148,6 +157,150 @@ export function generateMonthlyReviewPlan(
   };
 }
 
+function addOptimizedRedeployTasks(
+  status: EbosOptimizedValidationPageRedeployStatusSummary | undefined,
+  deploymentExecutionStatus: EbosDeploymentExecutionStatus | undefined,
+  nextMonthOKRs: EbosOKR[],
+  codexTasks: EbosMonthlyDecision[]
+) {
+  if (deploymentExecutionStatus?.deploymentStatus !== "verified") return;
+  if (!status || status.status === "not_generated") return;
+
+  if (status.redeployed) {
+    nextMonthOKRs.unshift(okr("Optimized validation page redeployed; start real external publishing", [
+      "optimized validation page redeployed",
+      "deploymentStatus remains verified",
+      "Keep hasRealSignals=false until real external channel data exists"
+    ]));
+    codexTasks.unshift(decision(
+      "Optimized validation page redeployed",
+      `${status.summary} deploymentStatus=${status.deploymentStatus ?? "unknown"}; optimizedContentCheckStatus=${status.optimizedContentCheckStatus ?? "unknown"}; postLaunchCheckStatus=${status.postLaunchCheckStatus ?? "unknown"}. Next step is real external publishing, not more simulation.`,
+      [status.reportPath ?? "", status.checkPath ?? ""].filter(Boolean),
+      "high",
+      "codex"
+    ));
+    return;
+  }
+
+  codexTasks.unshift(decision(
+    "Finish optimized validation page redeploy",
+    `${status.summary} gitPushResult=${status.gitPushResult ?? "unknown"}; gitPullResult=${status.gitPullResult ?? "unknown"}; dockerBuildResult=${status.dockerBuildResult ?? "unknown"}; dockerUpResult=${status.dockerUpResult ?? "unknown"}; nginxReloadResult=${status.nginxReloadResult ?? "unknown"}; optimizedContentCheckStatus=${status.optimizedContentCheckStatus ?? "unknown"}.`,
+    [status.reportPath ?? "", status.checkPath ?? ""].filter(Boolean),
+    "high",
+    "codex"
+  ));
+}
+
+function addSyntheticFailureScenarioTasks(
+  syntheticStatus: EbosSyntheticScenarioStatusSummary | undefined,
+  externalStatus: EbosExternalPublishingStatusSummary | undefined,
+  deploymentExecutionStatus: EbosDeploymentExecutionStatus | undefined,
+  nextMonthOKRs: EbosOKR[],
+  codexTasks: EbosMonthlyDecision[]
+) {
+  if (deploymentExecutionStatus?.deploymentStatus !== "verified") return;
+  if (!syntheticStatus || syntheticStatus.status !== "generated" || !syntheticStatus.synthetic) return;
+  if (externalStatus?.hasRealSignals || externalStatus?.canBackfill) return;
+
+  if (syntheticStatus.optimizationImplementationCompleted) {
+    nextMonthOKRs.unshift(okr("Move from synthetic optimization to real external publishing validation", [
+      "Confirm synthetic optimization implementation completed",
+      "Publish or contact at least one real external channel",
+      "Keep hasRealSignals=false until real external channel data exists"
+    ]));
+    codexTasks.unshift(decision(
+      "Start real publishing validation after synthetic optimization",
+      `${syntheticStatus.summary} implementedFixes=${syntheticStatus.implementedFixesCount ?? 0}; nextRealValidationActions=${syntheticStatus.nextRealValidationActionsCount ?? 0}; externalPublishingStatus=${externalStatus?.status ?? "unknown"}; hasRealSignals=false; canBackfill=false.`,
+      [syntheticStatus.optimizationImplementationPath ?? "", syntheticStatus.optimizationPlanPath ?? ""].filter(Boolean),
+      "high",
+      "codex"
+    ));
+    return;
+  }
+
+  nextMonthOKRs.unshift(okr("Use simulated failure scenario without contaminating real data", [
+    "Review synthetic failure analysis as simulated planning input only",
+    "Apply top page/copy/offer fixes before real external publishing",
+    "Keep hasRealSignals=false until real external channel data exists"
+  ]));
+  codexTasks.unshift(decision(
+    "Review simulated failure scenario before real publishing",
+    `${syntheticStatus.summary} simulatedRevenue=${syntheticStatus.simulatedRevenue}; simulatedPaidOrders=${syntheticStatus.simulatedPaidOrders}; likelyFailureReasons=${syntheticStatus.likelyFailureReasonsCount}; priorityFixes=${syntheticStatus.priorityFixesCount}.`,
+    [syntheticStatus.scenarioPath ?? "", syntheticStatus.optimizationPlanPath ?? ""].filter(Boolean),
+    "high",
+    "codex"
+  ));
+}
+
+function addExternalPublishingTasks(
+  status: EbosExternalPublishingStatusSummary | undefined,
+  deploymentExecutionStatus: EbosDeploymentExecutionStatus | undefined,
+  nextMonthOKRs: EbosOKR[],
+  codexTasks: EbosMonthlyDecision[]
+) {
+  if (deploymentExecutionStatus?.deploymentStatus !== "verified") return;
+  if (!status) return;
+
+  if (status.status === "not_generated") {
+    codexTasks.unshift(decision(
+      "Generate external channel publishing pack",
+      "deploymentStatus=verified but external publishing pack is not generated yet. Generate channel assets and result input without inventing external data.",
+      [],
+      "high",
+      "codex"
+    ));
+    return;
+  }
+
+  if (status.status === "waiting_real_data" || status.status === "pack_generated" || status.status === "result_input_waiting") {
+    nextMonthOKRs.unshift(okr("等待真实外部渠道数据", [
+      "Publish AI Prompt Kit on at least one real external channel",
+      "Keep all unobserved metrics at 0",
+      "Backfill only after hasRealSignals=true"
+    ]));
+    codexTasks.unshift(decision(
+      "等待真实外部渠道数据",
+      `${status.summary} publishCoverage=${status.publishCoverage}; dataCoverage=${status.dataCoverage}.`,
+      [status.resultInputPath ?? status.packPath ?? ""].filter(Boolean),
+      "high",
+      "codex"
+    ));
+    return;
+  }
+
+  if (status.status === "ready_to_backfill" || status.status === "backfill_dry_run") {
+    codexTasks.unshift(decision(
+      "Run or review external channel data backfill",
+      `${status.summary} canBackfill=${String(status.canBackfill)}.`,
+      [status.resultInputPath ?? status.backfillReportPath ?? ""].filter(Boolean),
+      "high",
+      "codex"
+    ));
+    return;
+  }
+
+  if (status.status === "backfilled") {
+    codexTasks.unshift(decision(
+      "Refresh EBOS reports after external publishing backfill",
+      status.summary,
+      [status.backfillReportPath ?? ""].filter(Boolean),
+      "high",
+      "codex"
+    ));
+    return;
+  }
+
+  if (status.status === "blocked") {
+    codexTasks.unshift(decision(
+      "Fix external publish result blockers",
+      status.blockers.join("; ") || status.summary,
+      [status.resultInputPath ?? ""].filter(Boolean),
+      "high",
+      "codex"
+    ));
+  }
+}
+
 function addDeploymentOperatorChecklistTasks(
   checklist: EbosDeploymentOperatorChecklistReport | undefined,
   nextMonthOKRs: EbosOKR[],
@@ -215,9 +368,20 @@ function addProductionDeploymentApprovalGateTasks(
   }
 
   if (deploymentStatus === "deployed_pending_verification") {
+    if (executionStatus?.postLaunchCheckStatus === "failed") {
+      codexTasks.unshift(decision(
+        "Fix failed EBOS post-launch live check routes",
+        "Deployment is pending verification and the recorded post-launch check failed; fix failed public routes before marking verified.",
+        [],
+        "critical",
+        "codex"
+      ));
+      return;
+    }
+
     codexTasks.unshift(decision(
-      "运行 post-launch check",
-      "Deployment is pending verification; run the post-launch route check before recording verified status.",
+      "Run EBOS post-launch live check",
+      "Deployment is pending verification; run run-ebos-post-launch-live-check and verify-ebos-production-deployment before recording verified status.",
       [],
       "high",
       "codex"

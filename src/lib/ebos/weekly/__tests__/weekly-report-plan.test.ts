@@ -1,10 +1,66 @@
 import { describe, expect, test } from "vitest";
 import { createEmptyEbosReport } from "../../report-schema";
 import { createNoRevenueWarning } from "../../warnings";
+import type { EbosDeploymentExecutionStatus } from "../../deployment-execution";
+import type { EbosExternalPublishingStatusSummary } from "../../external-publishing";
+import type { EbosSyntheticScenarioStatusSummary } from "../../synthetic-scenarios";
 import { generateNextWeekPlan } from "../weekly-report-plan";
 
 function weeklyReport() {
   return createEmptyEbosReport("weekly", new Date(2026, 6, 2, 10, 0));
+}
+
+function verifiedDeploymentStatus(): EbosDeploymentExecutionStatus {
+  return {
+    statusType: "production_deployment_execution_status",
+    targetDate: "2026-07-03",
+    updatedAt: "2026-07-05T00:00:00.000Z",
+    deploymentStatus: "verified",
+    approvedByUser: true,
+    localCommandsRun: [],
+    serverCommandsRun: [],
+    dockerCommandsRun: [],
+    verificationCommandsRun: [],
+    postLaunchCheckStatus: "passed",
+    notes: [],
+    warnings: []
+  };
+}
+
+function externalStatus(overrides: Partial<EbosExternalPublishingStatusSummary>): EbosExternalPublishingStatusSummary {
+  return {
+    status: "waiting_real_data",
+    channelsCount: 6,
+    publishAssetsCount: 6,
+    publishCoverage: 0,
+    dataCoverage: 0,
+    hasRealSignals: false,
+    canBackfill: false,
+    warnings: [],
+    blockers: [],
+    summary: "External publish result input exists, but no real external data has been recorded yet.",
+    ...overrides
+  };
+}
+
+function syntheticStatus(overrides: Partial<EbosSyntheticScenarioStatusSummary> = {}): EbosSyntheticScenarioStatusSummary {
+  return {
+    status: "generated",
+    targetDate: "2026-07-03",
+    synthetic: true,
+    simulated: true,
+    scenarioPath: "reports/ebos/external-publishing/simulations/2026-07-03-synthetic-failure-scenario.json",
+    analysisPath: "reports/ebos/external-publishing/simulations/2026-07-03-synthetic-failure-analysis.json",
+    optimizationPlanPath: "reports/ebos/external-publishing/simulations/2026-07-03-synthetic-optimization-plan.json",
+    simulatedRevenue: 0,
+    simulatedPaidOrders: 0,
+    likelyFailureReasonsCount: 9,
+    priorityFixesCount: 7,
+    nextExperimentActionsCount: 7,
+    warnings: ["This is synthetic data.", "Do not backfill as real data."],
+    summary: "Synthetic failure scenario exists. Treat it as simulated planning input only.",
+    ...overrides
+  };
 }
 
 describe("generateNextWeekPlan", () => {
@@ -232,5 +288,117 @@ describe("generateNextWeekPlan", () => {
       sectionKey: "market",
       title: expect.stringContaining("AI 视频工作流包")
     }));
+  });
+
+  test("shows waiting state when external publish result has no real signals", () => {
+    const plan = generateNextWeekPlan(
+      weeklyReport(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      verifiedDeploymentStatus(),
+      undefined,
+      externalStatus({ status: "waiting_real_data", hasRealSignals: false, canBackfill: false })
+    );
+
+    expect(plan.actionItems).toContainEqual(expect.objectContaining({
+      title: expect.stringContaining("等待真实外部渠道数据")
+    }));
+  });
+
+  test("prompts dry-run backfill when external publish result has real signals", () => {
+    const plan = generateNextWeekPlan(
+      weeklyReport(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      verifiedDeploymentStatus(),
+      undefined,
+      externalStatus({
+        status: "ready_to_backfill",
+        publishCoverage: 50,
+        dataCoverage: 17,
+        hasRealSignals: true,
+        canBackfill: true,
+        summary: "External publish result input contains real observed signals."
+      })
+    );
+
+    expect(plan.actionItems).toContainEqual(expect.objectContaining({
+      title: expect.stringContaining("dry-run")
+    }));
+  });
+
+  test("references synthetic failure scenario without changing real external signal state", () => {
+    const external = externalStatus({
+      status: "waiting_real_data",
+      hasRealSignals: false,
+      canBackfill: false
+    });
+    const plan = generateNextWeekPlan(
+      weeklyReport(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      verifiedDeploymentStatus(),
+      undefined,
+      external,
+      syntheticStatus()
+    );
+
+    expect(external.hasRealSignals).toBe(false);
+    expect(external.canBackfill).toBe(false);
+    expect(plan.actionItems[0]).toEqual(expect.objectContaining({
+      title: expect.stringContaining("simulated"),
+      description: expect.stringContaining("must not be backfilled")
+    }));
+  });
+
+  test("marks synthetic optimization completed while still waiting for real data", () => {
+    const external = externalStatus({
+      status: "waiting_real_data",
+      hasRealSignals: false,
+      canBackfill: false
+    });
+    const plan = generateNextWeekPlan(
+      weeklyReport(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      verifiedDeploymentStatus(),
+      undefined,
+      external,
+      syntheticStatus({
+        optimizationImplementationPath: "reports/ebos/external-publishing/simulations/2026-07-03-synthetic-optimization-implementation.json",
+        optimizationImplementationCompleted: true,
+        implementedFixesCount: 7,
+        nextRealValidationActionsCount: 6
+      })
+    );
+
+    expect(external.hasRealSignals).toBe(false);
+    expect(external.canBackfill).toBe(false);
+    expect(plan.actionItems[0]).toEqual(expect.objectContaining({
+      title: expect.stringContaining("real publishing validation"),
+      description: expect.stringContaining("implementedFixes=7")
+    }));
+    expect(plan.actionItems[0]?.description).toContain("hasRealSignals=false");
+    expect(plan.actionItems[0]?.description).toContain("canBackfill=false");
   });
 });

@@ -23,6 +23,9 @@ import {
   readLatestDeploymentExecutionStatus
 } from "@/lib/ebos/deployment-execution";
 import { readLatestDeploymentOperatorChecklist } from "@/lib/ebos/deployment-operator";
+import { readExternalPublishingStatusForDate } from "@/lib/ebos/external-publishing";
+import { readSyntheticFailureScenarioStatusForDate } from "@/lib/ebos/synthetic-scenarios";
+import { readOptimizedValidationPageRedeployStatusForDate } from "@/lib/ebos/post-launch";
 import { buildWeeklyEbosReport, formatLocalDate } from "@/lib/ebos/weekly";
 
 function readArg(name: string) {
@@ -59,6 +62,9 @@ async function main() {
   const productionDeploymentApprovalGate = await readLatestDeploymentApprovalGate({ targetDate });
   const deploymentExecutionStatus = await readLatestDeploymentExecutionStatus({ targetDate });
   const deploymentOperatorChecklist = await readLatestDeploymentOperatorChecklist({ targetDate });
+  const externalPublishingStatus = await readExternalPublishingStatusForDate({ targetDate });
+  const syntheticFailureScenarioStatus = await readSyntheticFailureScenarioStatusForDate({ targetDate });
+  const optimizedValidationPageRedeployStatus = await readOptimizedValidationPageRedeployStatusForDate({ targetDate: formatLocalDate(targetDate) });
   const evidenceWarnings = buildEvidenceWarnings(healthEvidence, dataSourceEvidence);
   const result = await buildWeeklyEbosReport({
     targetDate,
@@ -75,7 +81,10 @@ async function main() {
     productionDeploymentPreflightReport: productionDeploymentPreflight?.report,
     productionDeploymentApprovalGate: productionDeploymentApprovalGate?.report,
     deploymentExecutionStatus: deploymentExecutionStatus?.status,
-    deploymentOperatorChecklist: deploymentOperatorChecklist?.report
+    deploymentOperatorChecklist: deploymentOperatorChecklist?.report,
+    externalPublishingStatus,
+    syntheticFailureScenarioStatus,
+    optimizedValidationPageRedeployStatus
   });
   const outputDir = resolve(process.cwd(), "reports", "ebos", "weekly");
   const filePrefix = formatLocalDate(result.report.period.start);
@@ -87,7 +96,10 @@ async function main() {
     report: result.report,
     nextWeekPlan: result.nextWeekPlan,
     dataSourceStatus: result.dataSourceStatus,
-    deploymentExecutionStatus: result.deploymentExecutionStatus
+    deploymentExecutionStatus: result.deploymentExecutionStatus,
+    externalPublishingStatus: result.externalPublishingStatus,
+    syntheticFailureScenarioStatus: result.syntheticFailureScenarioStatus,
+    optimizedValidationPageRedeployStatus: result.optimizedValidationPageRedeployStatus
   }, {
     targetDate: filePrefix,
     generatedAt: result.report.generatedAt,
@@ -151,6 +163,20 @@ async function main() {
     console.log(`- Deployment operator safeToProceed: ${deploymentOperatorChecklist.report.commandAudit.safeToProceed}`);
     console.log(`- Deployment operator manualRequiredCommands: ${deploymentOperatorChecklist.report.commandAudit.manualRequiredCommands.length}`);
   }
+  console.log(`- External publishing status used: yes`);
+  console.log(`- External publishing status: ${externalPublishingStatus.status}`);
+  console.log(`- External publishing hasRealSignals: ${externalPublishingStatus.hasRealSignals}`);
+  console.log(`- External publishing canBackfill: ${externalPublishingStatus.canBackfill}`);
+  console.log(`- Synthetic failure scenario used: ${syntheticFailureScenarioStatus.status === "generated" ? "yes" : "no"}`);
+  if (syntheticFailureScenarioStatus.status === "generated") {
+    console.log(`- Synthetic failure scenario simulated: ${syntheticFailureScenarioStatus.simulated}`);
+    console.log(`- Synthetic simulatedRevenue: ${syntheticFailureScenarioStatus.simulatedRevenue}`);
+    console.log(`- Synthetic simulatedPaidOrders: ${syntheticFailureScenarioStatus.simulatedPaidOrders}`);
+    console.log(`- Synthetic optimization implementation completed: ${syntheticFailureScenarioStatus.optimizationImplementationCompleted === true}`);
+  }
+  console.log(`- Optimized validation page redeploy status used: yes`);
+  console.log(`- Optimized validation page redeployed: ${optimizedValidationPageRedeployStatus.redeployed}`);
+  console.log(`- Optimized validation page redeploy status: ${optimizedValidationPageRedeployStatus.status}`);
   console.log(`- Top action items:`);
   for (const item of result.nextWeekPlan.actionItems.slice(0, 5)) {
     console.log(`  - [${item.priority}] ${item.title}`);
