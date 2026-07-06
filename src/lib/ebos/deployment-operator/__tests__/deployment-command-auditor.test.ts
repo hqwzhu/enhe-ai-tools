@@ -47,6 +47,28 @@ describe("deployment command auditor", () => {
     expect(detectMigrationCommand("npx prisma migrate deploy")).toBe(true);
   });
 
+  test("marks prisma migrate deploy as high risk and requiring explicit approval", () => {
+    const audit = auditDeploymentCommands({
+      targetDate: "2026-07-03",
+      deploymentPlanMarkdown: `
+## Local Commands
+- ready | Run migration | npx prisma migrate deploy
+`
+    });
+    const command = audit.localCommands[0];
+
+    expect(command).toEqual(expect.objectContaining({
+      migration: true,
+      dangerous: true,
+      riskLevel: "high",
+      requiresExplicitApproval: true
+    }));
+    expect(command.warnings.join("\n")).toContain("requires explicit approval");
+    expect(audit.migrationCommandsDetected).toEqual(["npx prisma migrate deploy"]);
+    expect(audit.migrationCommandRequiresExplicitApproval).toBe(true);
+    expect(audit.safeToProceed).toBe(false);
+  });
+
   test("detects secret exposure commands", () => {
     expect(detectSecretExposureRisk("cat .env")).toBe(true);
     expect(detectSecretExposureRisk("Get-Content .env")).toBe(true);

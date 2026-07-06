@@ -66,3 +66,14 @@ Approval gate 只回答“用户是否批准进入部署执行阶段”。Operat
 ## 9. 如何进入下一步真实部署
 
 下一步必须由用户明确确认是否进入真实生产部署执行。确认前，EBOS 只能继续生成 checklist、审计命令、运行本地质量检查和更新报告，不 SSH、不运行 Docker/Nginx/server 命令、不打印 secret。
+## 10. App Entrypoint Migration Guard
+
+Operator audit must keep `npx prisma migrate deploy` as high risk and `requiresExplicitApproval=true`.
+
+For page-only or EBOS read-only deployment, the app entrypoint should skip migration unless `RUN_PRISMA_MIGRATE=1` is explicitly set. The normal guard evidence is:
+
+- `migrationGuardDetected=true`
+- `defaultMigrationBehavior=skip_unless_explicit`
+- `migrationCommandRequiresExplicitApproval=true`
+
+Do not set `RUN_PRISMA_MIGRATE=1` for validation-page copy updates, EBOS report regeneration, or read-only release verification.

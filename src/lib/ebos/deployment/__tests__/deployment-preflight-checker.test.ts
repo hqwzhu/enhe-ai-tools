@@ -26,9 +26,17 @@ async function addRoutes(rootDir: string) {
 }
 
 async function addDeployConfig(rootDir: string) {
-  await mkdir(join(rootDir, "deploy", "enhe-ai-tools"), { recursive: true });
+  await mkdir(join(rootDir, "deploy", "enhe-ai-tools", "scripts"), { recursive: true });
   await writeFile(join(rootDir, "Dockerfile"), "FROM node:24-alpine\n", "utf8");
-  await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "docker-compose.yml"), "services:\n  app:\n    image: app\n", "utf8");
+  await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "docker-compose.yml"), "services:\n  app:\n    environment:\n      RUN_PRISMA_MIGRATE: ${RUN_PRISMA_MIGRATE:-0}\n", "utf8");
+  await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "scripts", "app-entrypoint.sh"), [
+    "#!/bin/sh",
+    "if [ \"${RUN_PRISMA_MIGRATE:-0}\" = \"1\" ]; then",
+    "  npx prisma migrate deploy",
+    "else",
+    "  echo \"Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1.\"",
+    "fi"
+  ].join("\n"), "utf8");
   await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "README.md"), "# deploy\n", "utf8");
 }
 
@@ -86,6 +94,13 @@ describe("deployment preflight checker", () => {
 
     expect(report.readinessStatus).toBe("ready_to_deploy");
     expect(calculateDeploymentReadinessScore(report)).toBeGreaterThanOrEqual(85);
+    expect(report.configSummary.migrationGuardDetected).toBe(true);
+    expect(report.configSummary.defaultMigrationBehavior).toBe("skip_unless_explicit");
+    expect(report.configSummary.migrationCommandRequiresExplicitApproval).toBe(true);
+    expect(report.dockerChecks).toContainEqual(expect.objectContaining({
+      id: "app-entrypoint-migration-guard",
+      status: "pass"
+    }));
   });
 
   test("environment checks only report key names and never secret values", () => {

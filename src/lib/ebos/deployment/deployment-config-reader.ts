@@ -1,7 +1,9 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import type {
+  EbosDeploymentDefaultMigrationBehavior,
   EbosDeploymentConfigSummary,
+  EbosDeploymentMigrationGuardVariable,
   EbosDeploymentScriptKey
 } from "./deployment-types";
 
@@ -23,6 +25,7 @@ export async function readDeploymentConfig(options: {
   const docker = await detectDockerConfig(rootDir);
   const nginx = await detectNginxConfig(rootDir);
   const deployDocs = await detectDeployDocs(rootDir);
+  const migrationGuard = await detectMigrationGuard(rootDir);
 
   return {
     packageManagerDetected: await detectPackageManager(rootDir),
@@ -33,12 +36,17 @@ export async function readDeploymentConfig(options: {
     nginxConfigDetected: nginx.nginxConfigDetected,
     deployDocsDetected: deployDocs.deployDocsDetected,
     standaloneOutputDetected: next.standaloneOutputDetected,
+    migrationGuardDetected: migrationGuard.migrationGuardDetected,
+    migrationGuardVariable: migrationGuard.guardVariable,
+    defaultMigrationBehavior: migrationGuard.defaultMigrationBehavior,
+    migrationCommandRequiresExplicitApproval: migrationGuard.migrationCommandRequiresExplicitApproval,
     warnings: [
       ...buildScriptWarnings(detectPackageScripts(packageJson)),
       ...next.warnings,
       ...docker.warnings,
       ...nginx.warnings,
-      ...deployDocs.warnings
+      ...deployDocs.warnings,
+      ...migrationGuard.warnings
     ]
   };
 }
@@ -123,6 +131,67 @@ export async function detectDeployDocs(rootDir: string) {
   };
 }
 
+export async function detectMigrationGuard(rootDir: string): Promise<{
+  migrationGuardDetected: boolean;
+  guardVariable: EbosDeploymentMigrationGuardVariable;
+  defaultMigrationBehavior: EbosDeploymentDefaultMigrationBehavior;
+  migrationCommandRequiresExplicitApproval: boolean;
+  evidence: string[];
+  warnings: string[];
+}> {
+  const entrypointPath = join(rootDir, "deploy", "enhe-ai-tools", "scripts", "app-entrypoint.sh");
+  const composePath = join(rootDir, "deploy", "enhe-ai-tools", "docker-compose.yml");
+  const entrypointSource = await readOptionalTextFile(entrypointPath);
+  const composeSource = await readOptionalTextFile(composePath);
+
+  const runGuardDetected = Boolean(
+    entrypointSource
+    && /\bRUN_PRISMA_MIGRATE\b/.test(entrypointSource)
+    && /\$\{RUN_PRISMA_MIGRATE:-0\}/.test(entrypointSource)
+    && /\bnpx\s+prisma\s+migrate\s+deploy\b/i.test(entrypointSource)
+    && /Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1\./.test(entrypointSource)
+  );
+  const skipGuardDetected = Boolean(
+    entrypointSource
+    && /\bSKIP_PRISMA_MIGRATE\b/.test(entrypointSource)
+    && /\bnpx\s+prisma\s+migrate\s+deploy\b/i.test(entrypointSource)
+  );
+  const composeDefaultsRunGuardOff = Boolean(
+    composeSource
+    && /\bRUN_PRISMA_MIGRATE\s*:\s*(?:"0"|'0'|\$\{RUN_PRISMA_MIGRATE:-0\})/.test(composeSource)
+  );
+  const migrationGuardDetected = runGuardDetected || skipGuardDetected;
+  const guardVariable = runGuardDetected
+    ? "RUN_PRISMA_MIGRATE"
+    : skipGuardDetected
+      ? "SKIP_PRISMA_MIGRATE"
+      : "none";
+  const defaultMigrationBehavior = buildDefaultMigrationBehavior({
+    runGuardDetected,
+    skipGuardDetected,
+    entrypointSource
+  });
+  const warnings = [
+    ...(!migrationGuardDetected ? ["App entrypoint migration guard was not detected."] : []),
+    ...(runGuardDetected && !composeDefaultsRunGuardOff
+      ? ["Docker Compose does not document RUN_PRISMA_MIGRATE defaulting to 0."]
+      : [])
+  ];
+
+  return {
+    migrationGuardDetected,
+    guardVariable,
+    defaultMigrationBehavior,
+    migrationCommandRequiresExplicitApproval: true,
+    evidence: [
+      ...(runGuardDetected ? ["app-entrypoint.sh gates prisma migrate deploy behind RUN_PRISMA_MIGRATE=1."] : []),
+      ...(skipGuardDetected ? ["app-entrypoint.sh supports SKIP_PRISMA_MIGRATE."] : []),
+      ...(composeDefaultsRunGuardOff ? ["docker-compose.yml defaults RUN_PRISMA_MIGRATE to 0."] : [])
+    ],
+    warnings
+  };
+}
+
 export async function readEnvExampleKeyNames(rootDir: string) {
   const paths = [
     join(rootDir, ".env.example"),
@@ -151,6 +220,25 @@ async function readPackageJson(rootDir: string) {
   } catch {
     return {};
   }
+}
+
+async function readOptionalTextFile(filePath: string) {
+  try {
+    return await readFile(filePath, "utf8");
+  } catch {
+    return "";
+  }
+}
+
+function buildDefaultMigrationBehavior(options: {
+  runGuardDetected: boolean;
+  skipGuardDetected: boolean;
+  entrypointSource: string;
+}): EbosDeploymentDefaultMigrationBehavior {
+  if (options.runGuardDetected) return "skip_unless_explicit";
+  if (options.skipGuardDetected) return "skip_when_configured";
+  if (/\bnpx\s+prisma\s+migrate\s+deploy\b/i.test(options.entrypointSource)) return "runs_by_default";
+  return "unknown";
 }
 
 async function detectPackageManager(rootDir: string): Promise<EbosDeploymentConfigSummary["packageManagerDetected"]> {

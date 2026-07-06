@@ -48,6 +48,7 @@ async function main() {
   console.log(`- warnings count: ${report.warnings.length}`);
   console.log(`- validation routes status: ${summarizeStatus(report.routeChecks.map((item) => item.status))}`);
   console.log(`- docker config status: Dockerfile=${report.configSummary.dockerfileDetected}, Compose=${report.configSummary.dockerComposeDetected}`);
+  console.log(`- migration guard: detected=${report.configSummary.migrationGuardDetected}, default=${report.configSummary.defaultMigrationBehavior}, explicitApproval=${report.configSummary.migrationCommandRequiresExplicitApproval}`);
   console.log(`- nginx config status: Nginx=${report.configSummary.nginxConfigDetected}, DeployDocs=${report.configSummary.deployDocsDetected}`);
   console.log(`- JSON: ${jsonPath}`);
   console.log(`- Markdown: ${markdownPath}`);

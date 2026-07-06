@@ -70,3 +70,12 @@ Rollback should be scoped:
 - Do not run production deployment without explicit confirmation.
 - Do not fabricate deployment status.
 - Do not run destructive git or Docker cleanup commands.
+
+## App Entrypoint Migration Guard
+
+Production preflight must detect the app entrypoint migration guard before page-only or read-only redeploys.
+
+- `migrationGuardDetected` should be `true`.
+- `defaultMigrationBehavior` should be `skip_unless_explicit`.
+- `migrationCommandRequiresExplicitApproval` should be `true`.
+- Normal EBOS page/report redeploys must not set `RUN_PRISMA_MIGRATE=1`.

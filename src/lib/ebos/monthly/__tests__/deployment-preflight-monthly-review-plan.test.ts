@@ -18,6 +18,10 @@ function preflight(overrides: Partial<EbosProductionDeploymentPreflightReport> =
       nginxConfigDetected: false,
       deployDocsDetected: true,
       standaloneOutputDetected: true,
+      migrationGuardDetected: true,
+      migrationGuardVariable: "RUN_PRISMA_MIGRATE",
+      defaultMigrationBehavior: "skip_unless_explicit",
+      migrationCommandRequiresExplicitApproval: true,
       warnings: []
     },
     buildChecks: [],

@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 import {
   detectDeployDocs,
   detectDockerConfig,
+  detectMigrationGuard,
   detectNextConfig,
   detectPackageScripts,
   readDeploymentConfig
@@ -54,7 +55,16 @@ describe("deployment config reader", () => {
     }), "utf8");
     await writeFile(join(rootDir, "next.config.ts"), "export default { output: \"standalone\" };\n", "utf8");
     await writeFile(join(rootDir, "Dockerfile"), "FROM node:24-alpine\n", "utf8");
-    await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "docker-compose.yml"), "services:\n  app:\n    image: app\n", "utf8");
+    await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "docker-compose.yml"), "services:\n  app:\n    environment:\n      RUN_PRISMA_MIGRATE: ${RUN_PRISMA_MIGRATE:-0}\n", "utf8");
+    await mkdir(join(rootDir, "deploy", "enhe-ai-tools", "scripts"), { recursive: true });
+    await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "scripts", "app-entrypoint.sh"), [
+      "#!/bin/sh",
+      "if [ \"${RUN_PRISMA_MIGRATE:-0}\" = \"1\" ]; then",
+      "  npx prisma migrate deploy",
+      "else",
+      "  echo \"Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1.\"",
+      "fi"
+    ].join("\n"), "utf8");
     await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "README.md"), "# deploy\n", "utf8");
     await writeFile(join(rootDir, ".env"), "AUTH_SECRET=super-secret-value\nDATABASE_URL=postgres://secret\n", "utf8");
 
@@ -66,7 +76,50 @@ describe("deployment config reader", () => {
     expect(summary.dockerfileDetected).toBe(true);
     expect(summary.dockerComposeDetected).toBe(true);
     expect(summary.deployDocsDetected).toBe(true);
+    expect(summary.migrationGuardDetected).toBe(true);
+    expect(summary.migrationGuardVariable).toBe("RUN_PRISMA_MIGRATE");
+    expect(summary.defaultMigrationBehavior).toBe("skip_unless_explicit");
+    expect(summary.migrationCommandRequiresExplicitApproval).toBe(true);
     expect(JSON.stringify(summary)).not.toContain("super-secret-value");
+  });
+
+  test("detects RUN_PRISMA_MIGRATE guard and compose default skip", async () => {
+    const rootDir = await fixtureRoot();
+    await mkdir(join(rootDir, "deploy", "enhe-ai-tools", "scripts"), { recursive: true });
+    await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "scripts", "app-entrypoint.sh"), [
+      "#!/bin/sh",
+      "if [ \"${RUN_PRISMA_MIGRATE:-0}\" = \"1\" ]; then",
+      "  echo \"Prisma migrate deploy explicitly enabled by RUN_PRISMA_MIGRATE=1.\"",
+      "  npx prisma migrate deploy",
+      "else",
+      "  echo \"Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1.\"",
+      "fi"
+    ].join("\n"), "utf8");
+    await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "docker-compose.yml"), "services:\n  app:\n    environment:\n      RUN_PRISMA_MIGRATE: ${RUN_PRISMA_MIGRATE:-0}\n", "utf8");
+
+    const guard = await detectMigrationGuard(rootDir);
+
+    expect(guard.migrationGuardDetected).toBe(true);
+    expect(guard.guardVariable).toBe("RUN_PRISMA_MIGRATE");
+    expect(guard.defaultMigrationBehavior).toBe("skip_unless_explicit");
+    expect(guard.migrationCommandRequiresExplicitApproval).toBe(true);
+    expect(guard.evidence.join("\n")).toContain("defaults RUN_PRISMA_MIGRATE to 0");
+  });
+
+  test("detects legacy entrypoint migration as runs_by_default", async () => {
+    const rootDir = await fixtureRoot();
+    await mkdir(join(rootDir, "deploy", "enhe-ai-tools", "scripts"), { recursive: true });
+    await writeFile(join(rootDir, "deploy", "enhe-ai-tools", "scripts", "app-entrypoint.sh"), [
+      "#!/bin/sh",
+      "npx prisma migrate deploy",
+      "exec node server.js"
+    ].join("\n"), "utf8");
+
+    const guard = await detectMigrationGuard(rootDir);
+
+    expect(guard.migrationGuardDetected).toBe(false);
+    expect(guard.guardVariable).toBe("none");
+    expect(guard.defaultMigrationBehavior).toBe("runs_by_default");
   });
 
   test("detectNextConfig and detectDeployDocs return warnings when files are absent", async () => {

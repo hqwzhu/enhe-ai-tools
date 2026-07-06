@@ -56,3 +56,14 @@ npx tsx scripts/check-ebos-validation-post-launch.ts --date 2026-07-03 --site-ur
 - 不运行破坏性数据库命令。
 - 不伪造服务器执行结果。
 - 不在 post-launch check 通过前写 `verified`。
+## 10. App Entrypoint Migration Guard
+
+For EBOS page-only or read-only execution, do not set `RUN_PRISMA_MIGRATE=1`.
+
+The app entrypoint must log:
+
+```text
+Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1.
+```
+
+If a future deployment needs schema migration, it must use a separate approval path with reviewed Prisma migration files, database backup confirmation, and explicit user authorization.

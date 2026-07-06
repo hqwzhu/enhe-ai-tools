@@ -130,10 +130,26 @@ export function checkEnvironmentKeyNames(options: {
 export function checkDockerReadiness(configSummary: {
   dockerfileDetected: boolean;
   dockerComposeDetected: boolean;
+  migrationGuardDetected?: boolean;
+  defaultMigrationBehavior?: string;
+  migrationCommandRequiresExplicitApproval?: boolean;
 }): EbosDeploymentCheckItem[] {
+  const migrationGuardReady = configSummary.migrationGuardDetected === true
+    && configSummary.defaultMigrationBehavior === "skip_unless_explicit"
+    && configSummary.migrationCommandRequiresExplicitApproval === true;
+
   return [
     check("dockerfile", "docker", "Dockerfile detected", configSummary.dockerfileDetected ? "pass" : "warning", configSummary.dockerfileDetected ? "Dockerfile exists." : "Dockerfile is missing or not detected."),
-    check("docker-compose", "docker", "Docker Compose detected", configSummary.dockerComposeDetected ? "pass" : "warning", configSummary.dockerComposeDetected ? "Docker Compose file exists." : "Docker Compose file is missing or not detected.")
+    check("docker-compose", "docker", "Docker Compose detected", configSummary.dockerComposeDetected ? "pass" : "warning", configSummary.dockerComposeDetected ? "Docker Compose file exists." : "Docker Compose file is missing or not detected."),
+    check(
+      "app-entrypoint-migration-guard",
+      "script",
+      "App entrypoint migration guard",
+      migrationGuardReady ? "pass" : "warning",
+      migrationGuardReady
+        ? "Prisma migrate deploy is skipped by default and requires RUN_PRISMA_MIGRATE=1."
+        : "App entrypoint migration guard is missing or not configured as skip_unless_explicit."
+    )
   ];
 }
 

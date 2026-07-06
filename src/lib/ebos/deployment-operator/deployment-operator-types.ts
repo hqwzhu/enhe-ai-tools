@@ -39,6 +39,8 @@ export type EbosDeploymentAuditedCommand = {
   command: string;
   category: EbosDeploymentCommandCategory;
   source: string;
+  riskLevel?: EbosDeploymentOperatorRiskLevel;
+  requiresExplicitApproval?: boolean;
   manualRequired: boolean;
   dangerous: boolean;
   migration: boolean;
@@ -56,6 +58,7 @@ export type EbosDeploymentCommandAudit = {
   rollbackCommands: EbosDeploymentAuditedCommand[];
   dangerousCommandsDetected: string[];
   migrationCommandsDetected: string[];
+  migrationCommandRequiresExplicitApproval?: boolean;
   secretExposureRisks: string[];
   manualRequiredCommands: EbosDeploymentAuditedCommand[];
   safeToProceed: boolean;

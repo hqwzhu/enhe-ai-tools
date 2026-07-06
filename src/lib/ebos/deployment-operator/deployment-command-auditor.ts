@@ -17,10 +17,12 @@ export function auditDeploymentCommands(options: {
     const migration = detectMigrationCommand(command.command);
     const secretExposure = detectSecretExposureRisk(command.command);
     const manualRequired = ["server", "docker", "nginx"].includes(command.category);
+    const riskLevel = dangerous || migration || secretExposure ? "high" : manualRequired ? "medium" : "low";
+    const requiresExplicitApproval = migration || dangerous || secretExposure || manualRequired;
     const warnings = [
       ...(manualRequired ? ["Must be executed by the user in the server context or after explicit executable environment confirmation."] : []),
       ...(dangerous ? ["Dangerous deployment command detected."] : []),
-      ...(migration ? ["Prisma migration command is forbidden in this stage."] : []),
+      ...(migration ? ["Prisma migration command is high risk, forbidden in this stage, and requires explicit approval."] : []),
       ...(secretExposure ? ["Command may expose secret values and must not be printed or executed by EBOS."] : [])
     ];
 
@@ -30,6 +32,8 @@ export function auditDeploymentCommands(options: {
       command: command.command,
       category: command.category,
       source: command.source,
+      riskLevel,
+      requiresExplicitApproval,
       manualRequired,
       dangerous,
       migration,
@@ -57,6 +61,7 @@ export function auditDeploymentCommands(options: {
     rollbackCommands: commands.filter((command) => command.category === "rollback"),
     dangerousCommandsDetected,
     migrationCommandsDetected,
+    migrationCommandRequiresExplicitApproval: true,
     secretExposureRisks,
     manualRequiredCommands,
     safeToProceed: dangerousCommandsDetected.length === 0

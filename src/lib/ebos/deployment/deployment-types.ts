@@ -27,6 +27,17 @@ export type EbosDeploymentScriptKey =
   | "test"
   | "prisma:generate";
 
+export type EbosDeploymentMigrationGuardVariable =
+  | "RUN_PRISMA_MIGRATE"
+  | "SKIP_PRISMA_MIGRATE"
+  | "none";
+
+export type EbosDeploymentDefaultMigrationBehavior =
+  | "skip_unless_explicit"
+  | "skip_when_configured"
+  | "runs_by_default"
+  | "unknown";
+
 export type EbosDeploymentConfigSummary = {
   packageManagerDetected: "npm" | "pnpm" | "yarn" | "unknown";
   scriptsDetected: Record<EbosDeploymentScriptKey, boolean>;
@@ -36,6 +47,10 @@ export type EbosDeploymentConfigSummary = {
   nginxConfigDetected: boolean;
   deployDocsDetected: boolean;
   standaloneOutputDetected: boolean;
+  migrationGuardDetected: boolean;
+  migrationGuardVariable: EbosDeploymentMigrationGuardVariable;
+  defaultMigrationBehavior: EbosDeploymentDefaultMigrationBehavior;
+  migrationCommandRequiresExplicitApproval: boolean;
   warnings: string[];
 };
 

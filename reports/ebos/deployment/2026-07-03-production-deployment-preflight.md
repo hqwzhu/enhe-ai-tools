@@ -30,8 +30,12 @@
 - Docker Compose: true
 - Nginx config: true
 - Deploy docs: true
+- migrationGuardDetected: true
+- defaultMigrationBehavior: skip_unless_explicit
+- migrationCommandRequiresExplicitApproval: true
 - pass | Dockerfile detected | Dockerfile exists.
 - pass | Docker Compose detected | Docker Compose file exists.
+- pass | App entrypoint migration guard | Prisma migrate deploy is skipped by default and requires RUN_PRISMA_MIGRATE=1.
 - pass | Nginx config detected | Nginx config exists.
 - pass | Deploy docs detected | Deploy docs exist.
 

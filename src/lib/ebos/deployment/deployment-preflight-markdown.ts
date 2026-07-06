@@ -34,6 +34,9 @@ export function renderProductionDeploymentPreflightMarkdown(report: EbosProducti
       `Docker Compose: ${report.configSummary.dockerComposeDetected}`,
       `Nginx config: ${report.configSummary.nginxConfigDetected}`,
       `Deploy docs: ${report.configSummary.deployDocsDetected}`,
+      `migrationGuardDetected: ${report.configSummary.migrationGuardDetected}`,
+      `defaultMigrationBehavior: ${report.configSummary.defaultMigrationBehavior}`,
+      `migrationCommandRequiresExplicitApproval: ${report.configSummary.migrationCommandRequiresExplicitApproval}`,
       ...report.dockerChecks.map(formatCheck),
       ...report.nginxChecks.map(formatCheck)
     ]),
