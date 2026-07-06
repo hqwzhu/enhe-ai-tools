@@ -35,6 +35,23 @@ enum ApiUsageBillingStatus {
   review
 }
 
+enum ApiCreditTransactionType {
+  plan_grant
+  recharge
+  referral_reward
+  api_charge
+  admin_adjustment
+  refund
+  correction
+}
+
+enum ApiCreditBalanceBucket {
+  plan
+  recharge
+  referral
+  mixed
+}
+
 enum PlanStatus {
   active
   disabled
@@ -220,6 +237,8 @@ model User {
   apiDeveloperProfile ApiDeveloperProfile?
   apiKeys             ApiKey[]
   apiUsageLogs        ApiUsageLog[]
+  apiWallet           ApiWallet?
+  apiCreditTransactions ApiCreditTransaction[]
 
   @@map("users")
 }
@@ -770,6 +789,8 @@ model ApiDeveloperProfile {
   user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   apiKeys         ApiKey[]
   apiUsageLogs    ApiUsageLog[]
+  apiWallet       ApiWallet?
+  apiCreditTransactions ApiCreditTransaction[]
 
   @@index([status, createdAt])
   @@map("api_developer_profiles")
@@ -835,6 +856,7 @@ model ApiUsageLog {
   user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   developerProfile ApiDeveloperProfile @relation(fields: [developerProfileId], references: [id], onDelete: Cascade)
   apiKey           ApiKey?             @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  creditTransactions ApiCreditTransaction[]
 
   @@index([userId, createdAt])
   @@index([developerProfileId, createdAt])
@@ -845,6 +867,57 @@ model ApiUsageLog {
   @@index([errorCode, createdAt])
   @@index([path, createdAt])
   @@map("api_usage_logs")
+}
+
+model ApiWallet {
+  id                 String   @id @default(cuid())
+  userId             String   @unique @map("user_id")
+  developerProfileId String   @unique @map("developer_profile_id")
+  planBalanceUsd     Decimal  @default(0) @map("plan_balance_usd") @db.Decimal(18, 8)
+  rechargeBalanceUsd Decimal  @default(0) @map("recharge_balance_usd") @db.Decimal(18, 8)
+  referralBalanceUsd Decimal  @default(0) @map("referral_balance_usd") @db.Decimal(18, 8)
+  lockedBalanceUsd   Decimal  @default(0) @map("locked_balance_usd") @db.Decimal(18, 8)
+  version            Int      @default(0)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  developerProfile   ApiDeveloperProfile    @relation(fields: [developerProfileId], references: [id], onDelete: Cascade)
+  creditTransactions ApiCreditTransaction[]
+
+  @@index([updatedAt])
+  @@map("api_wallets")
+}
+
+model ApiCreditTransaction {
+  id                 String                   @id @default(cuid())
+  userId             String                   @map("user_id")
+  developerProfileId String                   @map("developer_profile_id")
+  walletId           String                   @map("wallet_id")
+  usageLogId         String?                  @map("usage_log_id")
+  paymentId          String?                  @map("payment_id")
+  referralId         String?                  @map("referral_id")
+  adminAuditId       String?                  @map("admin_audit_id")
+  idempotencyKey     String                   @unique @map("idempotency_key")
+  transactionType    ApiCreditTransactionType @map("transaction_type")
+  amountUsd          Decimal                  @map("amount_usd") @db.Decimal(18, 8)
+  balanceBucket      ApiCreditBalanceBucket   @map("balance_bucket")
+  balanceAfter       Json                     @map("balance_after")
+  reason             String?
+  createdAt          DateTime                 @default(now()) @map("created_at")
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  developerProfile   ApiDeveloperProfile @relation(fields: [developerProfileId], references: [id], onDelete: Cascade)
+  wallet             ApiWallet           @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  usageLog           ApiUsageLog?        @relation(fields: [usageLogId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([developerProfileId, createdAt])
+  @@index([walletId, createdAt])
+  @@index([usageLogId])
+  @@index([paymentId])
+  @@index([transactionType, createdAt])
+  @@map("api_credit_transactions")
 }
 
 model Session {
