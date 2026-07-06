@@ -10,6 +10,10 @@ export const gatewayModels = [
   { id: "enhe-claude-compatible", object: "model", created: modelCreatedAt, owned_by: "enhe" }
 ] as const;
 
+export function findGatewayModel(modelId: string) {
+  return gatewayModels.find((model) => model.id === modelId) ?? null;
+}
+
 export function registerModelRoutes(app: FastifyInstance) {
   app.get("/v1/models", async (request, reply) => {
     const context = createGatewayRequestContext();

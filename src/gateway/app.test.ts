@@ -14,6 +14,7 @@ type TestAccount = {
   revokedKey: string;
   suspendedKey: string;
   disabledUserKey: string;
+  zeroWalletKey: string;
 };
 
 describe("ENHE API Gateway", () => {
@@ -24,12 +25,16 @@ describe("ENHE API Gateway", () => {
   beforeAll(async () => {
     process.env.ENHE_API_KEY_PEPPER = testPepper;
     account = await createTestAccount("active", "active");
+    await createWalletForAccount(account.userId, account.developerProfileId, "0.01000000");
     const revoked = await createApiKeyForAccount(account.userId, account.developerProfileId, "revoked");
     const suspended = await createTestAccount("suspended", "active");
     const disabled = await createTestAccount("active", "disabled");
+    const zeroWallet = await createTestAccount("active", "active");
+    await createWalletForAccount(zeroWallet.userId, zeroWallet.developerProfileId, "0");
     account.revokedKey = revoked;
     account.suspendedKey = suspended.activeKey;
     account.disabledUserKey = disabled.activeKey;
+    account.zeroWalletKey = zeroWallet.activeKey;
   });
 
   afterAll(async () => {
@@ -151,6 +156,159 @@ describe("ENHE API Gateway", () => {
     expect(response.json().error.code).toBe("developer_suspended");
   });
 
+  test("POST /v1/chat/completions without API key returns 401", async () => {
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json().error.code).toBe("invalid_api_key");
+  });
+
+  test("POST /v1/chat/completions with revoked API key returns 401", async () => {
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.revokedKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json().error.code).toBe("invalid_api_key");
+  });
+
+  test("POST /v1/chat/completions with suspended developer returns 403", async () => {
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.suspendedKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(403);
+    expect(response.json().error.code).toBe("developer_suspended");
+  });
+
+  test("POST /v1/chat/completions with invalid body returns 400 and writes usage log", async () => {
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: { model: "enhe-chat-lite", messages: [] }
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error.code).toBe("invalid_request");
+    const log = await expectUsageLog(response.headers["x-request-id"], 400);
+    expect(log.errorCode).toBe("invalid_request");
+    expect(log.errorMessage ?? "").not.toContain("messages");
+  });
+
+  test("POST /v1/chat/completions with unknown model returns 404 and writes usage log", async () => {
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload({ model: "unknown-model" })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(404);
+    expect(response.json().error.code).toBe("model_not_found");
+    const log = await expectUsageLog(response.headers["x-request-id"], 404);
+    expect(log.model).toBe("unknown-model");
+    expect(log.errorCode).toBe("model_not_found");
+  });
+
+  test("POST /v1/chat/completions with stream=true returns 501 and writes usage log", async () => {
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload({ stream: true })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(501);
+    expect(response.json().error.code).toBe("unsupported_stream");
+    const log = await expectUsageLog(response.headers["x-request-id"], 501);
+    expect(log.isStream).toBe(true);
+    expect(log.billingStatus).toBe("not_billable");
+  });
+
+  test("POST /v1/chat/completions with zero wallet returns 402 and writes usage log", async () => {
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.zeroWalletKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(402);
+    expect(response.json().error.code).toBe("insufficient_credit");
+    const log = await expectUsageLog(response.headers["x-request-id"], 402);
+    expect(log.errorCode).toBe("insufficient_credit");
+    expect(log.chargedUsd.toFixed()).toBe("0");
+  });
+
+  test("POST /v1/chat/completions with active key and funded wallet returns mock OpenAI-compatible response", async () => {
+    const creditTransactionsBefore = await prisma.apiCreditTransaction.count();
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload({ messages: [{ role: "user", content: "secret prompt should not be logged" }] })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["x-request-id"]).toEqual(expect.any(String));
+    const body = response.json();
+    expect(body).toMatchObject({
+      object: "chat.completion",
+      model: "enhe-chat-lite",
+      choices: [
+        {
+          index: 0,
+          message: { role: "assistant" },
+          finish_reason: "stop"
+        }
+      ],
+      usage: {
+        prompt_tokens: 8,
+        completion_tokens: 16,
+        total_tokens: 24
+      }
+    });
+    expect(body.id).toMatch(/^chatcmpl_[a-f0-9]{24}$/);
+
+    const log = await expectUsageLog(response.headers["x-request-id"], 200);
+    expect(log.inputTokens).toBe(8);
+    expect(log.outputTokens).toBe(16);
+    expect(log.billingStatus).toBe("not_billable");
+    expect(log.upstreamProvider).toBe("mock");
+    expect(log.routeId).toBe("mock:mvp-chat-completions");
+    expect(JSON.stringify(log)).not.toContain(account.activeKey);
+    expect(JSON.stringify(log)).not.toContain("secret prompt should not be logged");
+    expect(JSON.stringify(log)).not.toContain("Authorization");
+    expect(await prisma.apiCreditTransaction.count()).toBe(creditTransactionsBefore);
+  });
+
   async function createTestAccount(
     developerStatus: "active" | "suspended" | "closed",
     userStatus: "active" | "disabled"
@@ -184,7 +342,8 @@ describe("ENHE API Gateway", () => {
       activeKey,
       revokedKey: "",
       suspendedKey: "",
-      disabledUserKey: ""
+      disabledUserKey: "",
+      zeroWalletKey: ""
     };
   }
 
@@ -211,5 +370,36 @@ describe("ENHE API Gateway", () => {
     });
 
     return plainKey;
+  }
+
+  async function createWalletForAccount(userId: string, developerProfileId: string, planBalanceUsd: string) {
+    await prisma.apiWallet.create({
+      data: {
+        userId,
+        developerProfileId,
+        planBalanceUsd
+      }
+    });
+  }
+
+  function validChatPayload(overrides: Record<string, unknown> = {}) {
+    return {
+      model: "enhe-chat-lite",
+      messages: [{ role: "user", content: "hello" }],
+      stream: false,
+      ...overrides
+    };
+  }
+
+  async function expectUsageLog(requestIdHeader: unknown, statusCode: number) {
+    expect(requestIdHeader).toEqual(expect.any(String));
+    const requestId = String(requestIdHeader);
+    const log = await prisma.apiUsageLog.findUnique({
+      where: { requestId }
+    });
+    expect(log).not.toBeNull();
+    expect(log?.statusCode).toBe(statusCode);
+    expect(log?.path).toBe("/v1/chat/completions");
+    return log!;
   }
 });

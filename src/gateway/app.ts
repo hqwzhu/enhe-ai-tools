@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import { registerChatCompletionRoutes } from "./chat-completions";
 import { registerModelRoutes } from "./models";
 
 export function buildGatewayApp() {
@@ -12,6 +13,7 @@ export function buildGatewayApp() {
   }));
 
   registerModelRoutes(app);
+  registerChatCompletionRoutes(app);
 
   return app;
 }
