@@ -75,6 +75,20 @@ describe("SEO remediation helpers", () => {
     expect(description).toContain("OpenAI workspace agents");
     expect(description).toContain("ENHE AI");
     expect(description).not.toContain("Live in symbiosis with AI");
+    expect(description.length).toBeGreaterThanOrEqual(80);
+    expect(description.length).toBeLessThanOrEqual(150);
+  });
+
+  it("keeps Chinese AI news fallback descriptions useful for crawler snippets", () => {
+    const fallback = buildAiNewsDescriptionFallback({
+      title: "DeepMind AI",
+      categoryName: "AI前沿",
+      locale: "zh",
+    });
+
+    expect(fallback).toContain("ENHE AI");
+    expect(fallback.length).toBeGreaterThanOrEqual(80);
+    expect(fallback.length).toBeLessThanOrEqual(150);
   });
 
   it("builds fuller homepage descriptions for search snippets", () => {

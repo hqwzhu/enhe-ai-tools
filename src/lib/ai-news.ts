@@ -456,11 +456,23 @@ export function buildAiNewsDescriptionFallback({
     const topic = normalizedCategory
       ? `${normalizedCategory} topic`
       : "AI trend";
-    return `Read ENHE AI's analysis of ${normalizedTitle || topic}, including the key facts, practical impact, related tools, tutorials, and next steps for AI workflows.`;
+    return truncateAiNewsMetaDescription(
+      `Read ENHE AI's analysis of ${normalizedTitle || topic}, including the key facts, practical impact, related tools, tutorials, and next steps for AI workflows.`,
+      150,
+    );
   }
 
   const topic = normalizedCategory ? `“${normalizedCategory}”方向` : "AI趋势";
-  return `阅读 ENHE AI 对${normalizedTitle ? `“${normalizedTitle}”` : topic}的资讯解读，了解核心信息、实际影响、相关工具、教程和下一步落地建议。`;
+  return truncateAiNewsMetaDescription(
+    `阅读 ENHE AI 对${normalizedTitle ? `“${normalizedTitle}”` : topic}的资讯解读，了解发生了什么、为什么重要、对普通AI用户的实际影响、相关工具教程、来源线索、风险边界和下一步落地建议。`,
+    150,
+  );
+}
+
+function truncateAiNewsMetaDescription(value: string, maxLength: number) {
+  const normalized = normalizeAiNewsMetaCandidate(value);
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
 }
 
 export function buildAiNewsSerpTitle({

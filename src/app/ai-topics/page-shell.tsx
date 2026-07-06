@@ -19,6 +19,7 @@ import {
   buildLocalePath,
   buildMetadataTitle,
   buildPageMetadata,
+  buildTopicMetaDescription,
 } from "@/lib/seo";
 
 const hubText = {
@@ -83,7 +84,12 @@ export async function generateAiTopicsHubMetadata(
   const text = hubText[forceLocale];
   return buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: text.title }),
-    description: text.metaDescription,
+    description: buildTopicMetaDescription({
+      title: text.title,
+      description: text.metaDescription,
+      locale: forceLocale,
+      kind: "ai-topic",
+    }),
     path: "/ai-topics",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,
@@ -103,7 +109,12 @@ export async function generateAiTopicDetailMetadata({
   const content = topic.content[forceLocale];
   return buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: content.title }),
-    description: content.description,
+    description: buildTopicMetaDescription({
+      title: content.title,
+      description: content.description,
+      locale: forceLocale,
+      kind: "ai-topic",
+    }),
     path: `/ai-topics/${topic.slug}`,
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,

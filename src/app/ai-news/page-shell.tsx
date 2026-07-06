@@ -36,9 +36,9 @@ import { publicPageCacheSeconds } from "@/lib/public-routes";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
+  buildListingMetadataTitle,
   buildListingMetaDescription,
   buildLocalePath,
-  buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
 
@@ -90,7 +90,7 @@ export async function generateAiNewsPageMetadata(
 ): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: buildMetadataTitle({ pageTitle: t.aiNews.title, brand: t.brand }),
+    title: buildListingMetadataTitle("ai-news", forceLocale, t.brand),
     description: buildListingMetaDescription("ai-news", forceLocale),
     path: "/ai-news",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

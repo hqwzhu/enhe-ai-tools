@@ -29,6 +29,7 @@ import {
   buildLocalePath,
   buildMetadataTitle,
   buildPageMetadata,
+  buildTopicMetaDescription,
 } from "@/lib/seo";
 
 export const aiNewsTopicPageRevalidate = 300;
@@ -61,7 +62,12 @@ export async function generateAiNewsTopicMetadata(
       brand: t.brand,
       maxLength: forceLocale === "en" ? 58 : 60,
     }),
-    description: copy.description,
+    description: buildTopicMetaDescription({
+      title: copy.title,
+      description: copy.description,
+      locale: forceLocale,
+      kind: "ai-news-topic",
+    }),
     path: `/ai-news/topics/${topic.slug}`,
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,

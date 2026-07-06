@@ -9,8 +9,8 @@ import { publicPageCacheSeconds } from "@/lib/public-routes";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
+  buildListingMetadataTitle,
   buildListingMetaDescription,
-  buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
 
@@ -19,10 +19,7 @@ export const pricingPageRevalidate = publicPageCacheSeconds;
 export async function generatePricingPageMetadata(forceLocale: Locale): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: buildMetadataTitle({
-      pageTitle: forceLocale === "en" ? "Pricing and purchase guide" : "报价与购买入口",
-      brand: t.brand
-    }),
+    title: buildListingMetadataTitle("pricing", forceLocale, t.brand),
     description: buildListingMetaDescription("pricing", forceLocale),
     path: "/pricing",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

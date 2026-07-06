@@ -44,6 +44,22 @@ type ToolMetaDescriptionInput = {
   maxLength?: number;
 };
 
+export type ListingMetadataKind =
+  | "software"
+  | "account-services"
+  | "skill-learning"
+  | "ai-news"
+  | "pricing"
+  | "tutorials";
+
+type TopicMetaDescriptionInput = {
+  title: string;
+  description?: string | null;
+  locale: Locale;
+  kind?: "ai-topic" | "ai-news-topic";
+  maxLength?: number;
+};
+
 type OrganizationSchemaInput = {
   name: string;
   logo?: string | null;
@@ -296,6 +312,35 @@ export function buildMetadataTitle({
   return `${truncateText(normalizedPageTitle, Math.max(12, maxLength - reservedLength))} | ${normalizedBrand}`;
 }
 
+export function buildListingMetadataTitle(
+  kind: ListingMetadataKind,
+  locale: Locale,
+  brand = siteName,
+) {
+  const zhTitles: Record<ListingMetadataKind, string> = {
+    software: "AI软件应用下载、工具选择与安全工作流",
+    "account-services": "AI账号服务咨询、订阅说明与合规边界",
+    "skill-learning": "AI技能学习课程、提示词与实战工作流",
+    "ai-news": "AI资讯、趋势解读与工具落地指南",
+    pricing: "AI工具报价、购买流程与交付说明",
+    tutorials: "AI工具教程、软件配置与使用指南",
+  };
+  const enTitles: Record<ListingMetadataKind, string> = {
+    software: "AI Software Apps, Downloads, and Tool Selection",
+    "account-services": "AI Account Service Guidance and Compliance",
+    "skill-learning": "AI Skill Courses, Prompts, and Workflows",
+    "ai-news": "AI News, Trend Insights, and Tool Decisions",
+    pricing: "AI Tool Pricing, Purchase, and Delivery Guide",
+    tutorials: "AI Tool Tutorials, Setup, and Workflow Guides",
+  };
+
+  return buildMetadataTitle({
+    pageTitle: locale === "en" ? enTitles[kind] : zhTitles[kind],
+    brand,
+    maxLength: 68,
+  });
+}
+
 export function buildHomeMetadataTitle(locale: Locale, brand = siteName) {
   const scope =
     locale === "en"
@@ -334,28 +379,22 @@ export function buildHomeMetaDescription(
 }
 
 export function buildListingMetaDescription(
-  kind:
-    | "software"
-    | "account-services"
-    | "skill-learning"
-    | "ai-news"
-    | "pricing"
-    | "tutorials",
+  kind: ListingMetadataKind,
   locale: Locale,
 ) {
   const zhDescriptions = {
     software:
-      "按真实任务选择AI软件应用：提升效率、创作内容、整理资料、处理素材或搭建更安全、私密、稳定的工作流。查看适用场景、价格、教程、交付边界和适合人群，先判断是否能解决当前任务。",
+      "按真实任务选择AI软件应用：提升效率、创作内容、整理资料、处理素材或搭建更安全、私密、稳定的工作流。查看适用场景、价格、教程、交付边界、设备要求和适合人群，先判断是否能解决当前任务再下载或购买。",
     "account-services":
-      "了解AI工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则。先确认任务、服务范围、价格、售后、合规提醒、使用风险和替代路径，再决定是否咨询或购买。",
+      "了解AI工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则。先确认任务、服务范围、价格、售后、合规提醒、使用风险和替代路径，再决定是否咨询或购买，避免把服务当成绕过规则的捷径。",
     "skill-learning":
-      "围绕真实任务学习AI提示词、工具实战、自动化流程、内容创作和更可控的AI使用方法。沉淀文档、素材、工作流和可复用技能，减少试错时间，让学习直接服务工作和创作。",
+      "围绕真实任务学习AI提示词、工具实战、自动化流程、内容创作和更可控的AI使用方法。沉淀文档、素材、工作流和可复用技能，减少试错时间，让学习直接服务工作、创作和交付成果，先产出可复用结果。",
     "ai-news":
-      "阅读AI前沿资讯和趋势解读，理解工具、模型和平台变化对工作效率、内容创作、资料整理、学习技能和安全使用的实际影响。",
+      "阅读AI前沿资讯和趋势解读，理解工具、模型和平台变化对工作效率、内容创作、资料整理、学习技能和安全使用的实际影响。结合来源、时间、相关工具和下一步行动，判断这条信息是否值得普通AI用户跟进。",
     pricing:
-      "查看ENHE AI软件、课程与账号服务报价结构、购买流程、权益说明、支付审核、交付方式、售后边界、退款规则、适合人群和服务范围，购买前先确认价格与使用方式。",
+      "查看ENHE AI软件、课程与账号服务报价结构、购买流程、权益说明、支付审核、交付方式、售后边界、退款规则、适合人群和服务范围，购买前先确认价格、使用方式、交付条件、风险提醒和是否适合当前任务。",
     tutorials:
-      "阅读ENHE AI工具教程、软件使用指南、AI技能实战步骤、常见问题和工作流案例，快速掌握下载、配置、使用和复盘方法，把工具能力转化为可执行成果。",
+      "阅读ENHE AI工具教程、软件使用指南、AI技能实战步骤、常见问题和工作流案例，快速掌握下载、配置、使用和复盘方法，把工具能力转化为可执行成果，减少购买、部署或学习前的试错时间成本。",
   } as const;
   const enDescriptions = {
     software:
@@ -373,6 +412,44 @@ export function buildListingMetaDescription(
   } as const;
 
   return locale === "en" ? enDescriptions[kind] : zhDescriptions[kind];
+}
+
+export function buildTopicMetaDescription({
+  title,
+  description,
+  locale,
+  kind = "ai-topic",
+  maxLength = 150,
+}: TopicMetaDescriptionInput) {
+  const normalizedDescription = normalizeWhitespace(description ?? "");
+  const normalizedTitle = normalizeWhitespace(title);
+  const minLength = locale === "en" ? 110 : 80;
+
+  if (normalizedDescription.length >= minLength) {
+    return buildMetaDescription(normalizedDescription, defaultSiteDescription, maxLength);
+  }
+
+  const fallbackSource =
+    normalizedDescription ||
+    (locale === "en"
+      ? `${normalizedTitle || "AI topic"} guide.`
+      : `${normalizedTitle || "AI主题"}指南。`);
+
+  if (locale === "en") {
+    const suffix =
+      kind === "ai-news-topic"
+        ? "On ENHE AI, review sources, dates, related news, tools, tutorials, and next steps so everyday AI users can judge the practical impact."
+        : "On ENHE AI, review use cases, decision criteria, FAQs, related tools, courses, and next steps before choosing a practical AI workflow.";
+
+    return buildMetaDescription(`${fallbackSource} ${suffix}`, defaultSiteDescription, maxLength);
+  }
+
+  const suffix =
+    kind === "ai-news-topic"
+      ? "在 ENHE AI 查看来源、时间、相关资讯、工具、教程和下一步行动建议，判断它对工作效率、内容创作、学习或账号合规是否有影响。"
+      : "在 ENHE AI 查看适用场景、对比维度、常见问题、相关工具、课程和下一步路径，先判断它是否能解决当前工作、创作或学习任务。";
+
+  return buildMetaDescription(`${fallbackSource} ${suffix}`, defaultSiteDescription, maxLength);
 }
 
 const accountServiceRiskWords =
@@ -470,7 +547,7 @@ function buildUniqueAccountServiceMetaDescription(
     return `${primaryName} account service guidance: review access paths, delivery notes, support boundaries, pricing context, and platform-policy reminders before use.`;
   }
 
-  return `${primaryName} AI\u8d26\u53f7\u670d\u52a1\u54a8\u8be2\uff1a\u63d0\u4f9bAI\u5de5\u5177\u8ba2\u9605\u4e0e\u8d26\u53f7\u4f7f\u7528\u652f\u6301\uff0c\u5305\u542b\u8bbf\u95ee\u8def\u5f84\u3001\u4ea4\u4ed8\u8bf4\u660e\u3001\u552e\u540e\u8fb9\u754c\u4e0e\u5e73\u53f0\u89c4\u5219\u63d0\u9192\u3002`;
+  return `${primaryName} AI\u8d26\u53f7\u670d\u52a1\u54a8\u8be2\uff1a\u63d0\u4f9bAI\u5de5\u5177\u8ba2\u9605\u4e0e\u8d26\u53f7\u4f7f\u7528\u652f\u6301\uff0c\u5305\u542b\u8bbf\u95ee\u8def\u5f84\u3001\u4ea4\u4ed8\u8bf4\u660e\u3001\u4ef7\u683c\u8303\u56f4\u3001\u552e\u540e\u8fb9\u754c\u3001\u5e73\u53f0\u89c4\u5219\u548c\u5408\u89c4\u63d0\u9192\uff0c\u8d2d\u4e70\u6216\u54a8\u8be2\u524d\u5148\u5224\u65ad\u662f\u5426\u9002\u5408\u5f53\u524d\u4efb\u52a1\u3002`;
 }
 
 function resolveToolTitleNames(
@@ -625,7 +702,7 @@ export function buildToolMetaDescription({
   const { primaryName } = resolveToolTitleNames(name, englishName, locale);
   const typeLabel = resolveToolTypeLabel(type, locale);
   const targetMaxLength = Math.min(maxLength, locale === "en" ? 135 : 145);
-  const shortDescriptionLimit = locale === "en" ? 95 : 58;
+  const shortDescriptionLimit = locale === "en" ? 95 : 90;
   const shouldNameGenericAccountServiceCopy =
     type === "online" &&
     normalizedDescription &&

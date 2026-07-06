@@ -23,6 +23,8 @@ const nextConfig: NextConfig = {
       { source: "/en/skill-learning/ai-ai-ilo5a5", destination: "/en/skill-learning/ai-monetization-side-hustle-course", statusCode: 301 },
       { source: "/software/lumios-personal-ai-companion", destination: "/ai-news/chatbox-to-personal-ai-companion-desktop-execution", statusCode: 301 },
       { source: "/en/software/lumios-personal-ai-companion", destination: "/en/ai-news/chatbox-to-personal-ai-companion-desktop-execution", statusCode: 301 },
+      { source: "/account-services/your-ai-account-needs-covered-contact-customer-service-if-you-need-assistance", destination: "/account-services", statusCode: 301 },
+      { source: "/en/account-services/your-ai-account-needs-covered-contact-customer-service-if-you-need-assistance", destination: "/en/account-services", statusCode: 301 },
       { source: "/okf", destination: "/okf/index.md", statusCode: 308 },
       { source: "/okf/", destination: "/okf/index.md", statusCode: 308 },
       { source: "/online-tools", destination: "/account-services", statusCode: 301 },

@@ -10,14 +10,14 @@ import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getPublicTutorials } from "@/lib/public-content";
 import { buildCanonicalToolPath } from "@/lib/public-slugs";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildBreadcrumbSchema, buildFaqSchema, buildListingMetaDescription, buildMetadataTitle, buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbSchema, buildFaqSchema, buildListingMetadataTitle, buildListingMetaDescription, buildPageMetadata } from "@/lib/seo";
 
 export const tutorialsPageRevalidate = publicPageCacheSeconds;
 
 export async function generateTutorialsPageMetadata(forceLocale: Locale): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: buildMetadataTitle({ pageTitle: t.tutorials.title, brand: t.brand }),
+    title: buildListingMetadataTitle("tutorials", forceLocale, t.brand),
     description: buildListingMetaDescription("tutorials", forceLocale),
     path: "/tutorials",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

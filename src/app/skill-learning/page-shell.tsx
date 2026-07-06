@@ -13,9 +13,9 @@ import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   buildBreadcrumbSchema,
   buildFaqSchema,
+  buildListingMetadataTitle,
   buildListingMetaDescription,
   buildLocalePath,
-  buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
 
@@ -138,10 +138,7 @@ export async function generateSkillLearningPageMetadata(
 ): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: buildMetadataTitle({
-      pageTitle: t.listing.skillLearningTitle,
-      brand: t.brand,
-    }),
+    title: buildListingMetadataTitle("skill-learning", forceLocale, t.brand),
     description: buildListingMetaDescription("skill-learning", forceLocale),
     path: "/skill-learning",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

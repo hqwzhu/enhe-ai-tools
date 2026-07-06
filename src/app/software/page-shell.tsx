@@ -15,9 +15,9 @@ import {
   absoluteUrl,
   buildBreadcrumbSchema,
   buildFaqSchema,
+  buildListingMetadataTitle,
   buildListingMetaDescription,
   buildLocalePath,
-  buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
 
@@ -280,10 +280,7 @@ export async function generateSoftwarePageMetadata(
 ): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: buildMetadataTitle({
-      pageTitle: t.listing.softwareTitle,
-      brand: t.brand,
-    }),
+    title: buildListingMetadataTitle("software", forceLocale, t.brand),
     description: buildListingMetaDescription("software", forceLocale),
     path: "/software",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",

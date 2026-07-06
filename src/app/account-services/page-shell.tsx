@@ -14,9 +14,9 @@ import {
   absoluteUrl,
   buildBreadcrumbSchema,
   buildFaqSchema,
+  buildListingMetadataTitle,
   buildListingMetaDescription,
   buildLocalePath,
-  buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
 
@@ -141,10 +141,7 @@ export async function generateAccountServicesPageMetadata(
 ): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: buildMetadataTitle({
-      pageTitle: t.listing.onlineTitle,
-      brand: t.brand,
-    }),
+    title: buildListingMetadataTitle("account-services", forceLocale, t.brand),
     description: buildListingMetaDescription("account-services", forceLocale),
     path: "/account-services",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
