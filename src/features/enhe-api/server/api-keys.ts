@@ -7,10 +7,11 @@ import {
   formatApiKeyPrefix,
   getApiKeyConfigurationErrorMessage,
   hashApiKey,
-  isApiKeyFormatValid,
   validateApiKeyHashConfiguration
 } from "./api-key-crypto";
 import { getTodayApiKeyUsageForUser, type ApiKeyTodayUsage } from "./usage-logs";
+export { verifyApiKey } from "./api-key-verification";
+export type { VerifyApiKeyResult } from "./api-key-verification";
 
 export const maxActiveApiKeys = 20;
 
@@ -46,17 +47,6 @@ export type CreateApiKeyResult =
 export type RevokeApiKeyResult =
   | { ok: true; key: ApiKeyListItem }
   | { ok: false; code: "validation_error" | "not_found" | "revoke_failed"; message: string };
-
-export type VerifyApiKeyResult =
-  | {
-      valid: true;
-      userId: string;
-      developerProfileId: string;
-      apiKeyId: string;
-      keyPrefix: string;
-      developerStatus: "active";
-    }
-  | { valid: false; reason: "invalid_api_key" | "developer_suspended" | "user_disabled" | "server_misconfigured" };
 
 export async function listApiKeysForCurrentUser(): Promise<ListApiKeysResult> {
   const user = await requireUser();
@@ -201,50 +191,6 @@ export async function revokeApiKeyForUser(user: ApiDeveloperProfileUser, rawApiK
   } catch {
     return { ok: false, code: "revoke_failed", message: "API Key 撤销失败，请稍后重试。" };
   }
-}
-
-export async function verifyApiKey(apiKey: string): Promise<VerifyApiKeyResult> {
-  if (!isApiKeyFormatValid(apiKey)) return { valid: false, reason: "invalid_api_key" };
-
-  const hashResult = hashApiKey(apiKey);
-  if (!hashResult.ok) {
-    return {
-      valid: false,
-      reason: hashResult.reason === "invalid_format" ? "invalid_api_key" : "server_misconfigured"
-    };
-  }
-
-  const key = await prisma.apiKey.findUnique({
-    where: { keyHash: hashResult.hash },
-    select: {
-      id: true,
-      userId: true,
-      developerProfileId: true,
-      keyPrefix: true,
-      status: true,
-      developerProfile: { select: { status: true } },
-      user: { select: { status: true } }
-    }
-  });
-
-  if (!key || key.status !== "active") {
-    return { valid: false, reason: "invalid_api_key" };
-  }
-  if (key.developerProfile.status !== "active") {
-    return { valid: false, reason: "developer_suspended" };
-  }
-  if (key.user.status !== "active") {
-    return { valid: false, reason: "user_disabled" };
-  }
-
-  return {
-    valid: true,
-    userId: key.userId,
-    developerProfileId: key.developerProfileId,
-    apiKeyId: key.id,
-    keyPrefix: key.keyPrefix,
-    developerStatus: "active"
-  };
 }
 
 function validateApiKeyName(value: FormDataEntryValue | null):
