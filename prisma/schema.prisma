@@ -23,6 +23,11 @@ enum ApiDeveloperProfileStatus {
   closed
 }
 
+enum ApiKeyStatus {
+  active
+  revoked
+}
+
 enum PlanStatus {
   active
   disabled
@@ -206,6 +211,7 @@ model User {
   newsFavorites    NewsArticleFavorite[]
   newsLikes        NewsArticleLike[]
   apiDeveloperProfile ApiDeveloperProfile?
+  apiKeys             ApiKey[]
 
   @@map("users")
 }
@@ -754,9 +760,33 @@ model ApiDeveloperProfile {
   createdAt       DateTime                  @default(now()) @map("created_at")
   updatedAt       DateTime                  @updatedAt @map("updated_at")
   user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKeys         ApiKey[]
 
   @@index([status, createdAt])
   @@map("api_developer_profiles")
+}
+
+model ApiKey {
+  id                 String       @id @default(cuid())
+  userId             String       @map("user_id")
+  developerProfileId String       @map("developer_profile_id")
+  name               String
+  keyPrefix          String       @map("key_prefix")
+  keyHash            String       @unique @map("key_hash")
+  keyHashVersion     Int          @default(1) @map("key_hash_version")
+  status             ApiKeyStatus @default(active)
+  lastUsedAt         DateTime?    @map("last_used_at")
+  revokedAt          DateTime?    @map("revoked_at")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  developerProfile ApiDeveloperProfile @relation(fields: [developerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt])
+  @@index([developerProfileId, status, createdAt])
+  @@index([keyPrefix])
+  @@map("api_keys")
 }
 
 model Session {
