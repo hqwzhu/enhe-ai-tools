@@ -14,6 +14,13 @@ export function findGatewayModel(modelId: string) {
   return gatewayModels.find((model) => model.id === modelId) ?? null;
 }
 
+export function getOpenAICompatibleUpstreamModel(publicModelId: string) {
+  if (!findGatewayModel(publicModelId)) return null;
+
+  const upstreamModel = process.env.ENHE_UPSTREAM_OPENAI_DEFAULT_MODEL?.trim();
+  return upstreamModel || null;
+}
+
 export function registerModelRoutes(app: FastifyInstance) {
   app.get("/v1/models", async (request, reply) => {
     const context = createGatewayRequestContext();

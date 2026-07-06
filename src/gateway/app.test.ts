@@ -1,11 +1,14 @@
 import { randomBytes } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import { buildGatewayApp } from "./app";
 import { createApiKeySecret, formatApiKeyPrefix, hashApiKey } from "@/features/enhe-api/server/api-key-crypto";
 
 const prisma = new PrismaClient();
 const testPepper = "phase-nine-gateway-test-pepper-32chars";
+const testUpstreamBaseUrl = "https://upstream.example.test/openai";
+const testUpstreamApiKey = "test-upstream-api-key-32chars";
+const testUpstreamModel = "test-upstream-chat-model";
 
 type TestAccount = {
   userId: string;
@@ -20,6 +23,10 @@ type TestAccount = {
 describe("ENHE API Gateway", () => {
   let account: TestAccount;
   const previousPepper = process.env.ENHE_API_KEY_PEPPER;
+  const previousUpstreamBaseUrl = process.env.ENHE_UPSTREAM_OPENAI_BASE_URL;
+  const previousUpstreamApiKey = process.env.ENHE_UPSTREAM_OPENAI_API_KEY;
+  const previousUpstreamDefaultModel = process.env.ENHE_UPSTREAM_OPENAI_DEFAULT_MODEL;
+  const originalFetch = globalThis.fetch;
   const createdUserIds: string[] = [];
 
   beforeAll(async () => {
@@ -47,6 +54,14 @@ describe("ENHE API Gateway", () => {
       process.env.ENHE_API_KEY_PEPPER = previousPepper;
     }
     await prisma.$disconnect();
+  });
+
+  afterEach(() => {
+    restoreEnv("ENHE_UPSTREAM_OPENAI_BASE_URL", previousUpstreamBaseUrl);
+    restoreEnv("ENHE_UPSTREAM_OPENAI_API_KEY", previousUpstreamApiKey);
+    restoreEnv("ENHE_UPSTREAM_OPENAI_DEFAULT_MODEL", previousUpstreamDefaultModel);
+    globalThis.fetch = originalFetch;
+    vi.restoreAllMocks();
   });
 
   test("GET /health returns liveness without database details", async () => {
@@ -232,6 +247,7 @@ describe("ENHE API Gateway", () => {
   });
 
   test("POST /v1/chat/completions with stream=true returns 501 and writes usage log", async () => {
+    const fetchMock = mockUpstreamFetch(upstreamSuccessBody());
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -246,6 +262,7 @@ describe("ENHE API Gateway", () => {
     const log = await expectUsageLog(response.headers["x-request-id"], 501);
     expect(log.isStream).toBe(true);
     expect(log.billingStatus).toBe("not_billable");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   test("POST /v1/chat/completions with zero wallet returns 402 and writes usage log", async () => {
@@ -265,48 +282,183 @@ describe("ENHE API Gateway", () => {
     expect(log.chargedUsd.toFixed()).toBe("0");
   });
 
-  test("POST /v1/chat/completions with active key and funded wallet returns mock OpenAI-compatible response", async () => {
+  test("POST /v1/chat/completions with missing upstream configuration returns 500 and writes safe usage log", async () => {
+    const fetchMock = mockUpstreamFetch(upstreamSuccessBody());
+    clearUpstreamConfiguration();
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(500);
+    expect(response.json().error.code).toBe("internal_error");
+    expect(fetchMock).not.toHaveBeenCalled();
+    const log = await expectUsageLog(response.headers["x-request-id"], 500);
+    expect(log.errorCode).toBe("internal_error");
+    expect(log.errorMessage).toBe("Upstream provider is not configured.");
+  });
+
+  test("POST /v1/chat/completions forwards stream=false request to OpenAI-compatible upstream", async () => {
+    configureUpstream();
+    const upstreamBody = upstreamSuccessBody();
+    const fetchMock = mockUpstreamFetch(upstreamBody);
     const creditTransactionsBefore = await prisma.apiCreditTransaction.count();
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
       url: "/v1/chat/completions",
       headers: { authorization: `Bearer ${account.activeKey}` },
-      payload: validChatPayload({ messages: [{ role: "user", content: "secret prompt should not be logged" }] })
+      payload: validChatPayload({
+        messages: [{ role: "user", content: "secret prompt should not be logged" }],
+        temperature: 0.2,
+        top_p: 0.9,
+        metadata: { should_not_forward: true },
+        authorization: "Bearer should-not-forward"
+      })
     });
     await app.close();
 
     expect(response.statusCode).toBe(200);
     expect(response.headers["x-request-id"]).toEqual(expect.any(String));
-    const body = response.json();
-    expect(body).toMatchObject({
-      object: "chat.completion",
-      model: "enhe-chat-lite",
-      choices: [
-        {
-          index: 0,
-          message: { role: "assistant" },
-          finish_reason: "stop"
-        }
-      ],
-      usage: {
-        prompt_tokens: 8,
-        completion_tokens: 16,
-        total_tokens: 24
-      }
+    expect(response.json()).toEqual(upstreamBody);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(`${testUpstreamBaseUrl}/v1/chat/completions`);
+    expect(init.headers).toEqual({
+      Authorization: `Bearer ${testUpstreamApiKey}`,
+      "Content-Type": "application/json"
     });
-    expect(body.id).toMatch(/^chatcmpl_[a-f0-9]{24}$/);
+    const forwardedBody = JSON.parse(String(init.body));
+    expect(forwardedBody).toEqual({
+      model: testUpstreamModel,
+      messages: [{ role: "user", content: "secret prompt should not be logged" }],
+      stream: false,
+      temperature: 0.2,
+      top_p: 0.9
+    });
+    expect(forwardedBody).not.toHaveProperty("metadata");
+    expect(forwardedBody).not.toHaveProperty("authorization");
 
     const log = await expectUsageLog(response.headers["x-request-id"], 200);
-    expect(log.inputTokens).toBe(8);
-    expect(log.outputTokens).toBe(16);
+    expect(log.model).toBe("enhe-chat-lite");
+    expect(log.publicModelName).toBe("enhe-chat-lite");
+    expect(log.inputTokens).toBe(11);
+    expect(log.outputTokens).toBe(13);
+    expect(log.latencyMs).toEqual(expect.any(Number));
     expect(log.billingStatus).toBe("not_billable");
-    expect(log.upstreamProvider).toBe("mock");
-    expect(log.routeId).toBe("mock:mvp-chat-completions");
+    expect(log.upstreamProvider).toBe("openai-compatible");
+    expect(log.upstreamModel).toBe(testUpstreamModel);
+    expect(log.routeId).toBe("openai-compatible:enhe-chat-lite");
     expect(JSON.stringify(log)).not.toContain(account.activeKey);
+    expect(JSON.stringify(log)).not.toContain(testUpstreamApiKey);
     expect(JSON.stringify(log)).not.toContain("secret prompt should not be logged");
+    expect(JSON.stringify(log)).not.toContain("upstream response should not be logged");
     expect(JSON.stringify(log)).not.toContain("Authorization");
     expect(await prisma.apiCreditTransaction.count()).toBe(creditTransactionsBefore);
+  });
+
+  test("POST /v1/chat/completions records zero tokens when upstream omits usage", async () => {
+    configureUpstream();
+    mockUpstreamFetch({
+      id: "chatcmpl-no-usage",
+      object: "chat.completion",
+      created: 1760000002,
+      model: testUpstreamModel,
+      choices: [{ index: 0, message: { role: "assistant", content: "No usage." }, finish_reason: "stop" }]
+    });
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(200);
+    const log = await expectUsageLog(response.headers["x-request-id"], 200);
+    expect(log.inputTokens).toBe(0);
+    expect(log.outputTokens).toBe(0);
+  });
+
+  test("POST /v1/chat/completions maps upstream 401 to 502 upstream_error", async () => {
+    configureUpstream();
+    mockUpstreamFetch({ error: { message: `provider denied ${testUpstreamApiKey}` } }, 401);
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json().error.code).toBe("upstream_error");
+    const log = await expectUsageLog(response.headers["x-request-id"], 502);
+    expect(log.errorCode).toBe("upstream_error");
+    expect(log.errorMessage).toBe("Upstream request failed.");
+    expect(JSON.stringify(log)).not.toContain(testUpstreamApiKey);
+  });
+
+  test("POST /v1/chat/completions maps upstream 500 to 502 upstream_error", async () => {
+    configureUpstream();
+    mockUpstreamFetch({ error: { message: "provider unavailable" } }, 500);
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json().error.code).toBe("upstream_error");
+    const log = await expectUsageLog(response.headers["x-request-id"], 502);
+    expect(log.errorMessage).toBe("Upstream request failed.");
+  });
+
+  test("POST /v1/chat/completions maps upstream timeout to 502 upstream_error", async () => {
+    configureUpstream();
+    const fetchMock = vi.fn().mockRejectedValue(Object.assign(new Error("aborted"), { name: "AbortError" }));
+    globalThis.fetch = fetchMock as typeof fetch;
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json().error.code).toBe("upstream_error");
+    const log = await expectUsageLog(response.headers["x-request-id"], 502);
+    expect(log.errorMessage).toBe("Upstream request timed out.");
+  });
+
+  test("POST /v1/chat/completions maps invalid upstream JSON to 502 upstream_error", async () => {
+    configureUpstream();
+    const fetchMock = vi.fn().mockResolvedValue(new Response("not-json", { status: 200 }));
+    globalThis.fetch = fetchMock as typeof fetch;
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload()
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json().error.code).toBe("upstream_error");
+    const log = await expectUsageLog(response.headers["x-request-id"], 502);
+    expect(log.errorMessage).toBe("Upstream response was invalid.");
   });
 
   async function createTestAccount(
@@ -401,5 +553,53 @@ describe("ENHE API Gateway", () => {
     expect(log?.statusCode).toBe(statusCode);
     expect(log?.path).toBe("/v1/chat/completions");
     return log!;
+  }
+
+  function configureUpstream() {
+    process.env.ENHE_UPSTREAM_OPENAI_BASE_URL = testUpstreamBaseUrl;
+    process.env.ENHE_UPSTREAM_OPENAI_API_KEY = testUpstreamApiKey;
+    process.env.ENHE_UPSTREAM_OPENAI_DEFAULT_MODEL = testUpstreamModel;
+  }
+
+  function clearUpstreamConfiguration() {
+    delete process.env.ENHE_UPSTREAM_OPENAI_BASE_URL;
+    delete process.env.ENHE_UPSTREAM_OPENAI_API_KEY;
+    delete process.env.ENHE_UPSTREAM_OPENAI_DEFAULT_MODEL;
+  }
+
+  function mockUpstreamFetch(body: unknown, status = 200) {
+    configureUpstream();
+    const fetchMock = vi.fn().mockResolvedValue(Response.json(body, { status }));
+    globalThis.fetch = fetchMock as typeof fetch;
+    return fetchMock;
+  }
+
+  function upstreamSuccessBody() {
+    return {
+      id: "chatcmpl-upstream-test",
+      object: "chat.completion",
+      created: 1760000001,
+      model: testUpstreamModel,
+      choices: [
+        {
+          index: 0,
+          message: { role: "assistant", content: "upstream response should not be logged" },
+          finish_reason: "stop"
+        }
+      ],
+      usage: {
+        prompt_tokens: 11,
+        completion_tokens: 13,
+        total_tokens: 24
+      }
+    };
+  }
+
+  function restoreEnv(key: string, value: string | undefined) {
+    if (value === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = value;
+    }
   }
 });

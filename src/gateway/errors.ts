@@ -8,6 +8,7 @@ export type GatewayErrorCode =
   | "model_not_found"
   | "insufficient_credit"
   | "unsupported_stream"
+  | "upstream_error"
   | "internal_error";
 
 export type GatewayRequestContext = {
@@ -23,6 +24,7 @@ const messages: Record<GatewayErrorCode, string> = {
   model_not_found: "Requested model is not available.",
   insufficient_credit: "API credit is insufficient.",
   unsupported_stream: "Streaming chat completions are not supported yet.",
+  upstream_error: "Upstream provider request failed.",
   internal_error: "Internal gateway error."
 };
 
