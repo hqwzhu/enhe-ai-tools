@@ -10,6 +10,7 @@ import {
   isApiKeyFormatValid,
   validateApiKeyHashConfiguration
 } from "./api-key-crypto";
+import { getTodayApiKeyUsageForUser, type ApiKeyTodayUsage } from "./usage-logs";
 
 export const maxActiveApiKeys = 20;
 
@@ -64,9 +65,10 @@ export async function listApiKeysForCurrentUser(): Promise<ListApiKeysResult> {
     where: { userId: user.id },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }]
   });
+  const todayUsageByKey = await getTodayApiKeyUsageForUser(user.id, keys.map((key) => key.id));
 
   return {
-    keys: keys.map(mapApiKeyListItem),
+    keys: keys.map((key) => mapApiKeyListItem(key, todayUsageByKey.get(key.id))),
     activeCount: keys.filter((key) => key.status === "active").length,
     maxActiveKeys: maxActiveApiKeys,
     developerStatus: developerProfile.status
@@ -258,7 +260,10 @@ function validateApiKeyName(value: FormDataEntryValue | null):
   return { ok: true, name };
 }
 
-function mapApiKeyListItem(key: Pick<ApiKey, "id" | "name" | "keyPrefix" | "status" | "createdAt" | "lastUsedAt" | "revokedAt">): ApiKeyListItem {
+function mapApiKeyListItem(
+  key: Pick<ApiKey, "id" | "name" | "keyPrefix" | "status" | "createdAt" | "lastUsedAt" | "revokedAt">,
+  todayUsage?: ApiKeyTodayUsage
+): ApiKeyListItem {
   return {
     id: key.id,
     name: key.name,
@@ -267,8 +272,8 @@ function mapApiKeyListItem(key: Pick<ApiKey, "id" | "name" | "keyPrefix" | "stat
     createdAt: key.createdAt,
     lastUsedAt: key.lastUsedAt,
     revokedAt: key.revokedAt,
-    todayRequestCount: 0,
-    todayUsageUsd: 0
+    todayRequestCount: todayUsage?.requestCount ?? 0,
+    todayUsageUsd: todayUsage?.usageUsd ?? 0
   };
 }
 

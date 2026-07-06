@@ -28,6 +28,13 @@ enum ApiKeyStatus {
   revoked
 }
 
+enum ApiUsageBillingStatus {
+  not_billable
+  pending
+  billed
+  review
+}
+
 enum PlanStatus {
   active
   disabled
@@ -212,6 +219,7 @@ model User {
   newsLikes        NewsArticleLike[]
   apiDeveloperProfile ApiDeveloperProfile?
   apiKeys             ApiKey[]
+  apiUsageLogs        ApiUsageLog[]
 
   @@map("users")
 }
@@ -761,6 +769,7 @@ model ApiDeveloperProfile {
   updatedAt       DateTime                  @updatedAt @map("updated_at")
   user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   apiKeys         ApiKey[]
+  apiUsageLogs    ApiUsageLog[]
 
   @@index([status, createdAt])
   @@map("api_developer_profiles")
@@ -782,11 +791,60 @@ model ApiKey {
 
   user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   developerProfile ApiDeveloperProfile @relation(fields: [developerProfileId], references: [id], onDelete: Cascade)
+  usageLogs        ApiUsageLog[]
 
   @@index([userId, status, createdAt])
   @@index([developerProfileId, status, createdAt])
   @@index([keyPrefix])
   @@map("api_keys")
+}
+
+model ApiUsageLog {
+  id                    String                @id @default(cuid())
+  requestId             String                @unique @map("request_id")
+  userId                String                @map("user_id")
+  developerProfileId    String                @map("developer_profile_id")
+  apiKeyId              String?               @map("api_key_id")
+  keyPrefix             String                @map("key_prefix")
+  method                String
+  path                  String
+  model                 String?
+  publicModelName       String?               @map("public_model_name")
+  upstreamProvider      String?               @map("upstream_provider")
+  upstreamModel         String?               @map("upstream_model")
+  statusCode            Int                   @map("status_code")
+  inputTokens           Int                   @default(0) @map("input_tokens")
+  outputTokens          Int                   @default(0) @map("output_tokens")
+  cacheReadTokens       Int                   @default(0) @map("cache_read_tokens")
+  cacheWriteTokens      Int                   @default(0) @map("cache_write_tokens")
+  costUsd               Decimal               @default(0) @map("cost_usd") @db.Decimal(18, 8)
+  chargedUsd            Decimal               @default(0) @map("charged_usd") @db.Decimal(18, 8)
+  latencyMs             Int?                  @map("latency_ms")
+  isStream              Boolean               @default(false) @map("is_stream")
+  errorCode             String?               @map("error_code")
+  errorMessage          String?               @map("error_message")
+  clientIpHash          String?               @map("client_ip_hash")
+  userAgentHash         String?               @map("user_agent_hash")
+  billingStatus         ApiUsageBillingStatus @default(not_billable) @map("billing_status")
+  streamFinishReason    String?               @map("stream_finish_reason")
+  upstreamRequestIdHash String?               @map("upstream_request_id_hash")
+  routeId               String?               @map("route_id")
+  walletTransactionId   String?               @map("wallet_transaction_id")
+  createdAt             DateTime              @default(now()) @map("created_at")
+
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  developerProfile ApiDeveloperProfile @relation(fields: [developerProfileId], references: [id], onDelete: Cascade)
+  apiKey           ApiKey?             @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([developerProfileId, createdAt])
+  @@index([apiKeyId, createdAt])
+  @@index([publicModelName, createdAt])
+  @@index([model, createdAt])
+  @@index([statusCode, createdAt])
+  @@index([errorCode, createdAt])
+  @@index([path, createdAt])
+  @@map("api_usage_logs")
 }
 
 model Session {
