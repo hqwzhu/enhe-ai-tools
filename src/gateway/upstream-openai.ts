@@ -19,6 +19,7 @@ export type OpenAICompatibleUpstreamResult =
       upstreamModel: string;
       inputTokens: number;
       outputTokens: number;
+      hasUsage: boolean;
       latencyMs: number;
     }
   | {
@@ -90,12 +91,15 @@ export async function callOpenAICompatibleChatCompletion(input: {
       };
     }
 
+    const usage = getUsage(body);
+
     return {
       ok: true,
       body,
       upstreamModel: config.upstreamModel,
-      inputTokens: getUsageToken(body, "prompt_tokens"),
-      outputTokens: getUsageToken(body, "completion_tokens"),
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      hasUsage: usage.hasUsage,
       latencyMs
     };
   } catch (error) {
@@ -136,10 +140,26 @@ function getChatCompletionsUrl(baseUrl: string) {
   }
 }
 
-function getUsageToken(body: unknown, key: "prompt_tokens" | "completion_tokens"): number {
-  if (!isRecord(body) || !isRecord(body.usage)) return 0;
-  const value = body.usage[key];
-  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : 0;
+function getUsage(body: unknown) {
+  if (!isRecord(body) || !isRecord(body.usage)) {
+    return { inputTokens: 0, outputTokens: 0, hasUsage: false };
+  }
+
+  const inputTokens = body.usage.prompt_tokens;
+  const outputTokens = body.usage.completion_tokens;
+  if (!isNonNegativeInteger(inputTokens) || !isNonNegativeInteger(outputTokens)) {
+    return { inputTokens: 0, outputTokens: 0, hasUsage: false };
+  }
+
+  return {
+    inputTokens,
+    outputTokens,
+    hasUsage: true
+  };
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
 function getLatencyMs(startedAt: number) {

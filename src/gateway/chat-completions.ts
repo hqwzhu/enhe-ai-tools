@@ -1,9 +1,16 @@
 import type { FastifyInstance } from "fastify";
-import { checkSufficientCredit } from "@/features/enhe-api/server/wallet";
+import { chargeUsage, checkSufficientCredit } from "@/features/enhe-api/server/wallet";
 import { createUsageLog } from "@/features/enhe-api/server/usage-logs";
 import { requireGatewayApiKey } from "./auth";
 import { createGatewayRequestContext, sendGatewayError, type GatewayErrorCode, type GatewayRequestContext } from "./errors";
 import { findGatewayModel } from "./models";
+import {
+  calculateUsageCharge,
+  estimateMaxChargeUsd,
+  getGatewayModelOutputTokenLimit,
+  getGatewayModelPricing,
+  isWithinGatewayModelOutputLimit
+} from "./pricing";
 import { callOpenAICompatibleChatCompletion, type OpenAICompatibleForwardBody, type OpenAICompatibleUpstreamResult } from "./upstream-openai";
 
 type ChatCompletionBody = {
@@ -26,7 +33,6 @@ type AuthenticatedGatewayKey = {
 };
 
 const chatCompletionsPath = "/v1/chat/completions";
-const estimatedOpenAICompatibleCostUsd = "0.000001";
 
 export function registerChatCompletionRoutes(app: FastifyInstance) {
   app.post(chatCompletionsPath, async (request, reply) => {
@@ -70,10 +76,27 @@ export function registerChatCompletionRoutes(app: FastifyInstance) {
       return sendGatewayError(reply, 404, "model_not_found", context);
     }
 
+    const pricing = getGatewayModelPricing(model.id);
+    const maxOutputTokens = pricing ? getGatewayModelOutputTokenLimit(pricing, body.maxTokens) : null;
+    if (!pricing || maxOutputTokens === null || !isWithinGatewayModelOutputLimit(pricing, maxOutputTokens)) {
+      await writeChatUsageLog(context, auth.apiKey, {
+        statusCode: 400,
+        model: body.model,
+        isStream: false,
+        errorCode: "invalid_request",
+        errorMessage: "Invalid request body."
+      });
+      return sendGatewayError(reply, 400, "invalid_request", context);
+    }
+
     const credit = await checkSufficientCredit({
       userId: auth.apiKey.userId,
       developerProfileId: auth.apiKey.developerProfileId,
-      estimatedCostUsd: estimatedOpenAICompatibleCostUsd
+      estimatedCostUsd: estimateMaxChargeUsd({
+        pricing,
+        messages: body.messages,
+        maxOutputTokens
+      })
     });
     if (!credit.ok) {
       const statusCode = credit.reason === "developer_not_active" ? 403 : 402;
@@ -90,7 +113,7 @@ export function registerChatCompletionRoutes(app: FastifyInstance) {
 
     const upstream = await callOpenAICompatibleChatCompletion({
       publicModelId: model.id,
-      body: buildOpenAICompatibleForwardBody(body)
+      body: buildOpenAICompatibleForwardBody(body, maxOutputTokens)
     });
 
     if (!upstream.ok) {
@@ -111,7 +134,31 @@ export function registerChatCompletionRoutes(app: FastifyInstance) {
       return sendGatewayError(reply, failure.statusCode, failure.errorCode, context);
     }
 
-    await writeChatUsageLog(context, auth.apiKey, {
+    if (!upstream.hasUsage) {
+      await writeChatUsageLog(context, auth.apiKey, {
+        statusCode: 200,
+        model: model.id,
+        isStream: false,
+        inputTokens: 0,
+        outputTokens: 0,
+        latencyMs: upstream.latencyMs,
+        upstreamProvider: "openai-compatible",
+        upstreamModel: upstream.upstreamModel,
+        routeId: `openai-compatible:${model.id}`,
+        billingStatus: "review"
+      });
+
+      reply.header("x-request-id", context.requestId);
+      return upstream.body;
+    }
+
+    const usageCharge = calculateUsageCharge({
+      pricing,
+      inputTokens: upstream.inputTokens,
+      outputTokens: upstream.outputTokens
+    });
+
+    const usageLog = await writeChatUsageLog(context, auth.apiKey, {
       statusCode: 200,
       model: model.id,
       isStream: false,
@@ -120,8 +167,36 @@ export function registerChatCompletionRoutes(app: FastifyInstance) {
       latencyMs: upstream.latencyMs,
       upstreamProvider: "openai-compatible",
       upstreamModel: upstream.upstreamModel,
-      routeId: `openai-compatible:${model.id}`
+      routeId: `openai-compatible:${model.id}`,
+      costUsd: usageCharge.costUsd,
+      chargedUsd: "0",
+      billingStatus: usageCharge.billable ? "review" : "not_billable"
     });
+
+    if (!usageLog.ok) {
+      return sendGatewayError(reply, 500, "internal_error", context);
+    }
+
+    if (!usageCharge.billable) {
+      reply.header("x-request-id", context.requestId);
+      return upstream.body;
+    }
+
+    const charge = await chargeUsage({
+      userId: auth.apiKey.userId,
+      developerProfileId: auth.apiKey.developerProfileId,
+      usageLogId: usageLog.log.id,
+      requestId: context.requestId,
+      amountUsd: usageCharge.chargedUsd,
+      reason: `OpenAI-compatible ${model.id} chat completion`,
+      idempotencyKey: `billing:${context.requestId}:${auth.apiKey.apiKeyId}`
+    });
+
+    if (!charge.ok) {
+      const statusCode = charge.reason === "insufficient_credit" ? 402 : 500;
+      const errorCode: GatewayErrorCode = charge.reason === "insufficient_credit" ? "insufficient_credit" : "internal_error";
+      return sendGatewayError(reply, statusCode, errorCode, context);
+    }
 
     reply.header("x-request-id", context.requestId);
     return upstream.body;
@@ -224,13 +299,13 @@ function parseStop(value: unknown):
   return { ok: false };
 }
 
-function buildOpenAICompatibleForwardBody(body: ChatCompletionBody): Omit<OpenAICompatibleForwardBody, "model"> {
+function buildOpenAICompatibleForwardBody(body: ChatCompletionBody, maxOutputTokens: number): Omit<OpenAICompatibleForwardBody, "model"> {
   const forwardBody: Omit<OpenAICompatibleForwardBody, "model"> = {
     messages: body.messages,
-    stream: false
+    stream: false,
+    max_tokens: maxOutputTokens
   };
 
-  if (body.maxTokens !== undefined) forwardBody.max_tokens = body.maxTokens;
   if (body.temperature !== undefined) forwardBody.temperature = body.temperature;
   if (body.topP !== undefined) forwardBody.top_p = body.topP;
   if (body.presencePenalty !== undefined) forwardBody.presence_penalty = body.presencePenalty;
@@ -289,11 +364,14 @@ async function writeChatUsageLog(
     upstreamProvider?: string | null;
     upstreamModel?: string | null;
     routeId?: string | null;
+    costUsd?: string;
+    chargedUsd?: string;
+    billingStatus?: "not_billable" | "pending" | "billed" | "review";
     errorCode?: GatewayErrorCode;
     errorMessage?: string;
   }
 ) {
-  await createUsageLog({
+  return createUsageLog({
     requestId: context.requestId,
     userId: apiKey.userId,
     developerProfileId: apiKey.developerProfileId,
@@ -310,9 +388,9 @@ async function writeChatUsageLog(
     outputTokens: input.outputTokens ?? 0,
     cacheReadTokens: 0,
     cacheWriteTokens: 0,
-    costUsd: "0",
-    chargedUsd: "0",
-    billingStatus: "not_billable",
+    costUsd: input.costUsd ?? "0",
+    chargedUsd: input.chargedUsd ?? "0",
+    billingStatus: input.billingStatus ?? "not_billable",
     latencyMs: input.latencyMs,
     isStream: input.isStream,
     errorCode: input.errorCode,

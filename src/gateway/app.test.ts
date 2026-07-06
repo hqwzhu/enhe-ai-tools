@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import { buildGatewayApp } from "./app";
 import { createApiKeySecret, formatApiKeyPrefix, hashApiKey } from "@/features/enhe-api/server/api-key-crypto";
+import { chargeUsage } from "@/features/enhe-api/server/wallet";
 
 const prisma = new PrismaClient();
 const testPepper = "phase-nine-gateway-test-pepper-32chars";
@@ -248,6 +249,7 @@ describe("ENHE API Gateway", () => {
 
   test("POST /v1/chat/completions with stream=true returns 501 and writes usage log", async () => {
     const fetchMock = mockUpstreamFetch(upstreamSuccessBody());
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -263,9 +265,12 @@ describe("ENHE API Gateway", () => {
     expect(log.isStream).toBe(true);
     expect(log.billingStatus).toBe("not_billable");
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
   });
 
   test("POST /v1/chat/completions with zero wallet returns 402 and writes usage log", async () => {
+    const fetchMock = mockUpstreamFetch(upstreamSuccessBody());
+    const creditTransactionsBefore = await prisma.apiCreditTransaction.count();
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -280,6 +285,8 @@ describe("ENHE API Gateway", () => {
     const log = await expectUsageLog(response.headers["x-request-id"], 402);
     expect(log.errorCode).toBe("insufficient_credit");
     expect(log.chargedUsd.toFixed()).toBe("0");
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await prisma.apiCreditTransaction.count()).toBe(creditTransactionsBefore);
   });
 
   test("POST /v1/chat/completions with missing upstream configuration returns 500 and writes safe usage log", async () => {
@@ -306,7 +313,8 @@ describe("ENHE API Gateway", () => {
     configureUpstream();
     const upstreamBody = upstreamSuccessBody();
     const fetchMock = mockUpstreamFetch(upstreamBody);
-    const creditTransactionsBefore = await prisma.apiCreditTransaction.count();
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
+    const walletBefore = await expectWallet(account.userId);
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -337,6 +345,7 @@ describe("ENHE API Gateway", () => {
       model: testUpstreamModel,
       messages: [{ role: "user", content: "secret prompt should not be logged" }],
       stream: false,
+      max_tokens: 1024,
       temperature: 0.2,
       top_p: 0.9
     });
@@ -349,7 +358,10 @@ describe("ENHE API Gateway", () => {
     expect(log.inputTokens).toBe(11);
     expect(log.outputTokens).toBe(13);
     expect(log.latencyMs).toEqual(expect.any(Number));
-    expect(log.billingStatus).toBe("not_billable");
+    expect(log.billingStatus).toBe("billed");
+    expect(log.costUsd.toNumber()).toBeGreaterThan(0);
+    expect(log.chargedUsd.toNumber()).toBeGreaterThan(0);
+    expect(log.walletTransactionId).toEqual(expect.any(String));
     expect(log.upstreamProvider).toBe("openai-compatible");
     expect(log.upstreamModel).toBe(testUpstreamModel);
     expect(log.routeId).toBe("openai-compatible:enhe-chat-lite");
@@ -358,7 +370,35 @@ describe("ENHE API Gateway", () => {
     expect(JSON.stringify(log)).not.toContain("secret prompt should not be logged");
     expect(JSON.stringify(log)).not.toContain("upstream response should not be logged");
     expect(JSON.stringify(log)).not.toContain("Authorization");
-    expect(await prisma.apiCreditTransaction.count()).toBe(creditTransactionsBefore);
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore + 1);
+
+    const transaction = await prisma.apiCreditTransaction.findUnique({
+      where: { id: log.walletTransactionId ?? "" }
+    });
+    expect(transaction).not.toBeNull();
+    expect(transaction?.transactionType).toBe("api_charge");
+    expect(transaction?.usageLogId).toBe(log.id);
+    expect(transaction?.amountUsd.isNegative()).toBe(true);
+    expect(transaction?.amountUsd.abs().toFixed(8)).toBe(log.chargedUsd.toFixed(8));
+
+    const walletAfter = await expectWallet(account.userId);
+    expect(walletAfter.planBalanceUsd.toFixed(8)).toBe(walletBefore.planBalanceUsd.minus(log.chargedUsd).toFixed(8));
+
+    const repeatedCharge = await chargeUsage({
+      userId: account.userId,
+      developerProfileId: account.developerProfileId,
+      requestId: log.requestId,
+      amountUsd: log.chargedUsd,
+      idempotencyKey: `billing:${log.requestId}:${log.apiKeyId}`
+    });
+    expect(repeatedCharge.ok).toBe(true);
+    if (repeatedCharge.ok) {
+      expect(repeatedCharge.idempotent).toBe(true);
+      expect(repeatedCharge.transactionId).toBe(log.walletTransactionId);
+    }
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore + 1);
+    const walletAfterRepeatedCharge = await expectWallet(account.userId);
+    expect(walletAfterRepeatedCharge.planBalanceUsd.toFixed(8)).toBe(walletAfter.planBalanceUsd.toFixed(8));
   });
 
   test("POST /v1/chat/completions records zero tokens when upstream omits usage", async () => {
@@ -370,6 +410,7 @@ describe("ENHE API Gateway", () => {
       model: testUpstreamModel,
       choices: [{ index: 0, message: { role: "assistant", content: "No usage." }, finish_reason: "stop" }]
     });
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -383,11 +424,16 @@ describe("ENHE API Gateway", () => {
     const log = await expectUsageLog(response.headers["x-request-id"], 200);
     expect(log.inputTokens).toBe(0);
     expect(log.outputTokens).toBe(0);
+    expect(log.billingStatus).toBe("review");
+    expect(log.costUsd.toFixed()).toBe("0");
+    expect(log.chargedUsd.toFixed()).toBe("0");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
   });
 
   test("POST /v1/chat/completions maps upstream 401 to 502 upstream_error", async () => {
     configureUpstream();
     mockUpstreamFetch({ error: { message: `provider denied ${testUpstreamApiKey}` } }, 401);
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -403,11 +449,13 @@ describe("ENHE API Gateway", () => {
     expect(log.errorCode).toBe("upstream_error");
     expect(log.errorMessage).toBe("Upstream request failed.");
     expect(JSON.stringify(log)).not.toContain(testUpstreamApiKey);
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
   });
 
   test("POST /v1/chat/completions maps upstream 500 to 502 upstream_error", async () => {
     configureUpstream();
     mockUpstreamFetch({ error: { message: "provider unavailable" } }, 500);
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -421,12 +469,14 @@ describe("ENHE API Gateway", () => {
     expect(response.json().error.code).toBe("upstream_error");
     const log = await expectUsageLog(response.headers["x-request-id"], 502);
     expect(log.errorMessage).toBe("Upstream request failed.");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
   });
 
   test("POST /v1/chat/completions maps upstream timeout to 502 upstream_error", async () => {
     configureUpstream();
     const fetchMock = vi.fn().mockRejectedValue(Object.assign(new Error("aborted"), { name: "AbortError" }));
     globalThis.fetch = fetchMock as typeof fetch;
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -440,12 +490,14 @@ describe("ENHE API Gateway", () => {
     expect(response.json().error.code).toBe("upstream_error");
     const log = await expectUsageLog(response.headers["x-request-id"], 502);
     expect(log.errorMessage).toBe("Upstream request timed out.");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
   });
 
   test("POST /v1/chat/completions maps invalid upstream JSON to 502 upstream_error", async () => {
     configureUpstream();
     const fetchMock = vi.fn().mockResolvedValue(new Response("not-json", { status: 200 }));
     globalThis.fetch = fetchMock as typeof fetch;
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
     const app = buildGatewayApp();
     const response = await app.inject({
       method: "POST",
@@ -459,6 +511,7 @@ describe("ENHE API Gateway", () => {
     expect(response.json().error.code).toBe("upstream_error");
     const log = await expectUsageLog(response.headers["x-request-id"], 502);
     expect(log.errorMessage).toBe("Upstream response was invalid.");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
   });
 
   async function createTestAccount(
@@ -553,6 +606,20 @@ describe("ENHE API Gateway", () => {
     expect(log?.statusCode).toBe(statusCode);
     expect(log?.path).toBe("/v1/chat/completions");
     return log!;
+  }
+
+  async function expectWallet(userId: string) {
+    const wallet = await prisma.apiWallet.findUnique({
+      where: { userId }
+    });
+    expect(wallet).not.toBeNull();
+    return wallet!;
+  }
+
+  async function countCreditTransactionsForUser(userId: string) {
+    return prisma.apiCreditTransaction.count({
+      where: { userId }
+    });
   }
 
   function configureUpstream() {
