@@ -10,6 +10,7 @@ import {
 } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { resolveSoftwareCategoryIdByName } from "@/lib/software-category-navigation";
+import { buildThemedToolCategories } from "@/lib/tool-category-groups";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   absoluteUrl,
@@ -26,16 +27,16 @@ export const softwarePageRevalidate = publicPageCacheSeconds;
 const softwareGeoSections = {
   zh: [
     {
-      title: "如何选择AI软件应用",
-      body: "先判断任务类型，再看部署方式、学习成本、交付结果和价格边界。适合日常高频使用的软件，应优先解决明确任务，例如文档整理、内容创作、自动化流程、本地部署或素材处理。",
+      title: "先看具体效率场景",
+      body: "提升工作效率页优先展示办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率和 AI电脑软件，先按真实工作场景筛选，再进入产品详情。",
     },
     {
-      title: "适合哪些使用场景",
-      body: "AI软件应用适合创作者、运营人员、自由职业者、中小团队和个人学习者，用来把重复工作变成可复用流程。选择工具时，建议同时查看教程和案例，确认它能真正嵌入你的工作流。",
+      title: "按任务而不是概念选",
+      body: "如果要处理文档、整理文件、分析数据、优化系统或提高办公速度，先选择对应分类，再比较价格、交付说明、教程和售后边界。",
     },
     {
-      title: "下一步如何落地",
-      body: "如果你还不确定方向，可以先阅读AI前沿资讯判断趋势，再进入AI技能学习补齐方法，最后选择对应的软件应用完成交付。这样能减少盲目试用，把工具选择和真实成果连接起来。",
+      title: "把工具落到流程里",
+      body: "效率工具应服务于每天重复出现的工作流。购买或下载前，先确认是否能减少步骤、降低出错率、缩短处理时间，并能持续复用。",
     },
   ],
   en: [
@@ -56,14 +57,14 @@ const softwareGeoSections = {
 
 const softwareAnswerBlock = {
   zh: {
-    title: "AI智能体工具推荐：如何在 ENHE AI 选择合适的软件",
-    body: "AI智能体工具推荐应先看任务是否明确，再比较部署方式、隐私边界、学习门槛、成本和站内教程支持。ENHE AI 的 AI软件应用页适合创作者、运营人员、中小团队和个人学习者，用来查找本地部署、内容生成、音视频处理、自动化流程和效率提升类工具，并继续进入相关教程或资讯完成落地。",
-    cta: "从工具列表开始筛选",
+    title: "提升工作效率：先按工作任务筛选产品分类",
+    body: "这个页面用于查找办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率和 AI电脑软件。先确认要解决的工作任务，再比较产品价格、交付方式、教程支持和适用边界。",
+    cta: "筛选效率工具",
   },
   en: {
-    title: "AI agent tool recommendation: how to choose software on ENHE AI",
-    body: "An AI agent tool recommendation should start with the user task, then compare deployment, privacy boundary, learning cost, pricing, and tutorial support. ENHE AI software pages help creators, operators, small teams, and individual learners find local AI apps, content tools, audio/video utilities, automation workflows, and productivity software, then continue into related tutorials or AI news for implementation.",
-    cta: "Start from the software list",
+    title: "Boost productivity: filter products by work task first",
+    body: "Use this page to find office productivity tools, file-processing tools, system utilities, data-analysis tools, productivity products, and AI desktop software. Start from the task, then compare pricing, delivery, tutorials, and fit.",
+    cta: "Filter productivity tools",
   },
 } as const;
 
@@ -327,6 +328,10 @@ export async function SoftwarePageShell({
     paid,
     sort,
   );
+  const categoryOptions = buildThemedToolCategories(
+    categories,
+    "productivity",
+  );
 
   return (
     <main>
@@ -339,7 +344,7 @@ export async function SoftwarePageShell({
         />
         <SoftwareUserAnswerCard forceLocale={forceLocale} />
         <ListingGuidanceFold forceLocale={forceLocale} />
-        <FilterBar categories={categories} locale={forceLocale} />
+        <FilterBar categories={categoryOptions} locale={forceLocale} />
         {tools.length ? (
           <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (

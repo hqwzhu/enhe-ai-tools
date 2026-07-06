@@ -117,17 +117,17 @@ describe("AI GEO foundations", () => {
     expect(software).toContain("softwareSourceLinks");
     expect(software).toContain("buildSoftwareCollectionSchema");
     expect(software).toContain("buildFaqSchema");
-    expect(software).toContain("AI智能体工具推荐");
+    expect(software).toContain("提升工作效率：先按工作任务筛选产品分类");
     expect(software).toContain('"@type": "ItemList"');
     expect(software).toContain("citation:");
-    expect(software).toContain("如何选择AI软件应用");
+    expect(software).toContain("先看具体效率场景");
     expect(software).toContain(
       'buildLocalePath("/skill-learning", forceLocale)',
     );
     expect(software).toContain('buildLocalePath("/ai-news", forceLocale)');
 
     expect(accountServices).toContain("accountServicesGeoSections");
-    expect(accountServices).toContain("AI账号服务如何合规使用");
+    expect(accountServices).toContain("先选内容形态");
     expect(accountServices).toContain(
       'buildLocalePath("/software", forceLocale)',
     );
@@ -205,8 +205,8 @@ describe("AI GEO foundations", () => {
     expect(pageShell).toContain("const heroIntro =");
     expect(pageShell).toContain('forceLocale === "en"');
     expect(pageShell).toContain("ENHE AI");
-    expect(pageShell).toContain("把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。");
-    expect(pageShell).toContain("Use AI for real tasks: work faster, create content, organize material, and solve concrete problems.");
+    expect(pageShell).toContain("让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。");
+    expect(pageShell).toContain("Helping everyone use AI with confidence—turn ideas into creations and productivity into value.");
     expect(dictionaries).toContain('titleSecondLine: "把 AI 用到真实任务里，让工作、创作和学习更可控"');
     expect(dictionaries).toContain('titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows"');
   });

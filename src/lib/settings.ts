@@ -23,13 +23,16 @@ const legacyHomeHeroIntros = [
   "我们都想变得更好，只是常常被重复工作、琐碎流程和生活难题占满时间。\n让 AI 成为你的智能助手，帮你减少消耗、提升效率，把更多精力留给成长、创造和真正想做的事。",
   "用 AI 软件应用和 AI 账号服务放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。",
   "用本地应用和云端工具放大你的行动力，把重复工作交给 AI 自动化，把时间留给成长、创造和更好的自己。",
-  "下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。"
+  "下载实用软件，使用在线工具，把重复工作交给自动化，把复杂流程变成一个按钮。",
+  "把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。"
 ];
 const legacyHomeHeroIntrosEn = [
   "Live in symbiosis with AI, awaken in this era, and define the future through creation.",
   "We all want to be better \u2014 but repetitive tasks, tedious processes, and daily challenges take up all our time.\nLet AI be your smart assistant, helping you reduce friction and boost efficiency, so you can put more energy into growth, creation, and the things that truly matter.",
   "Use AI software apps and AI account services to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation.",
-  "Use desktop apps and web tools to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation."
+  "Use desktop apps and web tools to amplify your execution, hand repetitive work to AI automation, and reclaim time for growth and creation.",
+  "Use AI for real tasks: work faster, create content, organize material, and solve concrete problems.",
+  "Use AI for real tasks to finish work, create content, organize information, and solve problems faster."
 ];
 const legacyTextLogo = "ENHE";
 

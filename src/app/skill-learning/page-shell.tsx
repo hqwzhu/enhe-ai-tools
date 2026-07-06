@@ -9,6 +9,7 @@ import {
   getPublicToolListing,
 } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
+import { buildThemedToolCategories } from "@/lib/tool-category-groups";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   buildBreadcrumbSchema,
@@ -24,16 +25,16 @@ export const skillLearningPageRevalidate = publicPageCacheSeconds;
 const skillLearningGeoSections = {
   zh: [
     {
-      title: "AI技能学习路径",
-      body: "从提示词基础、AI工具实战、本地部署、自动化流程到内容创作，先建立可复用方法，再把方法迁移到写作、运营、设计、编程和日常办公任务中。",
+      title: "先选择未来机会方向",
+      body: "改变你未来的AI页展示 AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词和 AI 副业变现相关产品，先按未来机会方向筛选。",
     },
     {
-      title: "适合谁学习",
-      body: "适合希望系统提升 AI 使用能力的创作者、运营人员、自由职业者、中小企业团队和个人学习者，尤其适合想把零散工具变成稳定工作流的人。",
+      title: "再确认真实价值",
+      body: "智能体、提示词、订阅和副业变现产品都应该服务于明确结果。先看它能解决什么问题、如何交付、风险边界在哪里，再决定是否深入。",
     },
     {
-      title: "如何把课程转化为工作成果",
-      body: "建议围绕一个真实任务学习：先看趋势和案例，再选择对应软件或账号服务，最后用课程步骤完成交付物，让学习结果变成文档、素材、自动化流程或可复用模板。",
+      title: "沉淀为长期资产",
+      body: "真正有价值的 AI 产品应能留下可复用提示词、账号能力、智能体流程、生活工具方案或项目经验，而不是一次性的试用热闹。",
     },
   ],
   en: [
@@ -180,6 +181,7 @@ export async function SkillLearningPageShell({
       sort,
     ),
   ]);
+  const categoryOptions = buildThemedToolCategories(categories, "futureAi");
 
   return (
     <main>
@@ -193,7 +195,7 @@ export async function SkillLearningPageShell({
         <SkillLearningUserAnswerCard forceLocale={forceLocale} />
         <ListingDecisionStrip forceLocale={forceLocale} />
         <ListingTrustNote forceLocale={forceLocale} />
-        <FilterBar categories={categories} locale={forceLocale} />
+        <FilterBar categories={categoryOptions} locale={forceLocale} />
         {tools.length ? (
           <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (

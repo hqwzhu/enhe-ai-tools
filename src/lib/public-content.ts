@@ -13,6 +13,7 @@ import {
   getCanonicalAiNewsSlug,
   getCanonicalToolSlug,
 } from "@/lib/public-slugs";
+import { parseVirtualToolCategoryId } from "@/lib/tool-category-groups";
 
 const publicContentRevalidate = 300;
 
@@ -46,6 +47,15 @@ function isRecoverablePublicReadError(error: unknown) {
     /Can't reach database server/i.test(message) ||
     /ECONNREFUSED/i.test(message)
   );
+}
+
+function buildToolCategoryWhere(categoryId?: string): Prisma.ToolWhereInput {
+  const categoryName = parseVirtualToolCategoryId(categoryId);
+  if (categoryName) {
+    return { category: { is: { name: categoryName } } };
+  }
+
+  return categoryId ? { categoryId } : {};
 }
 
 const getCachedHomeRecommendedTools = unstable_cache(
@@ -95,7 +105,7 @@ const getCachedPublicToolListing = unstable_cache(
         where: {
           type,
           status: "published",
-          ...(categoryId ? { categoryId } : {}),
+          ...buildToolCategoryWhere(categoryId),
           ...(type === "software" && paid === "paid"
             ? { isDownloadPaid: true }
             : type === "software" && paid === "free"

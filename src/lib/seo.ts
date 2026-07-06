@@ -345,7 +345,7 @@ export function buildHomeMetadataTitle(locale: Locale, brand = siteName) {
   const scope =
     locale === "en"
       ? "Real Tasks, Safer AI Workflows"
-      : "真实任务、AI工具与安全可控路径";
+      : "让 AI 真正为每个人所用，把复杂变简单，把效率变价值。";
   return truncateText(
     `${normalizeWhitespace(brand)} | ${scope}`,
     locale === "en" ? 62 : 64,
@@ -384,11 +384,11 @@ export function buildListingMetaDescription(
 ) {
   const zhDescriptions = {
     software:
-      "按真实任务选择AI软件应用：提升效率、创作内容、整理资料、处理素材或搭建更安全、私密、稳定的工作流。查看适用场景、价格、教程、交付边界、设备要求和适合人群，先判断是否能解决当前任务再下载或购买。",
+      "按办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率和AI电脑软件分类查找产品，比较价格、教程、交付方式和适用场景，先确认能否提升日常工作效率再下载或购买，减少重复步骤和试错时间。",
     "account-services":
-      "了解AI工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则。先确认任务、服务范围、价格、售后、合规提醒、使用风险和替代路径，再决定是否咨询或购买，避免把服务当成绕过规则的捷径。",
+      "按AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成和视频/图片处理分类查找产品，比较输出质量、导出格式、处理速度、价格边界和教程，先确认适合你的多媒体内容流程再使用，并确认商用边界。",
     "skill-learning":
-      "围绕真实任务学习AI提示词、工具实战、自动化流程、内容创作和更可控的AI使用方法。沉淀文档、素材、工作流和可复用技能，减少试错时间，让学习直接服务工作、创作和交付成果，先产出可复用结果。",
+      "按AI智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI提示词和AI副业变现分类查找产品，比较交付价值、风险边界、复用能力和教程说明，把AI能力沉淀为长期机会，持续复用成果。",
     "ai-news":
       "阅读AI前沿资讯和趋势解读，理解工具、模型和平台变化对工作效率、内容创作、资料整理、学习技能和安全使用的实际影响。结合来源、时间、相关工具和下一步行动，判断这条信息是否值得普通AI用户跟进。",
     pricing:
@@ -398,11 +398,11 @@ export function buildListingMetaDescription(
   } as const;
   const enDescriptions = {
     software:
-      "Explore AI software apps for creators, local deployment, automation, audio, video, and daily work. Compare features, pricing, tutorials, and access.",
+      "Find AI software for office productivity, file processing, system utilities, data analysis, productivity gains, and AI desktop workflows. Compare fit.",
     "account-services":
-      "Browse AI account service guidance for subscriptions, access notes, compliance reminders, delivery boundaries, support scope, and pricing context.",
+      "Find AI video, image, and audio tools for video generation, voice generation, and media processing. Compare output quality, exports, price, and fit.",
     "skill-learning":
-      "Learn prompt engineering, AI tool workflows, local AI deployment, automation, and content creation with practical ENHE AI courses and tutorials.",
+      "Find AI agents, everyday AI tools, subscriptions, upgrade plans, AI prompts, and AI side-income products. Compare value, risk, reuse, and tutorials.",
     "ai-news":
       "Follow global AI agents, open models, local deployment, AI tools, tutorials, and industry trends so creators can turn AI changes into productivity.",
     pricing:

@@ -9,6 +9,7 @@ import {
   getPublicToolListing,
 } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
+import { buildThemedToolCategories } from "@/lib/tool-category-groups";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   absoluteUrl,
@@ -25,16 +26,16 @@ export const accountServicesPageRevalidate = publicPageCacheSeconds;
 const accountServicesGeoSections = {
   zh: [
     {
-      title: "AI账号服务如何合规使用",
-      body: "AI账号服务应围绕订阅咨询、账号使用支持、访问说明和平台规则提醒展开。使用第三方平台前，请以对应平台官方政策为准，避免把账号服务理解为绕过规则或替代官方授权。",
+      title: "先选内容形态",
+      body: "生成图片/视频/音频页按 AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成和视频/图片处理展示产品，先确认要生成或处理的素材类型。",
     },
     {
-      title: "适合哪些用户咨询",
-      body: "适合需要了解AI工具订阅、访问方式、使用边界、交付说明和售后范围的用户。对于企业、团队或长期使用者，建议先确认工具是否适合自己的工作流，再决定是否需要账号使用支持。",
+      title: "再看交付效果",
+      body: "对比产品时优先看成片质量、图片细节、音色自然度、处理速度、导出格式、价格边界和是否提供教程，避免只看演示图做决定。",
     },
     {
-      title: "如何与工具和课程配合",
-      body: "账号服务不是孤立入口。更稳妥的路径是先选择AI软件应用，学习对应AI技能课程，再根据实际访问和订阅需求咨询账号服务，让工具、方法和合规使用形成闭环。",
+      title: "最后确认素材流程",
+      body: "生成类工具最好嵌入真实内容流程：脚本、提示词、素材上传、生成、二次处理和发布。先确认流程能否复用，再决定是否长期使用。",
     },
   ],
   en: [
@@ -179,6 +180,10 @@ export async function AccountServicesPageShell({
     getPublicToolCategories("online"),
     getPublicToolListing("online", categoryId, keyword, undefined, sort),
   ]);
+  const categoryOptions = buildThemedToolCategories(
+    categories,
+    "mediaGeneration",
+  );
 
   return (
     <main>
@@ -191,7 +196,7 @@ export async function AccountServicesPageShell({
         />
         <AccountServicesUserAnswerCard forceLocale={forceLocale} />
         <ListingGuidanceFold forceLocale={forceLocale} />
-        <FilterBar categories={categories} locale={forceLocale} />
+        <FilterBar categories={categoryOptions} locale={forceLocale} />
         {tools.length ? (
           <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (

@@ -13,9 +13,9 @@ import {
 
 describe("public site settings", () => {
   const currentHeroSubtitle = "真实任务 · 高效创作 · 安全可控";
-  const currentHeroIntro = "把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。";
+  const currentHeroIntro = "让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。";
   const currentHeroSubtitleEn = "Real Tasks · Creation · Safer AI";
-  const currentHeroIntroEn = "Use AI for real tasks: work faster, create content, organize material, and solve concrete problems.";
+  const currentHeroIntroEn = "Helping everyone use AI with confidence—turn ideas into creations and productivity into value.";
 
   it("uses explicit site settings when present", () => {
     const settings = {
@@ -37,12 +37,14 @@ describe("public site settings", () => {
     const settings = {
       site_logo: "ENHE",
       home_hero_title: "ENHE AI Tools",
-      home_hero_subtitle: "驾驭 AI 智能，重塑你的人生"
+      home_hero_subtitle: "驾驭 AI 智能，重塑你的人生",
+      home_hero_intro: "把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。"
     };
 
     expect(getEffectiveSiteLogo(settings, "/images/enhe-logo.svg")).toBe("/images/enhe-logo.svg");
     expect(getEffectiveHomeHeroTitle(settings, "ENHE AI")).toBe("ENHE AI");
     expect(getEffectiveHomeHeroSubtitle(settings, currentHeroSubtitle)).toBe(currentHeroSubtitle);
+    expect(getEffectiveHomeHeroIntro(settings, currentHeroIntro)).toBe(currentHeroIntro);
   });
 
   it("does not leak Chinese homepage settings into the English homepage", () => {

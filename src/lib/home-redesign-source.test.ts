@@ -22,8 +22,8 @@ describe("homepage SaaS redesign source", () => {
     expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-outcome-shell"));
     expect(page).toContain("const heroTitle =");
     expect(page).toContain("ENHE AI");
-    expect(page).toContain("把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。");
-    expect(page).toContain("Use AI for real tasks: work faster, create content, organize material, and solve concrete problems.");
+    expect(page).toContain("让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。");
+    expect(page).toContain("Helping everyone use AI with confidence—turn ideas into creations and productivity into value.");
     expect(page).toContain("const heroIntro =");
     expect(page).not.toContain("home-hero-metrics");
     expect(page).not.toContain("t.home.metricsExploreTitle");

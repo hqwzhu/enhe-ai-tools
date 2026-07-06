@@ -188,8 +188,8 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
       : "ENHE AI";
   const heroIntro =
     forceLocale === "en"
-      ? "Use AI for real tasks: work faster, create content, organize material, and solve concrete problems."
-      : "把 AI 用到真实任务里，更快完成工作、创作内容、整理资料和解决问题。";
+      ? "Helping everyone use AI with confidence—turn ideas into creations and productivity into value."
+      : "让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。";
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
   });
