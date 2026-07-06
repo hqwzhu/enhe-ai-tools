@@ -318,17 +318,17 @@ export function buildListingMetadataTitle(
   brand = siteName,
 ) {
   const zhTitles: Record<ListingMetadataKind, string> = {
-    software: "AI软件应用下载、工具选择与安全工作流",
-    "account-services": "AI账号服务咨询、订阅说明与合规边界",
-    "skill-learning": "AI技能学习课程、提示词与实战工作流",
+    software: "提升工作效率产品、办公效率工具与AI电脑软件",
+    "account-services": "生成图片/视频/音频产品、AI视频图片音频工具",
+    "skill-learning": "改变你未来的AI产品、智能体提示词与副业变现",
     "ai-news": "AI资讯、趋势解读与工具落地指南",
     pricing: "AI工具报价、购买流程与交付说明",
     tutorials: "AI工具教程、软件配置与使用指南",
   };
   const enTitles: Record<ListingMetadataKind, string> = {
-    software: "AI Software Apps, Downloads, and Tool Selection",
-    "account-services": "AI Account Service Guidance and Compliance",
-    "skill-learning": "AI Skill Courses, Prompts, and Workflows",
+    software: "Boost Productivity Products And AI Desktop Tools",
+    "account-services": "Generate Images Video Audio And AI Media Tools",
+    "skill-learning": "Change Your AI Future Products And AI Agents",
     "ai-news": "AI News, Trend Insights, and Tool Decisions",
     pricing: "AI Tool Pricing, Purchase, and Delivery Guide",
     tutorials: "AI Tool Tutorials, Setup, and Workflow Guides",
