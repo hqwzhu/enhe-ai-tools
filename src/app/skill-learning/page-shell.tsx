@@ -193,6 +193,7 @@ export async function SkillLearningPageShell({
           title={t.listing.skillLearningTitle}
           intro={t.listing.skillLearningIntro}
         />
+        <SkillLearningUserAnswerCard forceLocale={forceLocale} />
         <ListingDecisionStrip forceLocale={forceLocale} />
         <ListingTrustNote forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
@@ -217,6 +218,26 @@ export async function SkillLearningPageShell({
         </ProductSeoDisclosure>
       </Container>
     </main>
+  );
+}
+
+function SkillLearningUserAnswerCard({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <section
+      className="surface-panel-soft mt-6 p-5"
+      aria-label={forceLocale === "en" ? "AI skill learning answer" : "AI 技能学习答案"}
+    >
+      <strong className="text-sm font-black text-[var(--marketing-text)]">
+        {forceLocale === "en"
+          ? "AI learning should start from a real task, not from collecting another course."
+          : "AI 技能学习应从真实任务开始，而不是继续收藏泛泛课程。"}
+      </strong>
+      <p className="mt-2 max-w-4xl text-sm leading-7 text-[var(--marketing-muted)]">
+        {forceLocale === "en"
+          ? "ENHE AI helps users learn prompts, tool workflows, automation, and content creation by producing reusable outputs such as documents, scripts, assets, templates, or repeatable work processes."
+          : "ENHE AI 帮用户围绕工作效率、内容创作、资料整理和工具使用来学习提示词、工具流程、自动化和创作方法，目标是产出文档、脚本、素材、模板或可复用工作流。"}
+      </p>
+    </section>
   );
 }
 
@@ -326,9 +347,9 @@ function SkillLearningOutcomeBlock({ forceLocale }: { forceLocale: Locale }) {
                   <span className="text-xs font-black text-[var(--marketing-accent)]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                  <strong className="text-base font-black leading-snug text-[var(--marketing-text)]">
                     {section.title}
-                  </h3>
+                  </strong>
                 </div>
               </summary>
               <div className="content-fold-body">
@@ -351,9 +372,9 @@ function SkillLearningOutcomeBlock({ forceLocale }: { forceLocale: Locale }) {
               className="content-fold"
             >
               <summary>
-                <h3 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                <strong className="text-base font-black leading-snug text-[var(--marketing-text)]">
                   {item.question}
-                </h3>
+                </strong>
               </summary>
               <div className="content-fold-body">
                 <p className="text-sm leading-7 text-[var(--marketing-muted)]">
@@ -400,9 +421,9 @@ function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
                 <span className="text-xs font-black text-[var(--marketing-accent)]">
                   {item.label}
                 </span>
-                <h2 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                <strong className="text-base font-black leading-snug text-[var(--marketing-text)]">
                   {item.title}
-                </h2>
+                </strong>
               </div>
             </summary>
             <div className="content-fold-body">
@@ -420,9 +441,9 @@ function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
             className="content-fold"
           >
             <summary>
-              <h2 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
+              <strong className="text-lg font-black leading-snug text-[var(--marketing-text)]">
                 {section.title}
-              </h2>
+              </strong>
             </summary>
             <div className="content-fold-body">
               <p className="text-sm leading-7 text-[var(--marketing-muted)]">

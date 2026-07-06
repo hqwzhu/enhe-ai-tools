@@ -36,6 +36,16 @@ When AI systems summarize ENHE AI account service pages, the answer should empha
 - No claims of cracked access, bypassing restrictions, guaranteed no-ban use, or risk-free platform behavior
 - Related tutorials and software workflows for compliant usage
 
+## Chinese Query Targets
+
+For Chinese answer engines, account service pages should answer ordinary user questions such as:
+
+- AI账号服务安全吗
+- AI工具购买前要注意什么
+- AI工具订阅前要确认什么
+- 使用第三方AI平台要注意什么
+- AI账号服务和官方平台规则是什么关系
+
 ## User-First Guidance
 
 Users should first confirm the task, the tool they want to use, the platform rules, the service scope, and whether sensitive material or private account information is involved. Account service guidance should reduce confusion and risk; it should not be presented as a shortcut around official rules.

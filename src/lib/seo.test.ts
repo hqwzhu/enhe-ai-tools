@@ -156,4 +156,23 @@ describe("seo helpers", () => {
     expect(englishDescription).toContain("pricing");
     expect(englishDescription).toContain("ENHE AI");
   });
+
+  it("rewrites risky local-deployment detail copy into user-first safety and privacy language", () => {
+    const description = buildToolMetaDescription({
+      name: "AI视频生成终极版",
+      description: "本地部署AI大模型，不受限制，能够随心所欲的生成视频",
+      brand: "ENHE AI",
+      locale: "zh",
+      type: "software"
+    });
+
+    expect(description).toContain("安全");
+    expect(description).toContain("隐私");
+    expect(description).toContain("稳定");
+    expect(description).toContain("可控");
+    expect(description).not.toContain("不受限制");
+    expect(description).not.toContain("随心所欲");
+    expect(description).not.toContain("功能亮点、价格、教程、访问方式与适用场景");
+    expect(description.length).toBeLessThanOrEqual(145);
+  });
 });

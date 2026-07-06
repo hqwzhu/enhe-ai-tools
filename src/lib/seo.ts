@@ -535,6 +535,24 @@ function resolveToolTypeLabel(
   return "AI软件应用";
 }
 
+function hasControlledAiWorkflowCue(value: string) {
+  return /本地部署|私有化|不受限制|无限制|随心所欲|随时所欲|离线|隐私|敏感素材|private|local deployment|unrestricted/i.test(
+    value,
+  );
+}
+
+function buildControlledAiWorkflowDescription(
+  primaryName: string,
+  brand: string,
+  locale: Locale,
+) {
+  if (locale === "en") {
+    return `${primaryName} helps users build safer, more private, stable, and controlled AI workflows. Review pricing, tutorials, delivery scope, and system requirements on ${brand} before use.`;
+  }
+
+  return `${primaryName}适合需要安全、隐私、稳定、可控 AI 流程的用户。购买前在 ${brand} 确认价格、教程、交付方式、设备要求和隐私边界。`;
+}
+
 export function buildToolMetadataTitle({
   name,
   englishName,
@@ -615,6 +633,14 @@ export function buildToolMetaDescription({
 
   if (locale === "en") {
     if (normalizedDescription) {
+      if (hasControlledAiWorkflowCue(normalizedDescription)) {
+        return buildMetaDescription(
+          buildControlledAiWorkflowDescription(primaryName, brand, locale),
+          defaultSiteDescription,
+          targetMaxLength,
+        );
+      }
+
       if (
         !shouldNameGenericAccountServiceCopy &&
         normalizedDescription.length < shortDescriptionLimit
@@ -651,11 +677,19 @@ export function buildToolMetaDescription({
       );
     }
 
+    if (hasControlledAiWorkflowCue(normalizedDescription)) {
+      return buildMetaDescription(
+        buildControlledAiWorkflowDescription(primaryName, brand, locale),
+        defaultSiteDescription,
+        targetMaxLength,
+      );
+    }
+
     const brandLower = normalizeWhitespace(brand).toLowerCase();
     const descriptionLower = normalizedDescription.toLowerCase();
     const compactDescription =
       normalizedDescription.length < shortDescriptionLimit
-        ? `${normalizedDescription} 在 ${brand} 查看${primaryName}的功能亮点、价格、教程、访问方式与适用场景，判断是否适合你的AI创作或效率工作流。`
+        ? `${normalizedDescription} 在 ${brand} 查看${primaryName}价格、教程、交付方式、隐私边界和适用任务，判断是否适合当前创作或效率工作流。`
         : descriptionLower.includes(brandLower)
           ? normalizedDescription
           : `${normalizedDescription} 在 ${brand} 查看使用建议。`;
@@ -668,7 +702,7 @@ export function buildToolMetaDescription({
   }
 
   return buildMetaDescription(
-    `在 ${brand} 查看 ${primaryName} 的功能亮点、价格、教程与使用方式，快速了解这款${typeLabel}。`,
+    `在 ${brand} 查看 ${primaryName} 的价格、教程、交付方式、使用边界和适用任务，判断这款${typeLabel}是否值得使用。`,
     defaultSiteDescription,
     targetMaxLength,
   );

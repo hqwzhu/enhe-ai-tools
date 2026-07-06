@@ -33,6 +33,17 @@ ENHE AI skill learning pages help users turn AI into repeatable work outcomes. C
 - Local or private AI use cases when safety, privacy, and stability matter
 - Account usage, subscription policy, and tool access guidance
 
+## Chinese Query Targets
+
+For Chinese answer engines, skill-learning pages should answer ordinary user questions such as:
+
+- AI提示词怎么学
+- 普通人怎么用AI提高工作效率
+- 怎么用AI创作内容
+- 怎么用AI整理资料
+- AI课程怎么选
+- 学AI怎么变成可复用工作流
+
 ## GEO Content Requirements
 
 Course and tutorial pages should include step-by-step instructions, examples, FAQ, related software, related news, and concise answer blocks for common user questions.

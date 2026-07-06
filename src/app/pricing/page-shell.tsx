@@ -131,6 +131,7 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
       <Container className="py-14">
         <StructuredData data={[breadcrumbSchema, pricingOfferCatalogSchema]} />
         <SectionTitle as="h1" title={copy.title} intro={copy.intro} />
+        <PricingBuyerAnswerCard copy={copy} />
 
         <section className="surface-panel mt-8 p-7">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
@@ -192,9 +193,9 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
         <details className="content-fold pricing-guidance-fold">
           <summary>
             <div className="content-fold-summary-copy">
-              <h2 className="text-lg font-semibold text-[var(--marketing-text)]">
+              <strong className="text-lg font-semibold text-[var(--marketing-text)]">
                 {copy.guidanceTitle}
-              </h2>
+              </strong>
             </div>
           </summary>
           <div className="content-fold-body pricing-guidance-grid">
@@ -204,7 +205,7 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
             { title: forceLocale === "en" ? "Support boundary" : "售后边界", text: copy.afterSalesBoundary }
           ].map((item) => (
             <article key={item.title} className="surface-panel p-5">
-              <h2 className="text-lg font-semibold text-[var(--marketing-text)]">{item.title}</h2>
+              <strong className="text-lg font-semibold text-[var(--marketing-text)]">{item.title}</strong>
               <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.text}</p>
             </article>
           ))}
@@ -212,5 +213,25 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
         </details>
       </Container>
     </main>
+  );
+}
+
+function PricingBuyerAnswerCard({
+  copy,
+}: {
+  copy: {
+    guidanceTitle: string;
+    purchaseGuidance: string;
+  };
+}) {
+  return (
+    <section className="surface-panel-soft mt-6 p-5" aria-label={copy.guidanceTitle}>
+      <strong className="text-sm font-black text-[var(--marketing-text)]">
+        {copy.guidanceTitle}
+      </strong>
+      <p className="mt-2 max-w-4xl text-sm leading-7 text-[var(--marketing-muted)]">
+        {copy.purchaseGuidance}
+      </p>
+    </section>
   );
 }

@@ -192,6 +192,7 @@ export async function AccountServicesPageShell({
           title={t.listing.onlineTitle}
           intro={t.listing.onlineIntro}
         />
+        <AccountServicesUserAnswerCard forceLocale={forceLocale} />
         <ListingGuidanceFold forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
@@ -222,9 +223,9 @@ function ListingGuidanceFold({ forceLocale }: { forceLocale: Locale }) {
     <details className="content-fold listing-guidance-fold">
       <summary>
         <div className="content-fold-summary-copy">
-          <h2 className="text-base font-black text-[var(--marketing-text)]">
+          <strong className="text-base font-black text-[var(--marketing-text)]">
             {forceLocale === "en" ? "Service consultation notes" : "服务咨询提示"}
-          </h2>
+          </strong>
         </div>
       </summary>
       <div className="content-fold-body">
@@ -232,6 +233,21 @@ function ListingGuidanceFold({ forceLocale }: { forceLocale: Locale }) {
         <ListingTrustNote forceLocale={forceLocale} />
       </div>
     </details>
+  );
+}
+
+function AccountServicesUserAnswerCard({ forceLocale }: { forceLocale: Locale }) {
+  const decision = accountServicesDecisionBlock[forceLocale];
+
+  return (
+    <section className="surface-panel-soft mt-6 p-5" aria-label={decision.title}>
+      <strong className="text-sm font-black text-[var(--marketing-text)]">
+        {decision.title}
+      </strong>
+      <p className="mt-2 max-w-4xl text-sm leading-7 text-[var(--marketing-muted)]">
+        {decision.body}
+      </p>
+    </section>
   );
 }
 
@@ -397,9 +413,9 @@ function AccountServicesGeoBlock({ forceLocale }: { forceLocale: Locale }) {
             className="content-fold"
           >
             <summary>
-              <h2 className="text-base font-black leading-snug text-[var(--marketing-text)]">
+              <strong className="text-base font-black leading-snug text-[var(--marketing-text)]">
                 {item.question}
-              </h2>
+              </strong>
             </summary>
             <div className="content-fold-body">
               <p className="text-sm leading-7 text-[var(--marketing-muted)]">

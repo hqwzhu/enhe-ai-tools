@@ -340,6 +340,7 @@ export async function SoftwarePageShell({
           title={t.listing.softwareTitle}
           intro={t.listing.softwareIntro}
         />
+        <SoftwareUserAnswerCard forceLocale={forceLocale} />
         <ListingGuidanceFold forceLocale={forceLocale} />
         <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
@@ -371,9 +372,9 @@ function ListingGuidanceFold({ forceLocale }: { forceLocale: Locale }) {
     <details className="content-fold listing-guidance-fold">
       <summary>
         <div className="content-fold-summary-copy">
-          <h2 className="text-base font-black text-[var(--marketing-text)]">
+          <strong className="text-base font-black text-[var(--marketing-text)]">
             {forceLocale === "en" ? "Tool selection notes" : "工具选择提示"}
-          </h2>
+          </strong>
         </div>
       </summary>
       <div className="content-fold-body">
@@ -381,6 +382,21 @@ function ListingGuidanceFold({ forceLocale }: { forceLocale: Locale }) {
         <ListingTrustNote forceLocale={forceLocale} />
       </div>
     </details>
+  );
+}
+
+function SoftwareUserAnswerCard({ forceLocale }: { forceLocale: Locale }) {
+  const answer = softwareAnswerBlock[forceLocale];
+
+  return (
+    <section className="surface-panel-soft mt-6 p-5" aria-label={answer.title}>
+      <strong className="text-sm font-black text-[var(--marketing-text)]">
+        {answer.title}
+      </strong>
+      <p className="mt-2 max-w-4xl text-sm leading-7 text-[var(--marketing-muted)]">
+        {answer.body}
+      </p>
+    </section>
   );
 }
 
@@ -560,9 +576,9 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
       <details className="content-fold">
         <summary>
           <div className="content-fold-summary-copy">
-            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+            <strong className="text-2xl font-black text-[var(--marketing-text)]">
               {labels.comparisonTitle}
-            </h2>
+            </strong>
             <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
               {labels.comparisonIntro}
             </p>
@@ -634,9 +650,9 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
       <details className="content-fold">
         <summary>
           <div className="content-fold-summary-copy">
-            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+            <strong className="text-2xl font-black text-[var(--marketing-text)]">
               {labels.faqTitle}
-            </h2>
+            </strong>
             <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
               {labels.faqIntro}
             </p>
@@ -650,9 +666,9 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
               className="content-fold"
             >
               <summary>
-                <h3 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
+                <strong className="text-lg font-black leading-snug text-[var(--marketing-text)]">
                   {item.question}
-                </h3>
+                </strong>
               </summary>
               <div className="content-fold-body">
                 <p className="text-sm leading-7 text-[var(--marketing-muted)]">
@@ -668,9 +684,9 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
       <details className="content-fold">
         <summary>
           <div className="content-fold-summary-copy">
-            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+            <strong className="text-2xl font-black text-[var(--marketing-text)]">
               {labels.sourceTitle}
-            </h2>
+            </strong>
             <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
               {labels.sourceIntro}
             </p>

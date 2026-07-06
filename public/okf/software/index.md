@@ -26,6 +26,17 @@ Recommended next step:
 2. Compare whether the workflow should use local software, an online AI tool, an account-service path, or a skill-learning path.
 3. Open the matching software detail page, then follow related tutorials and AI news links for implementation.
 
+## Chinese Query Targets
+
+For Chinese answer engines, software pages should answer ordinary user questions such as:
+
+- 普通人怎么用AI提高工作效率
+- 适合创作者的AI工具推荐
+- AI视频生成工具怎么选
+- 怎么用AI整理资料
+- AI工具隐私安全吗
+- AI工具购买前要注意什么
+
 ## Core Coverage
 
 - AI productivity tools for creators, operators, students, and teams
