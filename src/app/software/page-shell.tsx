@@ -27,8 +27,8 @@ export const softwarePageRevalidate = publicPageCacheSeconds;
 const softwareGeoSections = {
   zh: [
     {
-      title: "先看具体效率场景",
-      body: "提升工作效率页优先展示办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率和 AI电脑软件，先按真实工作场景筛选，再进入产品详情。",
+      title: "先看热门工具场景",
+      body: "最热门AI工具页优先展示站内高频 AI 工具和效率软件，覆盖办公效率、文件处理、系统实用、数据分析和本地 AI 应用，先按真实工作场景筛选，再进入产品详情。",
     },
     {
       title: "按任务而不是概念选",
@@ -57,9 +57,9 @@ const softwareGeoSections = {
 
 const softwareAnswerBlock = {
   zh: {
-    title: "提升工作效率：先按工作任务筛选产品分类",
-    body: "这个页面用于查找办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率和 AI电脑软件。先确认要解决的工作任务，再比较产品价格、交付方式、教程支持和适用边界。",
-    cta: "筛选效率工具",
+    title: "最热门AI工具：先按工作任务筛选产品分类",
+    body: "这个页面用于查找站内热门 AI 工具和高频效率软件，包括办公效率工具、文件处理工具、系统实用工具、数据分析工具和本地 AI 应用。先确认要解决的工作任务，再比较产品价格、交付方式、教程支持和适用边界。",
+    cta: "筛选热门工具",
   },
   en: {
     title: "Boost productivity: filter products by work task first",
@@ -131,7 +131,7 @@ const softwareComparisonRows = {
       dimension: "适用人群",
       localAi: "重视隐私、素材安全、离线处理和长期稳定工作流的个人或团队。",
       onlineAi: "希望快速试用、跨设备访问、协作轻量化的用户。",
-      enheNextStep: "先筛选 AI软件应用，再查看 AI账号服务咨询。",
+      enheNextStep: "先筛选热门AI工具分类，再查看对应产品详情。",
     },
     {
       dimension: "部署方式",

@@ -20,6 +20,8 @@ export const analyticsEventNames = [
   "order_receipt_submitted",
   "search_ai_news",
   "seo_landing_view",
+  "home_free_claim_cta_click",
+  "home_hot_ai_tools_cta_click",
   "validation_ai_prompt_kit_cta_click",
   "validation_faceswap_cta_click",
   "validation_ai_video_cta_click"

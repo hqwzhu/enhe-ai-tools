@@ -17,14 +17,14 @@ describe("homepage and navigation copy", () => {
   it("uses the new Chinese themed product-entry naming", () => {
     expect(dictionaries.zh.nav.software).toBe("AI软件应用");
     expect(dictionaries.zh.nav.onlineTools).toBe("AI账号服务");
-    expect(dictionaries.zh.home.softwareButton).toBe("提升工作效率");
+    expect(dictionaries.zh.home.softwareButton).toBe("热门AI工具");
     expect(dictionaries.zh.home.onlineButton).toBe("生成图片/视频/音频");
     expect(dictionaries.zh.home.skillLearningButton).toBe("改变你未来的AI");
     expect(dictionaries.zh.home.featuredSoftwareEyebrow).toBe("AI Software Apps");
     expect(dictionaries.zh.home.featuredSoftwareTitle).toBe("精选AI软件应用");
     expect(dictionaries.zh.home.onlineToolsEyebrow).toBe("AI Account Services");
     expect(dictionaries.zh.home.onlineToolsTitle).toBe("精选AI账号服务");
-    expect(dictionaries.zh.listing.softwareTitle).toBe("提升工作效率");
+    expect(dictionaries.zh.listing.softwareTitle).toBe("最热门AI工具");
     expect(dictionaries.zh.listing.onlineTitle).toBe("生成图片/视频/音频");
     expect(dictionaries.zh.listing.skillLearningTitle).toBe("改变你未来的AI");
     expect(dictionaries.zh.toolDetail.software).toBe("AI软件应用");
@@ -34,7 +34,7 @@ describe("homepage and navigation copy", () => {
   it("uses matching English naming for the same surfaces", () => {
     expect(dictionaries.en.nav.software).toBe("AI Software Apps");
     expect(dictionaries.en.nav.onlineTools).toBe("AI Account Services");
-    expect(dictionaries.en.home.softwareButton).toBe("Boost Productivity");
+    expect(dictionaries.en.home.softwareButton).toBe("Popular AI Tools");
     expect(dictionaries.en.home.onlineButton).toBe("Generate Images/Video/Audio");
     expect(dictionaries.en.home.skillLearningButton).toBe("Change Your AI Future");
     expect(dictionaries.en.home.featuredSoftwareEyebrow).toBe("AI Software Apps");

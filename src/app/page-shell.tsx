@@ -238,11 +238,25 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               </p>
 
               <div className="home-hero-actions">
-                <ButtonLink href={buildLocalePath("/software", forceLocale)} variant="primary" className="home-hero-cta home-hero-cta-primary">
-                  {forceLocale === "en" ? "Browse products" : "浏览产品"}
+                <ButtonLink
+                  href={buildLocalePath("/software", forceLocale)}
+                  variant="primary"
+                  className="home-hero-cta home-hero-cta-primary"
+                  data-analytics-event="home_hot_ai_tools_cta_click"
+                  data-analytics-meta-target="software"
+                  data-analytics-meta-placement="home-hero"
+                >
+                  {forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"}
                 </ButtonLink>
-                <ButtonLink href={buildLocalePath("/ai-news", forceLocale)} variant="ghost" className="home-hero-cta home-hero-cta-accent">
-                  {forceLocale === "en" ? "View news" : "查看资讯"}
+                <ButtonLink
+                  href={buildLocalePath("/skill-learning", forceLocale)}
+                  variant="ghost"
+                  className="home-hero-cta home-hero-cta-accent"
+                  data-analytics-event="home_free_claim_cta_click"
+                  data-analytics-meta-target="skill-learning"
+                  data-analytics-meta-placement="home-hero"
+                >
+                  {forceLocale === "en" ? "Claim Free" : "免费领取"}
                 </ButtonLink>
               </div>
             </div>

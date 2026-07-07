@@ -52,7 +52,7 @@ export function canOpenPublicDownloadEntry(input: {
   isDownloadPaid: boolean;
   hasDownloadPurchase: boolean;
 }) {
-  if (input.isDownloadPaid && !input.hasDownloadPurchase) return false;
+  if (input.isDownloadPaid) return false;
   return /^https?:\/\//i.test(input.content);
 }
 
@@ -64,8 +64,8 @@ export function resolveSoftwareDownloadCtaHref(input: {
   protectedDownloadHref: string;
   publicDownloadHref?: string | null;
 }) {
+  if (input.isDownloadPaid && !input.hasDownloadPurchase) return "#download-purchase";
   if (input.publicDownloadHref) return input.publicDownloadHref;
   if (input.hasDownloadLink && input.showDownloadLinkArea) return "#download-links";
-  if (input.isDownloadPaid && !input.hasDownloadPurchase) return "#download-purchase";
   return input.protectedDownloadHref;
 }

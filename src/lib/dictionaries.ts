@@ -40,7 +40,7 @@ export const dictionaries = {
       titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows",
       intro: "让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。",
       positioning: "恩禾 ENHE AI 是面向中文用户的 AI 工具与技能学习平台，聚合 AI工具、本地部署AI应用、AI智能体、AI技能教程、AI账号服务、AI最新资讯和 AI趋势分析，帮助用户把 AI 信息转化为可执行成果。",
-      softwareButton: "提升工作效率",
+      softwareButton: "热门AI工具",
       onlineButton: "生成图片/视频/音频",
       skillLearningButton: "改变你未来的AI",
       aiNewsButton: "AI前沿资讯",
@@ -86,8 +86,8 @@ export const dictionaries = {
       defaultAudience: "效率提升用户"
     },
     listing: {
-      softwareTitle: "提升工作效率",
-      softwareIntro: "按办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率和 AI电脑软件分类查找产品，把日常工作流程做得更快、更稳、更清楚。",
+      softwareTitle: "最热门AI工具",
+      softwareIntro: "精选站内热门 AI 工具和高频效率软件，按办公效率、文件处理、系统实用、数据分析、本地 AI 应用等场景筛选，快速找到适合日常工作流的产品。",
       onlineTitle: "生成图片/视频/音频",
       onlineIntro: "按 AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成和视频/图片处理分类查找产品，快速进入多媒体内容生成与素材处理工作流。",
       skillLearningTitle: "改变你未来的AI",
@@ -391,7 +391,7 @@ export const dictionaries = {
       titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows",
       intro: "Helping everyone use AI with confidence—turn ideas into creations and productivity into value.",
       positioning: "ENHE AI is an AI tools and skill-learning platform for Chinese users, covering AI tools, local AI deployment apps, AI agents, AI skill tutorials, AI account service guidance, and the latest AI news.",
-      softwareButton: "Boost Productivity",
+      softwareButton: "Popular AI Tools",
       onlineButton: "Generate Images/Video/Audio",
       skillLearningButton: "Change Your AI Future",
       aiNewsButton: "AI News",
@@ -437,8 +437,8 @@ export const dictionaries = {
       defaultAudience: "Productivity users"
     },
     listing: {
-      softwareTitle: "Boost Productivity",
-      softwareIntro: "Find products for office productivity, file processing, system utilities, data analysis, productivity gains, and AI desktop software.",
+      softwareTitle: "Most Popular AI Tools",
+      softwareIntro: "Browse popular AI tools and high-frequency productivity software across office workflows, file processing, system utilities, data analysis, and local AI apps.",
       onlineTitle: "Generate Images/Video/Audio",
       onlineIntro: "Find AI video, image, and audio tools for media generation, voice generation, and video or image processing workflows.",
       skillLearningTitle: "Change Your AI Future",

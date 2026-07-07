@@ -318,7 +318,7 @@ export function buildListingMetadataTitle(
   brand = siteName,
 ) {
   const zhTitles: Record<ListingMetadataKind, string> = {
-    software: "提升工作效率产品、办公效率工具与AI电脑软件",
+    software: "最热门AI工具、热门AI软件与高频效率产品",
     "account-services": "生成图片/视频/音频产品、AI视频图片音频工具",
     "skill-learning": "改变你未来的AI产品、智能体提示词与副业变现",
     "ai-news": "AI资讯、趋势解读与工具落地指南",
@@ -326,7 +326,7 @@ export function buildListingMetadataTitle(
     tutorials: "AI工具教程、软件配置与使用指南",
   };
   const enTitles: Record<ListingMetadataKind, string> = {
-    software: "Boost Productivity Products And AI Desktop Tools",
+    software: "Most Popular AI Tools And Productivity Software",
     "account-services": "Generate Images Video Audio And AI Media Tools",
     "skill-learning": "Change Your AI Future Products And AI Agents",
     "ai-news": "AI News, Trend Insights, and Tool Decisions",
@@ -384,7 +384,7 @@ export function buildListingMetaDescription(
 ) {
   const zhDescriptions = {
     software:
-      "按办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率和AI电脑软件分类查找产品，比较价格、教程、交付方式和适用场景，先确认能否提升日常工作效率再下载或购买，减少重复步骤和试错时间。",
+      "浏览最热门AI工具和高频效率软件，按办公效率、文件处理、系统实用、数据分析、本地AI应用等场景筛选产品，比较价格、教程、案例、交付方式和适用边界，快速找到适合日常工作流的可靠工具。",
     "account-services":
       "按AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成和视频/图片处理分类查找产品，比较输出质量、导出格式、处理速度、价格边界和教程，先确认适合你的多媒体内容流程再使用，并确认商用边界。",
     "skill-learning":
@@ -398,7 +398,7 @@ export function buildListingMetaDescription(
   } as const;
   const enDescriptions = {
     software:
-      "Find AI software for office productivity, file processing, system utilities, data analysis, productivity gains, and AI desktop workflows. Compare fit.",
+      "Browse popular AI software tools for office workflows, file processing, system utilities, data analysis, and local AI apps. Compare fit.",
     "account-services":
       "Find AI video, image, and audio tools for video generation, voice generation, and media processing. Compare output quality, exports, price, and fit.",
     "skill-learning":

@@ -86,4 +86,17 @@ describe("tool download link visibility", () => {
       })
     ).toBe("/api/tools/tool-1/download");
   });
+
+  it("never exposes a public direct download link for paid software", () => {
+    expect(
+      resolveSoftwareDownloadCtaHref({
+        hasDownloadLink: true,
+        showDownloadLinkArea: false,
+        isDownloadPaid: true,
+        hasDownloadPurchase: false,
+        protectedDownloadHref: "/api/tools/tool-1/download",
+        publicDownloadHref: "https://example.com/paid-app.zip"
+      })
+    ).toBe("#download-purchase");
+  });
 });

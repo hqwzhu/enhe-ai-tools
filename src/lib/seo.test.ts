@@ -62,6 +62,8 @@ describe("seo helpers", () => {
 
     expect(buildListingMetadataTitle("pricing", "en", "ENHE AI")).toContain("Pricing");
     expect(buildListingMetadataTitle("tutorials", "en", "ENHE AI")).toContain("Tutorials");
+    expect(buildListingMetadataTitle("software", "zh", "ENHE AI")).toContain("最热门AI工具");
+    expect(buildListingMetaDescription("software", "zh")).toContain("最热门AI工具");
   });
 
   it("builds locale-aware tool titles without duplicate names", () => {
