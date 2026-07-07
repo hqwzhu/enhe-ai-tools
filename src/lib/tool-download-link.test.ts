@@ -39,6 +39,15 @@ describe("tool download link visibility", () => {
     ]);
   });
 
+  it("keeps Feishu wiki query strings when linkifying tutorial links", () => {
+    const url = "https://qcnerk9meslu.feishu.cn/wiki/CEqtwGF9BiOQXNkzEmVcWecGnWe?from=from_copylink";
+
+    expect(linkifyDownloadLinkContent(`教程链接：${url}`)).toEqual([
+      { type: "text", text: "教程链接：" },
+      { type: "link", text: url, href: url }
+    ]);
+  });
+
   it("only opens protected download entries for real locators", () => {
     expect(canOpenProtectedDownloadEntry("中文下载说明：联系管理员获取")).toBe(false);
     expect(canOpenProtectedDownloadEntry("/uploads/app.zip")).toBe(true);

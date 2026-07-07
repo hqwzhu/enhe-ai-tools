@@ -9,6 +9,7 @@ const orderedListPattern = /^\s*(?:(\d+)[.)\u3001]|[\uFF08(](\d+)[\uFF09)])\s*(.
 const markdownHeadingPattern = /^\s*#{1,4}\s+(.+)$/;
 const colonListLinePattern = /^\s*([^:：\n]{2,24})[:：]\s*(\S.+)$/;
 const sentenceSplitPattern = /([^\u3002\uFF01\uFF1F\uFF1B.!?;]+[\u3002\uFF01\uFF1F\uFF1B.!?;]+)(?=\s*|$)/g;
+const absoluteHttpUrlPresencePattern = /https?:\/\//i;
 const knownStandaloneHeadingLabels = new Set([
   "主要功能",
   "核心功能",
@@ -96,6 +97,7 @@ export function normalizeToolSummaryForStorage(value: string) {
 export function normalizeToolContentForStorage(value: string) {
   const normalized = normalizeFormattedLines(value);
   if (!normalized) return "";
+  if (absoluteHttpUrlPresencePattern.test(normalized)) return normalized;
   if (hasMeaningfulLineBreaks(normalized)) return normalized;
 
   const sentences = splitDenseSentences(normalized);

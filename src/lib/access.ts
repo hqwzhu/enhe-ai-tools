@@ -66,7 +66,7 @@ export async function assertDownloadAccess(toolId: string) {
 
 export async function assertOnlineToolAccess(toolId: string) {
   const { tool, user, ip, userAgent } = await assertBaseToolAccess(toolId);
-  const servicePrice = getPrimaryToolPrice(tool.priceSpecs, tool.downloadPrice);
+  const servicePrice = getPrimaryToolPrice(tool.priceSpecs, 0);
   if (tool.type === "online" && servicePrice > 0) {
     const purchase = await prisma.toolPurchase.findUnique({
       where: { userId_toolId: { userId: user.id, toolId: tool.id } }

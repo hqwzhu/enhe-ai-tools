@@ -153,7 +153,8 @@ export async function createSoftwareDownloadOrderAction(formData: FormData) {
   });
   if (!tool) throw new Error("工具或服务不存在，或尚未发布");
   const selectedPriceSpec = resolveToolOrderPriceSpec(tool.priceSpecs, requestedPriceSpecId);
-  const orderAmount = selectedPriceSpec?.price ?? tool.downloadPrice;
+  const fallbackOrderAmount = tool.type === "software" ? tool.downloadPrice : 0;
+  const orderAmount = selectedPriceSpec?.price ?? fallbackOrderAmount;
   const redirectTarget = `/api/tools/${tool.id}/download`;
   const isPaidSoftware = tool.type === "software" && tool.isDownloadPaid && Number(orderAmount) > 0;
   const isPaidAccountService = tool.type === "online" && Number(orderAmount) > 0;

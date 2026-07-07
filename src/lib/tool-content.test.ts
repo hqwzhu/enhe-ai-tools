@@ -46,6 +46,13 @@ describe("tool content helpers", () => {
     ]);
   });
 
+  it("does not split bare http URLs while formatting dense content", () => {
+    const raw = "教程链接：https://qcnerk9meslu.feishu.cn/wiki/CEqtwGF9BiOQXNkzEmVcWecGnWe?from=from_copylink";
+
+    expect(normalizeToolContentForStorage(raw)).toBe(raw);
+    expect(buildToolContentBlocks(raw)).toEqual([{ type: "paragraph", text: raw }]);
+  });
+
   it("formats short product section titles and colon-led feature rows", () => {
     const raw = [
       "在工作中，LumiOS 可以作为你的桌面助手。",

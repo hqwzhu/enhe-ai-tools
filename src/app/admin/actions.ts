@@ -1100,7 +1100,7 @@ export async function upsertToolAction(formData: FormData) {
     const selectedDownloadFileId = parseOptionalString(formData.get("downloadFileId"));
     const priceSpecs = parseToolPriceSpecsFromFormData(formData);
     const primaryPriceSpec = getPrimaryToolPriceSpec(priceSpecs);
-    const resolvedPurchasePrice = primaryPriceSpec?.price ?? parseNumberField(formData.get("downloadPrice"), 0);
+    const resolvedPurchasePrice = primaryPriceSpec?.price ?? (type === "software" ? parseNumberField(formData.get("downloadPrice"), 0) : 0);
     const existingProductImages = formData
       .getAll("existingScreenshots")
       .map((value) => String(value ?? ""))

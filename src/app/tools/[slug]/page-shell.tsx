@@ -235,10 +235,8 @@ export async function ToolDetailPageShell({
     tool.tagLinks,
     forceLocale,
   );
-  const servicePrice = getPrimaryToolPrice(
-    activePriceSpecs,
-    tool.downloadPrice,
-  );
+  const priceFallback = tool.type === "software" ? tool.downloadPrice : 0;
+  const servicePrice = getPrimaryToolPrice(activePriceSpecs, priceFallback);
   const visibleToolMetrics = getVisibleToolMetrics({
     downloadCount: tool.downloadCount,
     usageCount: tool.usageCount,
@@ -498,17 +496,17 @@ export async function ToolDetailPageShell({
                   </Badge>
                   <Badge
                     className={
-                      (isSkillLearning && !hasDownloadPurchase) ||
+                      paidSkillCourse ||
                       (tool.type === "software" && tool.isDownloadPaid) ||
                       (isAccountService && servicePrice > 0)
                         ? "text-[#FFB86B]"
                         : "text-[#5EF1C7]"
                     }
                   >
-                    {isSkillLearning
+                    {paidSkillCourse
                       ? forceLocale === "en"
                         ? "Paid course"
-                        : "收费服务"
+                        : "付费课程"
                       : tool.type === "software" && tool.isDownloadPaid
                         ? forceLocale === "en"
                           ? "Paid software"
@@ -993,7 +991,7 @@ export async function ToolDetailPageShell({
                 }
                 intro={td.tutorialsIntro}
               />
-              {isSkillLearning && !hasDownloadPurchase ? (
+              {paidSkillCourse && !hasDownloadPurchase ? (
               <div className="rounded-2xl border border-[#FFB86B]/25 bg-[#FFB86B]/8 p-6 text-center">
                 <p className="text-sm font-semibold text-[#FFB86B]">
                   {forceLocale === "en"

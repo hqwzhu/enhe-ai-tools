@@ -57,7 +57,8 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
   );
   const highlights = showMarketingMeta ? buildCardHighlights(tool, locale) : [];
   const audience = showMarketingMeta ? localizedCategory || t.toolCard.defaultAudience : "";
-  const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], tool.downloadPrice);
+  const priceFallback = tool.type === "software" ? tool.downloadPrice : 0;
+  const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], priceFallback);
   const isPositivePrice = Number.isFinite(servicePrice) && servicePrice > 0;
   const showPrice =
     showMarketingMeta &&

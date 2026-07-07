@@ -45,4 +45,18 @@ describe("ToolRichContent", () => {
 
     expect(extractOrderedMarkers(html)).toEqual(["1", "2", "3"]);
   });
+
+  it("renders bare Feishu tutorial URLs as links without changing query strings", () => {
+    vi.stubGlobal("React", React);
+
+    const url = "https://qcnerk9meslu.feishu.cn/wiki/CEqtwGF9BiOQXNkzEmVcWecGnWe?from=from_copylink";
+    const html = renderToStaticMarkup(
+      React.createElement(ToolRichContent, {
+        content: `教程链接：${url}`
+      })
+    );
+
+    expect(html).toContain(`href="${url}"`);
+    expect(html).toContain(`>${url}</a>`);
+  });
 });

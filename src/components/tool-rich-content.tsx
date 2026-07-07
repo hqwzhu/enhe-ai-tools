@@ -1,5 +1,30 @@
 import { cn } from "@/lib/utils";
 import { buildToolContentBlocks } from "@/lib/tool-content";
+import { linkifyDownloadLinkContent } from "@/lib/tool-download-link";
+
+function RichTextInline({ text }: { text: string }) {
+  const segments = linkifyDownloadLinkContent(text);
+
+  return (
+    <>
+      {segments.map((segment, index) =>
+        segment.type === "link" ? (
+          <a
+            key={`${segment.href}-${index}`}
+            href={segment.href}
+            target="_blank"
+            rel="nofollow noopener noreferrer"
+            className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(65,197,219,0.5)] underline-offset-4 transition hover:text-[#8feaff]"
+          >
+            {segment.text}
+          </a>
+        ) : (
+          <span key={`${segment.text}-${index}`}>{segment.text}</span>
+        ),
+      )}
+    </>
+  );
+}
 
 function splitListLead(item: string) {
   const match = item.match(/^([^:：]{2,24})([:：])\s*(.+)$/);
@@ -15,7 +40,7 @@ function splitListLead(item: string) {
 
 function RichListItem({ item }: { item: string }) {
   const splitItem = splitListLead(item);
-  if (!splitItem) return <span>{item}</span>;
+  if (!splitItem) return <RichTextInline text={item} />;
 
   return (
     <span>
@@ -23,7 +48,9 @@ function RichListItem({ item }: { item: string }) {
         {splitItem.lead}
         {splitItem.separator}
       </strong>{" "}
-      <span>{splitItem.rest}</span>
+      <span>
+        <RichTextInline text={splitItem.rest} />
+      </span>
     </span>
   );
 }
@@ -76,14 +103,20 @@ export function ToolRichContent({
                   <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/12 bg-white/8 text-xs font-semibold text-[var(--marketing-accent)]">
                     {startNumber + itemIndex}
                   </span>
-                  <span>{item}</span>
+                  <span>
+                    <RichTextInline text={item} />
+                  </span>
                 </li>
               ))}
             </ol>
           );
         }
 
-        return <p key={`${block.type}-${index}`}>{block.text}</p>;
+        return (
+          <p key={`${block.type}-${index}`}>
+            <RichTextInline text={block.text} />
+          </p>
+        );
       })}
     </div>
   );

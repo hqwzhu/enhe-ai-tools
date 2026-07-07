@@ -104,6 +104,9 @@ describe("site audit regression coverage", () => {
     expect(toolDetail).not.toContain("楼");
     expect(toolDetail).toContain("freeDownloadButtonLabel");
     expect(toolDetail).toContain("priceSpecHelpId");
+    expect(toolDetail).toContain("paidSkillCourse && !hasDownloadPurchase");
+    expect(toolDetail).toContain('const priceFallback = tool.type === "software" ? tool.downloadPrice : 0;');
+    expect(toolDetail).not.toContain("isSkillLearning && !hasDownloadPurchase");
     expect(toolDetail).toContain("paymentMethodLabelId");
     expect(toolDetail).toContain('aria-describedby={priceSpecHelpId}');
     expect(toolDetail).toContain('aria-describedby={paymentMethodHelpId}');
@@ -112,6 +115,16 @@ describe("site audit regression coverage", () => {
     expect(dictionaries.zh.toolDetail.buyDownload).toBe("购买并获取下载 ¥{price}");
     expect(dictionaries.zh.toolDetail.buyService).toBe("咨询并购买服务");
     expect(dictionaries.zh.toolDetail.buyCourse).toBe("购买课程 ¥{price}");
+  });
+
+  it("does not use stale download prices as account-service or course purchase prices", () => {
+    const publicActions = read("src/app/actions.ts");
+    const adminActions = read("src/app/admin/actions.ts");
+    const access = read("src/lib/access.ts");
+
+    expect(publicActions).toContain('const fallbackOrderAmount = tool.type === "software" ? tool.downloadPrice : 0;');
+    expect(adminActions).toContain('primaryPriceSpec?.price ?? (type === "software" ? parseNumberField(formData.get("downloadPrice"), 0) : 0)');
+    expect(access).toContain("getPrimaryToolPrice(tool.priceSpecs, 0)");
   });
 
   it("clips homepage motion and glow effects horizontally", () => {
