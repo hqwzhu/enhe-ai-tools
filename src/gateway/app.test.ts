@@ -247,8 +247,99 @@ describe("ENHE API Gateway", () => {
     expect(log.errorCode).toBe("model_not_found");
   });
 
-  test("POST /v1/chat/completions with stream=true returns 501 and writes usage log", async () => {
-    const fetchMock = mockUpstreamFetch(upstreamSuccessBody());
+  test("POST /v1/chat/completions proxies stream=true request and bills confirmed usage", async () => {
+    configureUpstream();
+    const fetchMock = mockUpstreamStreamFetch([
+      sseData({
+        id: "chatcmpl-stream-test",
+        object: "chat.completion.chunk",
+        choices: [{ index: 0, delta: { role: "assistant", content: "streamed response should not be logged" }, finish_reason: null }]
+      }),
+      sseData({
+        id: "chatcmpl-stream-test",
+        object: "chat.completion.chunk",
+        choices: [{ index: 0, delta: {}, finish_reason: "stop" }],
+        usage: { prompt_tokens: 7, completion_tokens: 9, total_tokens: 16 }
+      }),
+      "data: [DONE]\n\n"
+    ]);
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
+    const walletBefore = await expectWallet(account.userId);
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload({
+        stream: true,
+        messages: [{ role: "user", content: "secret streaming prompt should not be logged" }],
+        metadata: { should_not_forward: true },
+        authorization: "Bearer should-not-forward"
+      })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["content-type"]).toContain("text/event-stream");
+    expect(response.body).toContain("data:");
+    expect(response.body).toContain("[DONE]");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(`${testUpstreamBaseUrl}/v1/chat/completions`);
+    expect(init.headers).toEqual({
+      Authorization: `Bearer ${testUpstreamApiKey}`,
+      "Content-Type": "application/json"
+    });
+    const forwardedBody = JSON.parse(String(init.body));
+    expect(forwardedBody).toEqual({
+      model: testUpstreamModel,
+      messages: [{ role: "user", content: "secret streaming prompt should not be logged" }],
+      stream: true,
+      max_tokens: 1024,
+      stream_options: { include_usage: true }
+    });
+    expect(forwardedBody).not.toHaveProperty("metadata");
+    expect(forwardedBody).not.toHaveProperty("authorization");
+
+    const log = await expectUsageLog(response.headers["x-request-id"], 200);
+    expect(log.isStream).toBe(true);
+    expect(log.billingStatus).toBe("billed");
+    expect(log.inputTokens).toBe(7);
+    expect(log.outputTokens).toBe(9);
+    expect(log.costUsd.toNumber()).toBeGreaterThan(0);
+    expect(log.chargedUsd.toNumber()).toBeGreaterThan(0);
+    expect(log.walletTransactionId).toEqual(expect.any(String));
+    expect(log.streamFinishReason).toBe("stop");
+    expect(JSON.stringify(log)).not.toContain(account.activeKey);
+    expect(JSON.stringify(log)).not.toContain(testUpstreamApiKey);
+    expect(JSON.stringify(log)).not.toContain("secret streaming prompt should not be logged");
+    expect(JSON.stringify(log)).not.toContain("streamed response should not be logged");
+    expect(JSON.stringify(log)).not.toContain("Authorization");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore + 1);
+
+    const transaction = await prisma.apiCreditTransaction.findUnique({
+      where: { id: log.walletTransactionId ?? "" }
+    });
+    expect(transaction).not.toBeNull();
+    expect(transaction?.transactionType).toBe("api_charge");
+    expect(transaction?.usageLogId).toBe(log.id);
+    expect(transaction?.amountUsd.isNegative()).toBe(true);
+    expect(transaction?.amountUsd.abs().toFixed(8)).toBe(log.chargedUsd.toFixed(8));
+
+    const walletAfter = await expectWallet(account.userId);
+    expect(walletAfter.planBalanceUsd.toFixed(8)).toBe(walletBefore.planBalanceUsd.minus(log.chargedUsd).toFixed(8));
+  });
+
+  test("POST /v1/chat/completions with stream=true and no usage enters review without billing", async () => {
+    configureUpstream();
+    mockUpstreamStreamFetch([
+      sseData({
+        id: "chatcmpl-stream-no-usage",
+        object: "chat.completion.chunk",
+        choices: [{ index: 0, delta: { content: "no usage response should not be logged" }, finish_reason: "stop" }]
+      }),
+      "data: [DONE]\n\n"
+    ]);
     const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
     const app = buildGatewayApp();
     const response = await app.inject({
@@ -259,12 +350,139 @@ describe("ENHE API Gateway", () => {
     });
     await app.close();
 
-    expect(response.statusCode).toBe(501);
-    expect(response.json().error.code).toBe("unsupported_stream");
-    const log = await expectUsageLog(response.headers["x-request-id"], 501);
+    expect(response.statusCode).toBe(200);
+    const log = await expectUsageLog(response.headers["x-request-id"], 200);
     expect(log.isStream).toBe(true);
-    expect(log.billingStatus).toBe("not_billable");
+    expect(log.billingStatus).toBe("review");
+    expect(log.inputTokens).toBe(0);
+    expect(log.outputTokens).toBe(0);
+    expect(log.costUsd.toFixed()).toBe("0");
+    expect(log.chargedUsd.toFixed()).toBe("0");
+    expect(log.streamFinishReason).toBe("no_usage");
+    expect(JSON.stringify(log)).not.toContain("no usage response should not be logged");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
+  });
+
+  test("POST /v1/chat/completions with stream=true and zero wallet returns 402 before upstream", async () => {
+    const fetchMock = mockUpstreamStreamFetch([streamUsageSse()]);
+    const creditTransactionsBefore = await prisma.apiCreditTransaction.count();
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.zeroWalletKey}` },
+      payload: validChatPayload({ stream: true })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(402);
+    expect(response.json().error.code).toBe("insufficient_credit");
+    const log = await expectUsageLog(response.headers["x-request-id"], 402);
+    expect(log.isStream).toBe(true);
+    expect(log.errorCode).toBe("insufficient_credit");
+    expect(log.chargedUsd.toFixed()).toBe("0");
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(await prisma.apiCreditTransaction.count()).toBe(creditTransactionsBefore);
+  });
+
+  test("POST /v1/chat/completions with stream=true maps upstream 500 to 502", async () => {
+    configureUpstream();
+    mockUpstreamStreamFetch([streamUsageSse()], 500);
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload({ stream: true })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json().error.code).toBe("upstream_error");
+    const log = await expectUsageLog(response.headers["x-request-id"], 502);
+    expect(log.isStream).toBe(true);
+    expect(log.errorCode).toBe("upstream_error");
+    expect(log.billingStatus).toBe("not_billable");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
+  });
+
+  test("POST /v1/chat/completions with stream=true maps upstream timeout to 502", async () => {
+    configureUpstream();
+    const fetchMock = vi.fn().mockRejectedValue(Object.assign(new Error("aborted"), { name: "AbortError" }));
+    globalThis.fetch = fetchMock as typeof fetch;
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload({ stream: true })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json().error.code).toBe("upstream_error");
+    const log = await expectUsageLog(response.headers["x-request-id"], 502);
+    expect(log.isStream).toBe(true);
+    expect(log.errorMessage).toBe("Upstream request timed out.");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
+  });
+
+  test("POST /v1/chat/completions with stream=true malformed SSE enters review", async () => {
+    configureUpstream();
+    mockUpstreamStreamFetch([
+      "data: {not-json}\n\n",
+      "data: [DONE]\n\n"
+    ]);
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload({ stream: true })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toContain("{not-json}");
+    const log = await expectUsageLog(response.headers["x-request-id"], 200);
+    expect(log.isStream).toBe(true);
+    expect(log.billingStatus).toBe("review");
+    expect(log.streamFinishReason).toBe("malformed_sse");
+    expect(log.errorCode).toBe("malformed_sse");
+    expect(log.chargedUsd.toFixed()).toBe("0");
+    expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
+  });
+
+  test("POST /v1/chat/completions with stream=true premature EOF enters review", async () => {
+    configureUpstream();
+    mockUpstreamStreamFetch([
+      sseData({
+        id: "chatcmpl-stream-premature",
+        object: "chat.completion.chunk",
+        choices: [{ index: 0, delta: { content: "premature response should not be logged" }, finish_reason: "stop" }]
+      })
+    ]);
+    const creditTransactionsBefore = await countCreditTransactionsForUser(account.userId);
+    const app = buildGatewayApp();
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/chat/completions",
+      headers: { authorization: `Bearer ${account.activeKey}` },
+      payload: validChatPayload({ stream: true })
+    });
+    await app.close();
+
+    expect(response.statusCode).toBe(200);
+    const log = await expectUsageLog(response.headers["x-request-id"], 200);
+    expect(log.isStream).toBe(true);
+    expect(log.billingStatus).toBe("review");
+    expect(log.streamFinishReason).toBe("upstream_error");
+    expect(log.errorCode).toBe("upstream_error");
+    expect(log.chargedUsd.toFixed()).toBe("0");
+    expect(JSON.stringify(log)).not.toContain("premature response should not be logged");
     expect(await countCreditTransactionsForUser(account.userId)).toBe(creditTransactionsBefore);
   });
 
@@ -639,6 +857,38 @@ describe("ENHE API Gateway", () => {
     const fetchMock = vi.fn().mockResolvedValue(Response.json(body, { status }));
     globalThis.fetch = fetchMock as typeof fetch;
     return fetchMock;
+  }
+
+  function mockUpstreamStreamFetch(chunks: string[], status = 200) {
+    configureUpstream();
+    const encoder = new TextEncoder();
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (const chunk of chunks) {
+          controller.enqueue(encoder.encode(chunk));
+        }
+        controller.close();
+      }
+    });
+    const fetchMock = vi.fn().mockResolvedValue(new Response(body, {
+      status,
+      headers: { "content-type": "text/event-stream" }
+    }));
+    globalThis.fetch = fetchMock as typeof fetch;
+    return fetchMock;
+  }
+
+  function sseData(value: unknown) {
+    return `data: ${JSON.stringify(value)}\n\n`;
+  }
+
+  function streamUsageSse() {
+    return sseData({
+      id: "chatcmpl-stream-usage",
+      object: "chat.completion.chunk",
+      choices: [{ index: 0, delta: {}, finish_reason: "stop" }],
+      usage: { prompt_tokens: 7, completion_tokens: 9, total_tokens: 16 }
+    }) + "data: [DONE]\n\n";
   }
 
   function upstreamSuccessBody() {

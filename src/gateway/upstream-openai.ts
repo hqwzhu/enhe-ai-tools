@@ -12,6 +12,11 @@ export type OpenAICompatibleForwardBody = {
   stop?: string | string[];
 };
 
+export type OpenAICompatibleStreamForwardBody = Omit<OpenAICompatibleForwardBody, "stream"> & {
+  stream: true;
+  stream_options: { include_usage: true };
+};
+
 export type OpenAICompatibleUpstreamResult =
   | {
       ok: true;
@@ -21,6 +26,21 @@ export type OpenAICompatibleUpstreamResult =
       outputTokens: number;
       hasUsage: boolean;
       latencyMs: number;
+    }
+  | {
+      ok: false;
+      reason: "not_configured" | "upstream_failed" | "timeout" | "invalid_response";
+      upstreamModel: string | null;
+      latencyMs: number | null;
+    };
+
+export type OpenAICompatibleUpstreamStreamResult =
+  | {
+      ok: true;
+      body: ReadableStream<Uint8Array>;
+      upstreamModel: string;
+      latencyMs: number;
+      abort: () => void;
     }
   | {
       ok: false;
@@ -111,6 +131,76 @@ export async function callOpenAICompatibleChatCompletion(input: {
     };
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+export async function callOpenAICompatibleChatCompletionStream(input: {
+  publicModelId: string;
+  body: Omit<OpenAICompatibleStreamForwardBody, "model">;
+}): Promise<OpenAICompatibleUpstreamStreamResult> {
+  const config = getOpenAICompatibleConfig(input.publicModelId);
+  if (!config) {
+    return {
+      ok: false,
+      reason: "not_configured",
+      upstreamModel: null,
+      latencyMs: null
+    };
+  }
+
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), upstreamTimeoutMs);
+
+  try {
+    const response = await fetch(config.chatCompletionsUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ...input.body,
+        model: config.upstreamModel
+      }),
+      signal: controller.signal
+    });
+    const latencyMs = getLatencyMs(startedAt);
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        reason: "upstream_failed",
+        upstreamModel: config.upstreamModel,
+        latencyMs
+      };
+    }
+
+    if (!response.body) {
+      return {
+        ok: false,
+        reason: "invalid_response",
+        upstreamModel: config.upstreamModel,
+        latencyMs
+      };
+    }
+
+    return {
+      ok: true,
+      body: response.body,
+      upstreamModel: config.upstreamModel,
+      latencyMs,
+      abort: () => controller.abort()
+    };
+  } catch (error) {
+    clearTimeout(timeout);
+    return {
+      ok: false,
+      reason: isAbortError(error) ? "timeout" : "upstream_failed",
+      upstreamModel: config.upstreamModel,
+      latencyMs: getLatencyMs(startedAt)
+    };
   }
 }
 

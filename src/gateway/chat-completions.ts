@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { chargeUsage, checkSufficientCredit } from "@/features/enhe-api/server/wallet";
 import { createUsageLog } from "@/features/enhe-api/server/usage-logs";
 import { requireGatewayApiKey } from "./auth";
@@ -7,11 +7,19 @@ import { findGatewayModel } from "./models";
 import {
   calculateUsageCharge,
   estimateMaxChargeUsd,
+  type GatewayModelPricing,
   getGatewayModelOutputTokenLimit,
   getGatewayModelPricing,
   isWithinGatewayModelOutputLimit
 } from "./pricing";
-import { callOpenAICompatibleChatCompletion, type OpenAICompatibleForwardBody, type OpenAICompatibleUpstreamResult } from "./upstream-openai";
+import { OpenAISseMetadataParser, type OpenAISseMetadata } from "./sse";
+import {
+  callOpenAICompatibleChatCompletion,
+  callOpenAICompatibleChatCompletionStream,
+  type OpenAICompatibleForwardBody,
+  type OpenAICompatibleStreamForwardBody,
+  type OpenAICompatibleUpstreamResult
+} from "./upstream-openai";
 
 type ChatCompletionBody = {
   model: string;
@@ -31,6 +39,8 @@ type AuthenticatedGatewayKey = {
   apiKeyId: string;
   keyPrefix: string;
 };
+
+type UsageLogErrorCode = GatewayErrorCode | "client_disconnected" | "malformed_sse";
 
 const chatCompletionsPath = "/v1/chat/completions";
 
@@ -53,23 +63,12 @@ export function registerChatCompletionRoutes(app: FastifyInstance) {
     }
 
     const body = parsed.body;
-    if (body.stream) {
-      await writeChatUsageLog(context, auth.apiKey, {
-        statusCode: 501,
-        model: body.model,
-        isStream: true,
-        errorCode: "unsupported_stream",
-        errorMessage: "Streaming chat completions are not supported yet."
-      });
-      return sendGatewayError(reply, 501, "unsupported_stream", context);
-    }
-
     const model = findGatewayModel(body.model);
     if (!model) {
       await writeChatUsageLog(context, auth.apiKey, {
         statusCode: 404,
         model: body.model,
-        isStream: false,
+        isStream: body.stream,
         errorCode: "model_not_found",
         errorMessage: "Requested model is not available."
       });
@@ -82,7 +81,7 @@ export function registerChatCompletionRoutes(app: FastifyInstance) {
       await writeChatUsageLog(context, auth.apiKey, {
         statusCode: 400,
         model: body.model,
-        isStream: false,
+        isStream: body.stream,
         errorCode: "invalid_request",
         errorMessage: "Invalid request body."
       });
@@ -104,11 +103,24 @@ export function registerChatCompletionRoutes(app: FastifyInstance) {
       await writeChatUsageLog(context, auth.apiKey, {
         statusCode,
         model: body.model,
-        isStream: false,
+        isStream: body.stream,
         errorCode,
         errorMessage: errorCode === "developer_suspended" ? "Developer account is not active." : "API credit is insufficient."
       });
       return sendGatewayError(reply, statusCode, errorCode, context);
+    }
+
+    if (body.stream) {
+      return handleStreamingChatCompletion({
+        request,
+        reply,
+        context,
+        apiKey: auth.apiKey,
+        body,
+        modelId: model.id,
+        pricing,
+        maxOutputTokens
+      });
     }
 
     const upstream = await callOpenAICompatibleChatCompletion({
@@ -200,6 +212,183 @@ export function registerChatCompletionRoutes(app: FastifyInstance) {
 
     reply.header("x-request-id", context.requestId);
     return upstream.body;
+  });
+}
+
+async function handleStreamingChatCompletion(input: {
+  request: FastifyRequest;
+  reply: FastifyReply;
+  context: GatewayRequestContext;
+  apiKey: AuthenticatedGatewayKey;
+  body: ChatCompletionBody;
+  modelId: string;
+  pricing: GatewayModelPricing;
+  maxOutputTokens: number;
+}) {
+  const upstreamStartedAt = Date.now();
+  const upstream = await callOpenAICompatibleChatCompletionStream({
+    publicModelId: input.modelId,
+    body: buildOpenAICompatibleStreamForwardBody(input.body, input.maxOutputTokens)
+  });
+
+  if (!upstream.ok) {
+    const failure = mapUpstreamFailure(upstream);
+    await writeChatUsageLog(input.context, input.apiKey, {
+      statusCode: failure.statusCode,
+      model: input.modelId,
+      isStream: true,
+      inputTokens: 0,
+      outputTokens: 0,
+      latencyMs: upstream.latencyMs,
+      upstreamProvider: "openai-compatible",
+      upstreamModel: upstream.upstreamModel,
+      routeId: `openai-compatible:${input.modelId}`,
+      errorCode: failure.errorCode,
+      errorMessage: failure.errorMessage,
+      streamFinishReason: "upstream_error"
+    });
+    return sendGatewayError(input.reply, failure.statusCode, failure.errorCode, input.context);
+  }
+
+  const parser = new OpenAISseMetadataParser();
+  const reader = upstream.body.getReader();
+  let clientDisconnected = false;
+  let streamReadFailed = false;
+  let listenerClosed = false;
+
+  const markClientDisconnected = () => {
+    if (listenerClosed) return;
+    clientDisconnected = true;
+    upstream.abort();
+  };
+
+  input.request.raw.once("aborted", markClientDisconnected);
+  input.reply.raw.once("close", markClientDisconnected);
+
+  input.reply.hijack();
+  input.reply.raw.writeHead(200, {
+    "content-type": "text/event-stream; charset=utf-8",
+    "cache-control": "no-cache, no-transform",
+    connection: "keep-alive",
+    "x-request-id": input.context.requestId
+  });
+
+  try {
+    while (true) {
+      const next = await reader.read();
+      if (next.done) break;
+      if (!next.value) continue;
+
+      parser.push(next.value);
+      const wrote = await writeSseChunk(input.reply, next.value);
+      if (!wrote) {
+        clientDisconnected = true;
+        upstream.abort();
+        break;
+      }
+    }
+  } catch (error) {
+    if (clientDisconnected || isAbortError(error)) {
+      clientDisconnected = true;
+    } else {
+      streamReadFailed = true;
+    }
+  } finally {
+    listenerClosed = true;
+    input.request.raw.off("aborted", markClientDisconnected);
+    input.reply.raw.off("close", markClientDisconnected);
+    try {
+      reader.releaseLock();
+    } catch {
+      // The reader can already be released after an aborted upstream stream.
+    }
+  }
+
+  const metadata = parser.finish();
+  await settleStreamingUsage({
+    context: input.context,
+    apiKey: input.apiKey,
+    modelId: input.modelId,
+    pricing: input.pricing,
+    upstreamModel: upstream.upstreamModel,
+    latencyMs: Math.max(upstream.latencyMs, Date.now() - upstreamStartedAt),
+    metadata,
+    clientDisconnected,
+    streamReadFailed
+  });
+
+  if (!input.reply.raw.destroyed && !input.reply.raw.writableEnded) {
+    input.reply.raw.end();
+  }
+
+  return input.reply;
+}
+
+async function settleStreamingUsage(input: {
+  context: GatewayRequestContext;
+  apiKey: AuthenticatedGatewayKey;
+  modelId: string;
+  pricing: GatewayModelPricing;
+  upstreamModel: string;
+  latencyMs: number;
+  metadata: OpenAISseMetadata;
+  clientDisconnected: boolean;
+  streamReadFailed: boolean;
+}) {
+  const streamFinishReason = getStreamFinishReason(input);
+  const canCharge = canChargeStreamingUsage(input);
+
+  if (!canCharge) {
+    await writeChatUsageLog(input.context, input.apiKey, {
+      statusCode: 200,
+      model: input.modelId,
+      isStream: true,
+      inputTokens: 0,
+      outputTokens: 0,
+      latencyMs: input.latencyMs,
+      upstreamProvider: "openai-compatible",
+      upstreamModel: input.upstreamModel,
+      routeId: `openai-compatible:${input.modelId}`,
+      billingStatus: "review",
+      errorCode: getStreamReviewErrorCode(streamFinishReason),
+      errorMessage: getStreamReviewErrorMessage(streamFinishReason),
+      streamFinishReason
+    });
+    return;
+  }
+
+  const usageCharge = calculateUsageCharge({
+    pricing: input.pricing,
+    inputTokens: input.metadata.inputTokens,
+    outputTokens: input.metadata.outputTokens
+  });
+
+  const usageLog = await writeChatUsageLog(input.context, input.apiKey, {
+    statusCode: 200,
+    model: input.modelId,
+    isStream: true,
+    inputTokens: input.metadata.inputTokens,
+    outputTokens: input.metadata.outputTokens,
+    latencyMs: input.latencyMs,
+    upstreamProvider: "openai-compatible",
+    upstreamModel: input.upstreamModel,
+    routeId: `openai-compatible:${input.modelId}`,
+    costUsd: usageCharge.costUsd,
+    chargedUsd: "0",
+    billingStatus: usageCharge.billable ? "review" : "not_billable",
+    streamFinishReason
+  });
+
+  if (!usageLog.ok || !usageCharge.billable) return;
+
+  await chargeUsage({
+    userId: input.apiKey.userId,
+    developerProfileId: input.apiKey.developerProfileId,
+    usageLogId: usageLog.log.id,
+    requestId: input.context.requestId,
+    amountUsd: usageCharge.chargedUsd,
+    reason: `OpenAI-compatible ${input.modelId} streaming chat completion`,
+    idempotencyKey: `billing:${input.context.requestId}:${input.apiKey.apiKeyId}`
   });
 }
 
@@ -299,6 +488,10 @@ function parseStop(value: unknown):
   return { ok: false };
 }
 
+function isAbortError(error: unknown) {
+  return isRecord(error) && error.name === "AbortError";
+}
+
 function buildOpenAICompatibleForwardBody(body: ChatCompletionBody, maxOutputTokens: number): Omit<OpenAICompatibleForwardBody, "model"> {
   const forwardBody: Omit<OpenAICompatibleForwardBody, "model"> = {
     messages: body.messages,
@@ -313,6 +506,76 @@ function buildOpenAICompatibleForwardBody(body: ChatCompletionBody, maxOutputTok
   if (body.stop !== undefined) forwardBody.stop = body.stop;
 
   return forwardBody;
+}
+
+function buildOpenAICompatibleStreamForwardBody(body: ChatCompletionBody, maxOutputTokens: number): Omit<OpenAICompatibleStreamForwardBody, "model"> {
+  const forwardBody: Omit<OpenAICompatibleStreamForwardBody, "model"> = {
+    messages: body.messages,
+    stream: true,
+    max_tokens: maxOutputTokens,
+    stream_options: { include_usage: true }
+  };
+
+  if (body.temperature !== undefined) forwardBody.temperature = body.temperature;
+  if (body.topP !== undefined) forwardBody.top_p = body.topP;
+  if (body.presencePenalty !== undefined) forwardBody.presence_penalty = body.presencePenalty;
+  if (body.frequencyPenalty !== undefined) forwardBody.frequency_penalty = body.frequencyPenalty;
+  if (body.stop !== undefined) forwardBody.stop = body.stop;
+
+  return forwardBody;
+}
+
+function canChargeStreamingUsage(input: {
+  metadata: OpenAISseMetadata;
+  clientDisconnected: boolean;
+  streamReadFailed: boolean;
+}) {
+  return !input.clientDisconnected && !input.streamReadFailed && input.metadata.sawDone && !input.metadata.malformed && input.metadata.hasUsage;
+}
+
+function getStreamFinishReason(input: {
+  metadata: OpenAISseMetadata;
+  clientDisconnected: boolean;
+  streamReadFailed: boolean;
+}) {
+  if (input.clientDisconnected) return "client_disconnected";
+  if (input.streamReadFailed) return "upstream_error";
+  if (input.metadata.malformed) return "malformed_sse";
+  if (!input.metadata.sawDone) return "upstream_error";
+  if (!input.metadata.hasUsage) return "no_usage";
+  return input.metadata.finishReason ?? "stop";
+}
+
+function getStreamReviewErrorCode(streamFinishReason: string): UsageLogErrorCode | undefined {
+  if (streamFinishReason === "client_disconnected") return "client_disconnected";
+  if (streamFinishReason === "malformed_sse") return "malformed_sse";
+  if (streamFinishReason === "upstream_error") return "upstream_error";
+  return undefined;
+}
+
+function getStreamReviewErrorMessage(streamFinishReason: string) {
+  if (streamFinishReason === "client_disconnected") return "Client disconnected before stream completion.";
+  if (streamFinishReason === "malformed_sse") return "Upstream stream was malformed.";
+  if (streamFinishReason === "upstream_error") return "Upstream stream ended before confirmed usage.";
+  return undefined;
+}
+
+async function writeSseChunk(reply: FastifyReply, chunk: Uint8Array) {
+  if (reply.raw.destroyed || reply.raw.writableEnded) return false;
+  if (reply.raw.write(chunk)) return true;
+
+  return new Promise<boolean>((resolve) => {
+    const done = (ok: boolean) => {
+      reply.raw.off("drain", onDrain);
+      reply.raw.off("close", onClose);
+      resolve(ok && !reply.raw.destroyed && !reply.raw.writableEnded);
+    };
+    const onDrain = () => done(true);
+    const onClose = () => done(false);
+
+    reply.raw.once("drain", onDrain);
+    reply.raw.once("close", onClose);
+  });
 }
 
 function mapUpstreamFailure(upstream: Extract<OpenAICompatibleUpstreamResult, { ok: false }>): {
@@ -367,8 +630,9 @@ async function writeChatUsageLog(
     costUsd?: string;
     chargedUsd?: string;
     billingStatus?: "not_billable" | "pending" | "billed" | "review";
-    errorCode?: GatewayErrorCode;
+    errorCode?: UsageLogErrorCode;
     errorMessage?: string;
+    streamFinishReason?: string | null;
   }
 ) {
   return createUsageLog({
@@ -395,6 +659,7 @@ async function writeChatUsageLog(
     isStream: input.isStream,
     errorCode: input.errorCode,
     errorMessage: input.errorMessage,
+    streamFinishReason: input.streamFinishReason,
     routeId: input.routeId ?? null
   });
 }
