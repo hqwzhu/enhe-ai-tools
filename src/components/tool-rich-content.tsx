@@ -27,6 +27,8 @@ function RichTextInline({ text }: { text: string }) {
 }
 
 function splitListLead(item: string) {
+  if (/https?:\/\//i.test(item)) return null;
+
   const match = item.match(/^([^:：]{2,24})([:：])\s*(.+)$/);
   if (!match) return null;
 

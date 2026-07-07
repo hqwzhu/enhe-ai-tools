@@ -111,6 +111,8 @@ function normalizeHeadingText(value: string) {
 }
 
 function isColonListLine(line: string) {
+  if (absoluteHttpUrlPresencePattern.test(line)) return false;
+
   const match = line.match(colonListLinePattern);
   if (!match) return false;
   return normalizeInlineSpace(match[1] ?? "").length <= 24 && Boolean(normalizeInlineSpace(match[2] ?? ""));

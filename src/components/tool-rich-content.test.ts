@@ -52,7 +52,7 @@ describe("ToolRichContent", () => {
     const url = "https://qcnerk9meslu.feishu.cn/wiki/CEqtwGF9BiOQXNkzEmVcWecGnWe?from=from_copylink";
     const html = renderToStaticMarkup(
       React.createElement(ToolRichContent, {
-        content: `教程链接：${url}`
+        content: ["领取链接", url].join("\n")
       })
     );
 

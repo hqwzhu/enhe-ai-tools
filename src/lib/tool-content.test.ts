@@ -53,6 +53,15 @@ describe("tool content helpers", () => {
     expect(buildToolContentBlocks(raw)).toEqual([{ type: "paragraph", text: raw }]);
   });
 
+  it("does not treat standalone URLs after headings as colon-led list rows", () => {
+    const url = "https://qcnerk9meslu.feishu.cn/wiki/CEqtwGF9BiOQXNkzEmVcWecGnWe?from=from_copylink";
+
+    expect(buildToolContentBlocks(["领取链接：", url].join("\n"))).toEqual([
+      { type: "heading", text: "领取链接" },
+      { type: "paragraph", text: url }
+    ]);
+  });
+
   it("formats short product section titles and colon-led feature rows", () => {
     const raw = [
       "在工作中，LumiOS 可以作为你的桌面助手。",
