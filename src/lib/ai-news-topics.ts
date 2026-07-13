@@ -71,7 +71,7 @@ export const aiNewsTopics: AiNewsTopic[] = [
     en: {
       title: "AI Agent Trends",
       description:
-        "Track global AI Agent, Agentic AI, workflow automation, and enterprise agent news with practical links to ENHE AI tools, tutorials, and implementation paths.",
+        "Track AI Agent, Agentic AI, workflow automation, and enterprise agent news with practical ENHE AI tools, tutorials, and next steps.",
       intro:
         "AI agents are moving from chat into executable workflows. ENHE AI connects model updates, platform launches, enterprise cases, and practical site resources.",
       answer:
@@ -151,7 +151,7 @@ export const aiNewsTopics: AiNewsTopic[] = [
     en: {
       title: "Local AI Deployment",
       description:
-        "Follow Local AI, Private AI Deployment, on-device AI, and enterprise private deployment news with practical guidance for cost, privacy, hardware, and workflows.",
+        "Follow Local AI, private deployment, on-device AI, and enterprise AI news with guidance for cost, privacy, hardware, and workflows.",
       intro:
         "Local AI affects privacy, inference cost, reliability, and team control. It is especially relevant for users planning repeated or sensitive AI workflows.",
       answer:

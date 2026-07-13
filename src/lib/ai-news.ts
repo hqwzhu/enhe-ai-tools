@@ -404,6 +404,14 @@ function looksLikeGenericAiNewsDescription(value: string) {
   );
 }
 
+function isValidAiNewsMetaDescription(value: string, minLength: number) {
+  return (
+    value.length >= minLength &&
+    !looksLikeDateOnlyDescription(value) &&
+    !looksLikeGenericAiNewsDescription(value)
+  );
+}
+
 function normalizeAiNewsMetaCandidate(value: string | null | undefined) {
   return String(value ?? "")
     .replace(/```[\s\S]*?```/g, " ")
@@ -423,21 +431,28 @@ export function resolveAiNewsMetaDescription(
 ) {
   const validCandidate = candidates
     .map((candidate) => normalizeAiNewsMetaCandidate(candidate))
-    .find(
-      (candidate) =>
-        candidate.length >= minLength &&
-        !looksLikeDateOnlyDescription(candidate) &&
-        !looksLikeGenericAiNewsDescription(candidate),
-    );
+    .find((candidate) => isValidAiNewsMetaDescription(candidate, minLength));
   const normalizedFallback = normalizeAiNewsMetaCandidate(fallback);
+  const validFallback = isValidAiNewsMetaDescription(normalizedFallback, minLength)
+    ? normalizedFallback
+    : "";
 
-  return (
-    validCandidate ||
-    (looksLikeDateOnlyDescription(normalizedFallback) ||
-    looksLikeGenericAiNewsDescription(normalizedFallback)
-      ? ""
-      : normalizedFallback)
-  );
+  if (!validCandidate) return validFallback;
+
+  const targetLength = /[\u4e00-\u9fff]/.test(validCandidate) ? 70 : 110;
+  if (validCandidate.length >= targetLength || validFallback.length < targetLength) {
+    return validCandidate;
+  }
+
+  if (validFallback.includes(validCandidate)) {
+    return truncateAiNewsMetaDescription(validFallback, 150);
+  }
+
+  if (validCandidate.includes(validFallback)) {
+    return validCandidate;
+  }
+
+  return truncateAiNewsMetaDescription(`${validCandidate} ${validFallback}`, 150);
 }
 
 export function buildAiNewsDescriptionFallback({

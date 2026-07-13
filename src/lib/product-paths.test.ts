@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildProductPathHref,
   getProductPathConfig,
+  productPathConfigs,
   productPathSlugs,
 } from "@/lib/product-paths";
 
@@ -61,5 +62,14 @@ describe("homepage demand product paths", () => {
     expect(buildProductPathHref("future-ai", "zh")).toBe(
       "/product-paths/future-ai",
     );
+  });
+
+  it("keeps product path metadata descriptions long enough for snippets", () => {
+    for (const config of Object.values(productPathConfigs)) {
+      expect(config.zh.metaDescription.length).toBeGreaterThanOrEqual(80);
+      expect(config.zh.metaDescription.length).toBeLessThanOrEqual(150);
+      expect(config.en.metaDescription.length).toBeGreaterThanOrEqual(120);
+      expect(config.en.metaDescription.length).toBeLessThanOrEqual(160);
+    }
   });
 });

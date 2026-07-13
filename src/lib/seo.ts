@@ -319,16 +319,16 @@ export function buildListingMetadataTitle(
 ) {
   const zhTitles: Record<ListingMetadataKind, string> = {
     software: "最热门AI工具、热门AI软件与高频效率产品",
-    "account-services": "生成图片/视频/音频产品、AI视频图片音频工具",
-    "skill-learning": "改变你未来的AI产品、智能体提示词与副业变现",
+    "account-services": "AI账号服务咨询、订阅说明与合规边界",
+    "skill-learning": "改变你未来的AI工具/技能、智能体提示词与副业变现",
     "ai-news": "AI资讯、趋势解读与工具落地指南",
     pricing: "AI工具报价、购买流程与交付说明",
     tutorials: "AI工具教程、软件配置与使用指南",
   };
   const enTitles: Record<ListingMetadataKind, string> = {
     software: "Most Popular AI Tools And Productivity Software",
-    "account-services": "Generate Images Video Audio And AI Media Tools",
-    "skill-learning": "Change Your AI Future Products And AI Agents",
+    "account-services": "AI Account Service Guidance and Compliance",
+    "skill-learning": "AI Tools and Skills for Your Future",
     "ai-news": "AI News, Trend Insights, and Tool Decisions",
     pricing: "AI Tool Pricing, Purchase, and Delivery Guide",
     tutorials: "AI Tool Tutorials, Setup, and Workflow Guides",
@@ -386,7 +386,7 @@ export function buildListingMetaDescription(
     software:
       "浏览最热门AI工具和高频效率软件，按办公效率、文件处理、系统实用、数据分析、本地AI应用等场景筛选产品，比较价格、教程、案例、交付方式和适用边界，快速找到适合日常工作流的可靠工具。",
     "account-services":
-      "按AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成和视频/图片处理分类查找产品，比较输出质量、导出格式、处理速度、价格边界和教程，先确认适合你的多媒体内容流程再使用，并确认商用边界。",
+      "了解AI工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则。先确认任务、服务范围、价格、售后、合规提醒、使用风险和替代路径，再决定是否咨询或购买，避免把服务当成绕过规则的捷径。",
     "skill-learning":
       "按AI智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI提示词和AI副业变现分类查找产品，比较交付价值、风险边界、复用能力和教程说明，把AI能力沉淀为长期机会，持续复用成果。",
     "ai-news":
@@ -400,7 +400,7 @@ export function buildListingMetaDescription(
     software:
       "Browse popular AI software tools for office workflows, file processing, system utilities, data analysis, and local AI apps. Compare fit.",
     "account-services":
-      "Find AI video, image, and audio tools for video generation, voice generation, and media processing. Compare output quality, exports, price, and fit.",
+      "Browse AI account service guidance for subscriptions, access notes, compliance reminders, delivery scope, support boundaries, pricing, and safer use.",
     "skill-learning":
       "Find AI agents, everyday AI tools, subscriptions, upgrade plans, AI prompts, and AI side-income products. Compare value, risk, reuse, and tutorials.",
     "ai-news":

@@ -9,7 +9,6 @@ import {
   getPublicToolListing,
 } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
-import { buildThemedToolCategories } from "@/lib/tool-category-groups";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   absoluteUrl,
@@ -26,16 +25,16 @@ export const accountServicesPageRevalidate = publicPageCacheSeconds;
 const accountServicesGeoSections = {
   zh: [
     {
-      title: "先选内容形态",
-      body: "生成图片/视频/音频页按 AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成和视频/图片处理展示产品，先确认要生成或处理的素材类型。",
+      title: "先确认访问需求",
+      body: "AI账号服务页用于理解 AI 工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则，先确认你要使用的工具、任务和官方规则。",
     },
     {
-      title: "再看交付效果",
-      body: "对比产品时优先看成片质量、图片细节、音色自然度、处理速度、导出格式、价格边界和是否提供教程，避免只看演示图做决定。",
+      title: "再看服务边界",
+      body: "咨询前先比较服务范围、价格、售后、退款规则、账号安全、数据边界和合规提醒，避免把服务理解成绕过平台规则的捷径。",
     },
     {
-      title: "最后确认素材流程",
-      body: "生成类工具最好嵌入真实内容流程：脚本、提示词、素材上传、生成、二次处理和发布。先确认流程能否复用，再决定是否长期使用。",
+      title: "最后连接真实任务",
+      body: "账号服务最好服务明确任务：工具选择、订阅说明、使用路径、课程学习或长期流程。先看清是否能解决当前问题，再决定是否咨询。",
     },
   ],
   en: [
@@ -180,10 +179,6 @@ export async function AccountServicesPageShell({
     getPublicToolCategories("online"),
     getPublicToolListing("online", categoryId, keyword, undefined, sort),
   ]);
-  const categoryOptions = buildThemedToolCategories(
-    categories,
-    "mediaGeneration",
-  );
 
   return (
     <main>
@@ -196,7 +191,7 @@ export async function AccountServicesPageShell({
         />
         <AccountServicesUserAnswerCard forceLocale={forceLocale} />
         <ListingGuidanceFold forceLocale={forceLocale} />
-        <FilterBar categories={categoryOptions} locale={forceLocale} />
+        <FilterBar categories={categories} locale={forceLocale} />
         {tools.length ? (
           <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (

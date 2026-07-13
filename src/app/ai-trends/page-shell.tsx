@@ -41,7 +41,7 @@ const content = {
   zh: {
     title: "人类最渴望用 AI 解决哪些问题",
     description:
-      "ENHE AI 持续整理公开趋势信号，观察用户最希望用 AI 解决的工作效率、视频生成、内容创作、编程、学习、搜索研究、营销销售和生活辅助问题。",
+      "ENHE AI 持续整理公开趋势信号，观察用户最希望用 AI 解决的工作效率、视频生成、内容创作、编程、学习、搜索研究、营销销售和生活辅助问题，帮助判断下一步工具、技能和内容行动。",
     hero:
       "核心结论：用户最渴望 AI 解决的不是抽象智能问题，而是把高频、耗时、需要专业判断的任务变成可复用、可验证、可交付的工作流。",
     demandTitle: "需求热度排行",
@@ -65,7 +65,7 @@ const content = {
   en: {
     title: "What People Most Want AI To Solve",
     description:
-      "ENHE AI tracks public demand signals to understand where people most want AI to help across productivity, video, content, coding, learning, research, sales, and everyday assistance.",
+      "ENHE AI tracks public demand signals showing where people want AI help with productivity, video, content, coding, learning, research, and daily tasks.",
     hero:
       "Core conclusion: people do not mainly want abstract intelligence. They want AI to turn high-frequency, time-consuming, judgment-heavy work into repeatable, verifiable, deliverable workflows.",
     demandTitle: "Demand heat ranking",

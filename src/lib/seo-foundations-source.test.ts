@@ -26,7 +26,7 @@ describe("SEO foundations source contract", () => {
 
     for (const page of [software, onlineTools, skillLearning, pricing, tutorials]) {
       expect(page).toContain('as="h1"');
-      expect(page).toContain("buildMetadataTitle");
+      expect(page).toMatch(/build(?:Listing)?MetadataTitle/);
     }
 
     expect(pricing).toContain("generatePricingPageMetadata");

@@ -117,17 +117,18 @@ describe("AI GEO foundations", () => {
     expect(software).toContain("softwareSourceLinks");
     expect(software).toContain("buildSoftwareCollectionSchema");
     expect(software).toContain("buildFaqSchema");
-    expect(software).toContain("提升工作效率：先按工作任务筛选产品分类");
+    expect(software).toContain("最热门AI工具：先按工作任务筛选产品分类");
     expect(software).toContain('"@type": "ItemList"');
     expect(software).toContain("citation:");
-    expect(software).toContain("先看具体效率场景");
+    expect(software).toContain("先看热门工具场景");
     expect(software).toContain(
       'buildLocalePath("/skill-learning", forceLocale)',
     );
     expect(software).toContain('buildLocalePath("/ai-news", forceLocale)');
 
     expect(accountServices).toContain("accountServicesGeoSections");
-    expect(accountServices).toContain("先选内容形态");
+    expect(accountServices).toContain("先确认访问需求");
+    expect(accountServices).toContain("再看服务边界");
     expect(accountServices).toContain(
       'buildLocalePath("/software", forceLocale)',
     );

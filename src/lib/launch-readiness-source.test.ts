@@ -35,7 +35,8 @@ describe("launch readiness source coverage", () => {
 
   it("makes pricing entry, home cards, mobile nav, and tool detail more conversion-ready", () => {
     const pricing = read("src/app/pricing/page-shell.tsx");
-    expect(pricing).toContain("Pricing and purchase guide");
+    expect(pricing).toContain("Before you buy");
+    expect(pricing).toContain("Buy from the detail page");
     expect(pricing).toContain("AI pricing and purchase entry");
     expect(pricing).toContain("OfferCatalog");
     expect(pricing).toContain("getPricingOfferItems");

@@ -63,7 +63,13 @@ describe("seo helpers", () => {
     expect(buildListingMetadataTitle("pricing", "en", "ENHE AI")).toContain("Pricing");
     expect(buildListingMetadataTitle("tutorials", "en", "ENHE AI")).toContain("Tutorials");
     expect(buildListingMetadataTitle("software", "zh", "ENHE AI")).toContain("最热门AI工具");
+    expect(buildListingMetadataTitle("account-services", "zh", "ENHE AI")).toContain("AI账号服务");
+    expect(buildListingMetadataTitle("account-services", "en", "ENHE AI")).toContain("AI Account Service");
+    expect(buildListingMetadataTitle("skill-learning", "zh", "ENHE AI")).toContain("AI工具/技能");
+    expect(buildListingMetadataTitle("skill-learning", "en", "ENHE AI")).toContain("AI Tools and Skills");
     expect(buildListingMetaDescription("software", "zh")).toContain("最热门AI工具");
+    expect(buildListingMetaDescription("account-services", "zh")).toContain("账号使用支持");
+    expect(buildListingMetaDescription("account-services", "en")).toContain("AI account service guidance");
   });
 
   it("builds locale-aware tool titles without duplicate names", () => {

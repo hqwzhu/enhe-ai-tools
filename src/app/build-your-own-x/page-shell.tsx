@@ -27,7 +27,7 @@ const pageText = {
     title: "Build Your Own X 项目导航器",
     metaTitle: "Build Your Own X 项目导航器",
     description:
-      "免费开发者项目导航工具，按目标、语言、难度、时间和路线筛选从零实现类开源教程，并生成可复制的 AI 学习计划 Prompt。",
+      "免费开发者项目导航工具，按目标、语言、难度、时间和路线筛选从零实现类开源教程，生成可复制的 AI 学习计划 Prompt，帮助学习者把收藏的项目链接变成可执行的练习路线。",
     eyebrow: "免费开发者工具",
     heroTitle: "把 300+ 个硬核教程，变成今天就能开始的项目路线。",
     heroIntro:
@@ -68,7 +68,7 @@ const pageText = {
     title: "Build Your Own X Navigator",
     metaTitle: "Build Your Own X Navigator",
     description:
-      "A free developer project navigator that filters Build Your Own X tutorials by goal, language, difficulty, time budget, and route, then generates an AI learning-plan prompt.",
+      "A free navigator filtering Build Your Own X tutorials by goal, language, difficulty, time, and route, then creating an AI learning-plan prompt.",
     eyebrow: "Free developer tool",
     heroTitle: "Turn 300+ hard-core tutorials into a project route you can start today.",
     heroIntro:

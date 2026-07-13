@@ -107,11 +107,12 @@ export async function generateAiTopicDetailMetadata({
   if (!topic) return {};
 
   const content = topic.content[forceLocale];
+  const description = content.metaDescription ?? content.description;
   return buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: content.title }),
     description: buildTopicMetaDescription({
       title: content.title,
-      description: content.description,
+      description,
       locale: forceLocale,
       kind: "ai-topic",
     }),

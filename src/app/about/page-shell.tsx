@@ -23,6 +23,8 @@ const aboutCopy = {
     eyebrow: "用户视角品牌档案",
     description:
       "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能、解决工具选择和使用问题。在需要处理敏感素材、长期稳定流程或隐私边界时，提供更可控的AI工具和路径。",
+    metaDescription:
+      "了解 ENHE AI 如何帮助普通 AI 用户完成工作、创作内容、整理资料、学习技能和选择工具，并在敏感素材、隐私边界和长期流程中兼顾安全、稳定与少走弯路。",
     intro:
       "普通用户使用 AI，不是为了记住更多工具名，而是为了更快完成工作、做出内容、整理复杂资料、学会可复用方法，并在涉及敏感素材或长期流程时保持安全、隐私和稳定。ENHE AI 把资讯、软件、教程、课程和账号服务说明整理成清晰路径，让用户先判断自己要完成什么，再选择合适的 AI 工具和方法。",
     officialSite: "https://www.enhe-tech.com.cn/",
@@ -101,6 +103,8 @@ const aboutCopy = {
     eyebrow: "User-first brand profile",
     description:
       "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, and solve tool-selection and usage problems. When sensitive material, long-running workflows, or privacy boundaries matter, it provides more controllable AI tools and paths.",
+    metaDescription:
+      "Learn how ENHE AI helps everyday users work faster, create content, learn skills, choose tools, and keep sensitive AI workflows safer.",
     intro:
       "People use AI to finish work, create assets, organize information, learn reusable methods, and solve concrete problems. ENHE AI organizes news, software, tutorials, courses, and account-service notes into clear paths so users can start from the task, then choose the right AI tool or method.",
     officialSite: "https://www.enhe-tech.com.cn/",
@@ -181,7 +185,7 @@ export async function generateAboutPageMetadata(forceLocale: Locale): Promise<Me
   const copy = aboutCopy[forceLocale];
   return buildPageMetadata({
     title: buildMetadataTitle({ pageTitle: copy.title, brand: t.brand }),
-    description: copy.description,
+    description: copy.metaDescription,
     path: "/about",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,

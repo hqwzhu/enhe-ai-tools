@@ -24,6 +24,7 @@ type AiTopicClusterContent = {
   title: string;
   shortTitle: string;
   description: string;
+  metaDescription?: string;
   answer: string;
   intents: Array<{ title: string; body: string; href: string }>;
   comparisonRows: Array<{
@@ -140,6 +141,8 @@ export const aiTopicClusters: AiTopicCluster[] = [
         shortTitle: "Content creation",
         description:
           "A practical guide for choosing AI tools for writing, scripts, research cleanup, and publishing.",
+        metaDescription:
+          "Choose AI content tools for writing, scripts, research cleanup, and publishing. Compare inputs, output quality, workflow fit, pricing, and tutorials.",
         answer:
           "Choose AI content creation tools by starting with the deliverable: article, script, short-video copy, cover notes, or operations material. Then compare input support, rewriting quality, batch workflow, export format, and tutorial support. ENHE AI recommends starting from a real content task, reading signals, choosing tools, and saving reusable templates.",
         intents: [
@@ -305,6 +308,8 @@ export const aiTopicClusters: AiTopicCluster[] = [
         shortTitle: "Video and image",
         description:
           "A workflow guide for AI tools for short video, covers, visual assets, and multimodal creation.",
+        metaDescription:
+          "Choose AI video and image tools for short videos, covers, assets, and multimodal workflows. Compare rights, quality, editing, exports, and tutorials.",
         answer:
           "Choose AI video and image tools by production scenario: scripts, storyboards, covers, asset expansion, batch editing, or image cleanup. Confirm source material and rights first, then compare generation quality, editing control, export specs, learning cost, and fit with publishing workflows.",
         intents: [
@@ -470,6 +475,8 @@ export const aiTopicClusters: AiTopicCluster[] = [
         shortTitle: "Local AI",
         description:
           "A path for local models, offline processing, privacy, and developer project practice.",
+        metaDescription:
+          "Plan local AI for private models, offline work, privacy, and developer projects. Compare hardware, setup effort, data boundaries, and tutorials.",
         answer:
           "Local AI deployment fits users who care about privacy, offline processing, asset safety, controllable cost, and engineering practice. Before starting, confirm hardware, model format, runtime, data boundary, and learning goal. If the goal is developer growth, combine local deployment with Build Your Own X projects.",
         intents: [
@@ -636,6 +643,8 @@ export const aiTopicClusters: AiTopicCluster[] = [
         shortTitle: "Agent automation",
         description:
           "A practical path for repeated tasks, workflow orchestration, AI agents, and automation tools.",
+        metaDescription:
+          "Plan AI agents and automation for repeated tasks. Map inputs, steps, checks, and outputs before choosing tools, prompts, courses, or support.",
         answer:
           "AI agents and automation work best for repeated, rule-based, multi-step tasks. Before choosing tools, map the input, decision, action, review, and output nodes. Then select software, prompts, courses, and support. Do not hand unclear problems to an agent before breaking down the workflow.",
         intents: [
@@ -799,6 +808,8 @@ export const aiTopicClusters: AiTopicCluster[] = [
         shortTitle: "Skill path",
         description:
           "An AI skill learning path from prompts and tool practice to local deployment and projects.",
+        metaDescription:
+          "Plan AI skill learning around real tasks. Learn prompts, tools, tutorials, local AI, and projects, then save templates or portfolio work.",
         answer:
           "Plan AI skill learning around real tasks, not tool hype. Start with the deliverable, learn prompts and tool operation, finish one real task with a course or tutorial, then save the steps as a template or portfolio project.",
         intents: [
@@ -1085,7 +1096,7 @@ export function buildAiTopicCollectionSchema(
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: content.title,
-    description: content.description,
+    description: content.metaDescription ?? content.description,
     url: absoluteUrl(getAiTopicPath(topic.slug, locale)),
     inLanguage: locale === "en" ? "en-US" : "zh-CN",
     dateModified: topic.updatedAt,

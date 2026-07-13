@@ -26,7 +26,8 @@ const listingCopy = {
   zh: {
     title: "工具功能演示",
     intro: "通过视频了解 ENHE AI 工具、AI智能体、本地部署应用、AI语音、AI视频和AI工作流的真实使用效果。",
-    description: "通过视频了解 ENHE AI 工具、AI智能体、本地部署应用、AI语音、AI视频和AI工作流的真实使用效果。",
+    description:
+      "通过视频了解 ENHE AI 工具、AI智能体、本地部署应用、AI语音、AI视频和AI工作流的真实使用效果，先看功能边界、适用任务、教程路径和购买前判断依据，再决定是否使用或咨询。",
     all: "全部",
     emptyTitle: "暂无已发布的视频演示",
     emptyText: "后台发布产品演示后，这里会自动展示已上线内容。",
@@ -34,7 +35,8 @@ const listingCopy = {
   en: {
     title: "Tool Function Demos",
     intro: "Watch real ENHE AI tool workflows, AI agents, local apps, AI voice, AI video, and practical automation demos.",
-    description: "Watch real ENHE AI tool workflows, AI agents, local apps, AI voice, AI video, and practical automation demos.",
+    description:
+      "Watch ENHE AI demos for agents, local apps, AI voice, AI video, and automation. Review feature boundaries, task fit, tutorials, and purchase signals.",
     all: "All",
     emptyTitle: "No published product demos yet",
     emptyText: "Published product demos from the admin panel will appear here automatically.",
@@ -45,10 +47,7 @@ export async function generateProductDemoListingMetadata(forceLocale: Locale): P
   const copy = listingCopy[forceLocale];
   return buildPageMetadata({
     title: forceLocale === "en" ? "Tool Function Demos - ENHE AI" : "工具功能演示 - 恩禾ENHE AI",
-    description:
-      forceLocale === "en"
-        ? copy.description
-        : "通过视频了解 ENHE AI 工具、AI智能体、本地部署应用、AI语音、AI视频和AI工作流的真实使用效果。",
+    description: copy.description,
     path: "/product-demos",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,

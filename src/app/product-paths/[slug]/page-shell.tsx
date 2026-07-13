@@ -34,7 +34,7 @@ export async function generateProductPathMetadata(
       : forceLocale === "en"
         ? "Product path - ENHE AI"
         : "产品路径 - 恩禾ENHE AI",
-    description: copy?.intro,
+    description: copy?.metaDescription ?? copy?.intro,
     path: `/product-paths/${slug}`,
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,
@@ -67,7 +67,7 @@ export async function ProductPathPageShell({
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: copy.title,
-    description: copy.intro,
+    description: copy.metaDescription,
     url: absoluteUrl(buildLocalePath(pagePath, forceLocale)),
     inLanguage: forceLocale === "en" ? "en-US" : "zh-CN",
     about: copy.categories,

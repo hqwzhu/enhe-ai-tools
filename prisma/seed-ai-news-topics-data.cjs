@@ -53,7 +53,7 @@ module.exports = [
       }
     ],
     "englishTitle": "AI Agent Trends",
-    "englishDescription": "Track global AI Agent, Agentic AI, workflow automation, and enterprise agent news with practical links to ENHE AI tools, tutorials, and implementation paths.",
+    "englishDescription": "Track AI Agent, Agentic AI, workflow automation, and enterprise agent news with practical ENHE AI tools, tutorials, and next steps.",
     "englishIntro": "AI agents are moving from chat into executable workflows. ENHE AI connects model updates, platform launches, enterprise cases, and practical site resources.",
     "englishAnswer": "The AI Agent topic helps users follow autonomous workflows, tool use, multi-step execution, and enterprise automation. It clarifies which agent capabilities are ready for practical use, which remain demos, and what tools or tutorials to explore next.",
     "englishSearchQuery": "AI Agent",
@@ -147,7 +147,7 @@ module.exports = [
       }
     ],
     "englishTitle": "Local AI Deployment",
-    "englishDescription": "Follow Local AI, Private AI Deployment, on-device AI, and enterprise private deployment news with practical guidance for cost, privacy, hardware, and workflows.",
+    "englishDescription": "Follow Local AI, private deployment, on-device AI, and enterprise AI news with guidance for cost, privacy, hardware, and workflows.",
     "englishIntro": "Local AI affects privacy, inference cost, reliability, and team control. It is especially relevant for users planning repeated or sensitive AI workflows.",
     "englishAnswer": "The Local AI topic helps users decide whether private models, on-device inference, or LAN-based AI tools fit their work. The key checks are data sensitivity, task frequency, hardware readiness, and long-term workflow control.",
     "englishSearchQuery": "Local AI",

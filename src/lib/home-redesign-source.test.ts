@@ -39,8 +39,9 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('className="home-hero-cta home-hero-cta-primary"');
     expect(page).toContain('className="home-hero-cta home-hero-cta-accent"');
     expect(page).toContain('href={buildLocalePath("/software", forceLocale)}');
-    expect(page).toContain('href={buildLocalePath("/ai-news", forceLocale)}');
-    expect(page).toContain('forceLocale === "en" ? "View news" : "查看资讯"');
+    expect(page).toContain('href={buildLocalePath("/skill-learning", forceLocale)}');
+    expect(page).toContain('forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"');
+    expect(page).toContain('forceLocale === "en" ? "Claim Free" : "免费领取"');
     expect(page).toContain("const homeProductPaths = {");
     expect(page).toContain("const homeSupportLinks = {");
     expect(page).not.toContain("const creatorOutcomeCards = {");
