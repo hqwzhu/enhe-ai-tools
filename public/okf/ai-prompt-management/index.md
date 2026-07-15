@@ -10,7 +10,7 @@ timestamp: 2026-07-15
 
 # ENHE AI Prompt Management System
 
-ENHE AI Prompt Management System is a free public prompt library with 623 Chinese and English prompt templates. It helps users search by task or scenario, filter by category, add task context, and copy a complete prompt into an AI assistant.
+ENHE AI Prompt Management System is a free public prompt library with 418 Chinese and English prompt templates. It helps users search by task or scenario, filter by category, add task context, and copy a complete prompt into an AI assistant.
 
 ## Public Routes
 

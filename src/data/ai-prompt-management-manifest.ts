@@ -1,11 +1,10 @@
 export const aiPromptManagementManifest = {
-  "total": 623,
-  "generatedAt": "2026-07-15T05:16:05.013Z",
+  "total": 418,
+  "generatedAt": "2026-07-15T06:28:34.451Z",
   "categories": {
     "zh": [
       "编程",
       "红书",
-      "角色",
       "论文",
       "生活",
       "视频",
@@ -24,7 +23,6 @@ export const aiPromptManagementManifest = {
       "Life",
       "Operations",
       "Programming",
-      "Roles",
       "Video",
       "Workplace",
       "Writing",

@@ -19,7 +19,7 @@ Core supporting paths:
 - AI account service guidance for access notes, delivery boundaries, and platform-policy reminders
 - AI skill learning for prompts, workflows, tutorials, courses, and reusable methods
 - Build Your Own X Navigator for developer project learning and portfolio practice
-- AI Prompt Management System for searching and copying 623 bilingual prompts
+- AI Prompt Management System for searching and copying 418 bilingual prompts
 
 Important pages:
 - https://www.enhe-tech.com.cn/

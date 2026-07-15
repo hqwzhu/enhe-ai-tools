@@ -117,12 +117,12 @@ describe("AI prompt management website source contract", () => {
     );
     const hanPattern = /\p{Script=Han}/u;
 
-    expect(chinese.total).toBe(623);
-    expect(english.total).toBe(623);
-    expect(chinese.entries).toHaveLength(623);
-    expect(english.entries).toHaveLength(623);
-    expect(chinese.categories).toHaveLength(12);
-    expect(english.categories).toHaveLength(12);
+    expect(chinese.total).toBe(418);
+    expect(english.total).toBe(418);
+    expect(chinese.entries).toHaveLength(418);
+    expect(english.entries).toHaveLength(418);
+    expect(chinese.categories).toHaveLength(11);
+    expect(english.categories).toHaveLength(11);
     expect(english.entries.map((entry) => entry.id)).toEqual(
       chinese.entries.map((entry) => entry.id),
     );
