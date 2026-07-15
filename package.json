@@ -15,6 +15,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
+    "sync:ai-prompts": "tsx scripts/sync-ai-prompt-management-data.ts",
     "repair:activated-vip-orders": "node prisma/reconcile-activated-vip-orders.js",
     "baidu:push:sitemap": "tsx scripts/push-baidu-sitemap.ts",
     "faq:backfill": "tsx scripts/backfill-tool-faqs.ts",

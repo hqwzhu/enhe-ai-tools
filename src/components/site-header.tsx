@@ -70,6 +70,20 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
               ? "Free project selector for hands-on developers"
               : "免费项目筛选器，适合动手提升工程能力",
         },
+        {
+          label:
+            locale === "en"
+              ? "AI Prompt Management System"
+              : "AI提示词管理系统",
+          href: buildLocalePath(
+            "/skill-learning/ai-prompt-management",
+            locale,
+          ),
+          description:
+            locale === "en"
+              ? "Free searchable bilingual prompt library"
+              : "免费可搜索的中英文提示词库",
+        },
       ],
     },
   ] as const;

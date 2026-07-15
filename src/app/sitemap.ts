@@ -44,6 +44,8 @@ const staticRoutes = [
   "/en/account-services",
   "/skill-learning",
   "/en/skill-learning",
+  "/skill-learning/ai-prompt-management",
+  "/en/skill-learning/ai-prompt-management",
   "/product-paths/work-efficiency",
   "/en/product-paths/work-efficiency",
   "/product-paths/media-generation",
@@ -127,6 +129,24 @@ const machineReadableRoutes = [
     changeFrequency: "weekly" as const,
     priority: 0.6,
   },
+  {
+    path: "/okf/ai-prompt-management/index.md",
+    lastModified: new Date("2026-07-15T00:00:00.000Z"),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  },
+  {
+    path: "/data/ai-prompt-management/zh.json",
+    lastModified: new Date("2026-07-15T00:00:00.000Z"),
+    changeFrequency: "monthly" as const,
+    priority: 0.55,
+  },
+  {
+    path: "/data/ai-prompt-management/en.json",
+    lastModified: new Date("2026-07-15T00:00:00.000Z"),
+    changeFrequency: "monthly" as const,
+    priority: 0.55,
+  },
 ] as const;
 
 const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
@@ -144,6 +164,8 @@ const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
   "/en/account-services": new Date("2026-06-17T00:00:00.000Z"),
   "/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
   "/en/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
+  "/skill-learning/ai-prompt-management": new Date("2026-07-15T00:00:00.000Z"),
+  "/en/skill-learning/ai-prompt-management": new Date("2026-07-15T00:00:00.000Z"),
   "/product-paths/work-efficiency": new Date("2026-07-04T00:00:00.000Z"),
   "/en/product-paths/work-efficiency": new Date("2026-07-04T00:00:00.000Z"),
   "/product-paths/media-generation": new Date("2026-07-04T00:00:00.000Z"),
