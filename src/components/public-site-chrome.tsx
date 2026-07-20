@@ -36,7 +36,7 @@ export async function PublicSiteChrome({
     description: siteDescription,
     url: languageAlternates[inLanguage],
     inLanguage: forceLocale === "en" ? "en-US" : "zh-CN",
-    searchPathTemplate: buildLocalePath("/software?q={search_term_string}", forceLocale)
+    searchPathTemplate: buildLocalePath("/search?q={search_term_string}", forceLocale)
   });
   const organizationSchema = buildOrganizationSchema({
     schemaType: "Organization",

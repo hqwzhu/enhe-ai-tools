@@ -24,6 +24,7 @@ describe("public navigation performance source contract", () => {
     const header = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
     const footer = readFileSync(new URL("../components/site-footer.tsx", import.meta.url), "utf8");
     const mobileNav = readFileSync(new URL("../components/mobile-nav-menu.tsx", import.meta.url), "utf8");
+    const publicNav = readFileSync(new URL("../components/public-nav-link.tsx", import.meta.url), "utf8");
     const toolCard = readFileSync(new URL("../components/tool-card.tsx", import.meta.url), "utf8");
     const ui = readFileSync(new URL("../components/ui.tsx", import.meta.url), "utf8");
 
@@ -32,8 +33,9 @@ describe("public navigation performance source contract", () => {
     }
 
     expect(header).toMatch(/<PrefetchLink\s+href={buildLocalePath\("\/", locale\)}/);
-    expect(header).toMatch(/<PrefetchLink\s+key={child\.href}\s+href={child\.href}/);
-    expect(header).toMatch(/<PrefetchLink\s+key={item\.href}\s+href={item\.href}/);
+    expect(header).toMatch(/<PublicNavLink\s+key={child\.href}\s+href={child\.href}/);
+    expect(header).toMatch(/<PublicNavLink\s+key={item\.href}\s+href={item\.href}/);
+    expect(publicNav).toContain("<PrefetchLink");
     expect(toolCard).toMatch(/<PrefetchLink\s+href={buildCanonicalToolPath\(tool, locale\)}/);
     expect(ui).toContain('<PrefetchLink');
   });

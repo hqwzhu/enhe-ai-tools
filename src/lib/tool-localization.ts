@@ -547,22 +547,22 @@ export function buildLocalizedToolSummary(
 
   const shortDescription = resolveLocalizedInlineCopy(
     tool.shortDescription,
-    "zh",
+    locale,
     normalizeText,
   );
   return tool.type === "online"
-    ? sanitizeAccountServiceCopy(shortDescription, "zh")
+    ? sanitizeAccountServiceCopy(shortDescription, locale)
     : shortDescription;
 }
 
 export function buildLocalizedToolLongContent(
   tool: LocalizedToolInput,
-  _locale: Locale,
+  locale: Locale,
 ) {
   const content = normalizeRichText(tool.content);
   const localizedContent = resolveLocalizedInlineCopy(
     tool.content,
-    "zh",
+    locale,
     normalizeRichText,
   );
   return tool.type === "online"
@@ -570,10 +570,10 @@ export function buildLocalizedToolLongContent(
         localizedContent ||
           resolveLocalizedInlineCopy(
             tool.shortDescription,
-            "zh",
+            locale,
             normalizeRichText,
           ),
-        "zh",
+        locale,
       )
     : localizedContent || content;
 }

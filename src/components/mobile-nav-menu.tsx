@@ -1,9 +1,11 @@
-import { LayoutDashboard, Menu } from "lucide-react";
+import { LayoutDashboard, Menu, Search } from "lucide-react";
 import { PrefetchLink } from "@/components/prefetch-link";
+import { PublicNavLink } from "@/components/public-nav-link";
 
 type MobileNavItem = {
   label: string;
   href: string;
+  icon?: "search";
   children?: ReadonlyArray<{
     label: string;
     href: string;
@@ -43,21 +45,22 @@ export function MobileNavMenu({
         {navItems.map((item) =>
           item.children?.length ? (
             <div key={item.href} className="mobile-nav-group">
-              <PrefetchLink href={item.href} className="mobile-nav-link mobile-nav-parent-link cursor-target">
+              <PublicNavLink href={item.href} className="mobile-nav-link mobile-nav-parent-link cursor-target">
                 {item.label}
-              </PrefetchLink>
+              </PublicNavLink>
               <div className="mobile-nav-submenu">
                 {item.children.map((child) => (
-                  <PrefetchLink key={child.href} href={child.href} className="mobile-nav-sublink cursor-target">
+                  <PublicNavLink key={child.href} href={child.href} className="mobile-nav-sublink cursor-target">
                     <span>{child.label}</span>
-                  </PrefetchLink>
+                  </PublicNavLink>
                 ))}
               </div>
             </div>
           ) : (
-            <PrefetchLink key={item.href} href={item.href} className="mobile-nav-link cursor-target">
+            <PublicNavLink key={item.href} href={item.href} className="mobile-nav-link cursor-target">
+              {item.icon === "search" ? <Search size={16} aria-hidden="true" /> : null}
               {item.label}
-            </PrefetchLink>
+            </PublicNavLink>
           )
         )}
         {loginItem ? (

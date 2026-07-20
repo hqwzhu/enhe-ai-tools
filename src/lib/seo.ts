@@ -185,6 +185,7 @@ const localizedPublicRoutePatterns = [
   /^\/account-services\/.+$/,
   /^\/skill-learning$/,
   /^\/skill-learning\/.+$/,
+  /^\/search$/,
   /^\/product-paths\/.+$/,
   /^\/product-demos$/,
   /^\/product-demos\/.+$/,
@@ -320,7 +321,7 @@ export function buildListingMetadataTitle(
   const zhTitles: Record<ListingMetadataKind, string> = {
     software: "最热门AI工具、热门AI软件与高频效率产品",
     "account-services": "AI账号服务咨询、订阅说明与合规边界",
-    "skill-learning": "改变你未来的AI工具/技能、智能体提示词与副业变现",
+    "skill-learning": "AI教程与实战指南、AI工具与本地部署教程",
     "ai-news": "AI资讯、趋势解读与工具落地指南",
     pricing: "AI工具报价、购买流程与交付说明",
     tutorials: "AI工具教程、软件配置与使用指南",
@@ -328,7 +329,7 @@ export function buildListingMetadataTitle(
   const enTitles: Record<ListingMetadataKind, string> = {
     software: "Most Popular AI Tools And Productivity Software",
     "account-services": "AI Account Service Guidance and Compliance",
-    "skill-learning": "AI Tools and Skills for Your Future",
+    "skill-learning": "Practical AI Tutorials and Guides",
     "ai-news": "AI News, Trend Insights, and Tool Decisions",
     pricing: "AI Tool Pricing, Purchase, and Delivery Guide",
     tutorials: "AI Tool Tutorials, Setup, and Workflow Guides",
@@ -388,7 +389,7 @@ export function buildListingMetaDescription(
     "account-services":
       "了解AI工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则。先确认任务、服务范围、价格、售后、合规提醒、使用风险和替代路径，再决定是否咨询或购买，避免把服务当成绕过规则的捷径。",
     "skill-learning":
-      "按AI智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI提示词和AI副业变现分类查找产品，比较交付价值、风险边界、复用能力和教程说明，把AI能力沉淀为长期机会，持续复用成果。",
+      "阅读ENHE AI教程与实战指南，覆盖AI工具使用、视频图片语音生成、AI智能体、自动化工作流、本地部署、ComfyUI及常用模型操作，按真实任务查找已发布教程和课程，并结合操作步骤、常见问题和适用边界减少试错。",
     "ai-news":
       "阅读AI前沿资讯和趋势解读，理解工具、模型和平台变化对工作效率、内容创作、资料整理、学习技能和安全使用的实际影响。结合来源、时间、相关工具和下一步行动，判断这条信息是否值得普通AI用户跟进。",
     pricing:
@@ -402,7 +403,7 @@ export function buildListingMetaDescription(
     "account-services":
       "Browse AI account service guidance for subscriptions, access notes, compliance reminders, delivery scope, support boundaries, pricing, and safer use.",
     "skill-learning":
-      "Find AI agents, everyday AI tools, subscriptions, upgrade plans, AI prompts, and AI side-income products. Compare value, risk, reuse, and tutorials.",
+      "Read practical ENHE AI tutorials for tools, media generation, AI agents, automation workflows, local deployment, ComfyUI, and widely used AI models.",
     "ai-news":
       "Follow global AI agents, open models, local deployment, AI tools, tutorials, and industry trends so creators can turn AI changes into productivity.",
     pricing:

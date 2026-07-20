@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { dictionaries } from "@/lib/i18n";
 
 describe("home AI news label contracts", () => {
-  it("uses the AI frontier news naming on Chinese public surfaces", () => {
-    expect(dictionaries.zh.nav.aiNews).toBe("AI前沿资讯");
+  it("uses the concise AI news naming in the primary navigation", () => {
+    expect(dictionaries.zh.nav.aiNews).toBe("AI资讯");
     expect(dictionaries.zh.home.aiNewsButton).toBe("AI前沿资讯");
     expect(dictionaries.zh.aiNews.title).toBe("AI前沿资讯与趋势洞察");
   });

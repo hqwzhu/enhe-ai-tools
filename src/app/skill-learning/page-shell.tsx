@@ -26,7 +26,7 @@ const skillLearningGeoSections = {
   zh: [
     {
       title: "先选择未来机会方向",
-      body: "改变你未来的AI工具/技能页展示 AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词和 AI 副业变现相关产品，先按未来机会方向筛选。",
+      body: "AI教程与实战指南围绕已发布的 AI 工具教程、内容生成、智能体、自动化工作流和本地部署课程，帮助用户按真实任务选择学习路径。",
     },
     {
       title: "再确认真实价值",
@@ -39,7 +39,7 @@ const skillLearningGeoSections = {
   ],
   en: [
     {
-      title: "AI skill learning path",
+      title: "Practical AI tutorial path",
       body: "Start with prompt basics, AI tool workflows, local deployment, automation, and content creation, then turn each method into repeatable work habits.",
     },
     {
@@ -61,7 +61,7 @@ const skillLearningOutcomeSections = {
     },
     {
       title: "把课程连接到工具",
-      body: "每个学习路径都应该配合真实工具练习。你可以先看 AI 前沿资讯理解趋势，再进入 AI 软件应用选择工具，最后用课程步骤完成素材、方案、脚本或自动化流程。",
+      body: "每个学习路径都应该配合真实工具练习。你可以先看 AI 资讯理解趋势，再进入 AI 工具选择产品，最后用教程步骤完成素材、方案、脚本或自动化流程。",
     },
     {
       title: "沉淀为可复用资产",
@@ -100,14 +100,14 @@ const skillLearningPathStrip = {
 const skillLearningFaqItems = {
   zh: [
     {
-      question: "ENHE AI 技能学习适合零基础用户吗？",
+      question: "ENHE AI 教程适合零基础用户吗？",
       answer:
         "适合。建议从提示词基础、常用 AI 工具工作流和具体任务案例开始，再逐步学习本地部署、自动化和多模态创作。",
     },
     {
       question: "如何判断应该先学课程还是先选工具？",
       answer:
-        "如果你已经有明确任务，可以先选工具再按教程落地；如果还不清楚 AI 能解决什么问题，先看 AI 前沿资讯和趋势分析，再选择课程。",
+        "如果你已经有明确任务，可以先选工具再按教程落地；如果还不清楚 AI 能解决什么问题，先看 AI 资讯和趋势分析，再选择课程。",
     },
     {
       question: "AI 技能课程如何转化为实际工作成果？",
@@ -117,7 +117,7 @@ const skillLearningFaqItems = {
   ],
   en: [
     {
-      question: "Is ENHE AI skill learning suitable for beginners?",
+      question: "Are ENHE AI tutorials suitable for beginners?",
       answer:
         "Yes. Start with prompt basics, common AI tool workflows, and task-based examples, then move into local deployment, automation, and multimodal creation.",
     },
@@ -224,12 +224,12 @@ function SkillLearningUserAnswerCard({ forceLocale }: { forceLocale: Locale }) {
   return (
     <section
       className="surface-panel-soft mt-6 p-5"
-      aria-label={forceLocale === "en" ? "AI skill learning answer" : "AI 技能学习答案"}
+      aria-label={forceLocale === "en" ? "AI tutorial answer" : "AI 教程答案"}
     >
       <strong className="text-sm font-black text-[var(--marketing-text)]">
         {forceLocale === "en"
           ? "AI learning should start from a real task, not from collecting another course."
-          : "AI 技能学习应从真实任务开始，而不是继续收藏泛泛课程。"}
+          : "AI 教程应从真实任务开始，而不是继续收藏泛泛内容。"}
       </strong>
       <p className="mt-2 max-w-4xl text-sm leading-7 text-[var(--marketing-muted)]">
         {forceLocale === "en"
@@ -362,7 +362,7 @@ function SkillLearningOutcomeBlock({ forceLocale }: { forceLocale: Locale }) {
       </div>
       <div className="surface-panel-soft p-6">
         <h2 className="text-2xl font-black text-[var(--marketing-text)]">
-          {forceLocale === "en" ? "AI learning FAQ" : "AI 技能学习常见问题"}
+          {forceLocale === "en" ? "AI tutorial FAQ" : "AI 教程常见问题"}
         </h2>
         <div className="mt-5 space-y-4">
           {faqs.map((item) => (
@@ -397,7 +397,7 @@ function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
       href: buildLocalePath("/ai-news", forceLocale),
     },
     {
-      label: { zh: "选择 AI 软件应用", en: "Choose AI software apps" },
+      label: { zh: "选择 AI 工具", en: "Choose AI tools" },
       href: buildLocalePath("/software", forceLocale),
     },
     {
@@ -405,7 +405,7 @@ function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
       href: buildLocalePath("/account-services", forceLocale),
     },
     {
-      label: { zh: "AI 技能学习路线", en: "AI skill learning path" },
+      label: { zh: "AI 教程路线", en: "AI tutorial path" },
       href: buildLocalePath("/ai-topics/ai-skill-learning-path", forceLocale),
     },
   ];

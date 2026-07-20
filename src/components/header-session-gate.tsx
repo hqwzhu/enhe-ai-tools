@@ -24,6 +24,7 @@ export function HeaderSessionGate({
   navItems: ReadonlyArray<{
     label: string;
     href: string;
+    icon?: "search";
     children?: ReadonlyArray<{
       label: string;
       href: string;

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { getHeaderUserSnapshot } from "@/lib/auth";
 import { HeaderAdminNavLink } from "@/components/header-admin-nav-link";
 import { HeaderAccountControls } from "@/components/header-account-controls";
@@ -7,6 +7,7 @@ import { HeaderSessionGate } from "@/components/header-session-gate";
 import { BackNavigationBar } from "@/components/back-navigation-bar";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { PrefetchLink } from "@/components/prefetch-link";
+import { PublicNavLink } from "@/components/public-nav-link";
 import { Container } from "@/components/ui";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { getCurrentLocale } from "@/lib/i18n";
@@ -28,7 +29,6 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
   const brandWordmark = brand.includes("ENHE") ? "ENHE AI" : brand;
   const navItems = [
     { label: t.nav.home, href: buildLocalePath("/", locale) },
-    { label: t.nav.aiNews, href: buildLocalePath("/ai-news", locale) },
     {
       label: t.nav.software,
       href: buildLocalePath("/software", locale),
@@ -38,6 +38,7 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
         description: category.description[locale],
       })),
     },
+    { label: t.nav.aiNews, href: buildLocalePath("/ai-news", locale) },
     { label: t.nav.aiTrends, href: buildLocalePath("/ai-trends", locale) },
     {
       label: t.nav.skillLearning,
@@ -86,6 +87,12 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
         },
       ],
     },
+    { label: t.nav.about, href: buildLocalePath("/about", locale) },
+    {
+      label: t.nav.search,
+      href: buildLocalePath("/search", locale),
+      icon: "search",
+    },
   ] as const;
 
   return (
@@ -118,31 +125,37 @@ export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
             {navItems.map((item) =>
               "children" in item ? (
                 <div key={item.href} className="site-nav-dropdown">
-                  <div className="site-nav-link site-nav-dropdown-trigger cursor-target">
+                  <PublicNavLink
+                    href={item.href}
+                    className="site-nav-link site-nav-dropdown-trigger cursor-target"
+                  >
                     <span>{item.label}</span>
                     <ChevronDown size={14} strokeWidth={1.8} aria-hidden="true" />
-                  </div>
+                  </PublicNavLink>
                   <div className="site-nav-dropdown-panel">
                     {item.children.map((child) => (
-                      <PrefetchLink
+                      <PublicNavLink
                         key={child.href}
                         href={child.href}
                         className="site-nav-dropdown-link cursor-target"
                       >
                         <span>{child.label}</span>
                         <small>{child.description}</small>
-                      </PrefetchLink>
+                      </PublicNavLink>
                     ))}
                   </div>
                 </div>
               ) : (
-                <PrefetchLink
+                <PublicNavLink
                   key={item.href}
                   href={item.href}
                   className="site-nav-link cursor-target"
                 >
-                  {item.label}
-                </PrefetchLink>
+                  {"icon" in item && item.icon === "search" ? (
+                    <Search size={15} strokeWidth={1.8} aria-hidden="true" />
+                  ) : null}
+                  <span>{item.label}</span>
+                </PublicNavLink>
               ),
             )}
             <HeaderAdminNavLink

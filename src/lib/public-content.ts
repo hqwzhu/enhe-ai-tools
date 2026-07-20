@@ -105,6 +105,9 @@ const getCachedPublicToolListing = unstable_cache(
         where: {
           type,
           status: "published",
+          ...(type === "skill_learning"
+            ? { tutorials: { some: { status: "active" } } }
+            : {}),
           ...buildToolCategoryWhere(categoryId),
           ...(type === "software" && paid === "paid"
             ? { isDownloadPaid: true }

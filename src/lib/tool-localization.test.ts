@@ -138,6 +138,31 @@ describe("tool localization helpers", () => {
     expect(content).not.toContain("support guidance");
   });
 
+  it("selects English summary and content blocks for English tool pages", () => {
+    const shortDescription =
+      "[[zh]]\u4e2d\u6587\u5de5\u5177\u6458\u8981\u3002[[/zh]][[en]]Create polished images faster with a focused AI workflow.[[/en]]";
+    const content =
+      "[[zh]]\u4e2d\u6587\u5de5\u5177\u8be6\u60c5\u3002[[/zh]][[en]]Use the guided workspace to create, review, refine, and export production-ready images for everyday creative projects.[[/en]]";
+    const tool = {
+      slug: "bilingual-image-studio",
+      name: "\u53cc\u8bed AI \u56fe\u7247\u5de5\u5177",
+      englishName: "Bilingual AI Image Studio",
+      shortDescription,
+      content,
+      type: "software" as const,
+    };
+
+    expect(buildLocalizedToolSummary(tool, "en")).toBe(
+      "Create polished images faster with a focused AI workflow.",
+    );
+    expect(buildLocalizedToolLongContent(tool, "en")).toBe(
+      "Use the guided workspace to create, review, refine, and export production-ready images for everyday creative projects.",
+    );
+    expect(buildLocalizedToolSummary(tool, "zh")).toBe("\u4e2d\u6587\u5de5\u5177\u6458\u8981\u3002");
+    expect(buildLocalizedToolLongContent(tool, "zh")).toBe("\u4e2d\u6587\u5de5\u5177\u8be6\u60c5\u3002");
+    expect(shouldIndexEnglishToolPage(tool)).toBe(true);
+  });
+
   it("marks english detail pages without genuine english source copy as non-indexable", () => {
     expect(
       shouldIndexEnglishToolPage({
