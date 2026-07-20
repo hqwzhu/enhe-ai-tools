@@ -17,7 +17,9 @@ const ASCIIText = dynamic(() => import("@/components/home/ascii-text.client"), {
   loading: () => <StaticTitle text="ENHE AI" />,
 });
 
-type RenderMode = "static" | "tablet" | "desktop";
+type RenderMode = "static" | "mobile" | "tablet" | "desktop";
+
+const TITLE_SCALE = 1.7;
 
 function supportsWebGL() {
   if (typeof window.WebGLRenderingContext === "undefined") return false;
@@ -36,10 +38,16 @@ export function ASCIIHeroTitle({ text }: { text: string }) {
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
 
     function syncRenderMode() {
-      if (reducedMotionQuery.matches || mobileQuery.matches || navigator.webdriver || !supportsWebGL()) {
+      if (reducedMotionQuery.matches || navigator.webdriver || !supportsWebGL()) {
         setRenderMode("static");
         return;
       }
+
+      if (mobileQuery.matches) {
+        setRenderMode("mobile");
+        return;
+      }
+
       setRenderMode(desktopQuery.matches ? "desktop" : "tablet");
     }
 
@@ -65,9 +73,9 @@ export function ASCIIHeroTitle({ text }: { text: string }) {
             text="ENHE AI"
             enableWaves
             asciiFontSize={renderMode === "desktop" ? 8 : 7}
-            textFontSize={renderMode === "desktop" ? 220 : 180}
+            textFontSize={(renderMode === "desktop" ? 220 : 180) * TITLE_SCALE}
             textColor="#ffffff"
-            planeBaseHeight={renderMode === "desktop" ? 8 : 7}
+            planeBaseHeight={(renderMode === "desktop" ? 8 : 7) * TITLE_SCALE}
           />
         </div>
       )}

@@ -213,7 +213,9 @@ describe("homepage SaaS redesign source", () => {
     expect(component).toContain("Adapted from React Bits Particles");
     expect(component).toContain("requestAnimationFrame(update)");
     expect(component).toContain("cancelAnimationFrame(animationFrameId)");
-    expect(component).toContain('container.addEventListener("mousemove", handleMouseMove)');
+    expect(component).toContain('window.addEventListener("mousemove", handleMouseMove)');
+    expect(component).toContain('window.removeEventListener("mousemove", handleMouseMove)');
+    expect(component).not.toContain('container.addEventListener("mousemove", handleMouseMove)');
     expect(css).toContain(".particles-container");
     expect(css).toContain(".home-particles-canvas");
     expect(css).toContain(".home-particles-fallback");

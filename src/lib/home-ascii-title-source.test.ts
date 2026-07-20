@@ -23,6 +23,12 @@ describe("homepage ASCII hero title source", () => {
     expect(wrapper).toContain("ssr: false");
     expect(wrapper).toContain('window.matchMedia("(prefers-reduced-motion: reduce)")');
     expect(wrapper).toContain('window.matchMedia("(max-width: 767px)")');
+    expect(wrapper).toContain('type RenderMode = "static" | "mobile" | "tablet" | "desktop";');
+    expect(wrapper).toContain("const TITLE_SCALE = 1.7;");
+    expect(wrapper).toContain('setRenderMode("mobile")');
+    expect(wrapper).not.toContain("reducedMotionQuery.matches || mobileQuery.matches");
+    expect(wrapper).toContain('textFontSize={(renderMode === "desktop" ? 220 : 180) * TITLE_SCALE}');
+    expect(wrapper).toContain('planeBaseHeight={(renderMode === "desktop" ? 8 : 7) * TITLE_SCALE}');
     expect(wrapper).toContain("navigator.webdriver");
     expect(wrapper).toContain("WebGLRenderingContext");
     expect(wrapper).toContain('text="ENHE AI"');
@@ -55,6 +61,7 @@ describe("homepage ASCII hero title source", () => {
     expect(styles).toContain(".asciiTextContainer");
     expect(styles).toContain(".asciiTextContainer canvas");
     expect(styles).toContain(".staticWordmark");
+    expect(styles).not.toContain("filter: drop-shadow");
     expect(styles).toContain("@media (max-width: 767px)");
     expect(styles).toContain("@media (prefers-reduced-motion: reduce)");
     expect(styles).not.toContain("#ff6188");
