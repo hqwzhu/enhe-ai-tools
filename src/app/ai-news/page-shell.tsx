@@ -54,6 +54,41 @@ type TopicCollectionItem = Awaited<
 
 export const aiNewsPageRevalidate = publicPageCacheSeconds;
 
+type AiNewsPageSearchParams = Record<string, string | undefined>;
+
+const aiNewsFilterParamNames = ["q", "category", "tag", "sort"] as const;
+
+function getAiNewsPageNumber(searchParams: AiNewsPageSearchParams) {
+  return Math.max(
+    1,
+    Number.parseInt(String(searchParams.page ?? "1"), 10) || 1,
+  );
+}
+
+function hasAiNewsFilters(searchParams: AiNewsPageSearchParams) {
+  return aiNewsFilterParamNames.some((name) =>
+    Boolean(String(searchParams[name] ?? "").trim()),
+  );
+}
+
+export function getAiNewsPageOneRedirectPath(
+  searchParams: AiNewsPageSearchParams,
+  locale: Locale,
+) {
+  if (String(searchParams.page ?? "").trim() !== "1") return null;
+
+  const query = new URLSearchParams();
+  for (const [name, value] of Object.entries(searchParams)) {
+    const normalizedValue = String(value ?? "").trim();
+    if (name === "page" || !normalizedValue) continue;
+    query.set(name, normalizedValue);
+  }
+
+  const basePath = buildLocalePath("/ai-news", locale);
+  const queryString = query.toString();
+  return queryString ? `${basePath}?${queryString}` : basePath;
+}
+
 const aiNewsGeoSections = {
   zh: [
     {
@@ -87,22 +122,37 @@ const aiNewsGeoSections = {
 
 export async function generateAiNewsPageMetadata(
   forceLocale: Locale,
+  searchParams: AiNewsPageSearchParams = {},
 ): Promise<Metadata> {
   const t = getDictionary(forceLocale);
-  return buildPageMetadata({
+  const page = getAiNewsPageNumber(searchParams);
+  const isFiltered = hasAiNewsFilters(searchParams);
+  const canonicalPath =
+    page > 1 && !isFiltered ? `/ai-news?page=${page}` : "/ai-news";
+  const metadata = buildPageMetadata({
     title: buildListingMetadataTitle("ai-news", forceLocale, t.brand),
     description: buildListingMetaDescription("ai-news", forceLocale),
-    path: "/ai-news",
+    path: canonicalPath,
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,
   });
+
+  return isFiltered
+    ? {
+        ...metadata,
+        robots: {
+          index: false,
+          follow: true,
+        },
+      }
+    : metadata;
 }
 
 export async function AiNewsPageShell({
   searchParams,
   forceLocale,
 }: {
-  searchParams: Promise<Record<string, string | undefined>>;
+  searchParams: Promise<AiNewsPageSearchParams>;
   forceLocale: Locale;
 }) {
   const params = await searchParams;

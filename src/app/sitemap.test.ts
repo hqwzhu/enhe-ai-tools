@@ -99,10 +99,17 @@ describe("sitemap canonical URL contract", () => {
       "/okf/enhe-ai-overview.md",
       "/okf/ai-news/index.md",
       "/okf/software/index.md",
+      "/okf/build-your-own-x/index.md",
       "/okf/account-services/index.md",
       "/okf/skill-learning/index.md",
+      "/okf/ai-prompt-management/index.md",
+      "/data/ai-prompt-management/zh.json",
+      "/data/ai-prompt-management/en.json",
     ]) {
-      expect(urls.some((url) => url.endsWith(machineReadable)), machineReadable).toBe(true);
+      expect(
+        urls.some((url) => url.endsWith(machineReadable)),
+        machineReadable,
+      ).toBe(false);
     }
   });
 

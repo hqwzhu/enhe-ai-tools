@@ -154,7 +154,7 @@ describe("AI GEO foundations", () => {
     expect(skillLearning).toContain("From AI skills to repeatable workflows");
   });
 
-  it("keeps machine-readable GEO files publicly cached and publishes them in the sitemap", () => {
+  it("keeps machine-readable GEO files publicly cached without mixing them into the Google sitemap", () => {
     const sitemap = read("src/app/sitemap.ts");
     const nextConfig = read("next.config.ts");
 
@@ -168,7 +168,7 @@ describe("AI GEO foundations", () => {
       "/okf/account-services/index.md",
       "/okf/skill-learning/index.md",
     ]) {
-      expect(sitemap).toContain(`path: "${path}"`);
+      expect(sitemap).not.toContain(`path: "${path}"`);
       expect(nextConfig).toContain(`source: "${path}"`);
     }
 

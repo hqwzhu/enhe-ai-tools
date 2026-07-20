@@ -286,7 +286,16 @@ export function getProductDemoDescription(demo: Pick<PublicProductDemo, "descrip
 }
 
 export function buildProductDemoMetadataTitle(demo: PublicProductDemo, locale: Locale) {
-  if (demo.seoTitle) return buildMetadataTitle({ pageTitle: demo.seoTitle, brand: siteName });
+  const localizedSeoTitle = resolveLocalizedPlainCopy(demo.seoTitle, locale);
+  if (
+    localizedSeoTitle &&
+    (locale === "zh" || isReadableEnglish(localizedSeoTitle, 1))
+  ) {
+    return buildMetadataTitle({
+      pageTitle: localizedSeoTitle,
+      brand: siteName,
+    });
+  }
   const title = getLocalizedProductDemoTitle(demo, locale);
   return buildMetadataTitle({
     pageTitle: locale === "en" ? (/demo$/i.test(title) ? title : `${title} Demo`) : `${title} 视频演示`,

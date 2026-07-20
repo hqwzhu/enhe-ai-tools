@@ -47,7 +47,7 @@ export function middleware(request: NextRequest) {
     );
     redirectUrl.searchParams.delete(localeSwitchQueryName);
 
-    const response = NextResponse.redirect(redirectUrl);
+    const response = NextResponse.redirect(redirectUrl, 308);
     response.headers.set(
       "Content-Language",
       requestedLocale === "en" ? "en-US" : "zh-CN",

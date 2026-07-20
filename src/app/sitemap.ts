@@ -74,81 +74,6 @@ const staticRoutes = [
   "/en/legal/minor-protection",
 ] as const;
 
-const machineReadableRoutes = [
-  {
-    path: "/llms.txt",
-    lastModified: new Date("2026-06-25T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  },
-  {
-    path: "/pricing.md",
-    lastModified: new Date("2026-06-25T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  },
-  {
-    path: "/okf/index.md",
-    lastModified: new Date("2026-06-21T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.65,
-  },
-  {
-    path: "/okf/enhe-ai-overview.md",
-    lastModified: new Date("2026-06-21T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.65,
-  },
-  {
-    path: "/okf/ai-news/index.md",
-    lastModified: new Date("2026-06-21T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  },
-  {
-    path: "/okf/software/index.md",
-    lastModified: new Date("2026-06-21T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  },
-  {
-    path: "/okf/build-your-own-x/index.md",
-    lastModified: new Date("2026-06-28T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.62,
-  },
-  {
-    path: "/okf/account-services/index.md",
-    lastModified: new Date("2026-06-21T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  },
-  {
-    path: "/okf/skill-learning/index.md",
-    lastModified: new Date("2026-06-21T00:00:00.000Z"),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  },
-  {
-    path: "/okf/ai-prompt-management/index.md",
-    lastModified: new Date("2026-07-15T00:00:00.000Z"),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  },
-  {
-    path: "/data/ai-prompt-management/zh.json",
-    lastModified: new Date("2026-07-15T00:00:00.000Z"),
-    changeFrequency: "monthly" as const,
-    priority: 0.55,
-  },
-  {
-    path: "/data/ai-prompt-management/en.json",
-    lastModified: new Date("2026-07-15T00:00:00.000Z"),
-    changeFrequency: "monthly" as const,
-    priority: 0.55,
-  },
-] as const;
-
 const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
   "/": new Date("2026-06-17T00:00:00.000Z"),
   "/en": new Date("2026-06-17T00:00:00.000Z"),
@@ -281,12 +206,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           ? ("daily" as const)
           : ("weekly" as const),
       priority: getPriority(path),
-    })),
-    ...machineReadableRoutes.map((route) => ({
-      url: absoluteSitemapUrl(route.path),
-      lastModified: route.lastModified,
-      changeFrequency: route.changeFrequency,
-      priority: route.priority,
     })),
     ...aiTrendTopicPaths.map((path) => ({
       url: absoluteSitemapUrl(path),

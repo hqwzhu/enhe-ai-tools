@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildProductDemoMetadataTitle,
   buildProductDemoVideoObjectSchema,
   getLocalizedProductDemoCoverAlt,
   getLocalizedProductDemoDescription,
@@ -114,5 +115,15 @@ describe("product demo localization and schema helpers", () => {
     expect(getLocalizedProductDemoProductType(demo, "en")).toBe("AI Video Generation / AI Image Generation / AI Agent");
     expect(getLocalizedProductDemoTags(demo, "en")).toEqual(["Image Face Swap", "AI Face Swap"]);
     expect(getLocalizedProductDemoCoverAlt(demo, "en")).toBe("FaceSwap Studio AI Demo cover image");
+  });
+
+  it("does not reuse a Chinese SEO title on English product demo pages", () => {
+    const title = buildProductDemoMetadataTitle(
+      makeDemo({ seoTitle: "AI视频生成工具功能演示" }),
+      "en",
+    );
+
+    expect(title).toContain("FaceSwap Studio AI");
+    expect(title).not.toMatch(/[\u3400-\u9fff]/);
   });
 });
