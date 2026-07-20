@@ -55,6 +55,7 @@ export const minSearchCount30d = 5;
 export const minTotalHeat = 12;
 export const minRenderableArticleCount = 3;
 export const maxKeywordCloudItems = 12;
+export const maxEnglishKeywordCloudItems = 8;
 export const topicCollectionCount = 5;
 
 const defaultTopicSeeds: Record<Locale, string[]> = {
@@ -219,7 +220,8 @@ export async function buildAiNewsKeywordCloud(input: {
     query: candidate.keyword
   }));
 
-  return applyKeywordInterventions(scored, input.interventions).slice(0, maxKeywordCloudItems);
+  const maxItems = input.locale === "en" ? maxEnglishKeywordCloudItems : maxKeywordCloudItems;
+  return applyKeywordInterventions(scored, input.interventions).slice(0, maxItems);
 }
 
 export function buildAiNewsTopicCollections(input: {
