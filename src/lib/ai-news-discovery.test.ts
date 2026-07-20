@@ -78,6 +78,25 @@ describe("AI news discovery helpers", () => {
     expect(items[0]?.keyword).toBe("AIKeyword14");
   });
 
+  it("caps the English keyword cloud to eight focused items", async () => {
+    const items = await buildAiNewsKeywordCloud({
+      locale: "en",
+      candidates: Array.from({ length: 12 }).map((_, index) => ({
+        keyword: `AIKeyword${index + 1}`,
+        articleCount: 3,
+        searchCount30d: index + 1,
+        totalHeat: 20 - index,
+        freshnessDays: 2,
+        tagHits: 1,
+        keywordFieldHits: 1
+      })),
+      interventions: [],
+      externalProvider: defaultAiNewsExternalSeoProvider
+    });
+
+    expect(items).toHaveLength(8);
+  });
+
   it("builds exactly five topic collections with keyword fallback", () => {
     const topics = buildAiNewsTopicCollections({
       locale: "zh",
