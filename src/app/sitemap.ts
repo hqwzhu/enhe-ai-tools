@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import { aiNewsTopics, getAiNewsTopicPath } from "@/lib/ai-news-topics";
+import { getPublicAiNewsTopics } from "@/lib/ai-news-topic-config";
+import { aiTopicClusters, getAiTopicPath } from "@/lib/ai-topic-clusters";
 import { prisma } from "@/lib/db";
 import {
   buildCanonicalToolPath,
@@ -30,12 +32,28 @@ const aiNewsTopicSitemapPathHints = [
 const staticRoutes = [
   "/",
   "/en",
+  "/about",
+  "/en/about",
+  "/build-your-own-x",
+  "/en/build-your-own-x",
+  "/ai-topics",
+  "/en/ai-topics",
   "/software",
   "/en/software",
   "/account-services",
   "/en/account-services",
   "/skill-learning",
   "/en/skill-learning",
+  "/skill-learning/ai-prompt-management",
+  "/en/skill-learning/ai-prompt-management",
+  "/product-paths/work-efficiency",
+  "/en/product-paths/work-efficiency",
+  "/product-paths/media-generation",
+  "/en/product-paths/media-generation",
+  "/product-paths/future-ai",
+  "/en/product-paths/future-ai",
+  "/product-demos",
+  "/en/product-demos",
   "/pricing",
   "/en/pricing",
   "/tutorials",
@@ -59,12 +77,28 @@ const staticRoutes = [
 const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
   "/": new Date("2026-06-17T00:00:00.000Z"),
   "/en": new Date("2026-06-17T00:00:00.000Z"),
+  "/about": new Date("2026-06-25T00:00:00.000Z"),
+  "/en/about": new Date("2026-06-25T00:00:00.000Z"),
+  "/build-your-own-x": new Date("2026-06-28T00:00:00.000Z"),
+  "/en/build-your-own-x": new Date("2026-06-28T00:00:00.000Z"),
+  "/ai-topics": new Date("2026-06-28T00:00:00.000Z"),
+  "/en/ai-topics": new Date("2026-06-28T00:00:00.000Z"),
   "/software": new Date("2026-06-17T00:00:00.000Z"),
   "/en/software": new Date("2026-06-17T00:00:00.000Z"),
   "/account-services": new Date("2026-06-17T00:00:00.000Z"),
   "/en/account-services": new Date("2026-06-17T00:00:00.000Z"),
   "/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
   "/en/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
+  "/skill-learning/ai-prompt-management": new Date("2026-07-15T00:00:00.000Z"),
+  "/en/skill-learning/ai-prompt-management": new Date("2026-07-15T00:00:00.000Z"),
+  "/product-paths/work-efficiency": new Date("2026-07-04T00:00:00.000Z"),
+  "/en/product-paths/work-efficiency": new Date("2026-07-04T00:00:00.000Z"),
+  "/product-paths/media-generation": new Date("2026-07-04T00:00:00.000Z"),
+  "/en/product-paths/media-generation": new Date("2026-07-04T00:00:00.000Z"),
+  "/product-paths/future-ai": new Date("2026-07-04T00:00:00.000Z"),
+  "/en/product-paths/future-ai": new Date("2026-07-04T00:00:00.000Z"),
+  "/product-demos": new Date("2026-07-01T00:00:00.000Z"),
+  "/en/product-demos": new Date("2026-07-01T00:00:00.000Z"),
   "/pricing": new Date("2026-06-17T00:00:00.000Z"),
   "/en/pricing": new Date("2026-06-17T00:00:00.000Z"),
   "/tutorials": new Date("2026-06-17T00:00:00.000Z"),
@@ -122,35 +156,45 @@ function isKnownAiNewsTopicPath(path: string) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const tools = await prisma.tool
-    .findMany({
-      where: { status: "published" },
-      select: {
-        slug: true,
-        name: true,
-        englishName: true,
-        shortDescription: true,
-        content: true,
-        updatedAt: true,
-        type: true,
-      },
-    })
-    .catch(() => []);
-  const newsArticles = await prisma.newsArticle
-    .findMany({
-      where: { status: "published" },
-      select: {
-        slug: true,
-        title: true,
-        englishTitle: true,
-        updatedAt: true,
-        englishSummary: true,
-        englishContent: true,
-      },
-    })
-    .catch(() => []);
+  const [tools, newsArticles, productDemos, publicAiNewsTopics] = await Promise.all([
+    prisma.tool
+      .findMany({
+        where: { status: "published" },
+        select: {
+          slug: true,
+          name: true,
+          englishName: true,
+          shortDescription: true,
+          content: true,
+          updatedAt: true,
+          type: true,
+        },
+      })
+      .catch(() => []),
+    prisma.newsArticle
+      .findMany({
+        where: { status: "published" },
+        select: {
+          slug: true,
+          title: true,
+          englishTitle: true,
+          updatedAt: true,
+          englishSummary: true,
+          englishContent: true,
+        },
+      })
+      .catch(() => []),
+    prisma.productDemo
+      .findMany({
+        where: { status: "published" },
+        select: { slug: true, updatedAt: true },
+        orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
+      })
+      .catch(() => []),
+    getPublicAiNewsTopics().catch(() => aiNewsTopics),
+  ]);
 
-  return [
+  const entries = [
     ...staticRoutes.map((path) => ({
       url: absoluteSitemapUrl(path),
       lastModified: staticRouteLastModified[path],
@@ -172,7 +216,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.76,
     })),
-    ...aiNewsTopics.flatMap((topic) =>
+    ...publicAiNewsTopics.flatMap((topic) =>
       (["zh", "en"] as const).map((locale) => {
         const path = getAiNewsTopicPath(topic.slug, locale);
         return {
@@ -186,6 +230,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           },
           changeFrequency: "weekly" as const,
           priority: isKnownAiNewsTopicPath(stripLocalePrefix(path)) ? 0.74 : 0.7,
+        };
+      }),
+    ),
+    ...aiTopicClusters.flatMap((topic) =>
+      (["zh", "en"] as const).map((locale) => {
+        const path = getAiTopicPath(topic.slug, locale);
+        return {
+          url: absoluteSitemapUrl(path),
+          lastModified: new Date(topic.updatedAt),
+          alternates: {
+            languages: buildAvailableLanguageAlternates(
+              `/ai-topics/${topic.slug}`,
+              ["zh", "en"],
+            ),
+          },
+          changeFrequency: "weekly" as const,
+          priority: 0.73,
         };
       }),
     ),
@@ -233,5 +294,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: route.priority,
       }));
     }),
+    ...productDemos.flatMap((demo) => {
+      const canonicalPath = `/product-demos/${demo.slug}`;
+      return [canonicalPath, `/en/product-demos/${demo.slug}`].map((path) => ({
+        url: absoluteUrl(path),
+        lastModified: demo.updatedAt,
+        alternates: {
+          languages: buildAvailableLanguageAlternates(canonicalPath, ["zh", "en"]),
+        },
+        changeFrequency: "weekly" as const,
+        priority: path.startsWith("/en/") ? 0.68 : 0.74,
+      }));
+    }),
   ];
+  const seenUrls = new Set<string>();
+  return entries.filter((entry) => {
+    if (seenUrls.has(entry.url)) return false;
+    seenUrls.add(entry.url);
+    return true;
+  });
 }

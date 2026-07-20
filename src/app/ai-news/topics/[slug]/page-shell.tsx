@@ -4,8 +4,6 @@ import { notFound } from "next/navigation";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import {
-  aiNewsTopicSlugs,
-  getAiNewsTopic,
   getAiNewsTopicCopy,
   getAiNewsTopicPath,
   type AiNewsTopic,
@@ -17,7 +15,12 @@ import {
 } from "@/lib/ai-news-localization";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { buildCanonicalAiNewsPath } from "@/lib/public-slugs";
-import { getPublicNewsListing } from "@/lib/public-content";
+import {
+  filterAiNewsTopicArticles,
+  getPublicAiNewsTopic,
+  getPublicAiNewsTopicSlugs,
+  getPublicNewsListing,
+} from "@/lib/public-content";
 import {
   absoluteUrl,
   buildAvailableLanguageAlternates,
@@ -26,19 +29,21 @@ import {
   buildLocalePath,
   buildMetadataTitle,
   buildPageMetadata,
+  buildTopicMetaDescription,
 } from "@/lib/seo";
 
 export const aiNewsTopicPageRevalidate = 300;
 
-export function generateAiNewsTopicStaticParams() {
-  return aiNewsTopicSlugs.map((slug) => ({ slug }));
+export async function generateAiNewsTopicStaticParams() {
+  const slugs = await getPublicAiNewsTopicSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateAiNewsTopicMetadata(
   forceLocale: Locale,
   slug: string,
 ): Promise<Metadata> {
-  const topic = getAiNewsTopic(slug);
+  const topic = await getPublicAiNewsTopic(slug);
   const t = getDictionary(forceLocale);
   if (!topic) {
     return buildPageMetadata({
@@ -57,7 +62,12 @@ export async function generateAiNewsTopicMetadata(
       brand: t.brand,
       maxLength: forceLocale === "en" ? 58 : 60,
     }),
-    description: copy.description,
+    description: buildTopicMetaDescription({
+      title: copy.title,
+      description: copy.description,
+      locale: forceLocale,
+      kind: "ai-news-topic",
+    }),
     path: `/ai-news/topics/${topic.slug}`,
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,
@@ -75,17 +85,23 @@ export async function AiNewsTopicPageShell({
   slug: string;
   forceLocale: Locale;
 }) {
-  const topic = getAiNewsTopic(slug);
+  const topic = await getPublicAiNewsTopic(slug);
   if (!topic) notFound();
 
   const t = getDictionary(forceLocale);
   const copy = getAiNewsTopicCopy(topic, forceLocale);
-  const related = await getPublicNewsListing({
+  const relatedCandidates = await getPublicNewsListing({
     q: copy.searchQuery,
     sort: "latest",
-    take: 6,
+    take: 24,
     locale: forceLocale,
   });
+  const relatedArticles = filterAiNewsTopicArticles(
+    relatedCandidates.articles,
+    topic,
+    forceLocale,
+    6,
+  );
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [
       { name: t.nav.home, path: buildLocalePath("/", forceLocale) },
@@ -105,7 +121,7 @@ export async function AiNewsTopicPageShell({
         <StructuredData data={[breadcrumbSchema, topicSchema, faqSchema]} />
 
         <section className="glass relative overflow-hidden rounded-[2rem] p-7 md:p-10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(240,90,53,0.18),transparent_30%),radial-gradient(circle_at_80%_18%,rgba(122,167,255,0.14),transparent_34%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(65,197,219,0.18),transparent_30%),radial-gradient(circle_at_80%_18%,rgba(122,167,255,0.14),transparent_34%)]" />
           <div className="relative max-w-4xl">
             <Badge className="text-[var(--marketing-accent)]">
               AI News Topic
@@ -201,9 +217,9 @@ export async function AiNewsTopicPageShell({
                   forceLocale === "en" ? "Related AI news" : "相关AI资讯"
                 }
               />
-              {related.articles.length ? (
+              {relatedArticles.length ? (
                 <div className="grid gap-4 md:grid-cols-2">
-                  {related.articles.map((article) => (
+                  {relatedArticles.map((article) => (
                     <Link
                       key={article.id}
                       href={buildCanonicalAiNewsPath(article, forceLocale)}
@@ -260,7 +276,7 @@ export async function AiNewsTopicPageShell({
             </section>
           </div>
 
-          <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
+          <section className="space-y-6 lg:sticky lg:top-28 lg:self-start" aria-label="Topic support links">
             <section className="glass rounded-2xl p-5">
               <h2 className="text-lg font-black text-[var(--marketing-text)]">
                 {forceLocale === "en" ? "Keywords" : "专题关键词"}
@@ -304,7 +320,7 @@ export async function AiNewsTopicPageShell({
             >
               {t.aiNews.latestTitle}
             </ButtonLink>
-          </aside>
+          </section>
         </section>
       </Container>
     </main>

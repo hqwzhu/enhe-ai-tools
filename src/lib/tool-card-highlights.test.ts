@@ -34,4 +34,32 @@ describe("tool card highlights", () => {
       dictionaries.en.toolCard.capabilityAccess
     ]);
   });
+
+  it("marks skill courses as paid only when an active positive price exists", () => {
+    expect(
+      buildToolCardHighlights(
+        {
+          type: "skill_learning",
+          downloadPrice: 99,
+          priceSpecs: [{ price: 99, status: "disabled" }]
+        },
+        "zh"
+      )
+    ).toEqual([
+      dictionaries.zh.toolCard.capabilityCourse,
+      dictionaries.zh.toolCard.capabilityFree,
+      dictionaries.zh.toolCard.capabilityAccess
+    ]);
+
+    expect(
+      buildToolCardHighlights(
+        {
+          type: "skill_learning",
+          downloadPrice: 0,
+          priceSpecs: [{ price: 19, status: "active" }]
+        },
+        "zh"
+      )
+    ).toEqual([dictionaries.zh.toolCard.capabilityCourse, dictionaries.zh.toolCard.capabilityPaidCourse]);
+  });
 });

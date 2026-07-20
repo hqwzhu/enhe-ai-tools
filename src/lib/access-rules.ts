@@ -1,5 +1,12 @@
-export function canDownloadPaidTool(input: { isDownloadPaid: boolean; hasDownloadPurchase: boolean }) {
-  return !input.isDownloadPaid || input.hasDownloadPurchase;
+export function canDownloadPaidTool(input: {
+  isDownloadPaid: boolean;
+  downloadPrice?: number | null;
+  hasDownloadPurchase: boolean;
+}) {
+  const isPaidDownload =
+    input.isDownloadPaid &&
+    (input.downloadPrice == null || Number(input.downloadPrice) > 0);
+  return !isPaidDownload || input.hasDownloadPurchase;
 }
 
 export function canUsePaidOnlineTool(input: { servicePrice: number; hasToolPurchase: boolean }) {

@@ -11,9 +11,13 @@ describe("access rules", () => {
     expect(canDownloadPaidTool({ isDownloadPaid: false, hasDownloadPurchase: false })).toBe(true);
   });
 
+  it("allows zero-price software downloads even when the paid flag is stale", () => {
+    expect(canDownloadPaidTool({ isDownloadPaid: true, downloadPrice: 0, hasDownloadPurchase: false })).toBe(true);
+  });
+
   it("requires a matching purchase for paid software downloads", () => {
-    expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: false })).toBe(false);
-    expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: true })).toBe(true);
+    expect(canDownloadPaidTool({ isDownloadPaid: true, downloadPrice: 19, hasDownloadPurchase: false })).toBe(false);
+    expect(canDownloadPaidTool({ isDownloadPaid: true, downloadPrice: 19, hasDownloadPurchase: true })).toBe(true);
   });
 
   it("requires a matching purchase for paid online account services", () => {

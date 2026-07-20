@@ -13,11 +13,12 @@ describe("critical commercial flow rules", () => {
   });
 
   it("blocks paid software downloads until that software is purchased", () => {
-    expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: false })).toBe(false);
+    expect(canDownloadPaidTool({ isDownloadPaid: true, downloadPrice: 19, hasDownloadPurchase: false })).toBe(false);
   });
 
   it("allows free downloads and purchased paid downloads", () => {
     expect(canDownloadPaidTool({ isDownloadPaid: false, hasDownloadPurchase: false })).toBe(true);
-    expect(canDownloadPaidTool({ isDownloadPaid: true, hasDownloadPurchase: true })).toBe(true);
+    expect(canDownloadPaidTool({ isDownloadPaid: true, downloadPrice: 0, hasDownloadPurchase: false })).toBe(true);
+    expect(canDownloadPaidTool({ isDownloadPaid: true, downloadPrice: 19, hasDownloadPurchase: true })).toBe(true);
   });
 });

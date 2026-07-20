@@ -12,6 +12,20 @@ function extractOrderedMarkers(html: string) {
 }
 
 describe("ToolRichContent", () => {
+  it("emphasizes colon-led product feature labels inside lists", () => {
+    vi.stubGlobal("React", React);
+
+    const html = renderToStaticMarkup(
+      React.createElement(ToolRichContent, {
+        content: ["Features:", "Work companion: turn rough ideas into next actions."].join("\n")
+      })
+    );
+
+    expect(html).toContain("<strong");
+    expect(html).toContain("Work companion:");
+    expect(html).toContain("turn rough ideas into next actions.");
+  });
+
   it("keeps ordered markers increasing when descriptions split numbered items", () => {
     vi.stubGlobal("React", React);
 
@@ -30,5 +44,19 @@ describe("ToolRichContent", () => {
     const html = renderToStaticMarkup(React.createElement(ToolRichContent, { content }));
 
     expect(extractOrderedMarkers(html)).toEqual(["1", "2", "3"]);
+  });
+
+  it("renders bare Feishu tutorial URLs as links without changing query strings", () => {
+    vi.stubGlobal("React", React);
+
+    const url = "https://qcnerk9meslu.feishu.cn/wiki/CEqtwGF9BiOQXNkzEmVcWecGnWe?from=from_copylink";
+    const html = renderToStaticMarkup(
+      React.createElement(ToolRichContent, {
+        content: ["领取链接", url].join("\n")
+      })
+    );
+
+    expect(html).toContain(`href="${url}"`);
+    expect(html).toContain(`>${url}</a>`);
   });
 });

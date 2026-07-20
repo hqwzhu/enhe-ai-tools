@@ -75,6 +75,20 @@ describe("SEO remediation helpers", () => {
     expect(description).toContain("OpenAI workspace agents");
     expect(description).toContain("ENHE AI");
     expect(description).not.toContain("Live in symbiosis with AI");
+    expect(description.length).toBeGreaterThanOrEqual(80);
+    expect(description.length).toBeLessThanOrEqual(150);
+  });
+
+  it("keeps Chinese AI news fallback descriptions useful for crawler snippets", () => {
+    const fallback = buildAiNewsDescriptionFallback({
+      title: "DeepMind AI",
+      categoryName: "AI前沿",
+      locale: "zh",
+    });
+
+    expect(fallback).toContain("ENHE AI");
+    expect(fallback.length).toBeGreaterThanOrEqual(80);
+    expect(fallback.length).toBeLessThanOrEqual(150);
   });
 
   it("builds fuller homepage descriptions for search snippets", () => {
@@ -82,11 +96,11 @@ describe("SEO remediation helpers", () => {
     const enDescription = buildHomeMetaDescription("en");
 
     expect(zhDescription.length).toBeGreaterThanOrEqual(70);
-    expect(zhDescription).toContain("AI前沿资讯");
-    expect(zhDescription).toContain("AI软件应用");
+    expect(zhDescription).toContain("真实任务");
+    expect(zhDescription).toContain("安全、隐私和稳定");
     expect(enDescription.length).toBeGreaterThanOrEqual(120);
-    expect(enDescription).toContain("AI news");
-    expect(enDescription).toContain("account service");
+    expect(enDescription).toContain("real tasks");
+    expect(enDescription).toContain("privacy");
   });
 
   it("sanitizes account-service compliance risk copy before rendering or using it in metadata", () => {
@@ -144,6 +158,47 @@ describe("SEO remediation helpers", () => {
         "掉订阅",
         "充值",
       ]) {
+        expect(output).not.toContain(risky);
+      }
+    }
+  });
+
+  it("makes sanitized account-service metadata unique without restoring risky copy", () => {
+    const unsafeDescription =
+      "Shared account, guaranteed no ban, recharge supported.";
+    const geminiDescription = buildToolMetaDescription({
+      name: "Gemini Pro",
+      englishName: "Gemini Pro",
+      description: unsafeDescription,
+      type: "online",
+      locale: "zh",
+    });
+    const claudeDescription = buildToolMetaDescription({
+      name: "Claude Pro",
+      englishName: "Claude Pro",
+      description: unsafeDescription,
+      type: "online",
+      locale: "zh",
+    });
+    const englishDescription = buildToolMetaDescription({
+      name: "Gemini Pro",
+      englishName: "Gemini Pro",
+      description: unsafeDescription,
+      type: "online",
+      locale: "en",
+    });
+
+    expect(geminiDescription).not.toBe(claudeDescription);
+    expect(geminiDescription).toContain("Gemini Pro");
+    expect(claudeDescription).toContain("Claude Pro");
+    expect(englishDescription).toContain("Gemini Pro account service guidance");
+    for (const output of [
+      geminiDescription,
+      claudeDescription,
+      englishDescription,
+    ]) {
+      expect(output.length).toBeLessThanOrEqual(145);
+      for (const risky of ["Shared account", "guaranteed", "recharge"]) {
         expect(output).not.toContain(risky);
       }
     }

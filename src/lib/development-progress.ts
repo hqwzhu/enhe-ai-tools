@@ -12,7 +12,7 @@ export const statusMeta: Record<DevelopmentItemStatus, { label: string; weight: 
   completed: {
     label: "已完成",
     weight: 1,
-    className: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]"
+    className: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#d8f8ff]"
   },
   partial: {
     label: "部分完成",

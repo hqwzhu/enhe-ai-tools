@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import {
   buildAdminMailOptions,
   buildAdminOperationEmail,
+  buildCustomerSupportEmail,
   getAdminAlertEmailConfig
 } from "@/lib/admin-email-notifications";
 
@@ -120,5 +121,39 @@ describe("admin email notifications", () => {
     expect(rawMessage).toContain("Content-Type: text/plain; charset=utf-8");
     expect(rawMessage).toContain("Content-Transfer-Encoding: base64");
     expect(rawMessage).toContain("Subject: =?UTF-8?");
+  });
+
+  it("builds a support email with Reply-To and escaped visitor content", () => {
+    const email = buildCustomerSupportEmail({
+      message: "<script>alert(1)</script>",
+      email: "visitor@example.com",
+      locale: "zh",
+      pagePath: "/software/demo"
+    });
+
+    expect(email.subject).toBe("[ENHE AI] 新客服留言 - /software/demo");
+    expect(email.text).toContain("<script>alert(1)</script>");
+    expect(email.html).not.toContain("<script>alert(1)</script>");
+    expect(email.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+    expect(email.replyTo).toBe("visitor@example.com");
+
+    const mailOptions = buildAdminMailOptions(
+      {
+        from: "ENHE AI <admin@example.com>",
+        recipients: ["admin@example.com"]
+      },
+      email
+    );
+    expect(mailOptions.replyTo).toBe("visitor@example.com");
+  });
+
+  it("omits Reply-To when no visitor email is provided", () => {
+    expect(
+      buildCustomerSupportEmail({
+        message: "没有邮箱",
+        locale: "zh",
+        pagePath: "/"
+      }).replyTo
+    ).toBeUndefined();
   });
 });

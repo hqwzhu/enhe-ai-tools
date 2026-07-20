@@ -21,7 +21,16 @@ export function HeaderSessionGate({
     zh: string;
     en: string;
   };
-  navItems: ReadonlyArray<{ label: string; href: string }>;
+  navItems: ReadonlyArray<{
+    label: string;
+    href: string;
+    icon?: "search";
+    children?: ReadonlyArray<{
+      label: string;
+      href: string;
+      description?: string;
+    }>;
+  }>;
   initialUser: HeaderSessionUser | null;
 }) {
   const { user } = useHeaderSessionUser(initialUser);
@@ -39,7 +48,7 @@ export function HeaderSessionGate({
       navItems={navItems}
       showAdmin={user?.role === "admin"}
       loginItem={[labels.login, buildLocalePath("/login", locale)]}
-      userCenterItem={[labels.user, buildLocalePath("/user", locale)]}
+      userCenterItem={user ? [labels.user, buildLocalePath("/user", locale)] : undefined}
       languageItems={languageItems}
     />
   );

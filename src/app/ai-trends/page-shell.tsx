@@ -14,8 +14,14 @@ import {
   WalletCards
 } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
+import { AiTrendVideoBriefing } from "@/components/ai-trend-video-briefing";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
-import { getAiTrendBriefingSummaries, localizeAiTrendBriefingView } from "@/lib/ai-trends";
+import {
+  getAiTrendBriefingSummaries,
+  getLatestPublishedAiTrendBriefingWithVideo,
+  hasRenderableAiTrendVideo,
+  localizeAiTrendBriefingView
+} from "@/lib/ai-trends";
 import { type Locale } from "@/lib/dictionaries";
 import {
   absoluteUrl,
@@ -35,7 +41,7 @@ const content = {
   zh: {
     title: "人类最渴望用 AI 解决哪些问题",
     description:
-      "ENHE AI 持续整理公开趋势信号，观察用户最希望用 AI 解决的工作效率、视频生成、内容创作、编程、学习、搜索研究、营销销售和生活辅助问题。",
+      "ENHE AI 持续整理公开趋势信号，观察用户最希望用 AI 解决的工作效率、视频生成、内容创作、编程、学习、搜索研究、营销销售和生活辅助问题，帮助判断下一步工具、技能和内容行动。",
     hero:
       "核心结论：用户最渴望 AI 解决的不是抽象智能问题，而是把高频、耗时、需要专业判断的任务变成可复用、可验证、可交付的工作流。",
     demandTitle: "需求热度排行",
@@ -59,7 +65,7 @@ const content = {
   en: {
     title: "What People Most Want AI To Solve",
     description:
-      "ENHE AI tracks public demand signals to understand where people most want AI to help across productivity, video, content, coding, learning, research, sales, and everyday assistance.",
+      "ENHE AI tracks public demand signals showing where people want AI help with productivity, video, content, coding, learning, research, and daily tasks.",
     hero:
       "Core conclusion: people do not mainly want abstract intelligence. They want AI to turn high-frequency, time-consuming, judgment-heavy work into repeatable, verifiable, deliverable workflows.",
     demandTitle: "Demand heat ranking",
@@ -388,7 +394,15 @@ export function generateAiTrendTopicMetadata(locale: Locale = "zh"): Metadata {
 
 export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocale?: Locale } = {}) {
   const copy = content[forceLocale];
-  const recentBriefings = (await getAiTrendBriefingSummaries(3)).map((briefing) => localizeAiTrendBriefingView(briefing, forceLocale));
+  const [recentBriefingsRaw, latestVideoBriefingRaw] = await Promise.all([
+    getAiTrendBriefingSummaries(3),
+    getLatestPublishedAiTrendBriefingWithVideo()
+  ]);
+  const recentBriefings = recentBriefingsRaw.map((briefing) => localizeAiTrendBriefingView(briefing, forceLocale));
+  const latestVideoBriefing =
+    latestVideoBriefingRaw && hasRenderableAiTrendVideo(latestVideoBriefingRaw)
+      ? localizeAiTrendBriefingView(latestVideoBriefingRaw, forceLocale)
+      : null;
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [
       { name: copy.home, path: buildLocalePath("/", forceLocale) },
@@ -427,7 +441,6 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
       answer: item.answer,
     })),
   });
-
   return (
     <main>
       <Container className="py-14">
@@ -468,6 +481,20 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
           </p>
         </section>
 
+        {latestVideoBriefing?.videoUrl ? (
+          <AiTrendVideoBriefing
+            locale={forceLocale}
+            title={latestVideoBriefing.title}
+            slug={latestVideoBriefing.slug}
+            coreConclusion={latestVideoBriefing.coreConclusion}
+            videoUrl={latestVideoBriefing.videoUrl}
+            videoTitle={latestVideoBriefing.videoTitle}
+            videoDescription={latestVideoBriefing.videoDescription}
+            videoPosterUrl={latestVideoBriefing.videoPosterUrl}
+            dailyHref={buildLocalePath(`/ai-trends/daily/${latestVideoBriefing.slug}`, forceLocale)}
+          />
+        ) : null}
+
         <section className="mt-12">
         <SectionTitle title={copy.demandTitle} intro={copy.demandIntro} />
         <div className="grid gap-4 md:grid-cols-2">
@@ -497,38 +524,49 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
         </div>
         </section>
 
-        <section className="mt-12">
-        <SectionTitle title={copy.scenarioTitle} intro={copy.scenarioIntro} />
-        <div className="grid gap-4 lg:grid-cols-3">
-          {workProductivityScenarioRanking.map((scenario, index) => (
-            <article key={scenario.zhName} className="surface-panel-soft p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <Badge className="text-[var(--marketing-accent)]">#{index + 1}</Badge>
-                  <h2 className="mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">
-                    {forceLocale === "en" ? scenario.enName : scenario.zhName}
-                  </h2>
-                </div>
-                <div className="text-right">
-                  <strong className="block text-2xl font-black text-[var(--marketing-accent)]">{scenario.heat}</strong>
-                  <span className="mt-1 block text-xs font-bold text-[var(--marketing-muted)]">
-                    {copy.scenarioPriority} {scenario.priority}
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 h-2 rounded-full bg-white/8">
-                <div className="h-full rounded-full bg-[var(--marketing-accent)]" style={{ width: `${scenario.heat}%` }} />
-              </div>
-              <p className="mt-4 text-sm leading-7 text-[var(--marketing-muted)]">
-                {forceLocale === "en" ? scenario.enPain : scenario.zhPain}
+        <details className="content-fold mt-12">
+          <summary>
+            <div className="content-fold-summary-copy">
+              <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+                {copy.scenarioTitle}
+              </h2>
+              <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
+                {copy.scenarioIntro}
               </p>
-              <p className="mt-3 text-sm font-bold leading-7 text-[var(--marketing-text)]">
-                {forceLocale === "en" ? scenario.enOpportunity : scenario.zhOpportunity}
-              </p>
-            </article>
-          ))}
-        </div>
-        </section>
+            </div>
+          </summary>
+          <div className="content-fold-body">
+            <div className="grid gap-4 lg:grid-cols-3">
+              {workProductivityScenarioRanking.map((scenario, index) => (
+                <article key={scenario.zhName} className="surface-panel-soft p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <Badge className="text-[var(--marketing-accent)]">#{index + 1}</Badge>
+                      <h2 className="mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">
+                        {forceLocale === "en" ? scenario.enName : scenario.zhName}
+                      </h2>
+                    </div>
+                    <div className="text-right">
+                      <strong className="block text-2xl font-black text-[var(--marketing-accent)]">{scenario.heat}</strong>
+                      <span className="mt-1 block text-xs font-bold text-[var(--marketing-muted)]">
+                        {copy.scenarioPriority} {scenario.priority}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-4 h-2 rounded-full bg-white/8">
+                    <div className="h-full rounded-full bg-[var(--marketing-accent)]" style={{ width: `${scenario.heat}%` }} />
+                  </div>
+                  <p className="mt-4 text-sm leading-7 text-[var(--marketing-muted)]">
+                    {forceLocale === "en" ? scenario.enPain : scenario.zhPain}
+                  </p>
+                  <p className="mt-3 text-sm font-bold leading-7 text-[var(--marketing-text)]">
+                    {forceLocale === "en" ? scenario.enOpportunity : scenario.zhOpportunity}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </details>
 
         <section className="mt-12">
         <SectionTitle title={copy.prioritiesTitle} intro={copy.prioritiesIntro} />
@@ -568,8 +606,8 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
               ))}
             </div>
           </div>
-          <aside className="glass rounded-2xl p-6">
-            <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+          <section className="glass rounded-2xl p-6" aria-labelledby="ai-trends-source-citations">
+            <h2 id="ai-trends-source-citations" className="text-2xl font-black text-[var(--marketing-text)]">
               {forceLocale === "en" ? "Source citations" : "趋势参考来源"}
             </h2>
             <div className="mt-5 grid gap-3">
@@ -585,24 +623,24 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
                 </a>
               ))}
             </div>
-          </aside>
+          </section>
         </section>
 
-        <section className="mt-12">
+        <section className="ai-trends-recent-briefings mt-12">
         <SectionTitle title={copy.recentTitle} intro={copy.recentIntro} />
         {recentBriefings.length ? (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="ai-trends-recent-briefings-grid grid gap-4 md:grid-cols-3">
             {recentBriefings.map((briefing) => (
               <Link
                 key={briefing.id}
                 href={buildLocalePath(`/ai-trends/daily/${briefing.slug}`, forceLocale)}
-                className="surface-panel-soft group block p-5 transition hover:border-[var(--marketing-accent)]/45"
+                className="ai-trends-recent-briefing-card surface-panel-soft group block p-5 transition hover:border-[var(--marketing-accent)]/45"
               >
                 <time className="text-xs font-bold text-[var(--marketing-accent)]" dateTime={briefing.slug}>
                   {briefing.slug}
                 </time>
-                <h2 className="mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">{briefing.title}</h2>
-                <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--marketing-muted)]">{briefing.coreConclusion}</p>
+                <h2 className="ai-trends-recent-briefing-title mt-3 text-lg font-black leading-snug text-[var(--marketing-text)]">{briefing.title}</h2>
+                <p className="ai-trends-recent-briefing-summary mt-3 line-clamp-3 text-sm leading-7 text-[var(--marketing-muted)]">{briefing.coreConclusion}</p>
                 <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[var(--marketing-accent)]">
                   {copy.readSummary} <ArrowUpRight size={16} strokeWidth={1.8} aria-hidden="true" />
                 </span>

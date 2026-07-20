@@ -121,11 +121,7 @@ export function buildLocalizedNewsSummary(article: NewsSummaryInput, locale: Loc
   if (isUsableEnglish(article.englishSummary, 5)) return normalizeText(article.englishSummary);
   if (isUsableEnglish(article.englishDescription, 6)) return normalizeText(article.englishDescription);
 
-  const title = buildLocalizedNewsTitle(
-    { title: article.title, englishTitle: article.englishTitle, categoryName: article.categoryName },
-    "en",
-  );
-  return `${title} helps readers understand what changed, why it matters, and how to connect the update to practical AI workflows.`;
+  return normalizeText(article.summary) || normalizeText(article.description);
 }
 
 export function buildLocalizedNewsTitle(
@@ -139,7 +135,7 @@ export function buildLocalizedNewsTitle(
   if (isUsableEnglish(englishTitle, 2)) return englishTitle;
   if (isUsableEnglish(title, 2)) return title;
 
-  return `${resolveLocalizedNewsCategoryName(input.categoryName, "en")} Update`;
+  return title || `${resolveLocalizedNewsCategoryName(input.categoryName, "en")} Update`;
 }
 
 export function buildLocalizedNewsKeywordList(input: NewsKeywordInput, locale: Locale) {

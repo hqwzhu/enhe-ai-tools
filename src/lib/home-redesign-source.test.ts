@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("homepage SaaS redesign source", () => {
-  it("uses localized homepage copy, keeps the hero isolated to the first viewport, and keeps all six recommended tools inside the featured content card", () => {
+  it("uses a simplified task-first homepage while keeping recommended tools and SEO support links", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
     const dictionaries = readFileSync(new URL("../lib/dictionaries.ts", import.meta.url), "utf8");
@@ -10,19 +10,22 @@ describe("homepage SaaS redesign source", () => {
 
     expect(page).toContain('className="home-page-shell"');
     expect(page).toContain("home-hero-shell");
+    expect(page).toContain("HomeParticlesBackground");
+    expect(page).toContain('className="home-hero-liquid-layer"');
+    expect(page).toContain('aria-hidden="true"');
     expect(page).toContain("home-hero-stage");
     expect(page).toContain("home-hero-centered");
     expect(page).not.toContain('className="home-hero-intro"');
     expect(page).not.toContain("home-hero-background");
     expect(page).not.toContain("home-hero-unicorn-remix");
     expect(page).toContain('id="updates" className="home-featured-shell"');
-    expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-hero-actions"));
-    expect(page).toContain("t.home.eyebrow");
-    expect(page).toContain("t.home.title");
-    expect(page).toContain("t.home.titleSecondLine");
-    expect(page).toContain("t.home.titleSecondLineEn");
+    expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-outcome-shell"));
+    expect(page).toContain("const heroTitle =");
+    expect(page).toContain("ENHE AI");
+    expect(page).toContain("让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。");
+    expect(page).toContain("Helping everyone use AI with confidence—turn ideas into creations and productivity into value.");
+    expect(page).toContain("const heroIntro =");
     expect(page).not.toContain("home-hero-metrics");
-    expect(page).toContain('className="home-hero-eyebrow backdrop-blur-xl backdrop-saturate-150"');
     expect(page).not.toContain("t.home.metricsExploreTitle");
     expect(page).not.toContain("t.home.metricsExplore");
     expect(page).not.toContain("t.home.metricsOutcome");
@@ -32,22 +35,40 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain("t.home.skillLearningButton");
     expect(page).not.toContain("HomeGooeyNav");
     expect(page).not.toContain("const heroCtaItems = [");
-    expect(page).toContain('className="home-hero-cta home-hero-cta-primary backdrop-blur-xl backdrop-saturate-150"');
-    expect(page).toContain('className="home-hero-cta home-hero-cta-accent backdrop-blur-xl backdrop-saturate-150"');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
+    expect(page).toContain('className="home-hero-actions"');
+    expect(page).toContain('className="home-hero-cta home-hero-cta-primary"');
+    expect(page).toContain('className="home-hero-cta home-hero-cta-accent"');
+    expect(page).toContain('href={buildLocalePath("/software", forceLocale)}');
+    expect(page).toContain('href={buildLocalePath("/skill-learning", forceLocale)}');
+    expect(page).toContain('forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"');
+    expect(page).toContain('forceLocale === "en" ? "Claim Free" : "免费领取"');
+    expect(page).toContain("const homeProductPaths = {");
+    expect(page).toContain("const homeSupportLinks = {");
+    expect(page).not.toContain("const creatorOutcomeCards = {");
+    expect(page).not.toContain("const creatorWorkflowSteps = {");
+    expect(page).not.toContain("const buildYourOwnXSpotlight = {");
+    expect(page).toContain('href: "/build-your-own-x"');
+    expect(page).toContain('className="home-outcome-shell"');
+    expect(page).toContain('className="home-outcome-grid home-product-path-grid"');
+    expect(page).not.toContain("先从软件、课程或账号服务进入，再对比价格、交付方式和购买说明。");
+    expect(page).not.toContain("Start with software, courses, or account services, then compare pricing and delivery details before purchase.");
+    expect(page).toContain('className="home-support-shell"');
+    expect(page).toContain('className="home-seo-disclosure"');
+    expect(page).not.toContain('className="home-workflow-shell"');
+    expect(page).not.toContain('className="home-byox-spotlight"');
     expect(page).toContain("t.home.featuredContentTitle");
-    expect(page).toContain("t.home.featuredContentIntro");
+    expect(page).not.toContain("t.home.featuredContentIntro");
     expect(page).not.toContain("take: 40");
     expect(page).not.toContain("recommendedTools.slice(previewTools.length)");
     expect(page).toContain("getHomeRecommendedTools");
     expect(page).toContain("getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro)");
     expect(page).not.toContain('href="/account-services" variant="ghost" className="home-preview-link"');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/account-services" : "/account-services"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/ai-news" : "/ai-news"}');
-    expect(page).toContain('href={forceLocale === "en" ? "/en/skill-learning" : "/skill-learning"}');
+    expect(page).toContain('href: "/product-paths/work-efficiency"');
+    expect(page).toContain('href: "/product-paths/media-generation"');
+    expect(page).toContain('href: "/product-paths/future-ai"');
+    expect(page).toContain('href: "/ai-news"');
+    expect(page).toContain('href: "/ai-trends"');
+    expect(page).toContain('href: "/ai-topics"');
     expect(page).toContain("home-product-preview backdrop-blur-xl backdrop-saturate-150");
     expect(page).not.toContain("HeroLogoMark");
     expect(page).not.toContain("enhe-orbital-system");
@@ -57,69 +78,159 @@ describe("homepage SaaS redesign source", () => {
 
     expect(header).toContain("t.nav.home");
     expect(header).toContain("t.nav.login");
-    expect(header).toContain("{t.nav.user}");
+    expect(header).toContain("user: t.nav.user");
 
-    expect(dictionaries).toContain('titleSecondLine: "与 AI 共生，在变化中觉醒，用创造重塑未来"');
-    expect(dictionaries).toContain('titleSecondLineEn: "Coexist with AI. Awaken through change. Create the future"');
+    expect(dictionaries).toContain('titleSecondLine: "把 AI 用到真实任务里，让工作、创作和学习更可控"');
+    expect(dictionaries).toContain('titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows"');
     expect(dictionaries).toContain('metricsExploreTitle: "Explore Freely"');
     expect(dictionaries).toContain('metricsExplore: "Open More Possibilities with AI"');
     expect(dictionaries).toContain('featuredContentTitle: "Featured Content"');
 
     expect(css).toContain("color-scheme: dark");
-    expect(css).toContain("--marketing-bg: #22242a");
+    expect(css).toContain("--marketing-bg: #101821");
     expect(css).not.toContain("color-scheme: light");
     expect(css).not.toContain("--marketing-bg: #ffffff");
     expect(css).not.toContain(".site-brand-logo-light");
-    expect(css).toContain("--marketing-accent: #f05a35");
+    expect(css).toContain("--marketing-accent: #41c5db");
     expect(css).toContain("--font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain("--font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain(".home-page-shell");
+    expect(css).toContain(".home-hero-liquid-layer");
+    expect(css).toContain(".particles-container");
+    expect(css).toContain(".home-particles-fallback");
     expect(css).toContain(".home-hero-stage");
     expect(css).toContain(".home-hero-centered");
+    expect(css).toMatch(/\.home-hero-positioning\s*{[^}]*font-weight: 400;/);
+    expect(css).toContain(".home-hero-title-simple");
     expect(css).not.toContain(".home-hero-metrics");
     expect(css).toContain(".home-featured-shell");
+    expect(css).toContain(".home-outcome-shell");
+    expect(css).toContain(".home-outcome-grid");
+    expect(css).toContain(".home-product-path-grid");
+    expect(css).toContain(".home-product-path-grid .home-outcome-card {\n  min-height: clamp(158px, 12vw, 176px);");
+    expect(css).toContain("justify-content: center;\n  row-gap: 0.45rem;");
+    expect(css).toContain(".home-product-path-grid .home-outcome-card h3 {\n  margin: 0 0 0.55rem;");
+    expect(css).toContain(".home-support-shell");
+    expect(css).toContain(".home-seo-disclosure");
+    expect(css).toContain("overflow-x: clip");
     expect(css).toContain("scroll-margin-top: 96px");
     expect(css).toContain(".home-hero-actions {\n  display: flex;");
     expect(css).toContain(".home-hero-actions {\n    width: 100%;\n    flex-wrap: wrap;");
     expect(css).toContain(".home-hero-cta {\n    flex: 1 1 calc(50% - 10px);");
     expect(css).not.toContain(".home-gooey-nav-list");
     expect(css).toContain("white-space: pre-line");
-    expect(css).toContain(".home-product-preview {\n  width: min(100%, 1040px);\n  margin: 0 auto;");
+    expect(css).toContain(".home-product-preview {\n  width: min(100%, 1280px);\n  margin: 0 auto;");
     expect(css).not.toContain(".enhe-orbital-system");
     expect(css).not.toContain(".home-hero-scroll-cue");
   });
 
-  it("emphasizes the bilingual hero promise with React Bits ScrollVelocity while keeping SEO-readable text", () => {
+  it("uses a task-first sales hero instead of marquee-heavy bilingual motion", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
-    const scrollVelocity = readFileSync(new URL("../components/scroll-velocity.tsx", import.meta.url), "utf8");
 
-    expect(page).toContain('import { ScrollVelocity } from "@/components/scroll-velocity";');
-    expect(page).toContain("const heroVelocityTexts = [t.home.titleSecondLine, t.home.titleSecondLineEn];");
-    expect(page).toContain('<span className="sr-only"> {heroVelocityTexts.join(" ")}</span>');
-    expect(page).toContain('<div className="home-hero-title-emphasis" aria-hidden="true">');
-    expect(page).toContain('texts={heroVelocityTexts}');
-    expect(page).not.toContain('<span className="home-hero-title-emphasis" aria-hidden="true">');
-    expect(css).toContain(".home-hero-title-emphasis");
-    expect(css).toContain(".home-hero-velocity-parallax");
-    expect(css).toContain(".home-hero-velocity-scroller");
-    expect(css).toContain(".home-hero-velocity-copy");
-    expect(css).toContain("color: var(--marketing-accent)");
-    expect(css).toContain("animation: hero-title-breathe");
-    expect(css).toContain("@keyframes hero-title-breathe");
-    expect(css).toContain("text-shadow:");
-    expect(css).toContain(".home-hero-title-emphasis {\n    animation: none");
-    expect(scrollVelocity).toContain('velocity = 100');
-    expect(scrollVelocity).toContain('damping = 50');
-    expect(scrollVelocity).toContain('stiffness = 400');
-    expect(scrollVelocity).toContain('numCopies = 6');
-    expect(scrollVelocity).toContain('velocityMapping = { input: [0, 1000], output: [0, 5] }');
-    expect(scrollVelocity).toContain('parallaxClassName = "parallax"');
-    expect(scrollVelocity).toContain('scrollerClassName = "scroller"');
-    expect(scrollVelocity).toContain('from "motion/react"');
-    expect(scrollVelocity).toContain("useAnimationFrame");
-    expect(scrollVelocity).toContain("useVelocity(scrollY)");
-    expect(scrollVelocity).toContain("baseVelocity={index % 2 !== 0 ? -velocity : velocity}");
+    expect(page).not.toContain('import { ScrollVelocity } from "@/components/scroll-velocity";');
+    expect(page).not.toContain("const heroVelocityTexts =");
+    expect(page).not.toContain("texts={heroVelocityTexts}");
+    expect(page).toContain('import { HomeParticlesBackground } from "@/components/home/home-particles-background";');
+    expect(page).toContain('import DecryptedText from "@/components/home/decrypted-text";');
+    expect(page).not.toContain('import TextPressure from "@/components/home/text-pressure";');
+    expect(page).not.toContain('<p className="home-hero-brand">ENHE AI</p>');
+    expect(page).toContain('import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";');
+    expect(page).toContain('<h1 className="sr-only">{heroTitle}</h1>');
+    expect(page).toContain('<ASCIIHeroTitle text={heroTitle} />');
+    expect(page).not.toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
+    expect(page).toContain('<p className="home-hero-positioning">');
+    expect(page).toContain("text={heroIntro}");
+    expect(page).toContain('animateOn="view"');
+    expect(page).toContain("useOriginalCharsOnly");
+    expect(page).toContain("home-hero-decrypted-text");
+    expect(css).not.toContain(".home-hero-brand");
+    expect(css).toContain(".home-hero-title-simple");
+    expect(css).not.toContain("Roboto Flex ENHE");
+    expect(css).not.toContain(".home-hero-title-pressure");
+    expect(css).not.toContain(".text-pressure-title");
+    expect(css).toContain(".home-hero-decrypted-text");
+    expect(css).toContain(".home-hero-encrypted-letter");
+    expect(css).toContain("font-size: clamp(4.05rem, 11.1vw, 9.15rem)");
+    expect(css).toContain(".site-brand-logo-dark {\n  opacity: 1;\n  filter: brightness(0) invert(1)");
+  });
+
+  it("uses demand-first homepage cards without the old action labels", () => {
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+
+    expect(page).toContain('forceLocale === "en" ? "Choose by need" : "按需求选择"');
+    expect(page).toContain('title: "提升工作效率"');
+    expect(page).toContain('href: "/product-paths/work-efficiency"');
+    expect(page).toContain("办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件");
+    expect(page).toContain('title: "生成图片/视频/音频"');
+    expect(page).toContain('href: "/product-paths/media-generation"');
+    expect(page).toContain("AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理");
+    expect(page).toContain('title: "改变你未来的AI"');
+    expect(page).toContain('href: "/product-paths/future-ai"');
+    expect(page).toContain("AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现");
+    expect(page).not.toContain('title: "提升工作效率",\n      description: "办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件",\n      href: "/software"');
+    expect(page).not.toContain('title: "生成图片/视频/音频",\n      description: "AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理",\n      href: "/skill-learning"');
+    expect(page).not.toContain('title: "改变你未来的AI",\n      description: "AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现",\n      href: "/account-services"');
+    expect(page).not.toContain("进入软件货架");
+    expect(page).not.toContain("选择课程");
+    expect(page).not.toContain("查看服务");
+    expect(page).not.toContain("<span>{item.action}</span>");
+  });
+
+  it("keeps the homepage hero title semantic while upgrading the visual wordmark", () => {
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+
+    expect(page).toContain('<h1 className="sr-only">{heroTitle}</h1>');
+    expect(page).toContain('<ASCIIHeroTitle text={heroTitle} />');
+    expect(page).not.toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
+    expect(page).not.toContain("TextPressure");
+    expect(css).not.toContain("text-pressure");
+    expect(css).not.toContain("Roboto Flex ENHE");
+  });
+
+  it("uses the React Bits Particles hero background with reduced-motion fallback", () => {
+    const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
+    const background = readFileSync(new URL("../components/home/home-particles-background.tsx", import.meta.url), "utf8");
+    const component = readFileSync(new URL("../components/home/particles.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+
+    expect(page).toContain('import { HomeParticlesBackground } from "@/components/home/home-particles-background";');
+    expect(page).toContain("<HomeParticlesBackground />");
+    expect(background).toContain('window.matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(background).toContain("navigator.webdriver");
+    expect(background).toContain('return <div className="home-particles-fallback" />;');
+    expect(background).toContain('const HERO_PARTICLE_COLORS = ["#13c4e2"];');
+    expect(background).toContain("particleColors={HERO_PARTICLE_COLORS}");
+    expect(background).toContain("particleCount={600}");
+    expect(background).toContain("particleSpread={10}");
+    expect(background).toContain("speed={0.1}");
+    expect(background).toContain("particleBaseSize={100}");
+    expect(background).toContain("moveParticlesOnHover");
+    expect(background).toContain("alphaParticles={false}");
+    expect(background).toContain("disableRotation={false}");
+    expect(background).toContain("pixelRatio={1}");
+    expect(component).toContain('import { Camera, Geometry, Mesh, Program, Renderer } from "ogl";');
+    expect(component).toContain("Adapted from React Bits Particles");
+    expect(component).toContain("requestAnimationFrame(update)");
+    expect(component).toContain("cancelAnimationFrame(animationFrameId)");
+    expect(component).toContain('window.addEventListener("mousemove", handleMouseMove)');
+    expect(component).toContain('window.removeEventListener("mousemove", handleMouseMove)');
+    expect(component).not.toContain('container.addEventListener("mousemove", handleMouseMove)');
+    expect(css).toContain(".particles-container");
+    expect(css).toContain(".home-particles-canvas");
+    expect(css).toContain(".home-particles-fallback");
+  });
+
+  it("uses DecryptedText as a visual-only hero slogan upgrade with reduced-motion fallback", () => {
+    const component = readFileSync(new URL("../components/home/decrypted-text.tsx", import.meta.url), "utf8");
+
+    expect(component).toContain('import { motion, useReducedMotion } from "motion/react";');
+    expect(component).toContain("const shouldReduceMotion = useReducedMotion();");
+    expect(component).toContain("<span style={styles.srOnly}>{text}</span>");
+    expect(component).toContain("if (shouldReduceMotion) {");
+    expect(component).toContain("{text}");
+    expect(component).toContain("Adapted from React Bits DecryptedText");
   });
 
   it("uses simplified product cards in the homepage featured preview without changing the full card contract", () => {
@@ -159,15 +270,19 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".site-header-actions > .site-login-link,\n  .site-header-actions > .site-user-center-cta,\n  .site-header-actions > .site-user-chip {\n    display: inline-flex;");
     expect(css).toContain("background: #ffffff;\n  color: #050505;");
     expect(css).toContain(".site-user-center-cta,\n.mobile-nav-user-center {\n  background: #ffffff !important;\n  color: #050505 !important;");
-    expect(css).toContain(".site-language-switcher a {\n  display: inline-flex;\n  min-height: 34px;\n  align-items: center;\n  justify-content: center;\n  border-radius: 999px;\n  background: transparent;\n  color: var(--marketing-text);");
+    expect(css).toContain(".site-language-switcher a {");
+    expect(css).toContain("min-height: 40px;");
+    expect(css).toContain("color: var(--marketing-text);");
+    expect(css).toContain(".site-language-switcher a.is-active {\n  background: var(--marketing-button);");
     expect(css).toContain(".site-language-switcher a.is-active {\n  background: #050505;");
   });
 
-  it("adds more breathing room between the two hero title lines", () => {
+  it("keeps the simplified hero scale stable on desktop and mobile", () => {
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
-    expect(css).toContain(".home-hero-title {\n  display: grid;\n  gap: 0.8736em;");
-    expect(css).toContain("margin: clamp(0.715rem, 1.365vw, 1.235rem) auto 0");
+    expect(css).toContain(".home-hero-title-simple");
+    expect(css).toContain("font-size: clamp(4.05rem, 11.1vw, 9.15rem)");
+    expect(css).toContain("font-size: clamp(4.05rem, 22vw, 6.375rem)");
     expect(css).toContain("gap: 0.58em;");
   });
 
@@ -184,14 +299,23 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("background-image: none");
     expect(css).toContain("--home-hero-eyebrow-filter: blur(18px) saturate(150%)");
     expect(css).toContain("backdrop-filter: var(--home-hero-eyebrow-filter)");
-    expect(css).toContain("border-radius: 11px !important");
+    expect(css).toContain("min-width: 176px;");
+    expect(css).toContain("min-height: 48px;");
+    expect(css).toContain("border-radius: 9px !important");
     expect(css).toContain("--home-hero-cta-filter: blur(20px) saturate(165%) contrast(1.04)");
     expect(css).toContain("backdrop-filter: var(--home-hero-cta-filter) !important");
-    expect(css).toContain("border: 1px solid rgba(255, 255, 255, 0.24) !important");
+    expect(css).toContain("border: 1px solid rgba(255, 255, 255, 0.18) !important");
     expect(css).toContain("background-color: transparent !important");
     expect(css).toContain("background-image: none !important");
     expect(css).toContain(".home-hero-cta-primary,\n.home-hero-cta-accent {\n  background: transparent");
     expect(css).toContain("color: #ffffff");
+    expect(css).toContain(".home-outcome-shell {\n  margin-top: clamp(-6rem, -8vw, -4rem);");
+    expect(css).toContain("linear-gradient(180deg, rgba(16, 24, 33, 0) 0%, rgba(16, 24, 33, 0) 54%, rgba(16, 24, 33, 0.32) 72%, rgba(16, 24, 33, 0.82) 91%, #101821 100%)");
+    expect(css).toContain("margin-bottom: -1px;");
+    expect(css).toContain("top: clamp(-20rem, -24vw, -12rem);");
+    expect(css).toContain("background: radial-gradient(ellipse at 50% 54%, rgba(65, 197, 219, 0.08), transparent 34rem)");
+    expect(css).toContain(".home-recommended-tool-grid .surface-panel");
+    expect(css).toContain(".site-footer-logo {\n  width: 48px;\n  height: 32px;\n  object-fit: contain;\n  filter: brightness(0) invert(1)");
     expect(css).not.toContain(".home-gooey-effect.filter");
     expect(css).not.toContain(".home-gooey-particle");
     expect(css).not.toContain("@keyframes home-gooey-particle");

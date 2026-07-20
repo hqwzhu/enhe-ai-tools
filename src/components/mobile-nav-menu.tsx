@@ -1,12 +1,24 @@
-import { LayoutDashboard, Menu } from "lucide-react";
+import { LayoutDashboard, Menu, Search } from "lucide-react";
 import { PrefetchLink } from "@/components/prefetch-link";
+import { PublicNavLink } from "@/components/public-nav-link";
+
+type MobileNavItem = {
+  label: string;
+  href: string;
+  icon?: "search";
+  children?: ReadonlyArray<{
+    label: string;
+    href: string;
+    description?: string;
+  }>;
+};
 
 type MobileNavMenuProps = {
   labels: {
     menu: string;
     admin?: string;
   };
-  navItems: ReadonlyArray<{ label: string; href: string }>;
+  navItems: ReadonlyArray<MobileNavItem>;
   showAdmin: boolean;
   loginItem?: readonly [string, string];
   userCenterItem?: readonly [string, string];
@@ -18,7 +30,7 @@ export function MobileNavMenu({
   navItems,
   showAdmin,
   loginItem,
-  userCenterItem = ["User Center", "/user"],
+  userCenterItem,
   languageItems = []
 }: MobileNavMenuProps) {
   return (
@@ -30,19 +42,37 @@ export function MobileNavMenu({
         <Menu size={18} />
       </summary>
       <div className="mobile-nav-panel absolute right-0 top-12 z-50 w-64 overflow-hidden p-2">
-        {navItems.map(({ label, href }) => (
-          <PrefetchLink key={href} href={href} className="mobile-nav-link cursor-target">
-            {label}
-          </PrefetchLink>
-        ))}
+        {navItems.map((item) =>
+          item.children?.length ? (
+            <div key={item.href} className="mobile-nav-group">
+              <PublicNavLink href={item.href} className="mobile-nav-link mobile-nav-parent-link cursor-target">
+                {item.label}
+              </PublicNavLink>
+              <div className="mobile-nav-submenu">
+                {item.children.map((child) => (
+                  <PublicNavLink key={child.href} href={child.href} className="mobile-nav-sublink cursor-target">
+                    <span>{child.label}</span>
+                  </PublicNavLink>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <PublicNavLink key={item.href} href={item.href} className="mobile-nav-link cursor-target">
+              {item.icon === "search" ? <Search size={16} aria-hidden="true" /> : null}
+              {item.label}
+            </PublicNavLink>
+          )
+        )}
         {loginItem ? (
           <PrefetchLink href={loginItem[1]} className="mobile-nav-link cursor-target">
             {loginItem[0]}
           </PrefetchLink>
         ) : null}
-        <PrefetchLink href={userCenterItem[1]} className="mobile-nav-link mobile-nav-user-center cursor-target">
-          {userCenterItem[0]}
-        </PrefetchLink>
+        {userCenterItem ? (
+          <PrefetchLink href={userCenterItem[1]} className="mobile-nav-link mobile-nav-user-center cursor-target">
+            {userCenterItem[0]}
+          </PrefetchLink>
+        ) : null}
         {languageItems.length ? (
           <div className="mobile-nav-language" aria-label="Language">
             {languageItems.map((item) => (

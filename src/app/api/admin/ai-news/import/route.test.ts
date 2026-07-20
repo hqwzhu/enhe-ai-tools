@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZodError, z } from "zod";
 import { DuplicateAiNewsCoverImageError, importAiNewsArticle } from "@/lib/ai-news-import";
+import { generateAiNewsEnglishDraft } from "@/lib/ai-news-translation";
 import { notifyIndexNow } from "@/lib/indexnow";
 import { POST } from "./route";
 
@@ -23,7 +24,12 @@ vi.mock("@/lib/indexnow", () => ({
   notifyIndexNow: vi.fn()
 }));
 
+vi.mock("@/lib/ai-news-translation", () => ({
+  generateAiNewsEnglishDraft: vi.fn()
+}));
+
 const importAiNewsArticleMock = vi.mocked(importAiNewsArticle);
+const generateAiNewsEnglishDraftMock = vi.mocked(generateAiNewsEnglishDraft);
 const notifyIndexNowMock = vi.mocked(notifyIndexNow);
 const revalidatePathMock = vi.mocked(revalidatePath);
 
@@ -273,6 +279,98 @@ describe("POST /api/admin/ai-news/import", () => {
         tags: ["AI agents", "workflow automation", "AI资讯", "自动发布"],
         externalSources: [{ title: "Example report", url: "https://example.com/report", sourceType: "source" }]
       })
+    });
+  });
+
+  it("auto-generates English article fields for HTML automation imports that only contain Chinese content", async () => {
+    process.env.AI_NEWS_IMPORT_TOKEN = "test-token";
+    generateAiNewsEnglishDraftMock.mockResolvedValueOnce({
+      englishTitle: "AI agents enter practical team workflows",
+      englishSubtitle: "What small teams should evaluate before adoption",
+      englishSummary:
+        "AI agent updates are moving from demos into practical team workflows, making permissions, repeatability, and account safety more important.",
+      englishContent:
+        "## Fact Summary\n\nAI agent updates are moving from demos into practical team workflows.\n\n## Practical Impact\n\nSmall teams should evaluate permissions, repeatability, account safety, and tool integration before adoption.",
+      englishKeyTakeaways: [
+        "AI agents are moving toward team workflows.",
+        "Permission boundaries matter before adoption.",
+      ],
+      englishImpactNotes:
+        "ENHE AI readers should compare workflow reliability, account safety, and implementation scope before changing tools.",
+      englishConclusion:
+        "The practical value of agents depends on governed workflow automation, not only model capability.",
+      englishDescription:
+        "A concise ENHE AI news brief about AI agents, workflow automation, and practical adoption.",
+      englishSeoTitle: "AI agents and workflow automation for small teams",
+      englishSeoDescription:
+        "A concise ENHE AI news brief about AI agents, workflow automation, account safety, and practical adoption.",
+      englishKeywords: "AI agents, workflow automation, AI account safety",
+      englishSeoKeywords: "AI agents, workflow automation, AI account safety",
+    });
+    importAiNewsArticleMock.mockResolvedValueOnce({
+      articleId: "article-auto-en",
+      slug: "ai-agent-workflows",
+      canonicalSlug: "ai-agent-workflows",
+      status: "published",
+      adminUrl: "/admin/ai-news/article-auto-en",
+      publicUrl: "/ai-news/ai-agent-workflows",
+    });
+
+    const response = await POST(
+      createRequest({
+        body: JSON.stringify({
+          format: "html",
+          publishMode: "published",
+          html: `
+            <article>
+              <h1>AI智能体进入团队工作流</h1>
+              <time datetime="2026-06-26">2026年6月26日</time>
+              <meta name="description" content="AI智能体正在从演示走向团队工作流，权限、复用和账号安全成为落地前必须评估的问题。">
+              <meta name="keywords" content="AI智能体,AI工作流自动化">
+              <p>AI智能体正在从演示走向团队工作流，权限、复用和账号安全成为落地前必须评估的问题。</p>
+              <section id="cms-fields">
+                <section data-field="subtitle"><h3>副标题</h3><p>团队采用AI智能体前需要检查的关键问题</p></section>
+                <section data-field="keyTakeaways"><h3>核心要点</h3><ul><li>智能体开始进入团队流程。</li><li>权限边界影响实际落地。</li></ul></section>
+                <section data-field="impactNotes"><h3>影响说明</h3><p>用户需要评估账号权限、流程复用和审计能力。</p></section>
+                <section data-field="conclusion"><h3>总结</h3><p>智能体价值正在转向可管理的工作流。</p></section>
+                <section data-field="seoTitle"><h3>SEO标题</h3><p>AI智能体与团队工作流自动化</p></section>
+                <section data-field="seoDescription"><h3>SEO描述</h3><p>AI智能体进入团队工作流后，权限、复用和账号安全成为小团队落地前必须评估的问题。</p></section>
+              </section>
+              <h2>来源</h2>
+              <a href="https://example.com/report">Example report</a>
+            </article>
+          `,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(generateAiNewsEnglishDraftMock).toHaveBeenCalledWith({
+      title: "AI智能体进入团队工作流",
+      subtitle: "团队采用AI智能体前需要检查的关键问题",
+      summary:
+        "AI智能体正在从演示走向团队工作流，权限、复用和账号安全成为落地前必须评估的问题。",
+      content:
+        "AI智能体正在从演示走向团队工作流，权限、复用和账号安全成为落地前必须评估的问题。",
+      keyTakeaways: ["智能体开始进入团队流程。", "权限边界影响实际落地。"],
+      impactNotes: "用户需要评估账号权限、流程复用和审计能力。",
+      conclusion: "智能体价值正在转向可管理的工作流。",
+      seoTitle: "AI智能体与团队工作流自动化",
+      seoDescription:
+        "AI智能体进入团队工作流后，权限、复用和账号安全成为小团队落地前必须评估的问题。",
+      keywords: "AI智能体,AI工作流自动化",
+    });
+    expect(importAiNewsArticleMock).toHaveBeenCalledWith({
+      publishMode: "published",
+      publishedAt: new Date("2026-06-26T00:00:00.000Z"),
+      article: expect.objectContaining({
+        englishTitle: "AI agents enter practical team workflows",
+        englishSummary:
+          "AI agent updates are moving from demos into practical team workflows, making permissions, repeatability, and account safety more important.",
+        englishContent: expect.stringContaining("## Fact Summary"),
+        englishSeoTitle: "AI agents and workflow automation for small teams",
+        englishSeoKeywords: "AI agents, workflow automation, AI account safety",
+      }),
     });
   });
 

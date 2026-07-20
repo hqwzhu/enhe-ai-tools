@@ -3,9 +3,14 @@ export type LicenseGeneratorActionState = {
   message: string;
   code: string;
   payload?: {
+    product?: "faceswap" | "lumi-os";
     license_type: "single" | "unlimited";
     machine_id?: string;
+    machineCode?: string;
+    licenseId?: string;
     issued_at?: string;
+    issuedAt?: string;
+    expiresAt?: string;
     note?: string;
   };
 };

@@ -69,8 +69,74 @@ const sentenceBreakPattern = /[。！？!?；;\n]+/;
 
 const localizedBlockPattern = /\[\[(zh|en)\]\]([\s\S]*?)\[\[\/\1\]\]/g;
 
+const userFirstToolCopyOverrides: Record<string, Partial<Record<Locale, string>>> = {
+  "windows-ai": {
+    zh: "Lumi-OS 适合想把 AI 用到真实任务里的用户：整理待办、保留长期记忆、辅助创作和推进桌面工作流，同时保留更清晰的隐私边界。",
+    en: "Lumi-OS helps users apply AI to real tasks: planning work, keeping memory, supporting creation, and running more private desktop workflows.",
+  },
+  "local-ai-voice-generator-for-voiceover-materials": {
+    zh: "适合需要旁白、配音和多角色对话素材的创作者，在本地电脑生成可复用音频，减少上传原始素材的顾虑。",
+    en: "A local voiceover workspace for creators who need reusable narration, dubbing, and dialogue assets while reducing raw-material upload concerns.",
+  },
+  "ultimate-edition-ai-video-generation-suite": {
+    zh: "适合想稳定生成视频素材的创作者：在本地电脑完成文生视频、图生视频和素材管理，减少上传敏感素材的顾虑，适合短视频、课程、广告草稿和个人内容创作。",
+    en: "A local video-generation workflow for creators who need text-to-video, image-to-video, and material management for drafts, courses, ads, and personal content.",
+  },
+  "faceswap-studio-ai": {
+    zh: "适合需要人物素材处理、换脸预览和创作草稿的用户，重点是降低素材外传顾虑，并把生成流程放进可重复的本地工作流。",
+    en: "A local workflow for face-swap previews and creator drafts, focused on reducing material upload concerns and making the process repeatable.",
+  },
+  "gmail-google": {
+    zh: "帮助用户了解 Gmail 与 Google 生态的基础使用场景、注意事项、访问路径和服务边界，适合需要先确认规则再使用的用户。",
+    en: "Guidance for Gmail and Google ecosystem access paths, practical scenarios, service boundaries, and usage notes.",
+  },
+  "chatgpt-codex-dalle": {
+    zh: "帮助用户先弄清 ChatGPT、Codex、DALL-E 的能力入口、适合场景、使用边界和注意事项，再决定是否需要服务支持。",
+    en: "Guidance for understanding ChatGPT, Codex, and DALL-E access paths, use cases, boundaries, and support scope.",
+  },
+  "gemini-pro": {
+    zh: "帮助用户确认 Gemini Pro 的访问方式、权益范围、使用边界、周期说明和平台规则，适合需要清楚决策再使用的用户。",
+    en: "Guidance for Gemini Pro access paths, subscription scope, usage boundaries, cycle notes, and platform rules.",
+  },
+  "gemini-pro-google-ai-pro-3": {
+    zh: "帮助用户确认 Google AI Pro 的权益、周期、适合场景和使用边界，避免在不了解规则时直接下单。",
+    en: "Guidance for Google AI Pro benefits, cycle notes, suitable scenarios, usage boundaries, and platform rules.",
+  },
+  "ai-monetization-side-hustle-course": {
+    zh: "通过项目练习建立从工具使用到实际执行的路径，适合想把 AI 方法落到真实副业任务的用户。",
+    en: "A practical course for turning AI tool use into executable side-project tasks and reusable workflows.",
+  },
+  "high-frequency-ai-prompts-for-work-learning-and-teaching": {
+    zh: "把写作、学习、教学和办公任务整理成可复用提示词，适合希望快速提升日常效率并沉淀模板的用户。",
+    en: "Reusable prompt patterns for writing, learning, teaching, and everyday productivity tasks.",
+  },
+  "chatgpt-plus-100": {
+    zh: "帮助用户了解 ChatGPT Plus 相关入口、适合场景、使用边界和注意事项，购买前先确认服务范围与平台规则。",
+    en: "Guidance for ChatGPT Plus access paths, use cases, boundaries, service scope, and platform rules.",
+  },
+  "gemini-12-20-80": {
+    zh: "帮助用户对比 Gemini 相关使用周期、权益范围和适合场景，先确认需求再选择服务方案。",
+    en: "Guidance for comparing Gemini usage cycles, benefit scope, suitable scenarios, and service options.",
+  },
+};
+
 function normalizeText(value: string | null | undefined) {
   return value?.replace(/\s+/g, " ").trim() ?? "";
+}
+
+function getUserFirstToolCopyOverride(
+  tool: LocalizedToolInput,
+  locale: Locale,
+) {
+  if (
+    tool.type === "online" &&
+    (hasAccountServiceRiskCopy(tool.shortDescription) ||
+      hasAccountServiceRiskCopy(tool.content))
+  ) {
+    return "";
+  }
+
+  return normalizeText(userFirstToolCopyOverrides[tool.slug]?.[locale]);
 }
 
 function normalizeRichText(value: string | null | undefined) {
@@ -84,21 +150,6 @@ function normalizeRichText(value: string | null | undefined) {
       .replace(/\n{3,}/g, "\n\n")
       .trim() ?? ""
   );
-}
-
-function isPlaceholderSummary(value: string) {
-  const normalized = normalizeText(value).toLowerCase();
-  if (!normalized) return true;
-
-  return [
-    "draft",
-    "tbd",
-    "todo",
-    "coming soon",
-    "placeholder",
-    "test",
-    "n/a",
-  ].includes(normalized);
 }
 
 function extractLocalizedBlocks(value: string | null | undefined) {
@@ -426,10 +477,7 @@ export function resolveLocalizedToolIdentity(
   const humanizedSlug = humanizeSlug(tool.slug);
   if (humanizedSlug) {
     return {
-      primaryName:
-        tool.type === "online"
-          ? buildAccountServiceEnglishName(humanizedSlug, "AI")
-          : humanizedSlug,
+      primaryName: humanizedSlug,
       secondaryName:
         name && name.toLowerCase() !== humanizedSlug.toLowerCase() ? name : "",
     };
@@ -472,7 +520,7 @@ function buildEnglishToolSentence(tool: LocalizedToolInput) {
       return `${localizedTool.primaryName} provides AI tool subscription guidance, delivery notes, access support, and compliance guidance on ENHE AI. Review the official platform policy before using any third-party service.`;
     }
 
-    return `${localizedTool.primaryName} provides ${categoryName.toLowerCase()} access support, delivery notes, and compliance guidance on ENHE AI. Review the official platform policy before using any third-party service.`;
+    return `${localizedTool.primaryName} is an AI account service for ${categoryName.toLowerCase()} access support, delivery notes, and compliance guidance on ENHE AI. Review the official platform policy before using any third-party service.`;
   }
 
   if (tool.type === "skill_learning") {
@@ -494,22 +542,17 @@ export function buildLocalizedToolSummary(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
+  const override = getUserFirstToolCopyOverride(tool, locale);
+  if (override) return override;
+
   const shortDescription = resolveLocalizedInlineCopy(
     tool.shortDescription,
     locale,
     normalizeText,
   );
-  if (locale === "zh")
-    return tool.type === "online"
-      ? sanitizeAccountServiceCopy(shortDescription, "zh")
-      : shortDescription;
-  if (
-    isLocalizedEnglishCopy(shortDescription, 4) &&
-    !isPlaceholderSummary(shortDescription)
-  ) {
-    return shortDescription;
-  }
-  return buildEnglishToolSentence(tool);
+  return tool.type === "online"
+    ? sanitizeAccountServiceCopy(shortDescription, locale)
+    : shortDescription;
 }
 
 export function buildLocalizedToolLongContent(
@@ -522,25 +565,17 @@ export function buildLocalizedToolLongContent(
     locale,
     normalizeRichText,
   );
-  if (locale === "zh")
-    return tool.type === "online"
-      ? sanitizeAccountServiceRichCopy(
-          localizedContent ||
-            resolveLocalizedInlineCopy(
-              tool.shortDescription,
-              "zh",
-              normalizeRichText,
-            ),
-          "zh",
-        )
-      : localizedContent || content;
-  if (isLocalizedEnglishCopy(localizedContent, 8)) return localizedContent;
-
-  const summary = buildLocalizedToolSummary(tool, locale);
-  return [
-    summary,
-    "This English page gives readers the core overview, access guidance, workflow context, and support guidance needed to evaluate the tool quickly.",
-  ].join(" ");
+  return tool.type === "online"
+    ? sanitizeAccountServiceRichCopy(
+        localizedContent ||
+          resolveLocalizedInlineCopy(
+            tool.shortDescription,
+            locale,
+            normalizeRichText,
+          ),
+        locale,
+      )
+    : localizedContent || content;
 }
 
 export function shouldIndexEnglishToolPage(
@@ -596,6 +631,9 @@ export function buildLocalizedToolMetaDescription(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
+  const override = getUserFirstToolCopyOverride(tool, locale);
+  if (override) return override;
+
   if (locale === "zh") {
     const description =
       resolveLocalizedInlineCopy(tool.shortDescription, "zh", normalizeText) ||
@@ -612,18 +650,7 @@ export function buildLocalizedToolPreviewText(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
-  if (locale === "zh") {
-    const preview = resolveLocalizedInlineCopy(
-      tool.shortDescription,
-      "zh",
-      normalizeText,
-    );
-    return tool.type === "online"
-      ? sanitizeAccountServiceCopy(preview, "zh")
-      : preview;
-  }
-
-  const summary = buildLocalizedToolSummary(tool, "en");
+  const summary = buildLocalizedToolSummary(tool, locale);
   return summary.split(sentenceBreakPattern).find(Boolean)?.trim() ?? summary;
 }
 
@@ -651,7 +678,7 @@ export function buildLocalizedToolOfferName(
 function buildEnglishFaqFallback(
   tool: LocalizedToolInput,
 ): LocalizedFaqInput[] {
-  const summary = buildLocalizedToolSummary(tool, "en");
+  const summary = buildEnglishToolSentence(tool);
   const typeLabel = getEnglishSentenceToolLabel(tool.type);
 
   return [
@@ -721,7 +748,7 @@ function buildChineseFaqFallback(
       id: "localized-faq-software-requirements",
       question: "使用前需要确认什么？",
       answer:
-        "请先查看系统要求、版本记录、工具介绍和使用教程，确认软件适合你的设备环境和工作流程。",
+        "请先查看系统要求、版本记录、产品介绍和使用教程，确认软件适合你的设备环境和工作流程。",
     },
   ];
 }
@@ -806,7 +833,10 @@ function buildGeneratedFaqAnswer(
   const enName =
     resolveLocalizedToolIdentity(tool, "en").primaryName ||
     getDefaultToolLabel(tool.type, "en");
-  const summary = buildLocalizedToolSummary(tool, locale);
+  const summary =
+    locale === "en"
+      ? buildEnglishToolSentence(tool)
+      : buildLocalizedToolSummary(tool, locale);
 
   if (locale === "en") {
     if (slot === 0) return summary;
@@ -854,7 +884,7 @@ function buildGeneratedFaqAnswer(
     return [
       `${zhName}用于辅助完成 AI 工具应用、内容生产、流程处理或效率提升类任务。使用前建议结合详情页说明确认适用场景。`,
       "完成购买并通过审核后，可在用户中心查看对应软件的下载链接、版本信息和使用说明。",
-      "请先查看系统要求、版本记录、工具介绍和使用教程，确认软件适合你的设备环境和工作流程。",
+      "请先查看系统要求、版本记录、产品介绍和使用教程，确认软件适合你的设备环境和工作流程。",
       "建议先明确要完成的任务，再按照详情页和教程进行小范围测试，确认输出质量、操作步骤和成本后再用于高频工作。",
       "可以先查看详情页、教程和版本说明；如果仍有问题，可联系 ENHE AI 客服获取下载、安装、使用或更新相关支持。",
     ][slot];
@@ -949,13 +979,13 @@ export function buildLocalizedToolFaqItems(
 function buildEnglishTutorialFallback(
   tool: LocalizedToolInput,
 ): LocalizedTutorialInput[] {
-  const summary = buildLocalizedToolSummary(tool, "en");
+  const summary = buildEnglishToolSentence(tool);
   const accessText =
     tool.type === "software"
       ? "Check the version, system requirements, price, and download access before using it in your workflow."
       : tool.type === "skill_learning"
         ? "Check the course scope, purchase status, and lesson access before starting the learning path."
-        : "Check the pricing, delivery notes, and account access details before using the service.";
+        : "Review pricing, delivery notes, and access guidance before using the service.";
 
   return [
     {

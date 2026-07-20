@@ -22,9 +22,9 @@ describe("ENHE typography source contract", () => {
     expect(css).toContain("@font-face");
     expect(css).toContain("font-family: 'Montserrat'");
     expect(css).toContain("/fonts/montserrat/montserrat-latin-800-normal.woff2");
-    expect(css).toContain('@import "../../public/fonts/misans/MiSans-Regular.min.css"');
-    expect(css).toContain('@import "../../public/fonts/misans/MiSans-Semibold.min.css"');
-    expect(css).toContain('@import "../../public/fonts/misans/MiSans-Bold.min.css"');
+    expect(css).not.toContain('@import "../../public/fonts/misans/MiSans-Regular.min.css"');
+    expect(css).not.toContain('@import "../../public/fonts/misans/MiSans-Semibold.min.css"');
+    expect(css).not.toContain('@import "../../public/fonts/misans/MiSans-Bold.min.css"');
     expect(css).not.toContain("@import url('/fonts/misans/MiSans-Regular.min.css')");
     expect(css).not.toContain("@import url('/fonts/misans/MiSans-Bold.min.css')");
     expect(css).toContain("--font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");

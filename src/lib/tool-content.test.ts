@@ -46,6 +46,55 @@ describe("tool content helpers", () => {
     ]);
   });
 
+  it("does not split bare http URLs while formatting dense content", () => {
+    const raw = "教程链接：https://qcnerk9meslu.feishu.cn/wiki/CEqtwGF9BiOQXNkzEmVcWecGnWe?from=from_copylink";
+
+    expect(normalizeToolContentForStorage(raw)).toBe(raw);
+    expect(buildToolContentBlocks(raw)).toEqual([{ type: "paragraph", text: raw }]);
+  });
+
+  it("does not treat standalone URLs after headings as colon-led list rows", () => {
+    const url = "https://qcnerk9meslu.feishu.cn/wiki/CEqtwGF9BiOQXNkzEmVcWecGnWe?from=from_copylink";
+
+    expect(buildToolContentBlocks(["领取链接：", url].join("\n"))).toEqual([
+      { type: "heading", text: "领取链接" },
+      { type: "paragraph", text: url }
+    ]);
+  });
+
+  it("formats short product section titles and colon-led feature rows", () => {
+    const raw = [
+      "在工作中，LumiOS 可以作为你的桌面助手。",
+      "主要功能",
+      "陪你工作：帮你拆任务、理思路、写内容、查资料，把模糊想法变成可执行步骤。",
+      "听见情绪：不只处理指令，也能在你想表达、倾诉、复盘时给出有温度的回应。",
+      "",
+      "使用场景",
+      "工作推进：写方案、拆需求、整理会议内容、规划下一步行动。",
+      "创作陪跑：从灵感、提纲、草稿到发布，持续帮你打磨表达。"
+    ].join("\n");
+
+    expect(buildToolContentBlocks(raw)).toEqual([
+      { type: "paragraph", text: "在工作中，LumiOS 可以作为你的桌面助手。" },
+      { type: "heading", text: "主要功能" },
+      {
+        type: "unordered-list",
+        items: [
+          "陪你工作：帮你拆任务、理思路、写内容、查资料，把模糊想法变成可执行步骤。",
+          "听见情绪：不只处理指令，也能在你想表达、倾诉、复盘时给出有温度的回应。"
+        ]
+      },
+      { type: "heading", text: "使用场景" },
+      {
+        type: "unordered-list",
+        items: [
+          "工作推进：写方案、拆需求、整理会议内容、规划下一步行动。",
+          "创作陪跑：从灵感、提纲、草稿到发布，持续帮你打磨表达。"
+        ]
+      }
+    ]);
+  });
+
   it("parses numbered product copy as an ordered list block", () => {
     expect(buildToolContentBlocks("Steps:\n1. Upload files\n2. Review result\n3. Export package")).toEqual([
       { type: "heading", text: "Steps" },

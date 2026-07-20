@@ -59,13 +59,85 @@ export type GeoMonitoringReport = {
 
 export const GEO_MONITORING_QUERIES: GeoMonitoringQuery[] = [
   {
+    id: "zh-ordinary-ai-productivity",
+    query: "普通人怎么用AI提高工作效率",
+    locale: "zh",
+    intent: "tutorial",
+    topic: "ai-tools",
+    targetPath: "/skill-learning",
+    tags: ["普通AI用户", "工作效率", "AI技能学习"]
+  },
+  {
+    id: "zh-creator-ai-tools",
+    query: "适合创作者的AI工具推荐",
+    locale: "zh",
+    intent: "recommendation",
+    topic: "ai-tools",
+    targetPath: "/software",
+    tags: ["普通AI用户", "创作者", "AI工具推荐"]
+  },
+  {
+    id: "zh-ai-video-tool-selection",
+    query: "AI视频生成工具怎么选",
+    locale: "zh",
+    intent: "comparison",
+    topic: "ai-tools",
+    targetPath: "/software",
+    tags: ["普通AI用户", "AI视频", "工具选择"]
+  },
+  {
+    id: "zh-ai-tool-privacy",
+    query: "AI工具隐私安全吗",
+    locale: "zh",
+    intent: "compliance",
+    topic: "local-ai",
+    targetPath: "/software",
+    tags: ["普通AI用户", "隐私安全", "可控AI"]
+  },
+  {
+    id: "zh-learn-prompts",
+    query: "AI提示词怎么学",
+    locale: "zh",
+    intent: "tutorial",
+    topic: "ai-tutorials",
+    targetPath: "/skill-learning",
+    tags: ["普通AI用户", "提示词", "AI教程"]
+  },
+  {
+    id: "zh-ai-organize-material",
+    query: "怎么用AI整理资料",
+    locale: "zh",
+    intent: "tutorial",
+    topic: "ai-tools",
+    targetPath: "/skill-learning",
+    tags: ["普通AI用户", "资料整理", "工作流"]
+  },
+  {
+    id: "zh-ai-buying-checklist",
+    query: "AI工具购买前要注意什么",
+    locale: "zh",
+    intent: "comparison",
+    topic: "ai-tools",
+    targetPath: "/pricing",
+    tags: ["普通AI用户", "购买决策", "价格交付"]
+  },
+  {
+    id: "zh-ai-account-safety",
+    query: "AI账号服务安全吗",
+    locale: "zh",
+    intent: "compliance",
+    topic: "ai-account-service",
+    targetPath: "/account-services",
+    tags: ["普通AI用户", "账号安全", "平台规则"]
+  },
+  {
     id: "zh-ai-agent-tools",
     query: "AI智能体工具推荐",
     locale: "zh",
     intent: "recommendation",
     topic: "ai-agent",
     targetPath: "/software",
-    tags: ["AI智能体", "AI Agent", "工具推荐"]
+    tags: ["普通AI用户", "AI智能体", "AI Agent", "工具推荐"]
   },
   {
     id: "zh-local-ai-apps",
@@ -74,7 +146,7 @@ export const GEO_MONITORING_QUERIES: GeoMonitoringQuery[] = [
     intent: "deployment",
     topic: "local-ai",
     targetPath: "/software",
-    tags: ["本地部署AI", "私有化部署", "Local AI"]
+    tags: ["普通AI用户", "本地部署AI", "私有化部署", "Local AI"]
   },
   {
     id: "zh-account-compliance",
@@ -83,7 +155,7 @@ export const GEO_MONITORING_QUERIES: GeoMonitoringQuery[] = [
     intent: "compliance",
     topic: "ai-account-service",
     targetPath: "/account-services",
-    tags: ["AI账号服务", "合规使用", "订阅支持"]
+    tags: ["普通AI用户", "AI账号服务", "合规使用", "订阅支持"]
   },
   {
     id: "zh-private-ai-deployment",
@@ -110,7 +182,7 @@ export const GEO_MONITORING_QUERIES: GeoMonitoringQuery[] = [
     intent: "recommendation",
     topic: "ai-tools",
     targetPath: "/software",
-    tags: ["AI效率工具", "自动化", "工作流"]
+    tags: ["普通AI用户", "AI效率工具", "自动化", "工作流"]
   },
   {
     id: "zh-prompt-course",
@@ -119,7 +191,7 @@ export const GEO_MONITORING_QUERIES: GeoMonitoringQuery[] = [
     intent: "tutorial",
     topic: "ai-tutorials",
     targetPath: "/skill-learning",
-    tags: ["Prompt Engineering", "AI教程", "技能学习"]
+    tags: ["普通AI用户", "Prompt Engineering", "AI教程", "技能学习"]
   },
   {
     id: "zh-agentic-workflow",
@@ -155,7 +227,7 @@ export const GEO_MONITORING_QUERIES: GeoMonitoringQuery[] = [
     intent: "recommendation",
     topic: "ai-tools",
     targetPath: "/software",
-    tags: ["AI视频", "多模态AI", "创作工具"]
+    tags: ["普通AI用户", "AI视频", "多模态AI", "创作工具"]
   },
   {
     id: "zh-ai-search-trends",
@@ -191,7 +263,7 @@ export const GEO_MONITORING_QUERIES: GeoMonitoringQuery[] = [
     intent: "compliance",
     topic: "ai-account-service",
     targetPath: "/account-services",
-    tags: ["账号安全", "订阅政策", "合规边界"]
+    tags: ["普通AI用户", "账号安全", "订阅政策", "合规边界"]
   },
   {
     id: "en-agent-tools",

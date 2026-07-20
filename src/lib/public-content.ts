@@ -1,6 +1,5 @@
 import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
-import { isEnglishNewsArticleIndexable } from "@/lib/ai-news";
 import {
   buildAiNewsKeywordCloud,
   buildAiNewsTopicCollections,
@@ -14,6 +13,7 @@ import {
   getCanonicalAiNewsSlug,
   getCanonicalToolSlug,
 } from "@/lib/public-slugs";
+import { parseVirtualToolCategoryId } from "@/lib/tool-category-groups";
 
 const publicContentRevalidate = 300;
 
@@ -47,6 +47,15 @@ function isRecoverablePublicReadError(error: unknown) {
     /Can't reach database server/i.test(message) ||
     /ECONNREFUSED/i.test(message)
   );
+}
+
+function buildToolCategoryWhere(categoryId?: string): Prisma.ToolWhereInput {
+  const categoryName = parseVirtualToolCategoryId(categoryId);
+  if (categoryName) {
+    return { category: { is: { name: categoryName } } };
+  }
+
+  return categoryId ? { categoryId } : {};
 }
 
 const getCachedHomeRecommendedTools = unstable_cache(
@@ -96,7 +105,10 @@ const getCachedPublicToolListing = unstable_cache(
         where: {
           type,
           status: "published",
-          ...(categoryId ? { categoryId } : {}),
+          ...(type === "skill_learning"
+            ? { tutorials: { some: { status: "active" } } }
+            : {}),
+          ...buildToolCategoryWhere(categoryId),
           ...(type === "software" && paid === "paid"
             ? { isDownloadPaid: true }
             : type === "software" && paid === "free"
@@ -142,6 +154,46 @@ const getCachedPublicToolListing = unstable_cache(
     }
   },
   ["public-tool-listing"],
+  { revalidate: publicContentRevalidate, tags: ["public-tools"] },
+);
+
+const getCachedPublicToolsByCategoryNames = unstable_cache(
+  async (categoryNames: string[]) => {
+    const normalizedCategoryNames = categoryNames
+      .map((name) => name.trim())
+      .filter(Boolean);
+
+    if (!normalizedCategoryNames.length) return [];
+
+    try {
+      return await prisma.tool.findMany({
+        where: {
+          status: "published",
+          category: {
+            is: {
+              name: { in: normalizedCategoryNames },
+              status: "active",
+            },
+          },
+        },
+        include: {
+          category: true,
+          priceSpecs: {
+            where: { status: "active" },
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          },
+        },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      });
+    } catch (error) {
+      if (isRecoverablePublicReadError(error)) {
+        return [];
+      }
+
+      throw error;
+    }
+  },
+  ["public-product-path-tools"],
   { revalidate: publicContentRevalidate, tags: ["public-tools"] },
 );
 
@@ -240,25 +292,6 @@ const getCachedPublicNewsListing = unstable_cache(
                 { publishedAt: "desc" },
               ]
             : [{ isPinned: "desc" }, { publishedAt: "desc" }];
-      if (filters.locale === "en") {
-        const candidateArticles = await prisma.newsArticle.findMany({
-          where,
-          include: { category: true, tagLinks: { include: { tag: true } } },
-          orderBy,
-          take: Math.max((filters.skip ?? 0) + (filters.take ?? 9), 80),
-        });
-        const indexableArticles = candidateArticles.filter(
-          isEnglishNewsArticleIndexable,
-        );
-        const skip = filters.skip ?? 0;
-        const take = filters.take ?? 9;
-
-        return {
-          articles: indexableArticles.slice(skip, skip + take),
-          total: indexableArticles.length,
-        };
-      }
-
       const [articles, total] = await Promise.all([
         prisma.newsArticle.findMany({
           where,
@@ -714,6 +747,10 @@ export async function getPublicToolListing(
   return getCachedPublicToolListing(type, categoryId, keyword, paid, sort);
 }
 
+export async function getPublicToolsByCategoryNames(categoryNames: string[]) {
+  return getCachedPublicToolsByCategoryNames(categoryNames);
+}
+
 export async function getPublicTutorials() {
   return getCachedPublicTutorials();
 }
@@ -741,6 +778,13 @@ export async function getPublicNewsArticleBySlug(slug: string) {
 export async function getPublicAiNewsDiscovery(locale: "zh" | "en") {
   return getCachedPublicAiNewsDiscovery(locale);
 }
+
+export {
+  filterAiNewsTopicArticles,
+  getPublicAiNewsTopic,
+  getPublicAiNewsTopicSlugs,
+  getPublicAiNewsTopics,
+} from "@/lib/ai-news-topic-config";
 
 export async function resolvePublicToolSlug(slug: string) {
   const items = await getCachedPublicToolSlugIndex();

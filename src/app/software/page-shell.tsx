@@ -9,14 +9,16 @@ import {
   getPublicToolListing,
 } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
+import { resolveSoftwareCategoryIdByName } from "@/lib/software-category-navigation";
+import { buildThemedToolCategories } from "@/lib/tool-category-groups";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
   buildFaqSchema,
+  buildListingMetadataTitle,
   buildListingMetaDescription,
   buildLocalePath,
-  buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
 
@@ -25,16 +27,16 @@ export const softwarePageRevalidate = publicPageCacheSeconds;
 const softwareGeoSections = {
   zh: [
     {
-      title: "如何选择AI软件应用",
-      body: "先判断任务类型，再看部署方式、学习成本、交付结果和价格边界。适合日常高频使用的软件，应优先解决明确任务，例如文档整理、内容创作、自动化流程、本地部署或素材处理。",
+      title: "先看热门工具场景",
+      body: "最热门AI工具页优先展示站内高频 AI 工具和效率软件，覆盖办公效率、文件处理、系统实用、数据分析和本地 AI 应用，先按真实工作场景筛选，再进入产品详情。",
     },
     {
-      title: "适合哪些使用场景",
-      body: "AI软件应用适合创作者、运营人员、自由职业者、中小团队和个人学习者，用来把重复工作变成可复用流程。选择工具时，建议同时查看教程和案例，确认它能真正嵌入你的工作流。",
+      title: "按任务而不是概念选",
+      body: "如果要处理文档、整理文件、分析数据、优化系统或提高办公速度，先选择对应分类，再比较价格、交付说明、教程和售后边界。",
     },
     {
-      title: "下一步如何落地",
-      body: "如果你还不确定方向，可以先阅读AI前沿资讯判断趋势，再进入AI技能学习补齐方法，最后选择对应的软件应用完成交付。这样能减少盲目试用，把工具选择和真实成果连接起来。",
+      title: "把工具落到流程里",
+      body: "效率工具应服务于每天重复出现的工作流。购买或下载前，先确认是否能减少步骤、降低出错率、缩短处理时间，并能持续复用。",
     },
   ],
   en: [
@@ -55,14 +57,14 @@ const softwareGeoSections = {
 
 const softwareAnswerBlock = {
   zh: {
-    title: "AI智能体工具推荐：如何在 ENHE AI 选择合适的软件",
-    body: "AI智能体工具推荐应先看任务是否明确，再比较部署方式、隐私边界、学习门槛、成本和站内教程支持。ENHE AI 的 AI软件应用页适合创作者、运营人员、中小团队和个人学习者，用来查找本地部署、内容生成、音视频处理、自动化流程和效率提升类工具，并继续进入相关教程或资讯完成落地。",
-    cta: "从工具列表开始筛选",
+    title: "最热门AI工具：先按工作任务筛选产品分类",
+    body: "这个页面用于查找站内热门 AI 工具和高频效率软件，包括办公效率工具、文件处理工具、系统实用工具、数据分析工具和本地 AI 应用。先确认要解决的工作任务，再比较产品价格、交付方式、教程支持和适用边界。",
+    cta: "筛选热门工具",
   },
   en: {
-    title: "AI agent tool recommendation: how to choose software on ENHE AI",
-    body: "An AI agent tool recommendation should start with the user task, then compare deployment, privacy boundary, learning cost, pricing, and tutorial support. ENHE AI software pages help creators, operators, small teams, and individual learners find local AI apps, content tools, audio/video utilities, automation workflows, and productivity software, then continue into related tutorials or AI news for implementation.",
-    cta: "Start from the software list",
+    title: "Boost productivity: filter products by work task first",
+    body: "Use this page to find office productivity tools, file-processing tools, system utilities, data-analysis tools, productivity products, and AI desktop software. Start from the task, then compare pricing, delivery, tutorials, and fit.",
+    cta: "Filter productivity tools",
   },
 } as const;
 
@@ -129,7 +131,7 @@ const softwareComparisonRows = {
       dimension: "适用人群",
       localAi: "重视隐私、素材安全、离线处理和长期稳定工作流的个人或团队。",
       onlineAi: "希望快速试用、跨设备访问、协作轻量化的用户。",
-      enheNextStep: "先筛选 AI软件应用，再查看 AI账号服务咨询。",
+      enheNextStep: "先筛选热门AI工具分类，再查看对应产品详情。",
     },
     {
       dimension: "部署方式",
@@ -279,10 +281,7 @@ export async function generateSoftwarePageMetadata(
 ): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: buildMetadataTitle({
-      pageTitle: t.listing.softwareTitle,
-      brand: t.brand,
-    }),
+    title: buildListingMetadataTitle("software", forceLocale, t.brand),
     description: buildListingMetaDescription("software", forceLocale),
     path: "/software",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
@@ -300,6 +299,7 @@ export async function SoftwarePageShell({
   const params = await searchParams;
   const keyword = params.q;
   const categoryId = params.category;
+  const categoryName = params.categoryName;
   const paid = params.paid;
   const sort = params.sort;
   const t = getDictionary(forceLocale);
@@ -317,10 +317,21 @@ export async function SoftwarePageShell({
     items: [...softwareFaqItems[forceLocale]],
   });
   const collectionSchema = buildSoftwareCollectionSchema(forceLocale);
-  const [categories, tools] = await Promise.all([
-    getPublicToolCategories("software"),
-    getPublicToolListing("software", categoryId, keyword, paid, sort),
-  ]);
+  const categories = await getPublicToolCategories("software");
+  const resolvedCategoryId =
+    categoryId ||
+    resolveSoftwareCategoryIdByName(categoryName, categories, forceLocale);
+  const tools = await getPublicToolListing(
+    "software",
+    resolvedCategoryId,
+    keyword,
+    paid,
+    sort,
+  );
+  const categoryOptions = buildThemedToolCategories(
+    categories,
+    "productivity",
+  );
 
   return (
     <main>
@@ -331,10 +342,11 @@ export async function SoftwarePageShell({
           title={t.listing.softwareTitle}
           intro={t.listing.softwareIntro}
         />
-        <SoftwareGeoBlock forceLocale={forceLocale} />
-        <FilterBar categories={categories} locale={forceLocale} />
+        <SoftwareUserAnswerCard forceLocale={forceLocale} />
+        <ListingGuidanceFold forceLocale={forceLocale} />
+        <FilterBar categories={categoryOptions} locale={forceLocale} />
         {tools.length ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (
               <ToolCard key={tool.id} tool={tool} locale={forceLocale} />
             ))}
@@ -342,9 +354,134 @@ export async function SoftwarePageShell({
         ) : (
           <EmptyState title={t.listing.emptyTitle} text={t.listing.emptyText} />
         )}
-        <SoftwareGeoSupportSections forceLocale={forceLocale} />
+        <ProductSeoDisclosure
+          summary={
+            forceLocale === "en"
+              ? "AI software buying guide, FAQ, and source notes"
+              : "AI 软件选购指南、FAQ 与来源说明"
+          }
+        >
+          <SoftwareGeoBlock forceLocale={forceLocale} />
+          <SoftwareGeoSupportSections forceLocale={forceLocale} />
+        </ProductSeoDisclosure>
       </Container>
     </main>
+  );
+}
+
+function ListingGuidanceFold({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <details className="content-fold listing-guidance-fold">
+      <summary>
+        <div className="content-fold-summary-copy">
+          <strong className="text-base font-black text-[var(--marketing-text)]">
+            {forceLocale === "en" ? "Tool selection notes" : "工具选择提示"}
+          </strong>
+        </div>
+      </summary>
+      <div className="content-fold-body">
+        <ListingDecisionStrip forceLocale={forceLocale} />
+        <ListingTrustNote forceLocale={forceLocale} />
+      </div>
+    </details>
+  );
+}
+
+function SoftwareUserAnswerCard({ forceLocale }: { forceLocale: Locale }) {
+  const answer = softwareAnswerBlock[forceLocale];
+
+  return (
+    <section className="surface-panel-soft mt-6 p-5" aria-label={answer.title}>
+      <strong className="text-sm font-black text-[var(--marketing-text)]">
+        {answer.title}
+      </strong>
+      <p className="mt-2 max-w-4xl text-sm leading-7 text-[var(--marketing-muted)]">
+        {answer.body}
+      </p>
+    </section>
+  );
+}
+
+function ListingDecisionStrip({ forceLocale }: { forceLocale: Locale }) {
+  const items =
+    forceLocale === "en"
+      ? [
+          {
+            label: "Task first",
+            title: "Pick one deliverable",
+            body: "Choose writing, video, automation, or local deployment before comparing tools.",
+          },
+          {
+            label: "Then price",
+            title: "Check the boundary",
+            body: "Compare free access, paid download price, and delivery notes before opening details.",
+          },
+          {
+            label: "Then tutorial",
+            title: "Make it usable",
+            body: "Confirm the tutorial or example can support your real workflow.",
+          },
+        ]
+      : [
+          {
+            label: "先看任务",
+            title: "确定要交付什么",
+            body: "写作、视频、自动化或本地部署，先选一个真实任务。",
+          },
+          {
+            label: "再看价格",
+            title: "确认付费边界",
+            body: "先看免费、下载价格和交付说明，再进入详情。",
+          },
+          {
+            label: "最后看教程",
+            title: "把工具落地",
+            body: "购买或下载前确认教程和案例能跟上工作流。",
+          },
+        ];
+
+  return (
+    <section
+      className="listing-decision-strip"
+      aria-label={
+        forceLocale === "en"
+          ? "Software purchase decision guide"
+          : "软件购买决策提示"
+      }
+    >
+      {items.map((item) => (
+        <div key={item.label}>
+          <span>{item.label}</span>
+          <strong>{item.title}</strong>
+          <p>{item.body}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function ListingTrustNote({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <p className="listing-trust-note">
+      {forceLocale === "en"
+        ? "Price and delivery are visible before purchase. For setup depth, review the local AI deployment topic."
+        : "购买前可先确认价格、交付方式和安装说明；需要部署深度时，先看本地 AI 部署专题。"}
+      <Link href={buildLocalePath("/ai-topics/local-ai-deployment", forceLocale)}>
+        {forceLocale === "en" ? "Open topic" : "查看专题"}
+      </Link>
+    </p>
+  );
+}
+
+function ProductSeoDisclosure({
+  summary,
+  children,
+}: React.PropsWithChildren<{ summary: string }>) {
+  return (
+    <details className="product-seo-disclosure">
+      <summary>{summary}</summary>
+      <div className="product-seo-disclosure-body">{children}</div>
+    </details>
   );
 }
 
@@ -365,10 +502,21 @@ function SoftwareGeoBlock({ forceLocale }: { forceLocale: Locale }) {
       label: { zh: "了解 AI 账号服务", en: "Review account services" },
       href: buildLocalePath("/account-services", forceLocale),
     },
+    {
+      label: { zh: "AI 内容创作工具路线", en: "AI content creation path" },
+      href: buildLocalePath(
+        "/ai-topics/ai-content-creation-tools",
+        forceLocale,
+      ),
+    },
+    {
+      label: { zh: "本地 AI 部署路线", en: "Local AI deployment path" },
+      href: buildLocalePath("/ai-topics/local-ai-deployment", forceLocale),
+    },
   ];
 
   return (
-    <div className="mt-8 space-y-8">
+    <div className="space-y-8">
       <section className="glass rounded-2xl p-6">
         <div className="rounded-2xl border border-[var(--marketing-accent)]/25 bg-[var(--marketing-accent)]/10 p-5">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--marketing-accent)]">
@@ -427,12 +575,19 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
 
   return (
     <div className="mt-8 space-y-8">
-      <section className="glass rounded-2xl p-6">
-        <SectionTitle
-          title={labels.comparisonTitle}
-          intro={labels.comparisonIntro}
-        />
-        <div className="mt-6 hidden overflow-x-auto md:block">
+      <details className="content-fold">
+        <summary>
+          <div className="content-fold-summary-copy">
+            <strong className="text-2xl font-black text-[var(--marketing-text)]">
+              {labels.comparisonTitle}
+            </strong>
+            <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
+              {labels.comparisonIntro}
+            </p>
+          </div>
+        </summary>
+        <div className="content-fold-body">
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[760px] border-separate border-spacing-0 overflow-hidden rounded-2xl border border-white/10 text-left text-sm">
             <thead>
               <tr className="bg-white/10 text-[var(--marketing-text)]">
@@ -491,30 +646,56 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
             </article>
           ))}
         </div>
-      </section>
+        </div>
+      </details>
 
-      <section className="glass rounded-2xl p-6">
-        <SectionTitle title={labels.faqTitle} intro={labels.faqIntro} />
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <details className="content-fold">
+        <summary>
+          <div className="content-fold-summary-copy">
+            <strong className="text-2xl font-black text-[var(--marketing-text)]">
+              {labels.faqTitle}
+            </strong>
+            <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
+              {labels.faqIntro}
+            </p>
+          </div>
+        </summary>
+        <div className="content-fold-body">
+        <div className="grid gap-4 md:grid-cols-2">
           {faqItems.map((item) => (
-            <article
+            <details
               key={item.question}
-              className="rounded-2xl border border-white/10 bg-white/8 p-5"
+              className="content-fold"
             >
-              <h2 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
-                {item.question}
-              </h2>
-              <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
-                {item.answer}
-              </p>
-            </article>
+              <summary>
+                <strong className="text-lg font-black leading-snug text-[var(--marketing-text)]">
+                  {item.question}
+                </strong>
+              </summary>
+              <div className="content-fold-body">
+                <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                  {item.answer}
+                </p>
+              </div>
+            </details>
           ))}
         </div>
-      </section>
+        </div>
+      </details>
 
-      <section className="glass rounded-2xl p-6">
-        <SectionTitle title={labels.sourceTitle} intro={labels.sourceIntro} />
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <details className="content-fold">
+        <summary>
+          <div className="content-fold-summary-copy">
+            <strong className="text-2xl font-black text-[var(--marketing-text)]">
+              {labels.sourceTitle}
+            </strong>
+            <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
+              {labels.sourceIntro}
+            </p>
+          </div>
+        </summary>
+        <div className="content-fold-body">
+        <div className="grid gap-4 md:grid-cols-2">
           {sourceLinks.map((source) => (
             <article
               key={source.href}
@@ -537,7 +718,8 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
         <p className="mt-5 text-xs font-bold text-[var(--marketing-muted)]">
           {labels.updatedLabel}: <time dateTime="2026-06-23">2026-06-23</time>
         </p>
-      </section>
+        </div>
+      </details>
     </div>
   );
 }
@@ -592,12 +774,27 @@ function FilterBar({
       id="software-list"
       className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_160px_140px]"
     >
+      <label className="sr-only" htmlFor="software-search">
+        {t.listing.searchPlaceholder}
+      </label>
       <input
+        id="software-search"
         name="q"
+        aria-label={t.listing.searchPlaceholder}
         placeholder={t.listing.searchPlaceholder}
+        title={t.listing.searchPlaceholder}
         className="form-control-dark"
       />
-      <select name="category" className="form-select-dark">
+      <label className="sr-only" htmlFor="software-category">
+        {t.listing.allCategories}
+      </label>
+      <select
+        id="software-category"
+        name="category"
+        aria-label={t.listing.allCategories}
+        title={t.listing.allCategories}
+        className="form-select-dark"
+      >
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -609,12 +806,30 @@ function FilterBar({
           </option>
         ))}
       </select>
-      <select name="paid" className="form-select-dark">
+      <label className="sr-only" htmlFor="software-paid">
+        {t.listing.allAccess}
+      </label>
+      <select
+        id="software-paid"
+        name="paid"
+        aria-label={t.listing.allAccess}
+        title={t.listing.allAccess}
+        className="form-select-dark"
+      >
         <option value="">{t.listing.allAccess}</option>
         <option value="paid">{t.toolCard.paidDownload}</option>
         <option value="free">{t.toolCard.free}</option>
       </select>
-      <select name="sort" className="form-select-dark">
+      <label className="sr-only" htmlFor="software-sort">
+        {t.listing.latest}
+      </label>
+      <select
+        id="software-sort"
+        name="sort"
+        aria-label={t.listing.latest}
+        title={t.listing.latest}
+        className="form-select-dark"
+      >
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

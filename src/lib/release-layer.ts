@@ -9,7 +9,7 @@ export type ReleaseLayerKey = keyof typeof releaseLayerLabels;
 export const productReleaseStatusMeta = {
   planned: { label: "规划中", className: "border-white/10 bg-white/5 text-[#8B95A7]" },
   active: { label: "发布准备中", className: "border-[#FFB86B]/30 bg-[#FFB86B]/10 text-[#FFB86B]" },
-  released: { label: "已发布", className: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]" },
+  released: { label: "已发布", className: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#d8f8ff]" },
   archived: { label: "已归档", className: "border-[#FFB86B]/30 bg-[#FFB86B]/10 text-[#FFB86B]" }
 } as const;
 

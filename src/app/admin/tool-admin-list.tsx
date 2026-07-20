@@ -4,6 +4,7 @@ import { deleteToolAction, upsertToolAction } from "@/app/admin/actions";
 import { DangerButton, Field, inputClass, selectClass, SubmitButton, textareaClass } from "@/app/admin/admin-ui";
 import { ToolMediaUploadGuard } from "@/app/admin/tool-media-upload-guard";
 import { ToolProductImageManager } from "@/app/admin/tool-product-image-manager";
+import { ToolVideoUploadField } from "@/app/admin/tool-video-upload-field";
 import { getAdminToolBasePath, getAdminToolEditPath, getAdminToolNewPath } from "@/lib/admin-tool-routes";
 import type { Locale } from "@/lib/i18n";
 import { normalizeImageSrc } from "@/lib/media";
@@ -24,6 +25,15 @@ type ToolItem = {
   content: string;
   coverImage: string | null;
   screenshots: string[];
+  videoUrl: string | null;
+  videoTitle: string | null;
+  videoDescription: string | null;
+  videoUrl2: string | null;
+  videoTitle2: string | null;
+  videoDescription2: string | null;
+  videoUrl3: string | null;
+  videoTitle3: string | null;
+  videoDescription3: string | null;
   version: string | null;
   systemRequirement: string | null;
   isVipRequired: boolean;
@@ -58,7 +68,7 @@ const statusTextEn: Record<string, string> = {
 
 const statusClass: Record<string, string> = {
   draft: "border-white/15 bg-white/8 text-[#8B95A7]",
-  published: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]",
+  published: "border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#d8f8ff]",
   offline: "border-amber-300/30 bg-amber-300/10 text-amber-100"
 };
 
@@ -162,7 +172,7 @@ export function ToolAdminList({
             {isSkillLearning ? copy.courseListIntro : isAccountService ? copy.serviceListIntro : copy.listIntro}
           </p>
         </div>
-        <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ff6844]">
+        <Link href={getAdminToolNewPath(type)} className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#56bfd0]">
           {isSkillLearning ? copy.newCourse : isAccountService ? copy.newService : copy.newTool}
         </Link>
       </div>
@@ -236,7 +246,7 @@ export function ToolAdminList({
                       {coverImage ? (
                         <Image src={coverImage} alt={tool.name} fill className="object-cover" sizes="96px" unoptimized />
                       ) : (
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_30%,rgba(240,90,53,0.22),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.12),transparent)]" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_30%,rgba(65,197,219,0.22),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.12),transparent)]" />
                       )}
                     </div>
                     <div>
@@ -265,7 +275,7 @@ export function ToolAdminList({
                         {publishIssues.length > 3 ? <Badge className="border-white/15 bg-white/8 text-[#8B95A7]">+{publishIssues.length - 3}</Badge> : null}
                       </>
                     ) : (
-                      <Badge className="border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#ffd8cc]">{copy.publishable}</Badge>
+                      <Badge className="border-[var(--marketing-accent)]/35 bg-[var(--marketing-accent)]/12 text-[#d8f8ff]">{copy.publishable}</Badge>
                     )}
                   </div>
                   <div className="text-right">
@@ -420,6 +430,91 @@ export function ToolEditor({
               <textarea name="content" required defaultValue={tool?.content ?? ""} className={textareaClass} />
             </Field>
             <div>
+              <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productVideo}</p>
+              <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+                <div className="grid gap-5">
+                  <div className="rounded-2xl border border-white/10 bg-[#07101E]/55 p-4">
+                    <p className="mb-3 text-sm font-semibold text-[#F6FAFF]">{copy.productVideo} 1</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label={`${copy.productVideoUrl} / ${copy.productVideoUpload} 1`}>
+                        <ToolVideoUploadField
+                          urlName="videoUrl"
+                          currentUrl={tool?.videoUrl}
+                          inputClass={inputClass}
+                          toolSlug={tool?.slug}
+                          uploadLabel={`${copy.productVideoUpload} 1`}
+                        />
+                      </Field>
+                      <Field label={`${copy.productVideoTitle} 1`}>
+                        <input name="videoTitle" defaultValue={tool?.videoTitle ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoDescription} 1`}>
+                        <textarea name="videoDescription" defaultValue={tool?.videoDescription ?? ""} placeholder={copy.productVideoDescriptionPlaceholder} className={textareaClass} />
+                      </Field>
+                    </div>
+                    {tool?.videoUrl ? (
+                      <p className="mt-4 break-all rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#C5D0E2]">
+                        {copy.currentProductVideo} 1: {tool.videoUrl}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-[#07101E]/55 p-4">
+                    <p className="mb-3 text-sm font-semibold text-[#F6FAFF]">{copy.productVideo} 2</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label={`${copy.productVideoUrl} / ${copy.productVideoUpload} 2`}>
+                        <ToolVideoUploadField
+                          urlName="videoUrl2"
+                          currentUrl={tool?.videoUrl2}
+                          inputClass={inputClass}
+                          toolSlug={tool?.slug}
+                          uploadLabel={`${copy.productVideoUpload} 2`}
+                        />
+                      </Field>
+                      <Field label={`${copy.productVideoTitle} 2`}>
+                        <input name="videoTitle2" defaultValue={tool?.videoTitle2 ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoDescription} 2`}>
+                        <textarea name="videoDescription2" defaultValue={tool?.videoDescription2 ?? ""} placeholder={copy.productVideoDescriptionPlaceholder} className={textareaClass} />
+                      </Field>
+                    </div>
+                    {tool?.videoUrl2 ? (
+                      <p className="mt-4 break-all rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#C5D0E2]">
+                        {copy.currentProductVideo} 2: {tool.videoUrl2}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-[#07101E]/55 p-4">
+                    <p className="mb-3 text-sm font-semibold text-[#F6FAFF]">{copy.productVideo} 3</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label={`${copy.productVideoUrl} / ${copy.productVideoUpload} 3`}>
+                        <ToolVideoUploadField
+                          urlName="videoUrl3"
+                          currentUrl={tool?.videoUrl3}
+                          inputClass={inputClass}
+                          toolSlug={tool?.slug}
+                          uploadLabel={`${copy.productVideoUpload} 3`}
+                        />
+                      </Field>
+                      <Field label={`${copy.productVideoTitle} 3`}>
+                        <input name="videoTitle3" defaultValue={tool?.videoTitle3 ?? ""} placeholder={copy.productVideoTitlePlaceholder} className={inputClass} />
+                      </Field>
+                      <Field label={`${copy.productVideoDescription} 3`}>
+                        <textarea name="videoDescription3" defaultValue={tool?.videoDescription3 ?? ""} placeholder={copy.productVideoDescriptionPlaceholder} className={textareaClass} />
+                      </Field>
+                    </div>
+                    {tool?.videoUrl3 ? (
+                      <p className="mt-4 break-all rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[#C5D0E2]">
+                        {copy.currentProductVideo} 3: {tool.videoUrl3}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[#8B95A7]">{copy.productVideoHint}</p>
+              </div>
+            </div>
+            <div>
               <p className="mb-2 block text-sm text-[#F6FAFF]">{copy.productImages}</p>
               <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
                 <ToolMediaUploadGuard name="screenshotFiles" inputClass={inputClass} multiple />
@@ -447,7 +542,7 @@ export function ToolEditor({
                 <p className="mt-2 text-sm leading-6 text-[#8B95A7]">{copy.courseContentSectionIntro}</p>
                 {tool?.id ? (
                   <div className="mt-4 flex flex-wrap gap-3">
-                    <a href={`/admin/tutorials?toolId=${tool.id}`} className="inline-block rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ff6844]">{copy.manageTutorials}</a>
+                    <a href={`/admin/tutorials?toolId=${tool.id}`} className="inline-block rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#56bfd0]">{copy.manageTutorials}</a>
                     <a href={`/admin/faqs?toolId=${tool.id}`} className="inline-block rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-[#E8EEF8] transition hover:border-[var(--marketing-accent)]/50 hover:text-[var(--marketing-accent)]">{copy.manageFaq}</a>
                   </div>
                 ) : (
@@ -543,7 +638,7 @@ const toolAdminCopy = {
     softwarePriceSpecIntro: "按授权规格设置购买价格。第一条启用且大于 0 的规格会作为列表和筛选中的主价格。",
     servicePriceSpecIntro: "按服务规格设置服务价格。可配置不同账号、时长或套餐规格。",
     detailSection: "详情内容",
-    detailSectionIntro: "维护简介、详细介绍、商品图和购买后可见的下载链接内容。",
+    detailSectionIntro: "维护简介、详细介绍、产品视频、商品图和购买后可见的下载链接内容。",
     priceSpecName: "规格名称",
     priceSpecNamePlaceholderA: "例如：单机授权",
     priceSpecNamePlaceholderB: "例如：终身授权",
@@ -574,6 +669,16 @@ const toolAdminCopy = {
     servicePrice: "服务价格",
     shortDescription: "简介",
     content: "详细介绍",
+    productVideo: "详细介绍产品视频",
+    productVideoUrl: "当前视频地址",
+    productVideoUrlPlaceholder: "/uploads/tool-videos/demo.mp4 或 https://...",
+    productVideoUpload: "本地上传视频",
+    productVideoTitle: "视频标题",
+    productVideoTitlePlaceholder: "例如：产品功能演示",
+    productVideoDescription: "视频说明",
+    productVideoDescriptionPlaceholder: "可简要说明视频内容、适用场景或观看重点",
+    productVideoHint: "最多上传 3 个产品视频，支持 MP4/WebM/MOV，建议单个 500MB 以内。上传新视频会自动替换对应视频地址；不上传则保留已填写的视频地址。",
+    currentProductVideo: "当前视频",
     productImages: "详细介绍商品图",
     productImagesHint: "支持多张 JPG/PNG/WebP，建议 1200x900 或 4:3。图片会在工具详情页按电商图文格式展示；用上移/下移调整展示顺序，取消勾选后保存会移除。",
     productImageAlt: "商品图",
@@ -647,7 +752,7 @@ const toolAdminCopy = {
     softwarePriceSpecIntro: "Set purchase prices by authorization specification. The first active price above zero becomes the primary list price.",
     servicePriceSpecIntro: "Set service prices by account, duration, or package specification.",
     detailSection: "Detail content",
-    detailSectionIntro: "Maintain short description, detailed intro, product images, and post-purchase download-link content.",
+    detailSectionIntro: "Maintain short description, detailed intro, product video, product images, and post-purchase download-link content.",
     priceSpecName: "Specification name",
     priceSpecNamePlaceholderA: "e.g. Single-machine license",
     priceSpecNamePlaceholderB: "e.g. Lifetime license",
@@ -678,6 +783,16 @@ const toolAdminCopy = {
     servicePrice: "Service price",
     shortDescription: "Short description",
     content: "Detailed introduction",
+    productVideo: "Product video in detail intro",
+    productVideoUrl: "Current video URL",
+    productVideoUrlPlaceholder: "/uploads/tool-videos/demo.mp4 or https://...",
+    productVideoUpload: "Upload local video",
+    productVideoTitle: "Video title",
+    productVideoTitlePlaceholder: "e.g. Product feature demo",
+    productVideoDescription: "Video description",
+    productVideoDescriptionPlaceholder: "Briefly describe the video content, scenario, or viewing focus",
+    productVideoHint: "Upload up to 3 product videos. MP4/WebM/MOV is supported, under 500MB each recommended. Uploading a new video replaces the matching video URL; leaving it empty keeps the URL you entered.",
+    currentProductVideo: "Current video",
     productImages: "Product images in detail intro",
     productImagesHint: "Upload multiple JPG/PNG/WebP images. 1200x900 or 4:3 is recommended. Images appear in the tool detail page like an ecommerce product gallery; use move up/down to adjust display order, or uncheck images before saving to remove.",
     productImageAlt: "Product image",

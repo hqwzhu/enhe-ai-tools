@@ -8,7 +8,7 @@ function read(path: string) {
 
 describe("english route audit source", () => {
   it("keeps AI Trends in the Chinese public-path middleware list for consistent locale headers", () => {
-    const middleware = read("middleware.ts");
+    const middleware = read("src/middleware.ts");
 
     expect(middleware).toContain('"/ai-trends"');
     expect(middleware).toContain('pathname.startsWith("/ai-trends/")');

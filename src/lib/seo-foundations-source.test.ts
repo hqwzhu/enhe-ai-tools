@@ -26,7 +26,7 @@ describe("SEO foundations source contract", () => {
 
     for (const page of [software, onlineTools, skillLearning, pricing, tutorials]) {
       expect(page).toContain('as="h1"');
-      expect(page).toContain("buildMetadataTitle");
+      expect(page).toMatch(/build(?:Listing)?MetadataTitle/);
     }
 
     expect(pricing).toContain("generatePricingPageMetadata");
@@ -44,22 +44,29 @@ describe("SEO foundations source contract", () => {
     const publicChrome = read("src/components/public-site-chrome.tsx");
     const toolDetail = read("src/app/tools/[slug]/page-shell.tsx");
     const software = read("src/app/software/page-shell.tsx");
+    const tutorials = read("src/app/tutorials/page-shell.tsx");
+    const seo = read("src/lib/seo.ts");
 
     expect(publicChrome).toContain("StructuredData");
     expect(publicChrome).toContain("WebSite");
     expect(publicChrome).toContain("Organization");
     expect(publicChrome).toContain("SearchAction");
     expect(publicChrome).toContain("buildLocalePath");
+    expect(publicChrome).toContain("sameAs");
+    expect(publicChrome).toContain("contactPoint");
 
     expect(software).toContain("BreadcrumbList");
     expect(toolDetail).toContain("BreadcrumbList");
     expect(toolDetail).toContain("SoftwareApplication");
+    expect(toolDetail).toContain("buildProductStructuredData");
+    expect(seo).toContain('"@type": "Product"');
     expect(toolDetail).toContain("Service");
     expect(toolDetail).toContain("Course");
     expect(toolDetail).toContain("faq: ");
     expect(toolDetail).toContain("aggregateRating");
     expect(toolDetail).toContain("hasOfferCatalog");
     expect(toolDetail).toContain("CourseInstance");
+    expect(tutorials).toContain('"@type": "HowTo"');
   });
 
   it("uses stable sitemap timestamps and cached public settings", () => {

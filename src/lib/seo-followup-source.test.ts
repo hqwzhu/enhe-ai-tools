@@ -37,7 +37,7 @@ describe("SEO follow-up source contracts", () => {
 
     expect(adminForm).toContain("buildSeoFriendlySlug");
     expect(aiNews).toContain("resolveAiNewsCanonicalSlug");
-    expect(toolDetail).toContain("buildSeoFriendlySlug");
+    expect(toolDetail).toContain("getCanonicalToolSlug");
     expect(toolDetail).toContain("permanentRedirect(");
     expect(newsDetail).toContain("getCanonicalAiNewsSlug");
     expect(newsDetail).toContain("redirect(");
@@ -67,7 +67,7 @@ describe("SEO follow-up source contracts", () => {
     }
   });
 
-  it("only emits English AI news alternates when the English article is indexable", () => {
+  it("only emits English AI news detail alternates when the English article is indexable while listings stay aligned", () => {
     const newsDetail = read("src/app/ai-news/[slug]/page-shell.tsx");
     const publicContent = read("src/lib/public-content.ts");
 
@@ -76,7 +76,7 @@ describe("SEO follow-up source contracts", () => {
     expect(newsDetail).toContain(
       'hasIndexableEnglishPage ? ["zh", "en"] : ["zh"]',
     );
-    expect(publicContent).toContain('filters.locale === "en"');
-    expect(publicContent).toContain("isEnglishNewsArticleIndexable");
+    expect(publicContent).not.toContain('filters.locale === "en"');
+    expect(publicContent).not.toContain("isEnglishNewsArticleIndexable");
   });
 });

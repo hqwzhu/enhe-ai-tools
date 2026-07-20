@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { BorderGlowController } from "@/components/border-glow-controller";
 import { CursorGlow } from "@/components/cursor-glow";
 import { InteractiveBackground } from "@/components/interactive-background";
-import { TargetCursor } from "@/components/target-cursor";
 import {
   defaultSiteDescription,
   getSiteBaseUrl,
@@ -21,7 +21,8 @@ export const sharedRootMetadata: Metadata = {
   },
   verification: {
     other: {
-      "baidu-site-verification": "codeva-LZTyTXt0Fq"
+      "baidu-site-verification": "codeva-LZTyTXt0Fq",
+      "bytedance-verification-code": "YuXYrV9zCcX3P66dp5/H"
     }
   },
   manifest: "/manifest.webmanifest",
@@ -29,8 +30,7 @@ export const sharedRootMetadata: Metadata = {
     icon: [
       { url: "/favicon.ico", type: "image/x-icon", sizes: "any" },
       { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
-      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
-      { url: "/images/brand/enhe-icon-gradient-white-bg-cropped.png", type: "image/png" }
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" }
     ],
     shortcut: "/favicon.ico",
     apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }]
@@ -43,11 +43,35 @@ export function RootDocument({
 }: Readonly<{ lang: "zh-CN" | "en-US"; children: React.ReactNode }>) {
   return (
     <html lang={lang}>
+      <head>
+        <link
+          rel="preload"
+          href="/fonts/montserrat/montserrat-latin-800-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/montserrat/montserrat-latin-900-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <Script id="ttzz-push-loader" strategy="beforeInteractive">
+          {`(function(){
+var el = document.createElement("script");
+el.src = "https://lf1-cdn-tos.bytegoofy.com/goofy/ttzz/push.js?652842526127c7f5c8a21cd07be103ebd207b2db5502593c3b7f249e75721c9545f9b46c8c41e6235de98982cdddb9785e566c8c06b0b36aec55fccc04fff972a6c09517809143b97aad1198018b8352";
+el.id = "ttzz";
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(el, s);
+})(window);`}
+        </Script>
+      </head>
       <body>
         <InteractiveBackground />
         <CursorGlow />
         <BorderGlowController />
-        <TargetCursor cursorColorOnTarget="var(--marketing-accent)" />
         <AnalyticsTracker />
         {children}
       </body>

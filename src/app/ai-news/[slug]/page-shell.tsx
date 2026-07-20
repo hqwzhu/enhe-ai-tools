@@ -15,6 +15,7 @@ import {
   mergeAiNewsRelatedItems,
   renderNewsContentBlocks,
   resolveAiNewsMetaDescription,
+  resolveLocalizedNewsContent,
   resolveNewsVideo,
   toNewsIsoDate,
   type NewsContentBlock,
@@ -45,6 +46,7 @@ import { publicPageCacheSeconds } from "@/lib/public-routes";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
+  buildFaqSchema,
   buildAvailableLanguageAlternates,
   buildLocalePath,
   buildMetadataTitle,
@@ -56,6 +58,13 @@ import {
 type NewsArticle = NonNullable<
   Awaited<ReturnType<typeof getPublicNewsArticleBySlug>>
 >;
+
+const removedProductHrefReplacements: Record<string, string> = {
+  "/software/lumios-personal-ai-companion":
+    "/ai-news/chatbox-to-personal-ai-companion-desktop-execution",
+  "/en/software/lumios-personal-ai-companion":
+    "/en/ai-news/chatbox-to-personal-ai-companion-desktop-execution",
+};
 
 export const aiNewsDetailPageRevalidate = publicPageCacheSeconds;
 
@@ -172,13 +181,16 @@ export async function AiNewsDetailPageShell({
     logo: "/images/brand/enhe-icon-gradient-white-bg-cropped.png",
     url: absoluteUrl(buildLocalePath("/", forceLocale)),
   });
+  const articleFaqItems = buildAiNewsFaqItems(localized, forceLocale);
+  const faqSchema = buildFaqSchema({ items: articleFaqItems });
 
   return (
     <Container className="py-14">
       <StructuredData
-        data={[breadcrumbSchema, organizationSchema, newsArticleSchema]}
+        data={[breadcrumbSchema, organizationSchema, newsArticleSchema, faqSchema]}
       />
-      <article>
+      <main>
+        <article>
         <section className="glass overflow-hidden rounded-[2rem] p-5 md:p-8">
           <div className="flex flex-wrap gap-2">
             {article.category ? (
@@ -231,7 +243,7 @@ export async function AiNewsDetailPageShell({
         </section>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <main className="space-y-8">
+          <div className="space-y-8">
             <section className="glass rounded-2xl p-6">
               <h2 className="text-xl font-black text-[var(--marketing-text)]">
                 {t.aiNews.keyTakeaways}
@@ -331,6 +343,41 @@ export async function AiNewsDetailPageShell({
               </section>
             ) : null}
 
+            <section className="glass rounded-2xl p-6">
+              <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+                {forceLocale === "en" ? "Related Tools And Tutorials" : "相关工具/教程"}
+              </h2>
+              <p className="mt-4 text-base leading-8 text-[var(--marketing-muted)]">
+                {forceLocale === "en"
+                  ? "Use the following ENHE AI sections to continue from the news signal into tool selection, account-service guidance, or practical learning."
+                  : "你可以从下面的 ENHE AI 栏目继续把资讯信号转成工具选择、账号服务判断或实操学习路径。"}
+              </p>
+              <div className="mt-5 grid gap-3 md:grid-cols-3">
+                {[
+                  {
+                    href: buildLocalePath("/software", forceLocale),
+                    label: forceLocale === "en" ? "AI Software Apps" : "AI软件应用",
+                  },
+                  {
+                    href: buildLocalePath("/skill-learning", forceLocale),
+                    label: forceLocale === "en" ? "AI Skill Tutorials" : "AI技能教程",
+                  },
+                  {
+                    href: buildLocalePath("/account-services", forceLocale),
+                    label: forceLocale === "en" ? "AI Account Services" : "AI账号服务",
+                  },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </section>
+
             {relatedArticles.length ? (
               <section className="glass rounded-2xl p-6">
                 <h2 className="text-2xl font-black text-[var(--marketing-text)]">
@@ -416,6 +463,24 @@ export async function AiNewsDetailPageShell({
               </section>
             ) : null}
 
+            <section className="glass rounded-2xl p-6">
+              <h2 className="text-2xl font-black text-[var(--marketing-text)]">
+                FAQ
+              </h2>
+              <div className="mt-5 grid gap-3">
+                {articleFaqItems.map((item) => (
+                  <details key={item.question} className="rounded-xl border border-white/10 bg-white/7 p-4">
+                    <summary className="cursor-pointer list-none font-semibold text-[var(--marketing-text)] [&::-webkit-details-marker]:hidden">
+                      {item.question}
+                    </summary>
+                    <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
+                      {item.answer}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </section>
+
             <AiNewsInteractions
               slug={canonicalSlug}
               labels={{
@@ -427,9 +492,9 @@ export async function AiNewsDetailPageShell({
                 loginRequired: t.aiNews.loginRequired,
               }}
             />
-          </main>
+          </div>
 
-          <aside className="space-y-5 lg:sticky lg:top-28 lg:self-start">
+          <section className="space-y-5 lg:sticky lg:top-28 lg:self-start" aria-label="Article support links">
             <section className="glass rounded-2xl p-5">
               <h2 className="text-lg font-black text-[var(--marketing-text)]">
                 {t.aiNews.tableOfContents}
@@ -459,9 +524,10 @@ export async function AiNewsDetailPageShell({
             >
               {t.aiNews.latestTitle}
             </ButtonLink>
-          </aside>
+          </section>
         </div>
-      </article>
+        </article>
+      </main>
     </Container>
   );
 }
@@ -509,7 +575,11 @@ function localizeArticle(article: NewsArticle, locale: Locale) {
         }),
       ),
       summary,
-      content: article.englishContent || article.content,
+      content: resolveLocalizedNewsContent(
+        article.content,
+        article.englishContent,
+        "en",
+      ),
       keyTakeaways: article.englishKeyTakeaways.length
         ? article.englishKeyTakeaways
         : article.keyTakeaways,
@@ -650,10 +720,12 @@ function InlineParts({ parts }: { parts: NewsInlinePart[] }) {
     <>
       {parts.map((part, index) => {
         if (part.type === "link") {
+          const href = normalizeAiNewsInternalHref(part.href);
+
           return (
             <Link
-              key={`${part.href}-${index}`}
-              href={part.href}
+              key={`${href}-${index}`}
+              href={href}
               className="font-semibold text-[var(--marketing-accent)] underline decoration-[var(--marketing-accent)]/35 underline-offset-4 transition hover:decoration-[var(--marketing-accent)]"
             >
               <span dangerouslySetInnerHTML={{ __html: part.text }} />
@@ -670,6 +742,37 @@ function InlineParts({ parts }: { parts: NewsInlinePart[] }) {
       })}
     </>
   );
+}
+
+function normalizeAiNewsInternalHref(href: string) {
+  const path = extractSameSitePath(href);
+
+  if (!path) {
+    return href;
+  }
+
+  const normalizedPath = path.endsWith("/") ? path.slice(0, -1) : path;
+  return removedProductHrefReplacements[normalizedPath] ?? href;
+}
+
+function extractSameSitePath(href: string) {
+  if (href.startsWith("/")) {
+    return href;
+  }
+
+  try {
+    const url = new URL(href);
+    if (
+      url.hostname === "www.enhe-tech.com.cn" ||
+      url.hostname === "enhe-tech.com.cn"
+    ) {
+      return url.pathname;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }
 
 function buildKeywordContainsOr(keywords: string[], fields: string[]) {
@@ -932,6 +1035,61 @@ function buildNewsArticleSchema(
         locale,
       ).join(", ") || undefined,
   };
+}
+
+function buildAiNewsFaqItems(
+  localized: ReturnType<typeof localizeArticle>,
+  locale: Locale,
+) {
+  if (locale === "en") {
+    return [
+      {
+        question: "What is this ENHE AI article about?",
+        answer: localized.summary,
+      },
+      {
+        question: "Why is this AI update worth watching?",
+        answer:
+          localized.keyTakeaways.join(" ") ||
+          "It may affect how AI users choose tools, understand platform changes, and plan practical AI workflows.",
+      },
+      {
+        question: "What does it mean for everyday AI users?",
+        answer:
+          localized.impactNotes ||
+          "Everyday users should compare the update with their own tool needs, data boundaries, account access, and learning path before changing workflows.",
+      },
+      {
+        question: "Where can readers continue learning on ENHE AI?",
+        answer:
+          "Readers can continue with ENHE AI software apps, AI skill tutorials, and AI account service guidance to turn the news signal into practical action.",
+      },
+    ];
+  }
+
+  return [
+    {
+      question: "这篇 ENHE AI 文章讲的是什么？",
+      answer: localized.summary,
+    },
+    {
+      question: "这件事为什么值得关注？",
+      answer:
+        localized.keyTakeaways.join(" ") ||
+        "这类 AI 更新可能影响用户选择工具、理解平台变化、规划本地部署或搭建 AI 工作流的方式。",
+    },
+    {
+      question: "对普通 AI 用户有什么影响？",
+      answer:
+        localized.impactNotes ||
+        "普通用户可以结合自己的任务、数据边界、账号权限和学习成本判断是否需要试用相关工具或调整工作流。",
+    },
+    {
+      question: "还能在 ENHE AI 查看哪些相关内容？",
+      answer:
+        "可以继续查看 ENHE AI 的 AI软件应用、AI技能教程和 AI账号服务栏目，把资讯判断转化为工具选择、学习路径或合规使用建议。",
+    },
+  ];
 }
 
 function formatDate(value: Date | string, locale: Locale) {

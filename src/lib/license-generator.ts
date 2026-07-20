@@ -1,4 +1,5 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, sign, timingSafeEqual } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
 import { arch, hostname, networkInterfaces, platform } from "node:os";
 
 export const licenseAppId = "FaceSwap Studio";
@@ -22,6 +23,27 @@ export type CreateLicenseCodeInput = {
   issuedAt?: string;
 };
 
+export type LicenseProduct = "faceswap" | "lumi-os";
+
+export type LumiLicensePayload = {
+  v: 1;
+  product: "lumi-os";
+  machineCode: string;
+  licenseId: string;
+  issuedAt: string;
+  expiresAt?: string;
+  edition: "windows";
+};
+
+export type CreateLumiLicenseCodeInput = {
+  machineCode: string;
+  licenseId?: string | null;
+  note?: string | null;
+  issuedAt?: string;
+  expiresAt?: string | null;
+  privateKeyPem?: string;
+};
+
 function getLicenseSecret() {
   return process.env.FACE_SWAP_LICENSE_SECRET ?? defaultLicenseSecret;
 }
@@ -32,6 +54,21 @@ function b64Encode(data: Buffer | string) {
 
 function b64Decode(data: string) {
   return Buffer.from(data, "base64url");
+}
+
+function b64UrlJson(data: unknown) {
+  return Buffer.from(JSON.stringify(data), "utf8").toString("base64url");
+}
+
+function normalizeLumiExpiresAt(value: string) {
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return `${trimmed}T23:59:59.999Z`;
+  }
+  if (!Number.isFinite(Date.parse(trimmed))) {
+    throw new Error("Lumi OS 授权到期时间格式不正确。");
+  }
+  return trimmed;
 }
 
 function stableJsonStringify(value: Record<string, unknown>) {
@@ -71,6 +108,68 @@ export function createLicenseCode(input: CreateLicenseCodeInput) {
   }
 
   return signLicensePayload(payload);
+}
+
+export function normalizeLumiMachineCode(value: string) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[_\s]+/g, "-")
+    .replace(/[^A-Z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export function getLumiLicensePrivateKeyPem() {
+  const inlineKey = process.env.LUMI_LICENSE_PRIVATE_KEY;
+  if (inlineKey?.trim()) return inlineKey.replace(/\\n/g, "\n");
+
+  const keyFile = process.env.LUMI_LICENSE_PRIVATE_KEY_FILE;
+  if (keyFile?.trim() && existsSync(keyFile)) {
+    return readFileSync(keyFile, "utf8");
+  }
+
+  throw new Error("Lumi OS 授权私钥未配置。请设置 LUMI_LICENSE_PRIVATE_KEY 或 LUMI_LICENSE_PRIVATE_KEY_FILE。");
+}
+
+export function createLumiLicenseCode(input: CreateLumiLicenseCodeInput) {
+  const machineCode = normalizeLumiMachineCode(input.machineCode);
+  if (!/^LUMI-[A-Z]+-[A-Z0-9]{10,64}$/.test(machineCode)) {
+    throw new Error("Lumi OS 授权码需要有效机器码，格式应类似 LUMI-WIN-ABCDE12345。");
+  }
+
+  const issuedAt = input.issuedAt ?? new Date().toISOString();
+  const payload: LumiLicensePayload = {
+    v: 1,
+    product: "lumi-os",
+    machineCode,
+    licenseId: input.licenseId?.trim() || `LIC-${issuedAt.replace(/[-:.TZ]/g, "").slice(0, 14)}`,
+    issuedAt,
+    edition: "windows"
+  };
+
+  if (input.expiresAt?.trim()) {
+    payload.expiresAt = normalizeLumiExpiresAt(input.expiresAt);
+  }
+
+  const payloadSegment = b64UrlJson(payload);
+  const signature = sign(
+    null,
+    Buffer.from(payloadSegment, "utf8"),
+    input.privateKeyPem ?? getLumiLicensePrivateKeyPem()
+  ).toString("base64url");
+
+  return `LUMI1-${payloadSegment}.${signature}`;
+}
+
+export function parseLumiLicenseCodePayload(code: string): LumiLicensePayload {
+  const trimmed = code.trim();
+  if (!trimmed.startsWith("LUMI1-")) throw new Error("Lumi OS 授权码格式不正确。");
+  const [payloadSegment] = trimmed.slice("LUMI1-".length).split(".", 2);
+  if (!payloadSegment) throw new Error("Lumi OS 授权码格式不正确。");
+  const payload = JSON.parse(Buffer.from(payloadSegment, "base64url").toString("utf8")) as LumiLicensePayload;
+  if (payload.product !== "lumi-os" || payload.v !== 1) throw new Error("Lumi OS 授权码内容不正确。");
+  return payload;
 }
 
 export function parseLicenseCode(code: string): { payload: LicensePayload | null; error: string } {

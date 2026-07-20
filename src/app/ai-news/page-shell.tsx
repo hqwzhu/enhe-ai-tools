@@ -11,7 +11,6 @@ import {
 } from "@/components/ui";
 import { parseNewsSearchParams } from "@/lib/ai-news";
 import {
-  aiNewsTopics,
   getAiNewsTopicCopy,
   getAiNewsTopicPath,
 } from "@/lib/ai-news-topics";
@@ -27,6 +26,7 @@ import { normalizeImageSrc } from "@/lib/media";
 import { buildCanonicalAiNewsPath } from "@/lib/public-slugs";
 import {
   getPublicAiNewsDiscovery,
+  getPublicAiNewsTopics,
   getPublicNewsCategories,
   getPublicNewsListing,
   getPublicNewsTags,
@@ -36,9 +36,9 @@ import { publicPageCacheSeconds } from "@/lib/public-routes";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
+  buildListingMetadataTitle,
   buildListingMetaDescription,
   buildLocalePath,
-  buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
 
@@ -53,6 +53,41 @@ type TopicCollectionItem = Awaited<
 >["topicCollectionItems"][number];
 
 export const aiNewsPageRevalidate = publicPageCacheSeconds;
+
+type AiNewsPageSearchParams = Record<string, string | undefined>;
+
+const aiNewsFilterParamNames = ["q", "category", "tag", "sort"] as const;
+
+function getAiNewsPageNumber(searchParams: AiNewsPageSearchParams) {
+  return Math.max(
+    1,
+    Number.parseInt(String(searchParams.page ?? "1"), 10) || 1,
+  );
+}
+
+function hasAiNewsFilters(searchParams: AiNewsPageSearchParams) {
+  return aiNewsFilterParamNames.some((name) =>
+    Boolean(String(searchParams[name] ?? "").trim()),
+  );
+}
+
+export function getAiNewsPageOneRedirectPath(
+  searchParams: AiNewsPageSearchParams,
+  locale: Locale,
+) {
+  if (String(searchParams.page ?? "").trim() !== "1") return null;
+
+  const query = new URLSearchParams();
+  for (const [name, value] of Object.entries(searchParams)) {
+    const normalizedValue = String(value ?? "").trim();
+    if (name === "page" || !normalizedValue) continue;
+    query.set(name, normalizedValue);
+  }
+
+  const basePath = buildLocalePath("/ai-news", locale);
+  const queryString = query.toString();
+  return queryString ? `${basePath}?${queryString}` : basePath;
+}
 
 const aiNewsGeoSections = {
   zh: [
@@ -87,28 +122,43 @@ const aiNewsGeoSections = {
 
 export async function generateAiNewsPageMetadata(
   forceLocale: Locale,
+  searchParams: AiNewsPageSearchParams = {},
 ): Promise<Metadata> {
   const t = getDictionary(forceLocale);
-  return buildPageMetadata({
-    title: buildMetadataTitle({ pageTitle: t.aiNews.title, brand: t.brand }),
+  const page = getAiNewsPageNumber(searchParams);
+  const isFiltered = hasAiNewsFilters(searchParams);
+  const canonicalPath =
+    page > 1 && !isFiltered ? `/ai-news?page=${page}` : "/ai-news";
+  const metadata = buildPageMetadata({
+    title: buildListingMetadataTitle("ai-news", forceLocale, t.brand),
     description: buildListingMetaDescription("ai-news", forceLocale),
-    path: "/ai-news",
+    path: canonicalPath,
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,
   });
+
+  return isFiltered
+    ? {
+        ...metadata,
+        robots: {
+          index: false,
+          follow: true,
+        },
+      }
+    : metadata;
 }
 
 export async function AiNewsPageShell({
   searchParams,
   forceLocale,
 }: {
-  searchParams: Promise<Record<string, string | undefined>>;
+  searchParams: Promise<AiNewsPageSearchParams>;
   forceLocale: Locale;
 }) {
   const params = await searchParams;
   const filters = parseNewsSearchParams(params);
   const t = getDictionary(forceLocale);
-  const [{ articles, total }, featured, hot, categories, tags, discovery] =
+  const [{ articles, total }, featured, hot, categories, tags, discovery, topics] =
     await Promise.all([
       getPublicNewsListing({
         ...(filters satisfies PublicNewsListingFilters),
@@ -119,6 +169,7 @@ export async function AiNewsPageShell({
       getPublicNewsCategories(),
       getPublicNewsTags(),
       getPublicAiNewsDiscovery(forceLocale),
+      getPublicAiNewsTopics(),
     ]);
   const pageCount = Math.max(1, Math.ceil(total / filters.pageSize));
   const breadcrumbSchema = buildBreadcrumbSchema({
@@ -141,7 +192,7 @@ export async function AiNewsPageShell({
       <Container className="py-14">
         <StructuredData data={[breadcrumbSchema, collectionSchema]} />
         <section className="glass relative overflow-hidden rounded-[2rem] p-7 md:p-10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(240,90,53,0.22),transparent_30%),radial-gradient(circle_at_82%_20%,rgba(122,167,255,0.16),transparent_32%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_10%,rgba(65,197,219,0.22),transparent_30%),radial-gradient(circle_at_82%_20%,rgba(122,167,255,0.16),transparent_32%)]" />
           <div className="relative max-w-4xl">
             <p className="text-sm font-bold tracking-[0.08em] text-[var(--marketing-accent)]">
               ENHE AI INSIGHTS
@@ -211,7 +262,7 @@ export async function AiNewsPageShell({
             )}
           </div>
 
-          <aside className="space-y-6">
+          <section className="space-y-6" aria-label="AI news filters">
             <TrendPanel articles={hot.articles} locale={forceLocale} />
             <KeywordCloud
               locale={forceLocale}
@@ -220,8 +271,9 @@ export async function AiNewsPageShell({
             <TopicCollections
               locale={forceLocale}
               items={discovery.topicCollectionItems}
+              topics={topics}
             />
-          </aside>
+          </section>
         </div>
 
         <section className="glass mt-12 rounded-2xl p-7">
@@ -319,15 +371,27 @@ function FilterBar({
       data-analytics-meta-tag={filters.tag ?? ""}
       data-analytics-meta-sort={filters.sort}
     >
+      <label className="sr-only" htmlFor="ai-news-search">
+        {t.aiNews.searchPlaceholder}
+      </label>
       <input
+        id="ai-news-search"
         name="q"
         defaultValue={filters.q}
+        aria-label={t.aiNews.searchPlaceholder}
         placeholder={t.aiNews.searchPlaceholder}
+        title={t.aiNews.searchPlaceholder}
         className="form-control-dark"
       />
+      <label className="sr-only" htmlFor="ai-news-category">
+        {t.aiNews.allCategories}
+      </label>
       <select
+        id="ai-news-category"
         name="category"
+        aria-label={t.aiNews.allCategories}
         defaultValue={filters.category ?? ""}
+        title={t.aiNews.allCategories}
         className="form-select-dark"
       >
         <option value="">{t.aiNews.allCategories}</option>
@@ -337,9 +401,15 @@ function FilterBar({
           </option>
         ))}
       </select>
+      <label className="sr-only" htmlFor="ai-news-tag">
+        {t.aiNews.allTags}
+      </label>
       <select
+        id="ai-news-tag"
         name="tag"
+        aria-label={t.aiNews.allTags}
         defaultValue={filters.tag ?? ""}
+        title={t.aiNews.allTags}
         className="form-select-dark"
       >
         <option value="">{t.aiNews.allTags}</option>
@@ -349,9 +419,15 @@ function FilterBar({
           </option>
         ))}
       </select>
+      <label className="sr-only" htmlFor="ai-news-sort">
+        {t.aiNews.latest}
+      </label>
       <select
+        id="ai-news-sort"
         name="sort"
+        aria-label={t.aiNews.latest}
         defaultValue={filters.sort}
+        title={t.aiNews.latest}
         className="form-select-dark"
       >
         <option value="latest">{t.aiNews.latest}</option>
@@ -419,7 +495,7 @@ function NewsCard({
               unoptimized
             />
           ) : (
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(240,90,53,0.24),transparent_34%),radial-gradient(circle_at_80%_70%,rgba(122,167,255,0.18),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(65,197,219,0.24),transparent_34%),radial-gradient(circle_at_80%_70%,rgba(122,167,255,0.18),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
           )}
         </div>
         <div className="p-5">
@@ -562,12 +638,14 @@ const aiNewsTopicPathHints = [
 function TopicCollections({
   locale,
   items,
+  topics,
 }: {
   locale: Locale;
   items: TopicCollectionItem[];
+  topics: Awaited<ReturnType<typeof getPublicAiNewsTopics>>;
 }) {
   const t = getDictionary(locale);
-  const topicLinks = aiNewsTopics.map((topic) => {
+  const topicLinks = topics.map((topic) => {
     const copy = getAiNewsTopicCopy(topic, locale);
     return {
       key: topic.slug,

@@ -1,7 +1,10 @@
+import { createPublicKey, verify } from "node:crypto";
 import { describe, expect, test } from "vitest";
 import {
   createLicenseCode,
+  createLumiLicenseCode,
   isUnlimitedLicenseKeyValid,
+  normalizeLumiMachineCode,
   parseLicenseCode,
   signLicensePayload
 } from "@/lib/license-generator";
@@ -59,5 +62,79 @@ describe("license generator", () => {
     expect(() => createLicenseCode({ licenseType: "trial" as never, issuedAt })).toThrow("授权类型不正确。");
     expect(isUnlimitedLicenseKeyValid("Qwe28043124.")).toBe(true);
     expect(isUnlimitedLicenseKeyValid("wrong-key")).toBe(false);
+  });
+});
+const lumiPrivateKey = `-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIEPo59ziC7AE1Gb6zouuBnk3OSfoP8fMY5yumW4J30+H
+-----END PRIVATE KEY-----`;
+const lumiPublicKey = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAwghF0LMYAX8HbNHkPep2LtHegM/5ZGvnCET7tW3fy/8=
+-----END PUBLIC KEY-----`;
+
+function parseLumiCode(code: string) {
+  const [payloadSegment, signatureSegment] = code.slice("LUMI1-".length).split(".");
+  const payload = JSON.parse(Buffer.from(payloadSegment, "base64url").toString("utf8"));
+  const ok = verify(null, Buffer.from(payloadSegment, "utf8"), createPublicKey(lumiPublicKey), Buffer.from(signatureSegment, "base64url"));
+  return { payload, ok };
+}
+
+describe("Lumi OS license generator", () => {
+  test("normalizes Lumi OS machine codes", () => {
+    expect(normalizeLumiMachineCode(" lumi_win_abcde12345 ")).toBe("LUMI-WIN-ABCDE12345");
+  });
+
+  test("creates Lumi OS Ed25519 license codes compatible with Lumi OS 3.0.5", () => {
+    const code = createLumiLicenseCode({
+      machineCode: " lumi_win_abcde12345 ",
+      licenseId: "LIC-WEB-001",
+      issuedAt: "2026-06-24T00:00:00.000Z",
+      privateKeyPem: lumiPrivateKey
+    });
+
+    expect(code.startsWith("LUMI1-")).toBe(true);
+    const parsed = parseLumiCode(code);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.payload).toEqual({
+      v: 1,
+      product: "lumi-os",
+      machineCode: "LUMI-WIN-ABCDE12345",
+      licenseId: "LIC-WEB-001",
+      issuedAt: "2026-06-24T00:00:00.000Z",
+      edition: "windows"
+    });
+  });
+
+  test("creates expiring Lumi OS license codes when expiry is provided", () => {
+    const code = createLumiLicenseCode({
+      machineCode: "LUMI-WIN-ABCDE12345",
+      licenseId: "LIC-WEB-EXP",
+      issuedAt: "2026-06-24T00:00:00.000Z",
+      expiresAt: "2027-06-24T00:00:00.000Z",
+      privateKeyPem: lumiPrivateKey
+    });
+
+    const parsed = parseLumiCode(code);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.payload.expiresAt).toBe("2027-06-24T00:00:00.000Z");
+  });
+
+  test("normalizes date-only Lumi OS expiry values to the end of the UTC day", () => {
+    const code = createLumiLicenseCode({
+      machineCode: "LUMI-WIN-ABCDE12345",
+      issuedAt: "2026-06-24T00:00:00.000Z",
+      expiresAt: "2027-06-24",
+      privateKeyPem: lumiPrivateKey
+    });
+
+    const parsed = parseLumiCode(code);
+    expect(parsed.payload.expiresAt).toBe("2027-06-24T23:59:59.999Z");
+  });
+
+  test("rejects invalid Lumi OS expiry values before signing", () => {
+    expect(() => createLumiLicenseCode({
+      machineCode: "LUMI-WIN-ABCDE12345",
+      expiresAt: "not-a-date",
+      privateKeyPem: lumiPrivateKey
+    })).toThrow("Lumi OS 授权到期时间格式不正确。");
   });
 });

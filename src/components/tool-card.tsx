@@ -11,6 +11,7 @@ import {
   resolveLocalizedToolCategoryName,
   resolveLocalizedToolIdentity
 } from "@/lib/tool-localization";
+import { getVisibleToolMetrics } from "@/lib/tool-metrics";
 import { getPrimaryToolPrice, type ToolPriceSpecStatus } from "@/lib/tool-price-specs";
 
 type ToolCardProps = {
@@ -56,12 +57,30 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
   );
   const highlights = showMarketingMeta ? buildCardHighlights(tool, locale) : [];
   const audience = showMarketingMeta ? localizedCategory || t.toolCard.defaultAudience : "";
-  const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], tool.downloadPrice);
-  const showPrice = showMarketingMeta && ((tool.type === "software" && tool.isDownloadPaid) || (tool.type === "online" && Number.isFinite(servicePrice) && servicePrice > 0) || tool.type === "skill_learning");
+  const priceFallback = tool.type === "software" ? tool.downloadPrice : 0;
+  const servicePrice = getPrimaryToolPrice(tool.priceSpecs ?? [], priceFallback);
+  const isPositivePrice = Number.isFinite(servicePrice) && servicePrice > 0;
+  const showPrice =
+    showMarketingMeta &&
+    ((tool.type === "software" && tool.isDownloadPaid && isPositivePrice) ||
+      (tool.type === "online" && isPositivePrice) ||
+      (tool.type === "skill_learning" && isPositivePrice));
+  const commerceLabel = showPrice ? `¥${servicePrice.toFixed(2)}` : t.toolCard.free;
+  const deliveryLabel =
+    tool.type === "software"
+      ? t.toolCard.deliveryDownload
+      : tool.type === "online"
+        ? t.toolCard.deliveryService
+        : t.toolCard.deliveryCourse;
+  const primaryActionLabel = showPrice ? t.toolCard.compareBeforeBuy : t.toolCard.getFreeTool;
+  const visibleMetrics = getVisibleToolMetrics({
+    downloadCount: tool.downloadCount,
+    usageCount: tool.usageCount,
+  });
 
   return (
     <PrefetchLink href={buildCanonicalToolPath(tool, locale)} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
-      <div className="relative aspect-[16/9] overflow-hidden border-b border-white/14 bg-[#202229]">
+      <div className="relative aspect-[16/9] overflow-hidden border-b border-white/14 bg-[#101821]">
         {coverImage ? (
           <Image
             src={coverImage}
@@ -72,9 +91,9 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
             unoptimized
           />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(240,90,53,0.16),transparent_34%),radial-gradient(circle_at_72%_72%,rgba(255,255,255,0.1),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(65,197,219,0.16),transparent_34%),radial-gradient(circle_at_72%_72%,rgba(255,255,255,0.1),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#202229]/90 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#101821]/90 via-transparent to-transparent" />
       </div>
 
       <div className="p-5">
@@ -119,18 +138,37 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
             </div>
           </>
         ) : null}
+        {showMarketingMeta ? (
+          <div className="tool-card-commerce" aria-label={`${t.toolCard.priceLabel}: ${commerceLabel}`}>
+            <div>
+              <span>{t.toolCard.priceLabel}</span>
+              <strong>{commerceLabel}</strong>
+            </div>
+            <div>
+              <span>{t.toolCard.deliveryLabel}</span>
+              <strong>{deliveryLabel}</strong>
+            </div>
+          </div>
+        ) : null}
         <div className="mt-6 flex items-center justify-between gap-4 text-xs text-[var(--marketing-muted)]">
-          <span className="inline-flex items-center gap-3">
-            <span className="inline-flex items-center gap-1">
-              <Download size={14} />
-              {tool.downloadCount}
+          {visibleMetrics.length ? (
+            <span className="inline-flex items-center gap-3">
+              {visibleMetrics.map((metric) => (
+                <span key={metric.type} className="inline-flex items-center gap-1">
+                  {metric.type === "download" ? (
+                    <Download size={14} />
+                  ) : (
+                    <MousePointer2 size={14} />
+                  )}
+                  {metric.count}
+                </span>
+              ))}
             </span>
-            <span className="inline-flex items-center gap-1">
-              <MousePointer2 size={14} />
-              {tool.usageCount}
-            </span>
+          ) : null}
+          <span className="tool-card-primary-action ml-auto">
+            {primaryActionLabel}
+            <ArrowUpRight size={14} aria-hidden="true" />
           </span>
-          <span className="font-semibold text-[var(--marketing-accent)]">{t.toolCard.viewDetails}</span>
         </div>
       </div>
     </PrefetchLink>

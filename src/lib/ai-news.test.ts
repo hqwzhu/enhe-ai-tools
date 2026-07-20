@@ -7,6 +7,7 @@ import {
   parseNewsRelationIds,
   parseNewsSearchParams,
   renderNewsContentBlocks,
+  resolveLocalizedNewsContent,
   resolveAiNewsMetaDescription,
   resolveNewsVideo,
   resolveAiNewsCanonicalSlug,
@@ -251,6 +252,23 @@ describe("AI news helpers", () => {
     ).toBe(false);
   });
 
+  it("uses available English body content even when its layout differs from Chinese", () => {
+    const chineseContent =
+      "## 事实概述\n\n这是一段中文正文。\n\n![中文图](https://images.unsplash.com/photo-cn \"中文说明\")";
+    const englishContent =
+      "## Fact Summary\n\nThis English body explains the same AI news for English readers.\n\n- Track the source facts.\n- Compare practical workflow impact.";
+
+    expect(resolveLocalizedNewsContent(chineseContent, englishContent, "en")).toBe(
+      englishContent,
+    );
+    expect(resolveLocalizedNewsContent(chineseContent, englishContent, "zh")).toBe(
+      chineseContent,
+    );
+    expect(resolveLocalizedNewsContent(chineseContent, "   ", "en")).toBe(
+      chineseContent,
+    );
+  });
+
   it("skips date-only and thin fields when resolving SEO descriptions", () => {
     expect(
       resolveAiNewsMetaDescription(
@@ -274,6 +292,18 @@ describe("AI news helpers", () => {
         "2026年6月18日",
       ),
     ).toBe("");
+  });
+
+  it("extends short but valid AI news descriptions with the fallback context", () => {
+    const description = resolveAiNewsMetaDescription(
+      ["这是一条面向普通用户的AI资讯摘要，说明事件影响和下一步行动。"],
+      "阅读 ENHE AI 对“AI智能体安全边界”的资讯解读，了解发生了什么、为什么重要、对普通AI用户的实际影响、相关工具教程、来源线索、风险边界和下一步落地建议。",
+    );
+
+    expect(description.length).toBeGreaterThanOrEqual(70);
+    expect(description.length).toBeLessThanOrEqual(150);
+    expect(description).toContain("普通用户");
+    expect(description).toContain("ENHE AI");
   });
 
   it("parses relation ids from comma and newline separated fields", () => {

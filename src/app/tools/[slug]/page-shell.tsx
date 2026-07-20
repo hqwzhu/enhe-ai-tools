@@ -7,15 +7,16 @@ import {
   createSoftwareDownloadOrderAction,
 } from "@/app/actions";
 import { FormSubmitButton } from "@/components/form-submit-button";
+import { ProductVideoPlayer } from "@/components/product-video-player";
 import { StructuredData } from "@/components/structured-data";
 import { Badge, ButtonLink, Container, SectionTitle } from "@/components/ui";
 import { ToolCard } from "@/components/tool-card";
 import { ToolRichContent } from "@/components/tool-rich-content";
-import { buildSeoFriendlySlug } from "@/lib/admin-form";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import { normalizeImageSrc } from "@/lib/media";
+import { resolveProductVideos } from "@/lib/product-video";
 import {
   buildCanonicalToolPath,
   getCanonicalToolSlug,
@@ -27,6 +28,7 @@ import {
   buildFaqSchema,
   buildLocalePath,
   buildPageMetadata,
+  buildProductStructuredData,
   buildToolMetaDescription,
   buildToolMetadataTitle,
   buildToolStructuredData,
@@ -40,7 +42,6 @@ import {
   buildLocalizedToolSummary,
   buildLocalizedToolTagItems,
   buildLocalizedToolTutorialItems,
-  isVisibleInEnglishContent,
   resolveLocalizedToolCategoryName,
   resolveLocalizedToolIdentity,
   shouldIndexEnglishToolPage,
@@ -51,8 +52,10 @@ import {
   canOpenProtectedDownloadEntry,
   canShowDownloadLinkArea,
   getDownloadLinkContent,
+  linkifyDownloadLinkContent,
   resolveSoftwareDownloadCtaHref,
 } from "@/lib/tool-download-link";
+import { getVisibleToolMetrics } from "@/lib/tool-metrics";
 
 export const toolDetailPageRevalidate = publicPageCacheSeconds;
 
@@ -171,11 +174,7 @@ export async function ToolDetailPageShell({
   });
   if (!tool || tool.status !== "published") notFound();
 
-  const canonicalSlug = buildSeoFriendlySlug({
-    currentSlug: tool.slug,
-    name: tool.name,
-    englishName: tool.englishName,
-  });
+  const canonicalSlug = getCanonicalToolSlug(tool);
   if (slug !== canonicalSlug || (expectedType && tool.type !== expectedType)) {
     permanentRedirect(buildCanonicalToolPath(tool, forceLocale));
   }
@@ -215,20 +214,9 @@ export async function ToolDetailPageShell({
     toolLocalizationInput,
     forceLocale,
   );
-  const visibleChangelogs =
-    forceLocale === "en"
-      ? tool.changelogs.filter(
-          (item) =>
-            isVisibleInEnglishContent(item.title, 2) ||
-            isVisibleInEnglishContent(item.content, 5),
-        )
-      : tool.changelogs;
-  const visibleComments =
-    forceLocale === "en"
-      ? tool.comments.filter((comment) =>
-          isVisibleInEnglishContent(comment.content, 3),
-        )
-      : tool.comments;
+  const visibleFaqPreview = visibleFaqs.slice(0, 3);
+  const visibleChangelogs = tool.changelogs;
+  const visibleComments = tool.comments;
   const isAccountService = tool.type === "online";
   const isSkillLearning = tool.type === "skill_learning";
   const activePriceSpecs = tool.priceSpecs.filter(
@@ -247,12 +235,40 @@ export async function ToolDetailPageShell({
     tool.tagLinks,
     forceLocale,
   );
-  const servicePrice = getPrimaryToolPrice(
-    activePriceSpecs,
-    tool.downloadPrice,
+  const priceFallback = tool.type === "software" ? tool.downloadPrice : 0;
+  const servicePrice = getPrimaryToolPrice(activePriceSpecs, priceFallback);
+  const visibleToolMetrics = getVisibleToolMetrics({
+    downloadCount: tool.downloadCount,
+    usageCount: tool.usageCount,
+  });
+  const visibleDownloadMetric = visibleToolMetrics.find(
+    (metric) => metric.type === "download",
   );
+  const visibleUsageMetric = visibleToolMetrics.find(
+    (metric) => metric.type === "usage",
+  );
+  const paidSoftware =
+    tool.type === "software" && tool.isDownloadPaid && servicePrice > 0;
   const isPurchasableAccountService = isAccountService && servicePrice > 0;
+  const paidSkillCourse = isSkillLearning && servicePrice > 0;
   const coverImage = normalizeImageSrc(tool.coverImage);
+  const productVideos = resolveProductVideos([
+    {
+      url: tool.videoUrl,
+      title: tool.videoTitle,
+      description: tool.videoDescription,
+    },
+    {
+      url: tool.videoUrl2,
+      title: tool.videoTitle2,
+      description: tool.videoDescription2,
+    },
+    {
+      url: tool.videoUrl3,
+      title: tool.videoTitle3,
+      description: tool.videoDescription3,
+    },
+  ]);
   const hasDownloadPurchase = user
     ? await prisma.toolPurchase
         .findUnique({
@@ -261,23 +277,23 @@ export async function ToolDetailPageShell({
         .then(Boolean)
     : false;
   const shouldShowPurchaseForm =
-    (tool.type === "software" && tool.isDownloadPaid && !hasDownloadPurchase) ||
+    (paidSoftware && !hasDownloadPurchase) ||
     (isPurchasableAccountService && !hasDownloadPurchase) ||
-    (tool.type === "skill_learning" && !hasDownloadPurchase);
+    (paidSkillCourse && !hasDownloadPurchase);
   const downloadLinkContent = getDownloadLinkContent(tool.downloadFile);
   const hasDownloadLink = Boolean(
     tool.downloadFileId && tool.downloadFile && downloadLinkContent,
   );
   const showDownloadLinkArea = canShowDownloadLinkArea({
     hasDownloadLink,
-    isDownloadPaid: tool.isDownloadPaid,
+    isDownloadPaid: paidSoftware,
     hasDownloadPurchase,
   });
   const canOpenDownloadEntry =
     canOpenProtectedDownloadEntry(downloadLinkContent);
   const publicDownloadHref = canOpenPublicDownloadEntry({
     content: downloadLinkContent,
-    isDownloadPaid: tool.isDownloadPaid,
+    isDownloadPaid: paidSoftware,
     hasDownloadPurchase,
   })
     ? downloadLinkContent
@@ -286,7 +302,7 @@ export async function ToolDetailPageShell({
   const softwareDownloadCtaHref = resolveSoftwareDownloadCtaHref({
     hasDownloadLink,
     showDownloadLinkArea,
-    isDownloadPaid: tool.isDownloadPaid,
+    isDownloadPaid: paidSoftware,
     hasDownloadPurchase,
     protectedDownloadHref,
     publicDownloadHref,
@@ -305,6 +321,7 @@ export async function ToolDetailPageShell({
   const tutorialVideos = visibleTutorials.filter(
     (tutorial) => tutorial.videoUrl,
   );
+  const hasTutorialSection = isSkillLearning || visibleTutorials.length > 0;
   const supportEmail = td.supportEmailValue;
   const publicChangelogFallback =
     forceLocale === "en"
@@ -318,11 +335,17 @@ export async function ToolDetailPageShell({
     forceLocale === "en"
       ? "Before using this page, review the suitable scenario, delivery boundary, platform rules, and support contact. ENHE AI will continue adding common questions as the page evolves."
       : "使用前请先确认适用场景、交付边界、平台规则和支持方式；页面会随产品与课程内容持续补充常见问题。";
+  const freeDownloadButtonLabel =
+    forceLocale === "en" ? "Free download" : "免费下载";
+  const priceSpecHelpId = "tool-purchase-price-spec-help";
+  const paymentMethodLabelId = "tool-purchase-payment-method-label";
+  const paymentMethodHelpId = "tool-purchase-payment-method-help";
+  const commentHelpId = "tool-comment-help";
   const purchaseButtonLabel = isAccountService ? td.buyService : isSkillLearning
-    ? forceLocale === "en"
-      ? "Purchase now"
-      : "鐐瑰嚮璐拱"
-    : td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2));
+    ? td.buyCourse.replace("{price}", Number(servicePrice).toFixed(2))
+    : servicePrice > 0
+      ? td.buyDownload.replace("{price}", Number(servicePrice).toFixed(2))
+      : freeDownloadButtonLabel;
   const introTitle = isAccountService ? td.serviceIntroTitle : td.introTitle;
   const productImagesIntro = isAccountService
     ? td.serviceProductImagesIntro
@@ -360,7 +383,7 @@ export async function ToolDetailPageShell({
   });
   const aggregateRating = null;
   const schemaContent = {
-    faq: visibleFaqs.map((item) => ({
+    faq: visibleFaqPreview.map((item) => ({
       question: item.question,
       answer: item.answer,
     })),
@@ -398,7 +421,37 @@ export async function ToolDetailPageShell({
     })),
     aggregateRating: schemaContent.aggregateRating,
   });
+  const productStructuredData =
+    tool.type === "software"
+      ? buildProductStructuredData({
+          name: localizedTool.primaryName,
+          description: localizedSummary,
+          url: buildCanonicalToolPath(tool, forceLocale),
+          image: coverImage,
+          brand: t.brand,
+          category: localizedCategoryName,
+          price: servicePrice > 0 ? servicePrice : null,
+          priceSpecs: localizedPriceSpecs.map((spec) => ({
+            name: spec.localizedName,
+            price: Number(spec.price),
+          })),
+        })
+      : null;
   // Service schemas can emit hasOfferCatalog, and course schemas can emit CourseInstance when the tool data supports them.
+  const detailNavItems = [
+    { href: "#tool-purchase", label: purchaseButtonLabel },
+    { href: "#tool-intro", label: introTitle },
+    ...(hasTutorialSection
+      ? [
+          {
+            href: "#tool-tutorials",
+            label: isSkillLearning ? td.courseContentTitle : td.tutorialsTitle,
+          },
+        ]
+      : []),
+    { href: "#tool-faq", label: td.faqTitle },
+    { href: "#tool-related", label: td.relatedTitle },
+  ];
 
   return (
     <Container className="py-14">
@@ -406,6 +459,7 @@ export async function ToolDetailPageShell({
         data={[
           breadcrumbSchema,
           toolStructuredData,
+          ...(productStructuredData ? [productStructuredData] : []),
           ...(faqSchema ? [faqSchema] : []),
         ]}
       />
@@ -424,7 +478,7 @@ export async function ToolDetailPageShell({
                     unoptimized
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(240,90,53,0.2),transparent_32%),radial-gradient(circle_at_72%_70%,rgba(255,184,107,0.16),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(65,197,219,0.2),transparent_32%),radial-gradient(circle_at_72%_70%,rgba(255,184,107,0.16),transparent_36%),repeating-linear-gradient(135deg,rgba(238,246,255,0.08)_0_2px,transparent_2px_18px),linear-gradient(135deg,rgba(255,255,255,0.08),transparent)]" />
                 )}
               </div>
             </div>
@@ -442,17 +496,17 @@ export async function ToolDetailPageShell({
                   </Badge>
                   <Badge
                     className={
-                      (isSkillLearning && !hasDownloadPurchase) ||
+                      paidSkillCourse ||
                       (tool.type === "software" && tool.isDownloadPaid) ||
                       (isAccountService && servicePrice > 0)
                         ? "text-[#FFB86B]"
                         : "text-[#5EF1C7]"
                     }
                   >
-                    {isSkillLearning
+                    {paidSkillCourse
                       ? forceLocale === "en"
                         ? "Paid course"
-                        : "收费服务"
+                        : "付费课程"
                       : tool.type === "software" && tool.isDownloadPaid
                         ? forceLocale === "en"
                           ? "Paid software"
@@ -503,10 +557,12 @@ export async function ToolDetailPageShell({
                         label={td.serviceType}
                         value={localizedCategoryName ?? td.uncategorized}
                       />
-                      <Info
-                        label={td.usageCount}
-                        value={String(tool.usageCount)}
-                      />
+                      {visibleUsageMetric ? (
+                        <Info
+                          label={td.usageCount}
+                          value={String(visibleUsageMetric.count)}
+                        />
+                      ) : null}
                       <Info label={td.supportEmail} value={supportEmail} />
                     </>
                   ) : (
@@ -519,14 +575,18 @@ export async function ToolDetailPageShell({
                         label={td.systemRequirement}
                         value={tool.systemRequirement ?? td.browser}
                       />
-                      <Info
-                        label={td.downloadCount}
-                        value={String(tool.downloadCount)}
-                      />
-                      <Info
-                        label={td.usageCount}
-                        value={String(tool.usageCount)}
-                      />
+                      {visibleDownloadMetric ? (
+                        <Info
+                          label={td.downloadCount}
+                          value={String(visibleDownloadMetric.count)}
+                        />
+                      ) : null}
+                      {visibleUsageMetric ? (
+                        <Info
+                          label={td.usageCount}
+                          value={String(visibleUsageMetric.count)}
+                        />
+                      ) : null}
                     </>
                   )}
                 </div>
@@ -553,7 +613,10 @@ export async function ToolDetailPageShell({
                   </div>
                 ) : null}
 
-                <div className="mt-7 flex flex-wrap gap-3">
+                <div
+                  id="tool-purchase"
+                  className="tool-detail-purchase-panel scroll-mt-24 mt-7 flex flex-wrap gap-3"
+                >
                   {shouldShowPurchaseForm ? (
                     <form
                       id={
@@ -566,62 +629,107 @@ export async function ToolDetailPageShell({
                     >
                       <input type="hidden" name="toolId" value={tool.id} />
                       {localizedPriceSpecs.length ? (
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {localizedPriceSpecs.map((spec, index) => (
-                            <label
-                              key={spec.id}
-                              className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12"
-                            >
-                              <span>
-                                <span className="block font-semibold text-[#F6FAFF]">
-                                  {spec.localizedName}
-                                </span>
-                                <span className="mt-1 block text-[#FFB86B]">
-                                  ¥{Number(spec.price).toFixed(2)}
-                                </span>
-                              </span>
-                              <input
-                                name="priceSpecId"
-                                type="radio"
-                                value={spec.id}
-                                defaultChecked={index === 0}
-                              />
-                            </label>
-                          ))}
-                        </div>
-                      ) : null}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <select
-                          name="paymentMethod"
-                          defaultValue="wechat"
-                          className="rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]"
+                        <fieldset
+                          aria-describedby={priceSpecHelpId}
+                          className="grid gap-3"
                         >
-                          <option value="alipay">{td.alipay}</option>
-                          <option value="wechat">{td.wechat}</option>
-                        </select>
+                          <legend className="text-sm font-semibold text-[#F6FAFF]">
+                            {forceLocale === "en" ? "Choose an offer" : "选择购买方案"}
+                          </legend>
+                          <p
+                            id={priceSpecHelpId}
+                            className="text-xs leading-5 text-[#8F9DB2]"
+                          >
+                            {forceLocale === "en"
+                              ? "Select one offer before generating the payment QR code. The selected offer controls the order amount."
+                              : "生成支付二维码前请选择一个方案，订单金额以所选方案为准。"}
+                          </p>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {localizedPriceSpecs.map((spec, index) => (
+                              <label
+                                key={spec.id}
+                                className="tool-price-option group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--marketing-accent)] has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12"
+                              >
+                                <span>
+                                  <span className="block font-semibold text-[#F6FAFF]">
+                                    {spec.localizedName}
+                                  </span>
+                                  <span className="mt-1 block text-[#FFB86B]">
+                                    ¥{Number(spec.price).toFixed(2)}
+                                  </span>
+                                </span>
+                                <input
+                                  name="priceSpecId"
+                                  type="radio"
+                                  value={spec.id}
+                                  defaultChecked={index === 0}
+                                  required={index === 0}
+                                  aria-describedby={priceSpecHelpId}
+                                  aria-label={`${spec.localizedName} ¥${Number(spec.price).toFixed(2)}`}
+                                  title={
+                                    forceLocale === "en"
+                                      ? "Choose this purchase offer"
+                                      : "选择此购买方案"
+                                  }
+                                  className="tool-price-radio"
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
+                      ) : null}
+                      <div className="tool-detail-payment-method-grid grid gap-3">
+                        <div className="max-w-[560px]">
+                          <label
+                            id={paymentMethodLabelId}
+                            htmlFor="tool-purchase-payment-method"
+                            className="block text-sm font-semibold text-[#F6FAFF]"
+                          >
+                            {forceLocale === "en" ? "Payment method" : "支付方式"}
+                          </label>
+                          <select
+                            id="tool-purchase-payment-method"
+                            name="paymentMethod"
+                            defaultValue="wechat"
+                            required
+                            aria-labelledby={paymentMethodLabelId}
+                            aria-describedby={paymentMethodHelpId}
+                            title={
+                              forceLocale === "en"
+                                ? "Choose a payment method"
+                                : "请选择支付方式"
+                            }
+                            className="mt-2 w-full rounded-full border border-white/12 bg-[#07101E] px-4 py-3 text-sm text-[#F6FAFF]"
+                          >
+                            <option value="alipay">{td.alipay}</option>
+                            <option value="wechat">{td.wechat}</option>
+                          </select>
+                          <p
+                            id={paymentMethodHelpId}
+                            className="tool-detail-payment-help mt-2 text-xs leading-5 text-[#8F9DB2]"
+                          >
+                            {forceLocale === "en"
+                              ? "Choose the method you will use on the payment page."
+                              : "请选择后续付款页面实际使用的支付方式。"}
+                          </p>
+                        </div>
                         <FormSubmitButton
+                          className="w-full sm:w-auto sm:justify-self-start"
                           pendingLabel={
                             forceLocale === "en"
                               ? "Generating payment QR..."
                               : "生成支付二维码中..."
                           }
                         >
-                          {isAccountService
-                            ? td.buyService
-                            : isSkillLearning
-                              ? forceLocale === "en"
-                                ? "Purchase now"
-                                : "点击购买"
-                              : td.buyDownload.replace(
-                                  "{price}",
-                                  Number(servicePrice).toFixed(2),
-                                )}
+                          {purchaseButtonLabel}
                         </FormSubmitButton>
                       </div>
                     </form>
                   ) : tool.type === "software" ? (
                     <ButtonLink href={softwareDownloadCtaHref}>
-                      {td.downloadSoftware}
+                      {paidSoftware && hasDownloadPurchase
+                        ? td.downloadSoftware
+                        : freeDownloadButtonLabel}
                     </ButtonLink>
                   ) : (
                     <ButtonLink
@@ -704,6 +812,14 @@ export async function ToolDetailPageShell({
           </div>
         </section>
 
+        <nav className="tool-detail-mobile-toc" aria-label="Product detail sections">
+          {detailNavItems.map((item) => (
+            <Link key={item.href} href={item.href}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
         <div className="mt-10 space-y-10">
           <section
             id="tool-intro"
@@ -720,7 +836,7 @@ export async function ToolDetailPageShell({
                         href={tutorial.videoUrl ?? "#"}
                         target="_blank"
                         rel="nofollow noopener noreferrer"
-                        className="block break-all text-sm leading-6 text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                        className="tool-detail-touch-link break-all text-sm leading-6 text-[var(--marketing-accent)] hover:text-[#8feaff]"
                       >
                         {tutorial.title}
                       </a>
@@ -759,7 +875,7 @@ export async function ToolDetailPageShell({
                 </p>
                 <Link
                   href="#tool-changelog"
-                  className="mt-2 inline-flex text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                  className="tool-detail-touch-link mt-2 text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#8feaff]"
                 >
                   {td.changelogTitle}
                 </Link>
@@ -767,7 +883,7 @@ export async function ToolDetailPageShell({
               <TrustItem label={td.supportEmail}>
                 <a
                   href={`mailto:${supportEmail}`}
-                  className="break-all text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#ffb09b]"
+                  className="tool-detail-touch-link break-all text-sm font-semibold text-[var(--marketing-accent)] hover:text-[#8feaff]"
                 >
                   {supportEmail}
                 </a>
@@ -776,7 +892,7 @@ export async function ToolDetailPageShell({
                     "/legal/membership-refund",
                     forceLocale,
                   )}
-                  className="mt-2 block text-sm leading-6 text-[#FFB86B] hover:text-[#FFD29B]"
+                  className="tool-detail-touch-link mt-2 text-sm leading-6 text-[#FFB86B] hover:text-[#FFD29B]"
                 >
                   {td.refundRulesIntro}
                 </Link>
@@ -784,9 +900,46 @@ export async function ToolDetailPageShell({
             </div>
           </section>
 
-          <section className="glass rounded-2xl p-7">
-            <SectionTitle title={introTitle} intro={productImagesIntro} />
-            <div className="mt-6 space-y-7">
+          <details
+            className="tool-detail-mobile-disclosure glass rounded-2xl p-7"
+            open
+          >
+            <summary className="tool-detail-disclosure-summary">
+              {introTitle}
+            </summary>
+            <div className="tool-detail-disclosure-body">
+              <SectionTitle title={introTitle} intro={productImagesIntro} />
+              <div className="mt-6 space-y-7">
+              {productVideos.map((video) => (
+                <div key={video.src} className="tool-detail-product-video overflow-hidden rounded-2xl border border-white/10 bg-[#07101E]">
+                  <ProductVideoPlayer
+                    src={video.src}
+                    title={video.title || `${localizedTool.primaryName} ${td.demoVideo}`}
+                    fallbackText={
+                      forceLocale === "en"
+                        ? "Your browser does not support embedded video playback."
+                        : "您的浏览器不支持内嵌视频播放。"
+                    }
+                    playLabel={forceLocale === "en" ? "Play product video" : "播放产品视频"}
+                    poster={coverImage}
+                    deferUntilClicked
+                  />
+                  {video.title || video.description ? (
+                    <div className="border-t border-white/10 bg-white/6 p-5">
+                      {video.title ? (
+                        <h2 className="text-lg font-semibold text-[#F6FAFF]">
+                          {video.title}
+                        </h2>
+                      ) : null}
+                      {video.description ? (
+                        <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#8F9DB2]">
+                          {video.description}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
               {tool.screenshots.length ? (
                 <div className="tool-detail-product-gallery grid gap-5">
                   {tool.screenshots.map((screenshot, index) => {
@@ -818,17 +971,27 @@ export async function ToolDetailPageShell({
               <div className="tool-detail-copy-card rounded-2xl border border-white/10 bg-white/8 p-5">
                 <ToolRichContent content={localizedLongContent} />
               </div>
+              </div>
             </div>
-          </section>
+          </details>
 
-          <section className="glass rounded-2xl p-7">
-            <SectionTitle
-              title={
-                isSkillLearning ? td.courseContentTitle : td.tutorialsTitle
-              }
-              intro={td.tutorialsIntro}
-            />
-            {isSkillLearning && !hasDownloadPurchase ? (
+          {hasTutorialSection ? (
+          <details
+            id="tool-tutorials"
+            className="tool-detail-mobile-disclosure glass scroll-mt-24 rounded-2xl p-7"
+            open
+          >
+            <summary className="tool-detail-disclosure-summary">
+              {isSkillLearning ? td.courseContentTitle : td.tutorialsTitle}
+            </summary>
+            <div className="tool-detail-disclosure-body">
+              <SectionTitle
+                title={
+                  isSkillLearning ? td.courseContentTitle : td.tutorialsTitle
+                }
+                intro={td.tutorialsIntro}
+              />
+              {paidSkillCourse && !hasDownloadPurchase ? (
               <div className="rounded-2xl border border-[#FFB86B]/25 bg-[#FFB86B]/8 p-6 text-center">
                 <p className="text-sm font-semibold text-[#FFB86B]">
                   {forceLocale === "en"
@@ -879,14 +1042,19 @@ export async function ToolDetailPageShell({
                   </div>
                 ))}
               </div>
-            )}
-          </section>
+              )}
+            </div>
+          </details>
+          ) : null}
 
-          <section className="glass rounded-2xl p-7">
+          <section
+            id="tool-faq"
+            className="tool-detail-faq-card glass scroll-mt-24 rounded-2xl p-7"
+          >
             <SectionTitle title={td.faqTitle} />
             <div className="mt-5 grid gap-3">
-              {visibleFaqs.length ? (
-                visibleFaqs.map((faq) => (
+              {visibleFaqPreview.length ? (
+                visibleFaqPreview.map((faq) => (
                   <details
                     key={faq.id}
                     className="rounded-2xl border border-white/10 bg-white/8 p-5"
@@ -913,12 +1081,35 @@ export async function ToolDetailPageShell({
               <form action={createCommentAction} className="mb-6">
                 <input type="hidden" name="toolId" value={tool.id} />
                 <input type="hidden" name="slug" value={tool.slug} />
+                <label
+                  htmlFor="tool-comment-content"
+                  className="mb-2 block text-sm font-semibold text-[#F6FAFF]"
+                >
+                  {forceLocale === "en" ? "Comment" : "评论内容"}
+                </label>
                 <textarea
+                  id="tool-comment-content"
                   name="content"
                   required
+                  minLength={2}
+                  maxLength={1000}
+                  aria-describedby={commentHelpId}
+                  title={
+                    forceLocale === "en"
+                      ? "Enter 2 to 1000 characters before submitting."
+                      : "请输入 2 到 1000 个字符后提交。"
+                  }
                   className="min-h-28 w-full rounded-xl border border-white/12 bg-white/8 p-4 outline-none"
                   placeholder={td.commentPlaceholder}
                 />
+                <p
+                  id={commentHelpId}
+                  className="mt-2 text-xs leading-5 text-[#8F9DB2]"
+                >
+                  {forceLocale === "en"
+                    ? "Required. Use 2 to 1000 characters. Reviews appear after moderation."
+                    : "必填，2 到 1000 个字符。评论通过审核后展示。"}
+                </p>
                 <FormSubmitButton
                   className="mt-3 text-base"
                   pendingLabel={
@@ -963,9 +1154,7 @@ export async function ToolDetailPageShell({
                   <p className="text-sm text-[#8F9DB2]">
                     {td.protectedDownloadLink}
                   </p>
-                  <p className="mt-2 whitespace-pre-wrap break-words text-base font-semibold leading-7 text-[#F6FAFF]">
-                    {downloadLinkContent}
-                  </p>
+                  <LinkedDownloadLinkContent content={downloadLinkContent} />
                   <p className="mt-2 text-sm text-[#8F9DB2]">
                     {tool.downloadFile?.fileName ?? td.noDownloadFileName}
                   </p>
@@ -982,14 +1171,22 @@ export async function ToolDetailPageShell({
           ) : null}
         </div>
 
-        <section className="mt-12">
-          <SectionTitle title={td.relatedTitle} />
-          <div className="grid gap-5 md:grid-cols-3">
-            {related.map((item) => (
-              <ToolCard key={item.id} tool={item} locale={forceLocale} />
-            ))}
+        <details
+          id="tool-related"
+          className="tool-detail-mobile-disclosure mt-12 scroll-mt-24"
+        >
+          <summary className="tool-detail-disclosure-summary">
+            {td.relatedTitle}
+          </summary>
+          <div className="tool-detail-disclosure-body">
+            <SectionTitle title={td.relatedTitle} />
+            <div className="grid gap-5 md:grid-cols-3">
+              {related.map((item) => (
+                <ToolCard key={item.id} tool={item} locale={forceLocale} />
+              ))}
+            </div>
           </div>
-        </section>
+        </details>
       </main>
     </Container>
   );
@@ -1016,5 +1213,29 @@ function TrustItem({
       <p className="text-sm font-semibold text-[#F6FAFF]">{label}</p>
       <div className="mt-3">{children}</div>
     </div>
+  );
+}
+
+function LinkedDownloadLinkContent({ content }: { content: string }) {
+  const segments = linkifyDownloadLinkContent(content);
+
+  return (
+    <p className="mt-2 whitespace-pre-wrap break-words text-base font-semibold leading-7 text-[#F6FAFF]">
+      {segments.map((segment, index) =>
+        segment.type === "link" ? (
+          <a
+            key={`${segment.href}-${index}`}
+            href={segment.href}
+            target="_blank"
+            rel="nofollow noopener noreferrer"
+            className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(65,197,219,0.5)] underline-offset-4 transition hover:text-[#8feaff]"
+          >
+            {segment.text}
+          </a>
+        ) : (
+          <span key={`${segment.text}-${index}`}>{segment.text}</span>
+        ),
+      )}
+    </p>
   );
 }

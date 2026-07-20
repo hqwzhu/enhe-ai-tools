@@ -3,8 +3,12 @@ set -eu
 
 cd /app
 
-echo "[enhe-ai-tools] running database migrations..."
-npx prisma migrate deploy
+if [ "${RUN_PRISMA_MIGRATE:-0}" = "1" ]; then
+  echo "[enhe-ai-tools] Prisma migrate deploy explicitly enabled by RUN_PRISMA_MIGRATE=1."
+  npx prisma migrate deploy
+else
+  echo "[enhe-ai-tools] Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1."
+fi
 
 echo "[enhe-ai-tools] ensuring super admin account..."
 node prisma/ensure-super-admin.js

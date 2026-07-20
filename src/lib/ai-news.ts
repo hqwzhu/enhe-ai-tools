@@ -372,6 +372,17 @@ export function isEnglishNewsArticleIndexable(article: {
   );
 }
 
+export function resolveLocalizedNewsContent(
+  sourceContent: string,
+  localizedContent: string | null | undefined,
+  locale: "zh" | "en",
+) {
+  if (locale !== "en") return sourceContent;
+
+  const normalizedLocalizedContent = localizedContent?.trim();
+  return normalizedLocalizedContent || sourceContent;
+}
+
 function looksLikeDateOnlyDescription(value: string) {
   const text = value.trim();
   return (
@@ -387,7 +398,17 @@ function looksLikeGenericAiNewsDescription(value: string) {
     text ===
       "live in symbiosis with ai, awaken in this era, and define the future through creation." ||
     text.includes("live in symbiosis with ai, awaken in this era") ||
-    text.includes("define the future through creation")
+    text.includes("define the future through creation") ||
+    text.includes("enhe ai helps users apply ai to real tasks") ||
+    text.includes("work faster, create content, organize material")
+  );
+}
+
+function isValidAiNewsMetaDescription(value: string, minLength: number) {
+  return (
+    value.length >= minLength &&
+    !looksLikeDateOnlyDescription(value) &&
+    !looksLikeGenericAiNewsDescription(value)
   );
 }
 
@@ -410,21 +431,28 @@ export function resolveAiNewsMetaDescription(
 ) {
   const validCandidate = candidates
     .map((candidate) => normalizeAiNewsMetaCandidate(candidate))
-    .find(
-      (candidate) =>
-        candidate.length >= minLength &&
-        !looksLikeDateOnlyDescription(candidate) &&
-        !looksLikeGenericAiNewsDescription(candidate),
-    );
+    .find((candidate) => isValidAiNewsMetaDescription(candidate, minLength));
   const normalizedFallback = normalizeAiNewsMetaCandidate(fallback);
+  const validFallback = isValidAiNewsMetaDescription(normalizedFallback, minLength)
+    ? normalizedFallback
+    : "";
 
-  return (
-    validCandidate ||
-    (looksLikeDateOnlyDescription(normalizedFallback) ||
-    looksLikeGenericAiNewsDescription(normalizedFallback)
-      ? ""
-      : normalizedFallback)
-  );
+  if (!validCandidate) return validFallback;
+
+  const targetLength = /[\u4e00-\u9fff]/.test(validCandidate) ? 70 : 110;
+  if (validCandidate.length >= targetLength || validFallback.length < targetLength) {
+    return validCandidate;
+  }
+
+  if (validFallback.includes(validCandidate)) {
+    return truncateAiNewsMetaDescription(validFallback, 150);
+  }
+
+  if (validCandidate.includes(validFallback)) {
+    return validCandidate;
+  }
+
+  return truncateAiNewsMetaDescription(`${validCandidate} ${validFallback}`, 150);
 }
 
 export function buildAiNewsDescriptionFallback({
@@ -443,11 +471,23 @@ export function buildAiNewsDescriptionFallback({
     const topic = normalizedCategory
       ? `${normalizedCategory} topic`
       : "AI trend";
-    return `Read ENHE AI's analysis of ${normalizedTitle || topic}, including the key facts, practical impact, related tools, tutorials, and next steps for AI workflows.`;
+    return truncateAiNewsMetaDescription(
+      `Read ENHE AI's analysis of ${normalizedTitle || topic}, including the key facts, practical impact, related tools, tutorials, and next steps for AI workflows.`,
+      150,
+    );
   }
 
   const topic = normalizedCategory ? `“${normalizedCategory}”方向` : "AI趋势";
-  return `阅读 ENHE AI 对${normalizedTitle ? `“${normalizedTitle}”` : topic}的资讯解读，了解核心信息、实际影响、相关工具、教程和下一步落地建议。`;
+  return truncateAiNewsMetaDescription(
+    `阅读 ENHE AI 对${normalizedTitle ? `“${normalizedTitle}”` : topic}的资讯解读，了解发生了什么、为什么重要、对普通AI用户的实际影响、相关工具教程、来源线索、风险边界和下一步落地建议。`,
+    150,
+  );
+}
+
+function truncateAiNewsMetaDescription(value: string, maxLength: number) {
+  const normalized = normalizeAiNewsMetaCandidate(value);
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
 }
 
 export function buildAiNewsSerpTitle({

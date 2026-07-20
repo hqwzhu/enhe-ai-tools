@@ -9,21 +9,32 @@ import {
   type LicenseGeneratorActionState
 } from "@/lib/license-generator-action-state";
 
+type LicenseProduct = "faceswap" | "lumi-os";
+type LicenseType = "single" | "unlimited";
+
 export type LicenseGeneratorLabels = {
+  product: string;
+  faceswapProduct: string;
+  lumiProduct: string;
   type: string;
   single: string;
   unlimited: string;
   machineId: string;
+  licenseId: string;
   note: string;
   adminKey: string;
   adminKeyHint: string;
   serverMachineId: string;
+  expiresAt: string;
+  expiresAtHint: string;
   generate: string;
   copy: string;
   output: string;
   outputPlaceholder: string;
   success: string;
   desktopHint: string;
+  lumiDesktopHint: string;
+  lumiPrivateKeyHint: string;
   issuedAt: string;
   noCodeToCopy: string;
 };
@@ -38,9 +49,15 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
     generateLicenseCodeAdminAction,
     initialLicenseGeneratorState
   );
-  const [licenseType, setLicenseType] = useState<"single" | "unlimited">("single");
+  const [licenseProduct, setLicenseProduct] = useState<LicenseProduct>("faceswap");
+  const [licenseType, setLicenseType] = useState<LicenseType>("single");
   const [machineId, setMachineId] = useState(serverMachineId);
   const [copyMessage, setCopyMessage] = useState("");
+  const isLumiOs = licenseProduct === "lumi-os";
+  const isMachineIdDisabled = !isLumiOs && licenseType === "unlimited";
+  const issuedAt = state.payload?.issuedAt ?? state.payload?.issued_at;
+  const machineCode = state.payload?.machineCode ?? state.payload?.machine_id;
+  const payloadProductLabel = state.payload?.product === "lumi-os" ? labels.lumiProduct : labels.faceswapProduct;
 
   const statusClass = useMemo(() => {
     if (!state.message) return "";
@@ -48,6 +65,16 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
       ? "border-[#5EF1C7]/30 bg-[#5EF1C7]/10 text-[#5EF1C7]"
       : "border-red-400/30 bg-red-400/10 text-red-100";
   }, [state.message, state.ok]);
+
+  function updateProduct(value: LicenseProduct) {
+    setLicenseProduct(value);
+    if (value === "lumi-os") {
+      setLicenseType("single");
+      if (machineId === serverMachineId) {
+        setMachineId("");
+      }
+    }
+  }
 
   async function copyCode() {
     if (!state.code) {
@@ -64,17 +91,34 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
         {state.message ? <p className={`rounded-xl border px-4 py-3 text-sm ${statusClass}`}>{state.message}</p> : null}
 
         <label>
-          <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.type}</span>
+          <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.product}</span>
           <select
-            name="licenseType"
-            value={licenseType}
-            onChange={(event) => setLicenseType(event.target.value as "single" | "unlimited")}
+            name="licenseProduct"
+            value={licenseProduct}
+            onChange={(event) => updateProduct(event.target.value as LicenseProduct)}
             className={selectClass}
           >
-            <option value="single">{labels.single}</option>
-            <option value="unlimited">{labels.unlimited}</option>
+            <option value="faceswap">{labels.faceswapProduct}</option>
+            <option value="lumi-os">{labels.lumiProduct}</option>
           </select>
         </label>
+
+        {isLumiOs ? (
+          <input type="hidden" name="licenseType" value="single" />
+        ) : (
+          <label>
+            <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.type}</span>
+            <select
+              name="licenseType"
+              value={licenseType}
+              onChange={(event) => setLicenseType(event.target.value as LicenseType)}
+              className={selectClass}
+            >
+              <option value="single">{labels.single}</option>
+              <option value="unlimited">{labels.unlimited}</option>
+            </select>
+          </label>
+        )}
 
         <label>
           <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.machineId}</span>
@@ -83,37 +127,58 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
               name="machineId"
               value={machineId}
               onChange={(event) => setMachineId(event.target.value)}
-              disabled={licenseType === "unlimited"}
+              disabled={isMachineIdDisabled}
+              placeholder={isLumiOs ? "LUMI-WIN-ABCDE12345" : undefined}
               className={inputClass}
             />
-            <button
-              type="button"
-              onClick={() => setMachineId(serverMachineId)}
-              className="rounded-full border border-[rgba(210,230,255,0.16)] px-4 py-3 text-sm font-semibold text-[#F6FAFF] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
-            >
-              {labels.serverMachineId}
-            </button>
+            {!isLumiOs ? (
+              <button
+                type="button"
+                onClick={() => setMachineId(serverMachineId)}
+                className="rounded-full border border-[rgba(210,230,255,0.16)] px-4 py-3 text-sm font-semibold text-[#F6FAFF] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+              >
+                {labels.serverMachineId}
+              </button>
+            ) : null}
           </div>
         </label>
+
+        {isLumiOs ? (
+          <>
+            <label>
+              <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.licenseId}</span>
+              <input name="licenseId" className={inputClass} placeholder="LIC-20260624-001" />
+            </label>
+
+            <label>
+              <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.expiresAt}</span>
+              <input name="expiresAt" type="date" className={inputClass} />
+              <span className="mt-2 block text-xs text-[#8F9DB2]">{labels.expiresAtHint}</span>
+            </label>
+          </>
+        ) : null}
 
         <label>
           <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.note}</span>
           <input name="note" className={inputClass} placeholder="Customer / order / usage note" />
         </label>
 
-        <label>
-          <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.adminKey}</span>
-          <PasswordInput name="adminKey" className={inputClass} />
-          <span className="mt-2 block text-xs text-[#8F9DB2]">{labels.adminKeyHint}</span>
-        </label>
+        {!isLumiOs && licenseType === "unlimited" ? (
+          <label>
+            <span className="mb-2 block text-sm text-[#F6FAFF]">{labels.adminKey}</span>
+            <PasswordInput name="adminKey" className={inputClass} />
+            <span className="mt-2 block text-xs text-[#8F9DB2]">{labels.adminKeyHint}</span>
+          </label>
+        ) : null}
 
-        <p className="rounded-xl border border-[rgba(210,230,255,0.12)] bg-[rgba(238,246,255,0.05)] px-4 py-3 text-xs leading-6 text-[#8F9DB2]">
-          {labels.desktopHint}
+        <p className="text-xs leading-6 text-[#8F9DB2]">
+          {isLumiOs ? labels.lumiDesktopHint : labels.desktopHint}
         </p>
+        {isLumiOs ? <p className="text-xs leading-6 text-[#8F9DB2]">{labels.lumiPrivateKeyHint}</p> : null}
 
         <button
           disabled={pending}
-          className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:shadow-[0_0_26px_rgba(240,90,53,0.22)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:shadow-[0_0_26px_rgba(65,197,219,0.22)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "..." : labels.generate}
         </button>
@@ -123,7 +188,7 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-[#F6FAFF]">{labels.output}</h2>
-            {state.payload?.issued_at ? <p className="mt-1 text-xs text-[#8F9DB2]">{labels.issuedAt}: {state.payload.issued_at}</p> : null}
+            {issuedAt ? <p className="mt-1 text-xs text-[#8F9DB2]">{labels.issuedAt}: {issuedAt}</p> : null}
           </div>
           <button
             type="button"
@@ -143,8 +208,13 @@ export function LicenseGeneratorPanel({ labels, serverMachineId }: LicenseGenera
 
         {state.payload ? (
           <div className="grid gap-3 rounded-2xl border border-[rgba(210,230,255,0.12)] bg-[rgba(238,246,255,0.04)] p-4 text-sm text-[#8F9DB2] md:grid-cols-2">
+            <span>{labels.product}: <strong className="text-[#F6FAFF]">{payloadProductLabel}</strong></span>
             <span>{labels.type}: <strong className="text-[#F6FAFF]">{state.payload.license_type}</strong></span>
-            <span>{labels.machineId}: <strong className="text-[#F6FAFF]">{state.payload.machine_id ?? "-"}</strong></span>
+            <span>{labels.machineId}: <strong className="text-[#F6FAFF]">{machineCode ?? "-"}</strong></span>
+            <span>{labels.licenseId}: <strong className="text-[#F6FAFF]">{state.payload.licenseId ?? "-"}</strong></span>
+            {state.payload.expiresAt ? (
+              <span>{labels.expiresAt}: <strong className="text-[#F6FAFF]">{state.payload.expiresAt}</strong></span>
+            ) : null}
             <span className="md:col-span-2">{labels.note}: <strong className="text-[#F6FAFF]">{state.payload.note || "-"}</strong></span>
           </div>
         ) : null}

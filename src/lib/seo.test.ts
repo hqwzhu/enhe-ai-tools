@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildHomeMetaDescription,
   buildHomeMetadataTitle,
+  buildListingMetadataTitle,
+  buildListingMetaDescription,
   buildMetaDescription,
   buildMetadataTitle,
   buildPageMetadata,
+  buildTopicMetaDescription,
   buildToolMetaDescription,
   buildToolMetadataTitle
 } from "@/lib/seo";
@@ -32,6 +36,40 @@ describe("seo helpers", () => {
     expect(buildMetadataTitle({ pageTitle: "ENHE AI", brand: "Symbiosis ENHE AI" })).toBe("Symbiosis ENHE AI");
     expect(buildMetadataTitle({ pageTitle: "AI Software Apps", brand: "ENHE AI" })).toBe("AI Software Apps | ENHE AI");
     expect(buildMetadataTitle({ pageTitle: "AI Software Apps | ENHE AI", brand: "ENHE AI" })).toBe("AI Software Apps | ENHE AI");
+  });
+
+  it("builds useful listing metadata titles instead of short category labels", () => {
+    const kinds = [
+      "software",
+      "account-services",
+      "skill-learning",
+      "pricing",
+      "tutorials",
+      "ai-news",
+    ] as const;
+
+    for (const kind of kinds) {
+      const zhTitle = buildListingMetadataTitle(kind, "zh", "ENHE AI");
+      const enTitle = buildListingMetadataTitle(kind, "en", "ENHE AI");
+
+      expect(zhTitle.length).toBeGreaterThanOrEqual(24);
+      expect(zhTitle.length).toBeLessThanOrEqual(68);
+      expect(zhTitle).toContain("ENHE AI");
+      expect(enTitle.length).toBeGreaterThanOrEqual(38);
+      expect(enTitle.length).toBeLessThanOrEqual(68);
+      expect(enTitle).toContain("ENHE AI");
+    }
+
+    expect(buildListingMetadataTitle("pricing", "en", "ENHE AI")).toContain("Pricing");
+    expect(buildListingMetadataTitle("tutorials", "en", "ENHE AI")).toContain("Tutorials");
+    expect(buildListingMetadataTitle("software", "zh", "ENHE AI")).toContain("最热门AI工具");
+    expect(buildListingMetadataTitle("account-services", "zh", "ENHE AI")).toContain("AI账号服务");
+    expect(buildListingMetadataTitle("account-services", "en", "ENHE AI")).toContain("AI Account Service");
+    expect(buildListingMetadataTitle("skill-learning", "zh", "ENHE AI")).toContain("AI教程与实战指南");
+    expect(buildListingMetadataTitle("skill-learning", "en", "ENHE AI")).toContain("Practical AI Tutorials");
+    expect(buildListingMetaDescription("software", "zh")).toContain("最热门AI工具");
+    expect(buildListingMetaDescription("account-services", "zh")).toContain("账号使用支持");
+    expect(buildListingMetaDescription("account-services", "en")).toContain("AI account service guidance");
   });
 
   it("builds locale-aware tool titles without duplicate names", () => {
@@ -100,7 +138,137 @@ describe("seo helpers", () => {
   });
 
   it("builds homepage titles as brand plus business scope", () => {
-    expect(buildHomeMetadataTitle("en", "ENHE AI")).toBe("ENHE AI | AI News, Apps, Accounts & Courses");
-    expect(buildHomeMetadataTitle("zh", "恩禾 ENHE AI")).toBe("恩禾 ENHE AI | AI前沿资讯、软件应用、账号服务与技能学习");
+    expect(buildHomeMetadataTitle("en", "ENHE AI")).toBe("ENHE AI | Real Tasks, Safer AI Workflows");
+    expect(buildHomeMetadataTitle("zh", "恩禾 ENHE AI")).toBe(
+      "恩禾 ENHE AI | 让 AI 真正为每个人所用，把复杂变简单，把效率变价值。",
+    );
+  });
+
+  it("builds stronger meta descriptions for core public pages", () => {
+    const coreDescriptions = [
+      buildHomeMetaDescription("zh"),
+      buildHomeMetaDescription("en"),
+      buildListingMetaDescription("software", "zh"),
+      buildListingMetaDescription("account-services", "zh"),
+      buildListingMetaDescription("skill-learning", "zh"),
+      buildListingMetaDescription("pricing", "zh"),
+      buildListingMetaDescription("software", "en"),
+      buildListingMetaDescription("account-services", "en"),
+      buildListingMetaDescription("skill-learning", "en"),
+      buildListingMetaDescription("pricing", "en")
+    ];
+
+    for (const description of coreDescriptions.slice(0, 6)) {
+      expect(description.length).toBeGreaterThanOrEqual(75);
+      expect(description.length).toBeLessThanOrEqual(150);
+    }
+    for (const description of coreDescriptions.slice(6)) {
+      expect(description.length).toBeGreaterThanOrEqual(95);
+      expect(description.length).toBeLessThanOrEqual(150);
+    }
+    expect(buildListingMetaDescription("pricing", "zh")).toContain("报价");
+    expect(buildListingMetaDescription("software", "en")).toContain("AI software");
+  });
+
+  it("keeps listing meta descriptions above short-snippet crawler thresholds", () => {
+    const kinds = [
+      "software",
+      "account-services",
+      "skill-learning",
+      "ai-news",
+      "pricing",
+      "tutorials",
+    ] as const;
+
+    for (const kind of kinds) {
+      const zhDescription = buildListingMetaDescription(kind, "zh");
+      const enDescription = buildListingMetaDescription(kind, "en");
+
+      expect(zhDescription.length).toBeGreaterThanOrEqual(90);
+      expect(zhDescription.length).toBeLessThanOrEqual(150);
+      expect(enDescription.length).toBeGreaterThanOrEqual(120);
+      expect(enDescription.length).toBeLessThanOrEqual(150);
+    }
+  });
+
+  it("expands short topic descriptions for metadata without changing page copy", () => {
+    const zhDescription = buildTopicMetaDescription({
+      title: "AI content creation tools",
+      description: "Short topic guide.",
+      locale: "zh",
+      kind: "ai-topic",
+    });
+    const enDescription = buildTopicMetaDescription({
+      title: "AI Tools",
+      description: "A short AI tool topic.",
+      locale: "en",
+      kind: "ai-news-topic",
+    });
+
+    expect(zhDescription.length).toBeGreaterThanOrEqual(80);
+    expect(zhDescription.length).toBeLessThanOrEqual(150);
+    expect(zhDescription).toContain("ENHE AI");
+    expect(enDescription.length).toBeGreaterThanOrEqual(110);
+    expect(enDescription.length).toBeLessThanOrEqual(150);
+    expect(enDescription).toContain("sources");
+  });
+
+  it("enriches short detail page descriptions with intent and conversion context", () => {
+    const chineseDescription = buildToolMetaDescription({
+      name: "即梦AI",
+      englishName: "Dreamina",
+      description: "AI创作工具。",
+      brand: "ENHE AI",
+      locale: "zh",
+      type: "software"
+    });
+    const englishDescription = buildToolMetaDescription({
+      name: "Dreamina",
+      description: "AI creation tool.",
+      brand: "ENHE AI",
+      locale: "en",
+      type: "software"
+    });
+
+    expect(chineseDescription.length).toBeGreaterThanOrEqual(60);
+    expect(chineseDescription).toContain("价格");
+    expect(chineseDescription).toContain("教程");
+    expect(englishDescription.length).toBeGreaterThanOrEqual(95);
+    expect(englishDescription).toContain("pricing");
+    expect(englishDescription).toContain("ENHE AI");
+  });
+
+  it("keeps account-service detail descriptions long enough when generic safe copy is used", () => {
+    const description = buildToolMetaDescription({
+      name: "Gemini Pro",
+      englishName: "Gemini Pro",
+      description:
+        "AI工具订阅与账号使用支持，提供订阅咨询、账号使用建议、交付说明与售后边界。使用前请遵守对应平台规则；如涉及第三方平台，请以官方政策为准。",
+      type: "online",
+      locale: "zh",
+    });
+
+    expect(description).toContain("Gemini Pro");
+    expect(description.length).toBeGreaterThanOrEqual(80);
+    expect(description.length).toBeLessThanOrEqual(145);
+  });
+
+  it("rewrites risky local-deployment detail copy into user-first safety and privacy language", () => {
+    const description = buildToolMetaDescription({
+      name: "AI视频生成终极版",
+      description: "本地部署AI大模型，不受限制，能够随心所欲的生成视频",
+      brand: "ENHE AI",
+      locale: "zh",
+      type: "software"
+    });
+
+    expect(description).toContain("安全");
+    expect(description).toContain("隐私");
+    expect(description).toContain("稳定");
+    expect(description).toContain("可控");
+    expect(description).not.toContain("不受限制");
+    expect(description).not.toContain("随心所欲");
+    expect(description).not.toContain("功能亮点、价格、教程、访问方式与适用场景");
+    expect(description.length).toBeLessThanOrEqual(145);
   });
 });

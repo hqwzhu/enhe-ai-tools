@@ -6,6 +6,9 @@ const prismaMock = {
   },
   newsArticle: {
     findMany: vi.fn()
+  },
+  productDemo: {
+    findMany: vi.fn()
   }
 };
 
@@ -17,6 +20,8 @@ describe("sitemap canonical URL contract", () => {
   beforeEach(() => {
     prismaMock.tool.findMany.mockReset();
     prismaMock.newsArticle.findMany.mockReset();
+    prismaMock.productDemo.findMany.mockReset();
+    prismaMock.productDemo.findMany.mockResolvedValue([]);
     process.env.APP_URL = "https://www.enhe-tech.com.cn";
     process.env.NEXT_PUBLIC_APP_URL = "https://www.enhe-tech.com.cn";
   });
@@ -71,6 +76,13 @@ describe("sitemap canonical URL contract", () => {
     expect(urls).toContain("https://www.enhe-tech.com.cn/software");
     expect(urls).toContain("https://www.enhe-tech.com.cn/account-services");
     expect(urls).toContain("https://www.enhe-tech.com.cn/skill-learning");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/product-demos");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/product-paths/work-efficiency");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/product-paths/media-generation");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/product-paths/future-ai");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/en/product-paths/work-efficiency");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/en/product-paths/media-generation");
+    expect(urls).toContain("https://www.enhe-tech.com.cn/en/product-paths/future-ai");
     expect(urls).toContain("https://www.enhe-tech.com.cn/software/ai-voice-generator-flexible-edition");
     expect(urls).toContain("https://www.enhe-tech.com.cn/account-services/chatgpt-support");
     expect(urls).toContain("https://www.enhe-tech.com.cn/skill-learning/prompt-course");
@@ -80,9 +92,55 @@ describe("sitemap canonical URL contract", () => {
       expect(urls.some((url) => url.includes(forbidden)), forbidden).toBe(false);
     }
 
-    for (const machineReadable of ["/llms.txt", "/pricing.md", "/okf/index.md", "/okf/enhe-ai-overview.md", "/okf/ai-news/index.md"]) {
-      expect(urls.some((url) => url.endsWith(machineReadable)), machineReadable).toBe(false);
+    for (const machineReadable of [
+      "/llms.txt",
+      "/pricing.md",
+      "/okf/index.md",
+      "/okf/enhe-ai-overview.md",
+      "/okf/ai-news/index.md",
+      "/okf/software/index.md",
+      "/okf/build-your-own-x/index.md",
+      "/okf/account-services/index.md",
+      "/okf/skill-learning/index.md",
+      "/okf/ai-prompt-management/index.md",
+      "/data/ai-prompt-management/zh.json",
+      "/data/ai-prompt-management/en.json",
+    ]) {
+      expect(
+        urls.some((url) => url.endsWith(machineReadable)),
+        machineReadable,
+      ).toBe(false);
     }
+  });
+
+  it("deduplicates canonical loc entries when legacy and generated slugs collide", async () => {
+    prismaMock.tool.findMany.mockResolvedValue([]);
+    prismaMock.newsArticle.findMany.mockResolvedValue([
+      {
+        slug: "how-to-choose-ai-tool-website",
+        title: "AI工具站如何选择？",
+        englishTitle: "How To Choose An AI Tool Website",
+        englishSummary: "A useful English summary that explains how to choose AI tool websites.",
+        englishContent: "Choosing an AI tool website requires checking positioning, tools, tutorials, account guidance, sources, and FAQ coverage. ".repeat(3),
+        updatedAt: new Date("2026-06-25T10:20:43.395Z")
+      }
+    ]);
+
+    const { default: sitemap } = await import("@/app/sitemap");
+    const entries = await sitemap();
+    const urls = entries.map((entry) => entry.url);
+
+    expect(new Set(urls).size).toBe(urls.length);
+    expect(
+      urls.filter((url) =>
+        new URL(url).pathname === "/ai-news/how-to-choose-ai-tool-website",
+      ),
+    ).toHaveLength(1);
+    expect(
+      urls.filter((url) =>
+        new URL(url).pathname === "/en/ai-news/how-to-choose-ai-tool-website",
+      ),
+    ).toHaveLength(1);
   });
 
   it("keeps root sitemap loc and hreflang alternates on the same canonical URL", async () => {
@@ -195,5 +253,26 @@ describe("sitemap canonical URL contract", () => {
 
     expect(byUrl.get("https://www.enhe-tech.com.cn/software/workflow-app")?.lastModified).toBe(toolUpdatedAt);
     expect(byUrl.get("https://www.enhe-tech.com.cn/ai-news/agent-news")?.lastModified).toBe(newsUpdatedAt);
+  });
+
+  it("includes only published product demo pages from the product demo query", async () => {
+    const demoUpdatedAt = new Date("2026-07-01T03:04:05.000Z");
+    prismaMock.tool.findMany.mockResolvedValue([]);
+    prismaMock.newsArticle.findMany.mockResolvedValue([]);
+    prismaMock.productDemo.findMany.mockResolvedValue([
+      {
+        slug: "ai-voice-demo",
+        updatedAt: demoUpdatedAt
+      }
+    ]);
+
+    const { default: sitemap } = await import("@/app/sitemap");
+    const entries = await sitemap();
+    const byUrl = new Map(entries.map((entry) => [entry.url, entry]));
+
+    expect(byUrl.get("https://www.enhe-tech.com.cn/product-demos/ai-voice-demo")?.lastModified).toBe(demoUpdatedAt);
+    expect(byUrl.get("https://www.enhe-tech.com.cn/en/product-demos/ai-voice-demo")?.alternates?.languages?.["zh-CN"]).toBe(
+      "https://www.enhe-tech.com.cn/product-demos/ai-voice-demo",
+    );
   });
 });

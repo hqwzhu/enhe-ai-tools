@@ -29,6 +29,7 @@ describe("technical seo phase one source", () => {
     expect(sitemap).toContain("alternates:");
     expect(sitemap).toContain("languages:");
     expect(sitemap).toContain('"/en"');
+    expect(sitemap).toContain('"/en/about"');
     expect(sitemap).toContain('"/en/software"');
     expect(sitemap).toContain('"/en/account-services"');
     expect(sitemap).not.toContain('"/en/online-tools"');
@@ -48,6 +49,7 @@ describe("technical seo phase one source", () => {
   it("adds an indexable english route tree and locale-aware public navigation", () => {
     const enLayout = read("src/app/en/layout.tsx");
     const enHome = read("src/app/en/page.tsx");
+    const enAbout = read("src/app/en/about/page.tsx");
     const enSoftware = read("src/app/en/software/page.tsx");
     const enSoftwareDetail = read("src/app/en/software/[slug]/page.tsx");
     const enOnline = read("src/app/en/account-services/page.tsx");
@@ -64,6 +66,7 @@ describe("technical seo phase one source", () => {
     expect(enLayout).toContain("RootDocument");
     expect(enLayout).toContain('lang="en-US"');
     expect(enHome).toContain('forceLocale="en"');
+    expect(enAbout).toContain('forceLocale="en"');
     expect(enSoftware).toContain('forceLocale="en"');
     expect(enSoftwareDetail).toContain('forceLocale="en"');
     expect(enOnline).toContain('forceLocale="en"');
@@ -101,14 +104,21 @@ describe("technical seo phase one source", () => {
     expect(publicContent).toContain("publicContentRevalidate = 300");
     expect(sharedLayout).not.toContain("buildWebsiteSchema");
     expect(sharedLayout).not.toContain("buildOrganizationSchema");
+    expect(sharedLayout).toContain('"bytedance-verification-code": "YuXYrV9zCcX3P66dp5/H"');
     expect(sharedLayout).toContain("icons:");
     expect(sharedLayout).toContain("shortcut");
     expect(seo).toContain('"/images/brand/enhe-icon-gradient-white-bg-cropped.png"');
     expect(robots).toContain("/api/uploads/");
 
     expect(nextConfig).toContain("headers()");
+    expect(nextConfig).toContain("localeDetectionVaryHeader");
+    expect(nextConfig).toContain("localeDetectionCacheControl");
+    expect(nextConfig).toContain("zhRootCacheHeaders");
+    expect(nextConfig).toContain('source: "/", headers: zhRootCacheHeaders');
     expect(nextConfig).toContain("Cache-Control");
     expect(nextConfig).toContain("s-maxage=300");
+    expect(nextConfig).toContain('source: "/about"');
+    expect(nextConfig).toContain('source: "/en/about"');
     expect(nextConfig).toContain('source: "/ai-news/:slug*"');
     expect(nextConfig).toContain('source: "/en/ai-news/:slug*"');
   });

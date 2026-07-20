@@ -9,13 +9,14 @@ import {
   getPublicToolListing,
 } from "@/lib/public-content";
 import { publicPageCacheSeconds } from "@/lib/public-routes";
+import { buildThemedToolCategories } from "@/lib/tool-category-groups";
 import { resolveLocalizedToolCategoryName } from "@/lib/tool-localization";
 import {
   buildBreadcrumbSchema,
   buildFaqSchema,
+  buildListingMetadataTitle,
   buildListingMetaDescription,
   buildLocalePath,
-  buildMetadataTitle,
   buildPageMetadata,
 } from "@/lib/seo";
 
@@ -24,21 +25,21 @@ export const skillLearningPageRevalidate = publicPageCacheSeconds;
 const skillLearningGeoSections = {
   zh: [
     {
-      title: "AI技能学习路径",
-      body: "从提示词基础、AI工具实战、本地部署、自动化流程到内容创作，先建立可复用方法，再把方法迁移到写作、运营、设计、编程和日常办公任务中。",
+      title: "先选择未来机会方向",
+      body: "AI教程与实战指南围绕已发布的 AI 工具教程、内容生成、智能体、自动化工作流和本地部署课程，帮助用户按真实任务选择学习路径。",
     },
     {
-      title: "适合谁学习",
-      body: "适合希望系统提升 AI 使用能力的创作者、运营人员、自由职业者、中小企业团队和个人学习者，尤其适合想把零散工具变成稳定工作流的人。",
+      title: "再确认真实价值",
+      body: "智能体、提示词、订阅和副业变现产品都应该服务于明确结果。先看它能解决什么问题、如何交付、风险边界在哪里，再决定是否深入。",
     },
     {
-      title: "如何把课程转化为工作成果",
-      body: "建议围绕一个真实任务学习：先看趋势和案例，再选择对应软件或账号服务，最后用课程步骤完成交付物，让学习结果变成文档、素材、自动化流程或可复用模板。",
+      title: "沉淀为长期资产",
+      body: "真正有价值的 AI 产品应能留下可复用提示词、账号能力、智能体流程、生活工具方案或项目经验，而不是一次性的试用热闹。",
     },
   ],
   en: [
     {
-      title: "AI skill learning path",
+      title: "Practical AI tutorial path",
       body: "Start with prompt basics, AI tool workflows, local deployment, automation, and content creation, then turn each method into repeatable work habits.",
     },
     {
@@ -60,7 +61,7 @@ const skillLearningOutcomeSections = {
     },
     {
       title: "把课程连接到工具",
-      body: "每个学习路径都应该配合真实工具练习。你可以先看 AI 前沿资讯理解趋势，再进入 AI 软件应用选择工具，最后用课程步骤完成素材、方案、脚本或自动化流程。",
+      body: "每个学习路径都应该配合真实工具练习。你可以先看 AI 资讯理解趋势，再进入 AI 工具选择产品，最后用教程步骤完成素材、方案、脚本或自动化流程。",
     },
     {
       title: "沉淀为可复用资产",
@@ -83,17 +84,30 @@ const skillLearningOutcomeSections = {
   ],
 } as const;
 
+const skillLearningPathStrip = {
+  zh: [
+    { label: "1", title: "从真实问题开始", body: "先选一个要完成的任务。" },
+    { label: "2", title: "配合工具练习", body: "用软件或账号服务跑通流程。" },
+    { label: "3", title: "沉淀可复用资产", body: "保存提示词、步骤和模板。" },
+  ],
+  en: [
+    { label: "1", title: "Start from a real problem", body: "Choose one task you need to finish." },
+    { label: "2", title: "Practice with tools", body: "Run the workflow with software or access guidance." },
+    { label: "3", title: "Save reusable assets", body: "Keep prompts, steps, and templates." },
+  ],
+} as const;
+
 const skillLearningFaqItems = {
   zh: [
     {
-      question: "ENHE AI 技能学习适合零基础用户吗？",
+      question: "ENHE AI 教程适合零基础用户吗？",
       answer:
         "适合。建议从提示词基础、常用 AI 工具工作流和具体任务案例开始，再逐步学习本地部署、自动化和多模态创作。",
     },
     {
       question: "如何判断应该先学课程还是先选工具？",
       answer:
-        "如果你已经有明确任务，可以先选工具再按教程落地；如果还不清楚 AI 能解决什么问题，先看 AI 前沿资讯和趋势分析，再选择课程。",
+        "如果你已经有明确任务，可以先选工具再按教程落地；如果还不清楚 AI 能解决什么问题，先看 AI 资讯和趋势分析，再选择课程。",
     },
     {
       question: "AI 技能课程如何转化为实际工作成果？",
@@ -103,7 +117,7 @@ const skillLearningFaqItems = {
   ],
   en: [
     {
-      question: "Is ENHE AI skill learning suitable for beginners?",
+      question: "Are ENHE AI tutorials suitable for beginners?",
       answer:
         "Yes. Start with prompt basics, common AI tool workflows, and task-based examples, then move into local deployment, automation, and multimodal creation.",
     },
@@ -125,10 +139,7 @@ export async function generateSkillLearningPageMetadata(
 ): Promise<Metadata> {
   const t = getDictionary(forceLocale);
   return buildPageMetadata({
-    title: buildMetadataTitle({
-      pageTitle: t.listing.skillLearningTitle,
-      brand: t.brand,
-    }),
+    title: buildListingMetadataTitle("skill-learning", forceLocale, t.brand),
     description: buildListingMetaDescription("skill-learning", forceLocale),
     path: "/skill-learning",
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
@@ -170,6 +181,7 @@ export async function SkillLearningPageShell({
       sort,
     ),
   ]);
+  const categoryOptions = buildThemedToolCategories(categories, "futureAi");
 
   return (
     <main>
@@ -180,11 +192,12 @@ export async function SkillLearningPageShell({
           title={t.listing.skillLearningTitle}
           intro={t.listing.skillLearningIntro}
         />
-        <SkillLearningGeoBlock forceLocale={forceLocale} />
-        <SkillLearningOutcomeBlock forceLocale={forceLocale} />
-        <FilterBar categories={categories} locale={forceLocale} />
+        <SkillLearningUserAnswerCard forceLocale={forceLocale} />
+        <ListingDecisionStrip forceLocale={forceLocale} />
+        <ListingTrustNote forceLocale={forceLocale} />
+        <FilterBar categories={categoryOptions} locale={forceLocale} />
         {tools.length ? (
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="listing-grid mt-8 grid gap-5 md:grid-cols-3">
             {tools.map((tool) => (
               <ToolCard key={tool.id} tool={tool} locale={forceLocale} />
             ))}
@@ -192,8 +205,121 @@ export async function SkillLearningPageShell({
         ) : (
           <EmptyState title={t.listing.emptyTitle} text={t.listing.emptyText} />
         )}
+        <ProductSeoDisclosure
+          summary={
+            forceLocale === "en"
+              ? "AI learning path, outcome guide, and FAQ"
+              : "AI 学习路径、成果转化与常见问题"
+          }
+        >
+          <SkillLearningGeoBlock forceLocale={forceLocale} />
+          <SkillLearningOutcomeBlock forceLocale={forceLocale} />
+        </ProductSeoDisclosure>
       </Container>
     </main>
+  );
+}
+
+function SkillLearningUserAnswerCard({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <section
+      className="surface-panel-soft mt-6 p-5"
+      aria-label={forceLocale === "en" ? "AI tutorial answer" : "AI 教程答案"}
+    >
+      <strong className="text-sm font-black text-[var(--marketing-text)]">
+        {forceLocale === "en"
+          ? "AI learning should start from a real task, not from collecting another course."
+          : "AI 教程应从真实任务开始，而不是继续收藏泛泛内容。"}
+      </strong>
+      <p className="mt-2 max-w-4xl text-sm leading-7 text-[var(--marketing-muted)]">
+        {forceLocale === "en"
+          ? "ENHE AI helps users learn prompts, tool workflows, automation, and content creation by producing reusable outputs such as documents, scripts, assets, templates, or repeatable work processes."
+          : "ENHE AI 帮用户围绕工作效率、内容创作、资料整理和工具使用来学习提示词、工具流程、自动化和创作方法，目标是产出文档、脚本、素材、模板或可复用工作流。"}
+      </p>
+    </section>
+  );
+}
+
+function ListingDecisionStrip({ forceLocale }: { forceLocale: Locale }) {
+  const items =
+    forceLocale === "en"
+      ? [
+          {
+            label: "Real task",
+            title: "Choose by outcome",
+            body: "Start from a deliverable instead of collecting another generic AI course.",
+          },
+          {
+            label: "Course delivery",
+            title: "Check the path",
+            body: "Look for steps, examples, and tool connections before buying.",
+          },
+          {
+            label: "Reusable assets",
+            title: "Save the system",
+            body: "Turn prompts, steps, and templates into assets you can reuse.",
+          },
+        ]
+      : [
+          {
+            label: "选真实任务",
+            title: "按成果选课",
+            body: "先确定要产出什么，避免只收藏泛泛的 AI 课程。",
+          },
+          {
+            label: "看课程交付",
+            title: "确认学习路径",
+            body: "购买前看步骤、案例和对应工具是否足够清楚。",
+          },
+          {
+            label: "沉淀模板",
+            title: "形成复用资产",
+            body: "把提示词、步骤和模板保存为下一次可用的系统。",
+          },
+        ];
+
+  return (
+    <section
+      className="listing-decision-strip"
+      aria-label={
+        forceLocale === "en"
+          ? "Course purchase decision guide"
+          : "课程购买决策提示"
+      }
+    >
+      {items.map((item) => (
+        <div key={item.label}>
+          <span>{item.label}</span>
+          <strong>{item.title}</strong>
+          <p>{item.body}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function ListingTrustNote({ forceLocale }: { forceLocale: Locale }) {
+  return (
+    <p className="listing-trust-note">
+      {forceLocale === "en"
+        ? "Course pages should make the outcome and delivery clear before purchase. Choose from a real task, not a vague interest."
+        : "课程购买前先确认学习成果和交付内容；建议从真实任务出发，而不是泛泛收藏。"}
+      <Link href={buildLocalePath("/ai-topics/ai-skill-learning-path", forceLocale)}>
+        {forceLocale === "en" ? "View learning path" : "查看学习路线"}
+      </Link>
+    </p>
+  );
+}
+
+function ProductSeoDisclosure({
+  summary,
+  children,
+}: React.PropsWithChildren<{ summary: string }>) {
+  return (
+    <details className="product-seo-disclosure">
+      <summary>{summary}</summary>
+      <div className="product-seo-disclosure-body">{children}</div>
+    </details>
   );
 }
 
@@ -202,49 +328,59 @@ function SkillLearningOutcomeBlock({ forceLocale }: { forceLocale: Locale }) {
   const faqs = skillLearningFaqItems[forceLocale];
 
   return (
-    <section className="mt-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+    <section className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="surface-panel-soft p-6">
         <h2 className="text-2xl font-black text-[var(--marketing-text)]">
           {forceLocale === "en"
             ? "From AI skills to repeatable workflows"
             : "从 AI 技能到可复用工作流"}
         </h2>
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <div className="skill-learning-outcome-fold-list mt-5">
           {sections.map((section, index) => (
-            <article
+            <details
               key={section.title}
-              className="rounded-2xl border border-white/10 bg-white/7 p-4"
+              className="content-fold"
             >
-              <span className="text-xs font-black uppercase tracking-[0.22em] text-[var(--marketing-accent)]">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <h3 className="mt-3 text-base font-black leading-snug text-[var(--marketing-text)]">
-                {section.title}
-              </h3>
-              <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
-                {section.body}
-              </p>
-            </article>
+              <summary>
+                <div className="content-fold-summary-copy">
+                  <span className="text-xs font-black text-[var(--marketing-accent)]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <strong className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                    {section.title}
+                  </strong>
+                </div>
+              </summary>
+              <div className="content-fold-body">
+                <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                  {section.body}
+                </p>
+              </div>
+            </details>
           ))}
         </div>
       </div>
       <div className="surface-panel-soft p-6">
         <h2 className="text-2xl font-black text-[var(--marketing-text)]">
-          {forceLocale === "en" ? "AI learning FAQ" : "AI 技能学习常见问题"}
+          {forceLocale === "en" ? "AI tutorial FAQ" : "AI 教程常见问题"}
         </h2>
         <div className="mt-5 space-y-4">
           {faqs.map((item) => (
-            <article
+            <details
               key={item.question}
-              className="rounded-2xl border border-white/10 bg-white/7 p-4"
+              className="content-fold"
             >
-              <h3 className="text-base font-black leading-snug text-[var(--marketing-text)]">
-                {item.question}
-              </h3>
-              <p className="mt-2 text-sm leading-7 text-[var(--marketing-muted)]">
-                {item.answer}
-              </p>
-            </article>
+              <summary>
+                <strong className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                  {item.question}
+                </strong>
+              </summary>
+              <div className="content-fold-body">
+                <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                  {item.answer}
+                </p>
+              </div>
+            </details>
           ))}
         </div>
       </div>
@@ -254,36 +390,66 @@ function SkillLearningOutcomeBlock({ forceLocale }: { forceLocale: Locale }) {
 
 function SkillLearningGeoBlock({ forceLocale }: { forceLocale: Locale }) {
   const sections = skillLearningGeoSections[forceLocale];
+  const pathItems = skillLearningPathStrip[forceLocale];
   const links = [
     {
       label: { zh: "先看 AI 前沿趋势", en: "Read AI trends first" },
       href: buildLocalePath("/ai-news", forceLocale),
     },
     {
-      label: { zh: "选择 AI 软件应用", en: "Choose AI software apps" },
+      label: { zh: "选择 AI 工具", en: "Choose AI tools" },
       href: buildLocalePath("/software", forceLocale),
     },
     {
       label: { zh: "了解 AI 账号服务", en: "Review account service guidance" },
       href: buildLocalePath("/account-services", forceLocale),
     },
+    {
+      label: { zh: "AI 教程路线", en: "AI tutorial path" },
+      href: buildLocalePath("/ai-topics/ai-skill-learning-path", forceLocale),
+    },
   ];
 
   return (
-    <section className="glass mt-8 rounded-2xl p-6">
-      <div className="grid gap-4 lg:grid-cols-3">
+    <section className="glass rounded-2xl p-6">
+      <div className="skill-learning-path-fold-list">
+        {pathItems.map((item) => (
+          <details key={item.label} className="content-fold">
+            <summary>
+              <div className="content-fold-summary-copy">
+                <span className="text-xs font-black text-[var(--marketing-accent)]">
+                  {item.label}
+                </span>
+                <strong className="text-base font-black leading-snug text-[var(--marketing-text)]">
+                  {item.title}
+                </strong>
+              </div>
+            </summary>
+            <div className="content-fold-body">
+              <p className="text-sm leading-6 text-[var(--marketing-muted)]">
+                {item.body}
+              </p>
+            </div>
+          </details>
+        ))}
+      </div>
+      <div className="skill-learning-geo-fold-list">
         {sections.map((section) => (
-          <article
+          <details
             key={section.title}
-            className="rounded-2xl border border-white/10 bg-white/8 p-5"
+            className="content-fold"
           >
-            <h2 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
-              {section.title}
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">
-              {section.body}
-            </p>
-          </article>
+            <summary>
+              <strong className="text-lg font-black leading-snug text-[var(--marketing-text)]">
+                {section.title}
+              </strong>
+            </summary>
+            <div className="content-fold-body">
+              <p className="text-sm leading-7 text-[var(--marketing-muted)]">
+                {section.body}
+              </p>
+            </div>
+          </details>
         ))}
       </div>
       <div className="mt-5 flex flex-wrap gap-3">
@@ -312,12 +478,27 @@ function FilterBar({
 
   return (
     <form className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_140px]">
+      <label className="sr-only" htmlFor="skill-learning-search">
+        {t.listing.searchPlaceholder}
+      </label>
       <input
+        id="skill-learning-search"
         name="q"
+        aria-label={t.listing.searchPlaceholder}
         placeholder={t.listing.searchPlaceholder}
+        title={t.listing.searchPlaceholder}
         className="form-control-dark"
       />
-      <select name="category" className="form-select-dark">
+      <label className="sr-only" htmlFor="skill-learning-category">
+        {t.listing.allCategories}
+      </label>
+      <select
+        id="skill-learning-category"
+        name="category"
+        aria-label={t.listing.allCategories}
+        title={t.listing.allCategories}
+        className="form-select-dark"
+      >
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -329,7 +510,16 @@ function FilterBar({
           </option>
         ))}
       </select>
-      <select name="sort" className="form-select-dark">
+      <label className="sr-only" htmlFor="skill-learning-sort">
+        {t.listing.latest}
+      </label>
+      <select
+        id="skill-learning-sort"
+        name="sort"
+        aria-label={t.listing.latest}
+        title={t.listing.latest}
+        className="form-select-dark"
+      >
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

@@ -115,7 +115,48 @@ describe("publish-ai-trend-briefing-html script", () => {
     expect(result.stdout).toContain("Validated AI trend briefing: 2026-06-19");
     expect(result.stdout).toContain("Sources: 1");
     expect(result.stdout).toContain("Demand breakdowns: 1 directions / 1 scenarios");
+    expect(result.stdout).toContain("Video: none");
+    expect(result.stdout).toContain("Topic page: included");
     expect(result.stdout).toContain("Dry run: database upsert skipped.");
     expect(result.stdout).not.toContain("\uFEFF");
+  });
+
+  it("rejects localhost APP_URL when production publishing is required", async () => {
+    const { htmlFile, summaryFile } = await createFiles();
+
+    const result = await runScript(
+      ["--file", htmlFile, "--summary-file", summaryFile, "--mode", "published", "--require-production-target", "--dry-run"],
+      { APP_URL: "http://localhost:3000", NEXT_PUBLIC_APP_URL: "http://localhost:3000" }
+    );
+
+    expect(result.code).toBe(1);
+    expect(result.stderr.toLowerCase()).toContain("production");
+  });
+
+  it("accepts optional video metadata during dry-run validation", async () => {
+    const { htmlFile, summaryFile } = await createFiles();
+
+    const result = await runScript([
+      "--file",
+      htmlFile,
+      "--summary-file",
+      summaryFile,
+      "--mode",
+      "published",
+      "--video-url",
+      "/uploads/ai-trends/2026-06-19/briefing.mp4",
+      "--video-poster-url",
+      "/uploads/ai-trends/2026-06-19/poster.jpg",
+      "--video-title",
+      "AI需求趋势视频晨报",
+      "--video-description",
+      "围绕最新一期 AI 需求趋势简报生成的视频摘要。",
+      "--video-duration-seconds",
+      "48",
+      "--dry-run"
+    ]);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("Video: attached");
   });
 });

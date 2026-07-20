@@ -64,8 +64,27 @@ function FilterBar({ categories, locale }: { categories: { id: string; name: str
 
   return (
     <form className="filter-surface grid gap-3 md:grid-cols-[1fr_180px_140px]">
-      <input name="q" placeholder={t.listing.searchPlaceholder} className="form-control-dark" />
-      <select name="category" className="form-select-dark">
+      <label className="sr-only" htmlFor="online-tools-search">
+        {t.listing.searchPlaceholder}
+      </label>
+      <input
+        id="online-tools-search"
+        name="q"
+        aria-label={t.listing.searchPlaceholder}
+        placeholder={t.listing.searchPlaceholder}
+        title={t.listing.searchPlaceholder}
+        className="form-control-dark"
+      />
+      <label className="sr-only" htmlFor="online-tools-category">
+        {t.listing.allCategories}
+      </label>
+      <select
+        id="online-tools-category"
+        name="category"
+        aria-label={t.listing.allCategories}
+        title={t.listing.allCategories}
+        className="form-select-dark"
+      >
         <option value="">{t.listing.allCategories}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>
@@ -73,7 +92,16 @@ function FilterBar({ categories, locale }: { categories: { id: string; name: str
           </option>
         ))}
       </select>
-      <select name="sort" className="form-select-dark">
+      <label className="sr-only" htmlFor="online-tools-sort">
+        {t.listing.latest}
+      </label>
+      <select
+        id="online-tools-sort"
+        name="sort"
+        aria-label={t.listing.latest}
+        title={t.listing.latest}
+        className="form-select-dark"
+      >
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>

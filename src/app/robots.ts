@@ -10,21 +10,44 @@ const privateDisallow = [
   "/payment",
   "/api",
 ];
+
+const publicAllow = [
+  "/",
+  "/about",
+  "/llms.txt",
+  "/ai-news",
+  "/ai-trends",
+  "/software",
+  "/account-services",
+  "/skill-learning",
+  "/product-paths",
+  "/product-demos",
+  "/api/uploads/",
+];
+
 const answerEngineUserAgents = [
   "GPTBot",
   "OAI-SearchBot",
   "ChatGPT-User",
   "PerplexityBot",
+  "Perplexity-User",
   "ClaudeBot",
+  "Claude-SearchBot",
+  "Claude-User",
   "anthropic-ai",
   "Googlebot",
   "GoogleOther",
   "Google-Extended",
   "Bingbot",
   "Applebot",
+  "Applebot-Extended",
   "Baiduspider",
   "Bytespider",
   "Doubaobot",
+  "KimiBot",
+  "MoonshotBot",
+  "DeepSeekBot",
+  "BingPreview",
 ] as const;
 
 export default function robots(): MetadataRoute.Robots {
@@ -32,12 +55,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       ...answerEngineUserAgents.map((userAgent) => ({
         userAgent,
-        allow: ["/"],
+        allow: publicAllow,
         disallow: privateDisallow,
       })),
       {
         userAgent: "*",
-        allow: ["/", "/api/uploads/"],
+        allow: publicAllow,
         disallow: [
           "/admin",
           "/dashboard",

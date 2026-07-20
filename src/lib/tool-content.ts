@@ -7,7 +7,30 @@ export type ToolContentBlock =
 const unorderedListPattern = /^\s*(?:[-*]|\u2022)\s+(.+)$/;
 const orderedListPattern = /^\s*(?:(\d+)[.)\u3001]|[\uFF08(](\d+)[\uFF09)])\s*(.+)$/;
 const markdownHeadingPattern = /^\s*#{1,4}\s+(.+)$/;
+const colonListLinePattern = /^\s*([^:：\n]{2,24})[:：]\s*(\S.+)$/;
 const sentenceSplitPattern = /([^\u3002\uFF01\uFF1F\uFF1B.!?;]+[\u3002\uFF01\uFF1F\uFF1B.!?;]+)(?=\s*|$)/g;
+const absoluteHttpUrlPresencePattern = /https?:\/\//i;
+const knownStandaloneHeadingLabels = new Set([
+  "主要功能",
+  "核心功能",
+  "功能亮点",
+  "使用场景",
+  "适用场景",
+  "关键界面",
+  "转化 CTA",
+  "转化CTA",
+  "产品亮点",
+  "产品介绍",
+  "应用场景",
+  "Key features",
+  "Features",
+  "Use cases",
+  "Usage scenarios",
+  "Key screens",
+  "Product highlights",
+  "Product introduction",
+  "CTA"
+].map((item) => item.toLowerCase()));
 
 export function tagSlug(name: string) {
   const ascii = name
@@ -74,6 +97,7 @@ export function normalizeToolSummaryForStorage(value: string) {
 export function normalizeToolContentForStorage(value: string) {
   const normalized = normalizeFormattedLines(value);
   if (!normalized) return "";
+  if (absoluteHttpUrlPresencePattern.test(normalized)) return normalized;
   if (hasMeaningfulLineBreaks(normalized)) return normalized;
 
   const sentences = splitDenseSentences(normalized);
@@ -86,10 +110,27 @@ function normalizeHeadingText(value: string) {
   return normalizeInlineSpace(value).replace(/[\uFF1A:]\s*$/, "");
 }
 
-function isHeadingLine(line: string) {
+function isColonListLine(line: string) {
+  if (absoluteHttpUrlPresencePattern.test(line)) return false;
+
+  const match = line.match(colonListLinePattern);
+  if (!match) return false;
+  return normalizeInlineSpace(match[1] ?? "").length <= 24 && Boolean(normalizeInlineSpace(match[2] ?? ""));
+}
+
+function isStandaloneHeadingLine(line: string, nextLine?: string) {
+  const text = normalizeInlineSpace(line);
+  if (!text || text.length > 48) return false;
+  if (/[\u3002\uFF01\uFF1F\uFF1B.!?;,\uFF0C\u3001\uFF1A:]/.test(text)) return false;
+
+  return knownStandaloneHeadingLabels.has(text.toLowerCase()) || Boolean(nextLine && isColonListLine(nextLine));
+}
+
+function isHeadingLine(line: string, nextLine?: string) {
   const text = normalizeInlineSpace(line);
   if (!text) return false;
   if (markdownHeadingPattern.test(text)) return true;
+  if (isStandaloneHeadingLine(text, nextLine)) return true;
   if (!/[\uFF1A:]$/.test(text)) return false;
   return normalizeHeadingText(text).length <= 48;
 }
@@ -99,7 +140,7 @@ function parseHeadingLine(line: string) {
   return normalizeHeadingText(markdown?.[1] ?? line);
 }
 
-function parseListLine(line: string) {
+function parseListLine(line: string, allowColonListLine = false) {
   const unordered = line.match(unorderedListPattern);
   if (unordered) return { type: "unordered-list" as const, text: normalizeInlineSpace(unordered[1]) };
 
@@ -108,6 +149,10 @@ function parseListLine(line: string) {
     const marker = Number.parseInt(ordered[1] ?? ordered[2] ?? "1", 10);
     const start = Number.isFinite(marker) && marker > 0 ? marker : 1;
     return { type: "ordered-list" as const, text: normalizeInlineSpace(ordered[3] ?? ""), start };
+  }
+
+  if (allowColonListLine && isColonListLine(line)) {
+    return { type: "unordered-list" as const, text: normalizeInlineSpace(line) };
   }
 
   return null;
@@ -142,11 +187,13 @@ export function buildToolContentBlocks(value: string): ToolContentBlock[] {
   const blocks: ToolContentBlock[] = [];
   const paragraphLines: string[] = [];
   const listItems: string[] = [];
+  const lines = content.split("\n").map(normalizeInlineSpace);
   let listType: "unordered-list" | "ordered-list" | null = null;
   let orderedListStart: number | undefined;
 
-  for (const rawLine of content.split("\n")) {
-    const line = normalizeInlineSpace(rawLine);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const nextLine = lines.slice(index + 1).find(Boolean);
     if (!line) {
       pushParagraphBlock(blocks, paragraphLines);
       pushListBlock(blocks, listType, listItems, orderedListStart);
@@ -155,7 +202,7 @@ export function buildToolContentBlocks(value: string): ToolContentBlock[] {
       continue;
     }
 
-    if (isHeadingLine(line)) {
+    if (isHeadingLine(line, nextLine)) {
       pushParagraphBlock(blocks, paragraphLines);
       pushListBlock(blocks, listType, listItems, orderedListStart);
       listType = null;
@@ -164,7 +211,9 @@ export function buildToolContentBlocks(value: string): ToolContentBlock[] {
       continue;
     }
 
-    const listLine = parseListLine(line);
+    const previousBlock = blocks.at(-1);
+    const allowColonListLine = listType === "unordered-list" || previousBlock?.type === "heading";
+    const listLine = parseListLine(line, allowColonListLine);
     if (listLine) {
       pushParagraphBlock(blocks, paragraphLines);
       if (listType && listType !== listLine.type) {

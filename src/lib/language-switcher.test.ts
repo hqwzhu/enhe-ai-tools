@@ -11,23 +11,31 @@ describe("buildLanguageSwitcherHref", () => {
     expect(buildLanguageSwitcherHref("/software/demo-tool", "en")).toBe("/en/software/demo-tool");
     expect(buildLanguageSwitcherHref("/skill-learning/demo-course", "en")).toBe("/en/skill-learning/demo-course");
     expect(buildLanguageSwitcherHref("/account-services/demo-service", "en")).toBe("/en/account-services/demo-service");
+    expect(buildLanguageSwitcherHref("/product-paths/work-efficiency", "en")).toBe("/en/product-paths/work-efficiency");
+    expect(buildLanguageSwitcherHref("/en/product-paths/media-generation", "zh")).toBe("/product-paths/media-generation");
     expect(buildLanguageSwitcherHref("/ai-trends", "en")).toBe("/en/ai-trends");
     expect(buildLanguageSwitcherHref("/en/ai-trends", "zh")).toBe("/ai-trends");
     expect(buildLanguageSwitcherHref("/ai-trends/daily/2026-06-19", "en")).toBe("/en/ai-trends/daily/2026-06-19");
     expect(buildLanguageSwitcherHref("/en/legal/privacy-policy", "zh")).toBe("/legal/privacy-policy");
   });
 
-  it("preserves same-path locale routes like admin and order flows, while still falling back for unrelated routes", () => {
-    expect(buildLanguageSwitcherHref("/admin", "en")).toBe("/admin");
-    expect(buildLanguageSwitcherHref("/admin/orders", "zh")).toBe("/admin/orders");
-    expect(buildLanguageSwitcherHref("/orders", "en")).toBe("/orders");
-    expect(buildLanguageSwitcherHref("/orders/order-1/pay", "zh")).toBe("/orders/order-1/pay");
+  it("keeps same-path locale routes in place while still triggering explicit locale switching", () => {
+    expect(buildLanguageSwitcherHref("/admin", "en")).toBe("/admin?locale=en");
+    expect(buildLanguageSwitcherHref("/admin/orders", "zh")).toBe(
+      "/admin/orders?locale=zh",
+    );
+    expect(buildLanguageSwitcherHref("/orders", "en")).toBe(
+      "/orders?locale=en",
+    );
+    expect(buildLanguageSwitcherHref("/orders/order-1/pay", "zh")).toBe(
+      "/orders/order-1/pay?locale=zh",
+    );
     expect(buildLanguageSwitcherHref("/login", "en")).toBe("/en/login");
     expect(buildLanguageSwitcherHref("/en/login", "zh")).toBe("/login");
     expect(buildLanguageSwitcherHref("/register", "en")).toBe("/en/register");
     expect(buildLanguageSwitcherHref("/user", "en")).toBe("/en/user");
     expect(buildLanguageSwitcherHref("/en/user", "zh")).toBe("/user");
-    expect(buildLanguageSwitcherHref("/relay", "zh")).toBe("/");
+    expect(buildLanguageSwitcherHref("/relay", "zh")).toBe("/?locale=zh");
   });
 });
 
@@ -44,12 +52,14 @@ describe("buildLocalePath", () => {
 });
 
 describe("language switcher source", () => {
-  it("uses link-friendly styles and locale-aware fallback href generation", () => {
+  it("uses full document links with locale-aware fallback href generation", () => {
     const component = readFileSync(new URL("../components/language-switcher.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
     expect(component).toContain("buildLanguageSwitcherHref");
     expect(component).not.toContain("buildLocalePath(normalizedPath, item)");
+    expect(component).not.toContain('import Link from "next/link"');
+    expect(component).toContain("<a");
 
     expect(css).toContain(".site-language-switcher a");
     expect(css).toContain(".site-language-switcher a.is-active");

@@ -27,7 +27,7 @@ import { importAiNewsArticle } from "@/lib/ai-news-import";
 import { notifyBaiduSearch } from "@/lib/baidu-push";
 import { notifyIndexNow } from "@/lib/indexnow";
 import { revokeEntitlementsForRefundedOrder } from "@/lib/membership";
-import { createLicenseCode, isUnlimitedLicenseKeyValid, parseLicenseCode } from "@/lib/license-generator";
+import { createLicenseCode, createLumiLicenseCode, isUnlimitedLicenseKeyValid, normalizeLumiMachineCode, parseLicenseCode, parseLumiLicenseCodePayload } from "@/lib/license-generator";
 import type { LicenseGeneratorActionState } from "@/lib/license-generator-action-state";
 import { isLikelyUploadableImage } from "@/lib/media";
 import { buildRefundProcessedNotification } from "@/lib/notification-messages";
@@ -52,10 +52,12 @@ import { canOpenProtectedDownloadEntry } from "@/lib/tool-download-link";
 import { getPrimaryToolPriceSpec, parseToolPriceSpecsFromFormData, type ToolPriceSpecDraft } from "@/lib/tool-price-specs";
 import { mergeToolProductImages } from "@/lib/tool-product-images";
 import { buildCanonicalAiNewsPath, buildCanonicalToolPath } from "@/lib/public-slugs";
+import { parseTopicDelimitedRows } from "@/lib/ai-news-topic-config";
 import { getUploadDiskPath } from "@/lib/upload-path";
 import { adminFileUploadMaxBytes } from "@/lib/upload-limits";
 import { refundZpayTransactionForOrder } from "@/lib/zpay-orders";
 import { generateAiNewsEnglishDraft } from "@/lib/ai-news-translation";
+import { buildProductDemoPath } from "@/lib/product-demos";
 import type { AiNewsTranslationActionState } from "@/app/admin/ai-news-translation-panel";
 
 const idSchema = z.string().min(1);
@@ -265,12 +267,15 @@ export async function generateLicenseCodeAdminAction(
   formData: FormData
 ): Promise<LicenseGeneratorActionState> {
   const admin = await requireAdmin();
+  const licenseProduct = z.enum(["faceswap", "lumi-os"]).catch("faceswap").parse(formData.get("licenseProduct"));
   const licenseType = z.enum(["single", "unlimited"]).parse(formData.get("licenseType"));
   const machineId = parseOptionalString(formData.get("machineId"));
+  const licenseId = parseOptionalString(formData.get("licenseId"));
   const note = parseOptionalString(formData.get("note")) ?? "";
   const adminKey = parseOptionalString(formData.get("adminKey"));
+  const expiresAt = parseOptionalString(formData.get("expiresAt"));
 
-  if (licenseType === "unlimited" && !isUnlimitedLicenseKeyValid(adminKey)) {
+  if (licenseProduct === "faceswap" && licenseType === "unlimited" && !isUnlimitedLicenseKeyValid(adminKey)) {
     return {
       ok: false,
       message: "请先输入正确密钥解锁无限授权码。",
@@ -279,6 +284,49 @@ export async function generateLicenseCodeAdminAction(
   }
 
   try {
+    if (licenseProduct === "lumi-os") {
+      const machineCode = normalizeLumiMachineCode(machineId ?? "");
+      const code = createLumiLicenseCode({
+        machineCode,
+        licenseId,
+        note,
+        expiresAt
+      });
+      const payload = parseLumiLicenseCodePayload(code);
+
+      await writeAdminAuditLog({
+        adminId: admin.id,
+        action: "license.generate",
+        targetType: "license",
+        targetId: machineCode,
+        summary: "Generated Lumi OS one-machine license code.",
+        metadata: {
+          product: licenseProduct,
+          machineCode,
+          licenseId: payload.licenseId,
+          note,
+          expiresAt: payload.expiresAt ?? null
+        }
+      });
+
+      return {
+        ok: true,
+        message: "Lumi OS 授权码生成成功。",
+        code,
+        payload: {
+          product: "lumi-os",
+          license_type: "single",
+          machine_id: payload.machineCode,
+          machineCode: payload.machineCode,
+          licenseId: payload.licenseId,
+          issued_at: payload.issuedAt,
+          issuedAt: payload.issuedAt,
+          expiresAt: payload.expiresAt,
+          note
+        }
+      };
+    }
+
     const code = createLicenseCode({ licenseType, machineId, note });
     const parsed = parseLicenseCode(code);
     await writeAdminAuditLog({
@@ -288,6 +336,7 @@ export async function generateLicenseCodeAdminAction(
       targetId: parsed.payload?.machine_id ?? licenseType,
       summary: licenseType === "single" ? "Generated single-machine license code." : "Generated unlimited license code.",
       metadata: {
+        product: licenseProduct,
         licenseType,
         machineId: parsed.payload?.machine_id ?? null,
         note
@@ -300,6 +349,7 @@ export async function generateLicenseCodeAdminAction(
       code,
       payload: parsed.payload
         ? {
+            product: "faceswap",
             license_type: parsed.payload.license_type,
             machine_id: parsed.payload.machine_id,
             issued_at: parsed.payload.issued_at,
@@ -1050,7 +1100,7 @@ export async function upsertToolAction(formData: FormData) {
     const selectedDownloadFileId = parseOptionalString(formData.get("downloadFileId"));
     const priceSpecs = parseToolPriceSpecsFromFormData(formData);
     const primaryPriceSpec = getPrimaryToolPriceSpec(priceSpecs);
-    const resolvedPurchasePrice = primaryPriceSpec?.price ?? parseNumberField(formData.get("downloadPrice"), 0);
+    const resolvedPurchasePrice = primaryPriceSpec?.price ?? (type === "software" ? parseNumberField(formData.get("downloadPrice"), 0) : 0);
     const existingProductImages = formData
       .getAll("existingScreenshots")
       .map((value) => String(value ?? ""))
@@ -1066,6 +1116,15 @@ export async function upsertToolAction(formData: FormData) {
       content: normalizeToolContentForStorage(z.string().min(1).parse(formData.get("content"))),
       coverImage: uploadedCoverImage ?? parseOptionalString(formData.get("coverImage")),
       screenshots: mergeToolProductImages(existingProductImages, uploadedProductImages),
+      videoUrl: parseOptionalString(formData.get("videoUrl")),
+      videoTitle: parseOptionalString(formData.get("videoTitle")),
+      videoDescription: parseOptionalString(formData.get("videoDescription")),
+      videoUrl2: parseOptionalString(formData.get("videoUrl2")),
+      videoTitle2: parseOptionalString(formData.get("videoTitle2")),
+      videoDescription2: parseOptionalString(formData.get("videoDescription2")),
+      videoUrl3: parseOptionalString(formData.get("videoUrl3")),
+      videoTitle3: parseOptionalString(formData.get("videoTitle3")),
+      videoDescription3: parseOptionalString(formData.get("videoDescription3")),
       version: parseOptionalString(formData.get("version")),
       systemRequirement: parseOptionalString(formData.get("systemRequirement")),
       isVipRequired: parseBooleanField(formData.get("isVipRequired")),
@@ -1540,6 +1599,334 @@ function parseExternalSources(value: FormDataEntryValue | null) {
       return { title, url, sourceType, description: description || null, sortOrder: index };
     })
     .filter((source) => source.title && /^https?:\/\//i.test(source.url));
+}
+
+function parseTopicJsonRows(
+  value: FormDataEntryValue | null,
+  kind: "faq" | "source" | "action"
+) {
+  const text = String(value ?? "");
+  if (kind === "faq") {
+    return JSON.parse(JSON.stringify(parseTopicDelimitedRows(text, "faq"))) as Prisma.InputJsonValue;
+  }
+  if (kind === "source") {
+    return JSON.parse(JSON.stringify(parseTopicDelimitedRows(text, "source"))) as Prisma.InputJsonValue;
+  }
+  return JSON.parse(JSON.stringify(parseTopicDelimitedRows(text, "action"))) as Prisma.InputJsonValue;
+}
+
+function parseProductDemoDateField(value: FormDataEntryValue | null) {
+  const text = parseOptionalString(value);
+  if (!text) return null;
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parseProductDemoFaqRows(value: FormDataEntryValue | null) {
+  const rows = String(value ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [question = "", ...answerParts] = line.split("|");
+      const answer = answerParts.join("|");
+      return {
+        question: question.trim(),
+        answer: answer.trim()
+      };
+    })
+    .filter((item) => item.question && item.answer);
+
+  return JSON.parse(JSON.stringify(rows)) as Prisma.InputJsonValue;
+}
+
+const productDemoSlugSchema = z
+  .string()
+  .min(1, "slug 必填。")
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug 只能包含小写英文、数字和短横线。");
+
+async function assertUniqueProductDemoSlug(slug: string, id?: string | null) {
+  const existing = await prisma.productDemo.findFirst({
+    where: { slug, ...(id ? { id: { not: id } } : {}) },
+    select: { id: true }
+  });
+  if (existing) throw new Error("slug 已存在，请更换一个唯一 slug。");
+}
+
+function revalidateProductDemoPaths(slug?: string | null) {
+  revalidateTag("public-product-demos");
+  revalidateTag("public-home");
+  revalidatePath("/");
+  revalidatePath("/en");
+  revalidatePath("/product-demos");
+  revalidatePath("/en/product-demos");
+  revalidatePath("/admin/product-demos");
+  revalidatePath("/sitemap.xml");
+  if (slug) {
+    revalidatePath(buildProductDemoPath(slug, "zh"));
+    revalidatePath(buildProductDemoPath(slug, "en"));
+  }
+}
+
+export async function upsertProductDemoAction(formData: FormData) {
+  const admin = await requireAdmin();
+  let savedId = parseOptionalString(formData.get("id"));
+  const returnTo = parseOptionalString(formData.get("returnTo")) ?? "/admin/product-demos";
+
+  try {
+    const id = savedId;
+    const title = z.string().min(1, "标题必填。").parse(formData.get("title"));
+    const slug = productDemoSlugSchema.parse(String(formData.get("slug") ?? "").trim());
+    await assertUniqueProductDemoSlug(slug, id);
+    const status = z.enum(["draft", "published", "archived"]).parse(formData.get("status") ?? "draft");
+    const category = z.enum(["software", "skill_learning", "account_service"]).parse(formData.get("category") ?? "software");
+    const uploadedCoverImage = await saveAdminImageUpload(formData.get("coverImageFile"), `product-demo-cover-${slug}`);
+    const coverImage = uploadedCoverImage ?? z.string().min(1, "封面图必填。").parse(formData.get("coverImage"));
+    const coverAlt = parseOptionalString(formData.get("coverAlt")) ?? title;
+    const description = z.string().min(1, "描述必填。").parse(formData.get("description"));
+    const videoUrl = parseOptionalString(formData.get("videoUrl"));
+    const relatedProductId = parseOptionalString(formData.get("relatedProductId"));
+    const relatedProductUrlInput = parseOptionalString(formData.get("relatedProductUrl"));
+    const demoUrl = parseOptionalString(formData.get("demoUrl"));
+    const relatedProduct = relatedProductId
+      ? await prisma.tool.findUnique({
+          where: { id: relatedProductId },
+          select: { id: true, slug: true, name: true, englishName: true, type: true }
+        })
+      : null;
+    const relatedProductUrl = relatedProduct
+      ? buildCanonicalToolPath(relatedProduct, "zh")
+      : relatedProductUrlInput;
+
+    if (relatedProductId && !relatedProduct) {
+      throw new Error("关联产品不存在，请重新选择。");
+    }
+    if (status === "published" && !videoUrl) {
+      throw new Error("已发布状态必须上传本地视频。");
+    }
+    if (status === "published" && !relatedProductId && !relatedProductUrl && !demoUrl) {
+      throw new Error("已发布状态必须有关联产品、关联产品链接或演示链接。");
+    }
+
+    const publishedAt = parseProductDemoDateField(formData.get("publishedAt")) ?? (status === "published" ? new Date() : null);
+    const data = {
+      title,
+      slug,
+      description,
+      category,
+      tags: parseTagNames(String(formData.get("tags") ?? "")),
+      coverImage,
+      coverAlt,
+      videoUrl,
+      videoDuration: parseOptionalString(formData.get("videoDuration")),
+      uploadDate: parseProductDemoDateField(formData.get("uploadDate")),
+      transcript: parseOptionalString(formData.get("transcript")),
+      faq: parseProductDemoFaqRows(formData.get("faq")),
+      productType: parseOptionalString(formData.get("productType")),
+      relatedProductId,
+      relatedProductSlug: relatedProduct?.slug ?? parseOptionalString(formData.get("relatedProductSlug")),
+      relatedProductUrl,
+      demoUrl,
+      tutorialUrl: parseOptionalString(formData.get("tutorialUrl")),
+      isFeaturedOnHome: parseBooleanField(formData.get("isFeaturedOnHome")),
+      sortOrder: parseNumberField(formData.get("sortOrder"), 0),
+      status,
+      seoTitle: parseOptionalString(formData.get("seoTitle")),
+      seoDescription: parseOptionalString(formData.get("seoDescription")),
+      canonicalUrl: parseOptionalString(formData.get("canonicalUrl")),
+      publishedAt
+    };
+
+    if (id) {
+      await prisma.productDemo.update({ where: { id }, data });
+      savedId = id;
+    } else {
+      const created = await prisma.productDemo.create({ data });
+      savedId = created.id;
+    }
+    if (!savedId) throw new Error("产品演示保存失败。");
+
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: id ? "product_demo.update" : "product_demo.create",
+      targetType: "product_demo",
+      targetId: savedId,
+      summary: id ? "Updated product demo." : "Created product demo.",
+      metadata: { title, slug, status, isFeaturedOnHome: data.isFeaturedOnHome }
+    });
+
+    revalidateProductDemoPaths(slug);
+    if (status === "published") {
+      const urls = ["/product-demos", buildProductDemoPath(slug, "zh")];
+      await notifyIndexNow(urls);
+      await notifyBaiduSearch(urls, { source: "admin-product-demo-upsert", demoId: savedId });
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "保存产品演示失败，请检查表单内容。";
+    redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(`/admin/product-demos/${savedId}?saved=1`);
+}
+
+export async function archiveProductDemoAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const demo = await prisma.productDemo.update({
+    where: { id },
+    data: { status: "archived", isFeaturedOnHome: false },
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "product_demo.archive",
+    targetType: "product_demo",
+    targetId: id,
+    summary: "Archived product demo.",
+    metadata: { title: demo.title, slug: demo.slug }
+  });
+
+  revalidateProductDemoPaths(demo.slug);
+  redirect("/admin/product-demos?archived=1");
+}
+
+export async function deleteProductDemoAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const demo = await prisma.productDemo.delete({
+    where: { id },
+    select: { id: true, title: true, slug: true, status: true }
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "product_demo.delete",
+    targetType: "product_demo",
+    targetId: id,
+    summary: "Deleted product demo.",
+    metadata: { title: demo.title, slug: demo.slug, status: demo.status }
+  });
+
+  revalidateProductDemoPaths(demo.slug);
+  redirect("/admin/product-demos?deleted=1");
+}
+
+async function resolveUniqueNewsTopicSlug(input: {
+  title: string;
+  slugInput?: string | null;
+  fallbackSeed: string;
+  id?: string | null;
+}) {
+  let slug = resolveNewsSlug(input);
+  const baseSlug = slug;
+  let retry = 0;
+
+  while (
+    await prisma.newsTopic.findFirst({
+      where: { slug, ...(input.id ? { id: { not: input.id } } : {}) },
+      select: { id: true }
+    })
+  ) {
+    retry += 1;
+    slug = `${baseSlug}-${Math.random().toString(36).slice(2, 8)}`;
+    if (retry > 10) break;
+  }
+
+  return slug;
+}
+
+function revalidateAiNewsTopicPaths(slug: string) {
+  revalidateTag("public-news");
+  revalidateTag("public-ai-news-topics");
+  revalidatePath("/admin/ai-news/topics");
+  revalidatePath("/ai-news");
+  revalidatePath("/en/ai-news");
+  revalidatePath(`/ai-news/topics/${slug}`);
+  revalidatePath(`/en/ai-news/topics/${slug}`);
+  revalidatePath("/sitemap.xml");
+}
+
+export async function upsertNewsTopicAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = parseOptionalString(formData.get("id"));
+  const returnTo = parseOptionalString(formData.get("returnTo")) ?? "/admin/ai-news/topics";
+  let savedId = id;
+
+  try {
+    const title = z.string().min(1).parse(formData.get("title"));
+    const slug = await resolveUniqueNewsTopicSlug({
+      title,
+      slugInput: parseOptionalString(formData.get("slug")),
+      fallbackSeed: id ?? Date.now().toString(36),
+      id
+    });
+    const data = {
+      slug,
+      status: z.enum(["active", "disabled"]).parse(formData.get("status") ?? "active"),
+      sortOrder: parseNumberField(formData.get("sortOrder"), 0),
+      title,
+      description: z.string().min(1).parse(formData.get("description")),
+      intro: z.string().min(1).parse(formData.get("intro")),
+      answer: z.string().min(1).parse(formData.get("answer")),
+      searchQuery: z.string().min(1).parse(formData.get("searchQuery")),
+      keywords: parseMultilineItems(formData.get("keywords")),
+      whyItMatters: parseMultilineItems(formData.get("whyItMatters")),
+      actionLinks: parseTopicJsonRows(formData.get("actionLinks"), "action"),
+      faqs: parseTopicJsonRows(formData.get("faqs"), "faq"),
+      sourceLinks: parseTopicJsonRows(formData.get("sourceLinks"), "source"),
+      englishTitle: parseOptionalString(formData.get("englishTitle")),
+      englishDescription: parseOptionalString(formData.get("englishDescription")),
+      englishIntro: parseOptionalString(formData.get("englishIntro")),
+      englishAnswer: parseOptionalString(formData.get("englishAnswer")),
+      englishSearchQuery: parseOptionalString(formData.get("englishSearchQuery")),
+      englishKeywords: parseMultilineItems(formData.get("englishKeywords")),
+      englishWhyItMatters: parseMultilineItems(formData.get("englishWhyItMatters")),
+      englishActionLinks: parseTopicJsonRows(formData.get("englishActionLinks"), "action"),
+      englishFaqs: parseTopicJsonRows(formData.get("englishFaqs"), "faq")
+    };
+
+    const saved = id
+      ? await prisma.newsTopic.update({ where: { id }, data })
+      : await prisma.newsTopic.create({ data });
+    savedId = saved.id;
+
+    await writeAdminAuditLog({
+      adminId: admin.id,
+      action: id ? "news_topic.update" : "news_topic.create",
+      targetType: "news_topic",
+      targetId: saved.id,
+      summary: id ? "Updated AI news topic." : "Created AI news topic.",
+      metadata: { title, slug: saved.slug, status: saved.status }
+    });
+
+    revalidateAiNewsTopicPaths(saved.slug);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "保存 AI 资讯专题失败，请检查表单。";
+    redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(`/admin/ai-news/topics/${savedId}?saved=1`);
+}
+
+export async function deleteNewsTopicAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = idSchema.parse(formData.get("id"));
+  const topic = await prisma.newsTopic.delete({
+    where: { id },
+    select: { id: true, title: true, slug: true }
+  });
+
+  await writeAdminAuditLog({
+    adminId: admin.id,
+    action: "news_topic.delete",
+    targetType: "news_topic",
+    targetId: topic.id,
+    summary: "Deleted AI news topic.",
+    metadata: { title: topic.title, slug: topic.slug }
+  });
+
+  revalidateAiNewsTopicPaths(topic.slug);
+  redirect("/admin/ai-news/topics?deleted=1");
 }
 
 async function resolveUniqueNewsSlug(input: { title: string; slugInput?: string | null; fallbackSeed: string; id?: string | null }) {

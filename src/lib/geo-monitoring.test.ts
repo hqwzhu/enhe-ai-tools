@@ -70,4 +70,25 @@ describe("GEO monitoring rules", () => {
     expect(report.recommendations.some((item) => item.type === "source_citation")).toBe(true);
     expect(report.recommendations.some((item) => item.type === "okf_concept")).toBe(true);
   });
+
+  it("prioritizes Chinese ordinary AI user demand rather than technical-only GEO prompts", () => {
+    const queries = GEO_MONITORING_QUERIES.map((item) => item.query);
+
+    for (const query of [
+      "普通人怎么用AI提高工作效率",
+      "适合创作者的AI工具推荐",
+      "AI视频生成工具怎么选",
+      "AI工具隐私安全吗",
+      "AI提示词怎么学",
+      "怎么用AI整理资料",
+      "AI工具购买前要注意什么",
+      "AI账号服务安全吗"
+    ]) {
+      expect(queries).toContain(query);
+    }
+
+    const chinaQueries = GEO_MONITORING_QUERIES.filter((item) => item.locale === "zh");
+    expect(chinaQueries.filter((item) => item.tags.includes("普通AI用户")).length).toBeGreaterThanOrEqual(8);
+    expect(chinaQueries.filter((item) => item.targetPath === "/software").length).toBeGreaterThanOrEqual(5);
+  });
 });

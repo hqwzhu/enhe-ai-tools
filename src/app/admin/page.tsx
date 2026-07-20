@@ -143,7 +143,7 @@ export default async function AdminDashboardPage() {
               <div key={bucket.date} className="flex h-full flex-col justify-end gap-2">
                 <div className="text-center text-[11px] text-[#8B95A7]">{formatDashboardAmount(bucket.amount)}</div>
                 <div
-                  className="rounded-t-xl bg-gradient-to-t from-[var(--marketing-accent)] to-[#ff8a6a]"
+                  className="rounded-t-xl bg-gradient-to-t from-[var(--marketing-accent)] to-[#56bfd0]"
                   style={{ height: `${Math.max(8, (bucket.amount / maxTrendAmount) * 150)}px` }}
                 />
                 <div className="text-center text-[11px] text-[#8B95A7]">{bucket.date.slice(5)}</div>

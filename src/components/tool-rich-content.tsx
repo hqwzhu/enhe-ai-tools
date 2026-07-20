@@ -1,5 +1,61 @@
 import { cn } from "@/lib/utils";
 import { buildToolContentBlocks } from "@/lib/tool-content";
+import { linkifyDownloadLinkContent } from "@/lib/tool-download-link";
+
+function RichTextInline({ text }: { text: string }) {
+  const segments = linkifyDownloadLinkContent(text);
+
+  return (
+    <>
+      {segments.map((segment, index) =>
+        segment.type === "link" ? (
+          <a
+            key={`${segment.href}-${index}`}
+            href={segment.href}
+            target="_blank"
+            rel="nofollow noopener noreferrer"
+            className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(65,197,219,0.5)] underline-offset-4 transition hover:text-[#8feaff]"
+          >
+            {segment.text}
+          </a>
+        ) : (
+          <span key={`${segment.text}-${index}`}>{segment.text}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+function splitListLead(item: string) {
+  if (/https?:\/\//i.test(item)) return null;
+
+  const match = item.match(/^([^:：]{2,24})([:：])\s*(.+)$/);
+  if (!match) return null;
+
+  const lead = match[1]?.trim();
+  const separator = match[2] ?? ":";
+  const rest = match[3]?.trim();
+  if (!lead || !rest) return null;
+
+  return { lead, separator, rest };
+}
+
+function RichListItem({ item }: { item: string }) {
+  const splitItem = splitListLead(item);
+  if (!splitItem) return <RichTextInline text={item} />;
+
+  return (
+    <span>
+      <strong className="font-semibold text-[#F6FAFF]">
+        {splitItem.lead}
+        {splitItem.separator}
+      </strong>{" "}
+      <span>
+        <RichTextInline text={splitItem.rest} />
+      </span>
+    </span>
+  );
+}
 
 export function ToolRichContent({
   content,
@@ -32,7 +88,7 @@ export function ToolRichContent({
               {block.items.map((item, itemIndex) => (
                 <li key={`${item}-${itemIndex}`} className="relative pl-4">
                   <span className="absolute left-0 top-[0.82em] h-1.5 w-1.5 rounded-full bg-[var(--marketing-accent)]" />
-                  <span>{item}</span>
+                  <RichListItem item={item} />
                 </li>
               ))}
             </ul>
@@ -49,14 +105,20 @@ export function ToolRichContent({
                   <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/12 bg-white/8 text-xs font-semibold text-[var(--marketing-accent)]">
                     {startNumber + itemIndex}
                   </span>
-                  <span>{item}</span>
+                  <span>
+                    <RichTextInline text={item} />
+                  </span>
                 </li>
               ))}
             </ol>
           );
         }
 
-        return <p key={`${block.type}-${index}`}>{block.text}</p>;
+        return (
+          <p key={`${block.type}-${index}`}>
+            <RichTextInline text={block.text} />
+          </p>
+        );
       })}
     </div>
   );

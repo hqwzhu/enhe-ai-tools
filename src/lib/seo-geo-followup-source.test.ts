@@ -46,12 +46,23 @@ describe("SEO and GEO follow-up source contracts", () => {
     const skillLearning = read("src/app/skill-learning/page-shell.tsx");
 
     expect(skillLearning).toContain("skillLearningGeoSections");
-    expect(skillLearning).toContain("AI技能学习路径");
-    expect(skillLearning).toContain("适合谁学习");
-    expect(skillLearning).toContain("如何把课程转化为工作成果");
+    expect(skillLearning).toContain("先选择未来机会方向");
+    expect(skillLearning).toContain("再确认真实价值");
+    expect(skillLearning).toContain("沉淀为长期资产");
     expect(skillLearning).toContain('buildLocalePath("/ai-news", forceLocale)');
     expect(skillLearning).toContain('buildLocalePath("/software", forceLocale)');
     expect(skillLearning).toContain('buildLocalePath("/account-services", forceLocale)');
+  });
+
+  it("keeps skill-learning outcome and FAQ sections below the product cards", () => {
+    const skillLearning = read("src/app/skill-learning/page-shell.tsx");
+    const toolCardIndex = skillLearning.indexOf("<ToolCard key={tool.id}");
+    const outcomeIndex = skillLearning.indexOf(
+      "<SkillLearningOutcomeBlock forceLocale={forceLocale} />",
+    );
+
+    expect(toolCardIndex).toBeGreaterThan(-1);
+    expect(outcomeIndex).toBeGreaterThan(toolCardIndex);
   });
 
   it("documents the first-stage GEO implementation rules for future content work", () => {

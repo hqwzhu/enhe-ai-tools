@@ -2,17 +2,24 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("site header navigation", () => {
-  it("keeps the homepage nav first, restores the admin entry for admin sessions, and removes updates from the header nav", () => {
-    const source = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
-    const accountControlsSource = readFileSync(new URL("../components/header-account-controls.tsx", import.meta.url), "utf8");
+  it("keeps core nav entries and removes obsolete top-level account-service dropdown", () => {
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const accountControlsSource = readFileSync(
+      new URL("../components/header-account-controls.tsx", import.meta.url),
+      "utf8",
+    );
     const updatesNavIndex = source.indexOf("t.nav.updates");
 
     expect(source).toContain("nav.home");
     expect(source).toContain("nav.software");
-    expect(source).toContain("nav.onlineTools");
     expect(source).toContain("nav.skillLearning");
     expect(source).toContain("nav.aiNews");
+    expect(source).toContain("nav.aiTrends");
     expect(source).toContain('href: buildLocalePath("/account-services", locale)');
+    expect(source).not.toContain('label: t.nav.onlineTools,\n      href: buildLocalePath("/account-services", locale),');
     expect(source).not.toContain('href: buildLocalePath("/online-tools", locale)');
     expect(source).toContain('href: buildLocalePath("/ai-news", locale)');
     expect(source).toContain("t.nav.login");
@@ -22,20 +29,129 @@ describe("site header navigation", () => {
     expect(source).toContain("getHeaderUserSnapshot");
     expect(accountControlsSource).not.toContain("labels.admin");
     expect(accountControlsSource).not.toContain("site-admin-link");
-    expect(source).not.toContain('"/tutorials"');
+    expect(source).not.toContain('href: buildLocalePath("/tutorials", locale)');
     expect(source).not.toContain("t.nav.tutorials");
+    expect(source).not.toContain('href: buildLocalePath("/pricing", locale)');
+    expect(source).not.toContain("Pricing");
+    expect(source).not.toContain("Upgrade subscription");
+    expect(source).not.toContain("Account order");
     expect(source).not.toContain('href: buildLocalePath("/#updates", locale)');
     expect(updatesNavIndex).toBe(-1);
   });
 
+  it("places account services inside the skill learning dropdown", () => {
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const skillLearningIndex = source.indexOf("label: t.nav.skillLearning");
+    const accountServiceIndex = source.indexOf("label: t.nav.onlineTools");
+    const buildYourOwnXIndex = source.indexOf("Build Your Own X Navigator");
+
+    expect(skillLearningIndex).toBeGreaterThan(-1);
+    expect(accountServiceIndex).toBeGreaterThan(skillLearningIndex);
+    expect(buildYourOwnXIndex).toBeGreaterThan(accountServiceIndex);
+    expect(source).toContain("Account service guidance and access notes");
+    expect(source).toContain("AI账号服务咨询与使用说明");
+  });
+
+  it("uses category landing links for software dropdown entries", () => {
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const categorySource = readFileSync(
+      new URL("../lib/software-category-navigation.ts", import.meta.url),
+      "utf8",
+    );
+
+    expect(source).not.toContain("softwareSearchHref");
+    expect(source).toContain("softwareNavCategories.map");
+    expect(source).toContain("buildSoftwareCategoryHref");
+    expect(categorySource).toContain("视频生成");
+    expect(categorySource).toContain("语音生成");
+    expect(categorySource).toContain("智能体");
+    expect(categorySource).toContain("视频/图片处理");
+    expect(categorySource).toContain("提升效率");
+    expect(categorySource).toContain("Video generation");
+    expect(categorySource).toContain("Voice generation");
+    expect(categorySource).toContain("Agents");
+    expect(categorySource).toContain("Video/image processing");
+    expect(categorySource).toContain("Productivity");
+    expect(categorySource).toContain("/software?categoryName=");
+    expect(source).not.toContain("AI video generation");
+    expect(source).not.toContain("AI voice generation");
+    expect(source).not.toContain("AI agents");
+    expect(source).not.toContain("AI video/image processing");
+    expect(source).not.toContain("AI productivity");
+  });
+
+  it("uses hover and focus for desktop dropdown visibility", () => {
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const css = readFileSync(
+      new URL("../app/globals.css", import.meta.url),
+      "utf8",
+    ).replace(/\r\n/g, "\n");
+
+    expect(source).not.toContain("<details key={item.href} className=\"site-nav-dropdown\">");
+    expect(source).toContain('<div key={item.href} className="site-nav-dropdown">');
+    expect(css).toContain(".site-nav-dropdown::after {");
+    expect(css).toContain("height: 12px;");
+    expect(css).toContain(".site-nav-dropdown:hover .site-nav-dropdown-panel,");
+    expect(css).toContain(".site-nav-dropdown:focus-within .site-nav-dropdown-panel");
+    expect(css).not.toContain(".site-nav-dropdown[open] .site-nav-dropdown-panel");
+    expect(css).not.toContain(".site-nav-dropdown[open] .site-nav-dropdown-trigger");
+  });
+
+  it("resolves software categoryName query values to category ids", () => {
+    const pageSource = readFileSync(
+      new URL("../app/software/page-shell.tsx", import.meta.url),
+      "utf8",
+    );
+    const categorySource = readFileSync(
+      new URL("../lib/software-category-navigation.ts", import.meta.url),
+      "utf8",
+    );
+
+    expect(pageSource).toContain("categoryName");
+    expect(pageSource).toContain("resolveSoftwareCategoryIdByName");
+    expect(pageSource).toContain("resolvedCategoryId");
+    expect(categorySource).toContain("resolveSoftwareCategoryIdByName");
+    expect(categorySource).toContain("resolveLocalizedToolCategoryName");
+  });
+
   it("uses a signed header snapshot plus shared client state so header auth does not cold-start as logged-out on every navigation", () => {
-    const source = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
-    const accountControlsSource = readFileSync(new URL("../components/header-account-controls.tsx", import.meta.url), "utf8");
-    const sessionSource = readFileSync(new URL("../components/header-session.ts", import.meta.url), "utf8");
-    const sessionGateSource = readFileSync(new URL("../components/header-session-gate.tsx", import.meta.url), "utf8");
-    const adminNavSource = readFileSync(new URL("../components/header-admin-nav-link.tsx", import.meta.url), "utf8");
-    const authSource = readFileSync(new URL("../lib/auth.ts", import.meta.url), "utf8");
-    const cookieSource = readFileSync(new URL("../lib/header-user-cookie.ts", import.meta.url), "utf8");
+    const source = readFileSync(
+      new URL("../components/site-header.tsx", import.meta.url),
+      "utf8",
+    );
+    const accountControlsSource = readFileSync(
+      new URL("../components/header-account-controls.tsx", import.meta.url),
+      "utf8",
+    );
+    const sessionSource = readFileSync(
+      new URL("../components/header-session.ts", import.meta.url),
+      "utf8",
+    );
+    const sessionGateSource = readFileSync(
+      new URL("../components/header-session-gate.tsx", import.meta.url),
+      "utf8",
+    );
+    const adminNavSource = readFileSync(
+      new URL("../components/header-admin-nav-link.tsx", import.meta.url),
+      "utf8",
+    );
+    const authSource = readFileSync(
+      new URL("../lib/auth.ts", import.meta.url),
+      "utf8",
+    );
+    const cookieSource = readFileSync(
+      new URL("../lib/header-user-cookie.ts", import.meta.url),
+      "utf8",
+    );
 
     expect(source).toContain("HeaderSessionGate");
     expect(source).toContain("HeaderAdminNavLink");
@@ -53,15 +169,24 @@ describe("site header navigation", () => {
     expect(authSource).toContain("getHeaderUserSnapshot");
     expect(authSource).toContain("signHeaderUserCookieValue");
     expect(authSource).toContain("httpOnly: true");
-    expect(cookieSource).toContain('export const headerUserCookieName = "enhe_header_user"');
+    expect(cookieSource).toContain(
+      'export const headerUserCookieName = "enhe_header_user"',
+    );
   });
 
   it("keeps the desktop header nav on the same center axis as the homepage hero and widens nav spacing by ten percent", () => {
-    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+    const css = readFileSync(
+      new URL("../app/globals.css", import.meta.url),
+      "utf8",
+    ).replace(/\r\n/g, "\n");
 
-    expect(css).toContain("grid-template-columns: minmax(14rem, 1fr) auto minmax(14rem, 1fr);");
+    expect(css).toContain(
+      "grid-template-columns: minmax(14rem, 1fr) auto minmax(14rem, 1fr);",
+    );
     expect(css).toContain(".site-primary-nav {\n  grid-column: 2;");
     expect(css).toContain("gap: clamp(0.385rem, 1.32vw, 0.825rem);");
-    expect(css).toContain(".home-hero-centered {\n  display: flex;\n  width: min(100%, 1222px);\n  max-width: 1222px;\n  margin: 0 auto;");
+    expect(css).toContain(
+      ".home-hero-centered {\n  display: flex;\n  width: min(100%, 1222px);\n  max-width: 1222px;\n  margin: 0 auto;",
+    );
   });
 });

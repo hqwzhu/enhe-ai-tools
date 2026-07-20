@@ -1,6 +1,8 @@
 import { StructuredData } from "@/components/structured-data";
+import { CustomerSupportWidget } from "@/components/customer-support-widget";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getCustomerSupportFaqs } from "@/lib/customer-support";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import {
   buildLanguageAlternates,
@@ -34,13 +36,24 @@ export async function PublicSiteChrome({
     description: siteDescription,
     url: languageAlternates[inLanguage],
     inLanguage: forceLocale === "en" ? "en-US" : "zh-CN",
-    searchPathTemplate: buildLocalePath("/software?q={search_term_string}", forceLocale)
+    searchPathTemplate: buildLocalePath("/search?q={search_term_string}", forceLocale)
   });
   const organizationSchema = buildOrganizationSchema({
     schemaType: "Organization",
     name: siteDisplayName,
+    description: siteDescription,
     logo: siteLogo,
-    url: languageAlternates[inLanguage]
+    url: languageAlternates[inLanguage],
+    sameAs: [
+      "https://www.enhe-tech.com.cn/about",
+      "https://www.enhe-tech.com.cn/ai-news",
+      "https://www.enhe-tech.com.cn/software"
+    ],
+    contactPoint: {
+      email: "ENHEAI.life@protonmail.com",
+      contactType: "customer support",
+      availableLanguage: ["zh-CN", "en-US"]
+    }
   });
 
   return (
@@ -48,6 +61,7 @@ export async function PublicSiteChrome({
       <StructuredData data={[websiteSchema, organizationSchema]} />
       <SiteHeader forceLocale={forceLocale} />
       <div className="fade-in">{children}</div>
+      <CustomerSupportWidget locale={forceLocale} faqs={getCustomerSupportFaqs(forceLocale)} />
       <SiteFooter forceLocale={forceLocale} />
     </>
   );

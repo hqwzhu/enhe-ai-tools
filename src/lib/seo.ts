@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/dictionaries";
+import { localeSwitchQueryName } from "@/lib/locale-routing";
 
 export const fallbackSiteBaseUrl = "https://www.enhe-tech.com.cn";
 export const siteName = "ENHE AI";
 export const defaultSiteDescription =
-  "Live in symbiosis with AI, awaken in this era, and define the future through creation.";
+  "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, and choose safer AI paths.";
 export const defaultBrandIcon = "/images/brand/enhe-icon-gradient-white-bg-cropped.png";
 export const defaultOgImage = "/images/brand/enhe-icon-gradient-transparent-cropped.png";
 
@@ -43,10 +44,33 @@ type ToolMetaDescriptionInput = {
   maxLength?: number;
 };
 
+export type ListingMetadataKind =
+  | "software"
+  | "account-services"
+  | "skill-learning"
+  | "ai-news"
+  | "pricing"
+  | "tutorials";
+
+type TopicMetaDescriptionInput = {
+  title: string;
+  description?: string | null;
+  locale: Locale;
+  kind?: "ai-topic" | "ai-news-topic";
+  maxLength?: number;
+};
+
 type OrganizationSchemaInput = {
   name: string;
   logo?: string | null;
   url?: string;
+  description?: string | null;
+  sameAs?: string[];
+  contactPoint?: {
+    email: string;
+    contactType?: string;
+    availableLanguage?: string[];
+  } | null;
   schemaType?: "Organization";
 };
 
@@ -70,7 +94,7 @@ type BreadcrumbSchemaInput = {
 };
 
 type FaqSchemaInput = {
-  items: Array<{
+  items: ReadonlyArray<{
     question: string;
     answer: string;
   }>;
@@ -100,6 +124,18 @@ type ToolStructuredDataInput = {
     ratingValue: number;
     reviewCount: number;
   } | null;
+};
+
+type ProductStructuredDataInput = {
+  name: string;
+  description?: string | null;
+  url: string;
+  image?: string | null;
+  brand?: string;
+  category?: string | null;
+  price?: number | null;
+  currency?: string;
+  priceSpecs?: OfferSpecInput[];
 };
 
 export function getSiteBaseUrl() {
@@ -139,12 +175,20 @@ const localizedPublicRoutePatterns = [
   /^\/login$/,
   /^\/register$/,
   /^\/user$/,
+  /^\/about$/,
+  /^\/build-your-own-x$/,
+  /^\/ai-topics$/,
+  /^\/ai-topics\/.+$/,
   /^\/software$/,
   /^\/software\/.+$/,
   /^\/account-services$/,
   /^\/account-services\/.+$/,
   /^\/skill-learning$/,
   /^\/skill-learning\/.+$/,
+  /^\/search$/,
+  /^\/product-paths\/.+$/,
+  /^\/product-demos$/,
+  /^\/product-demos\/.+$/,
   /^\/ai-news$/,
   /^\/ai-news\/.+$/,
   /^\/ai-news\/topics\/.+$/,
@@ -166,11 +210,15 @@ export function isLocalizedPublicPath(path: string) {
 
 export function buildLanguageSwitcherHref(path: string, locale: Locale) {
   const normalized = stripLocalePrefix(path);
+  const withLocaleSwitch = (href: string) =>
+    `${href}${href.includes("?") ? "&" : "?"}${localeSwitchQueryName}=${locale}`;
+
   if (/^\/(?:admin|orders)(?:\/|$)/.test(normalized)) {
-    return normalized;
+    return withLocaleSwitch(normalized);
   }
+
   if (!isLocalizedPublicPath(path)) {
-    return buildLocalePath("/", locale);
+    return withLocaleSwitch(buildLocalePath("/", locale));
   }
 
   return buildLocalePath(path, locale);
@@ -265,11 +313,40 @@ export function buildMetadataTitle({
   return `${truncateText(normalizedPageTitle, Math.max(12, maxLength - reservedLength))} | ${normalizedBrand}`;
 }
 
+export function buildListingMetadataTitle(
+  kind: ListingMetadataKind,
+  locale: Locale,
+  brand = siteName,
+) {
+  const zhTitles: Record<ListingMetadataKind, string> = {
+    software: "最热门AI工具、热门AI软件与高频效率产品",
+    "account-services": "AI账号服务咨询、订阅说明与合规边界",
+    "skill-learning": "AI教程与实战指南、AI工具与本地部署教程",
+    "ai-news": "AI资讯、趋势解读与工具落地指南",
+    pricing: "AI工具报价、购买流程与交付说明",
+    tutorials: "AI工具教程、软件配置与使用指南",
+  };
+  const enTitles: Record<ListingMetadataKind, string> = {
+    software: "Most Popular AI Tools And Productivity Software",
+    "account-services": "AI Account Service Guidance and Compliance",
+    "skill-learning": "Practical AI Tutorials and Guides",
+    "ai-news": "AI News, Trend Insights, and Tool Decisions",
+    pricing: "AI Tool Pricing, Purchase, and Delivery Guide",
+    tutorials: "AI Tool Tutorials, Setup, and Workflow Guides",
+  };
+
+  return buildMetadataTitle({
+    pageTitle: locale === "en" ? enTitles[kind] : zhTitles[kind],
+    brand,
+    maxLength: 68,
+  });
+}
+
 export function buildHomeMetadataTitle(locale: Locale, brand = siteName) {
   const scope =
     locale === "en"
-      ? "AI News, Apps, Accounts & Courses"
-      : "AI前沿资讯、软件应用、账号服务与技能学习";
+      ? "Real Tasks, Safer AI Workflows"
+      : "让 AI 真正为每个人所用，把复杂变简单，把效率变价值。";
   return truncateText(
     `${normalizeWhitespace(brand)} | ${scope}`,
     locale === "en" ? 62 : 64,
@@ -296,52 +373,84 @@ export function buildHomeMetaDescription(
   }
 
   if (locale === "en") {
-    return "ENHE AI brings together global AI news, AI software apps, account service guidance, skill courses, and practical tutorials to turn AI changes into productivity.";
+    return "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, choose tools, and keep privacy clearer.";
   }
 
-  return "恩禾 ENHE AI 聚合 AI前沿资讯、AI软件应用、AI账号服务、AI技能课程与实用教程，帮助用户理解趋势、选择工具、提升效率并把想法落地。";
+  return "ENHE AI 帮助用户把 AI 用到真实任务里：更快完成工作、创作内容、整理资料、学习技能和解决工具选择问题；需要处理敏感素材、长期流程或隐私边界时，优先提供安全、隐私和稳定的可控 AI 路径。";
 }
 
 export function buildListingMetaDescription(
-  kind:
-    | "software"
-    | "account-services"
-    | "skill-learning"
-    | "ai-news"
-    | "pricing"
-    | "tutorials",
+  kind: ListingMetadataKind,
   locale: Locale,
 ) {
   const zhDescriptions = {
     software:
-      "精选本地部署AI应用、AI效率工具、桌面软件和创作辅助工具，覆盖内容生产、运营自动化、音视频处理与日常工作流，帮助你更快完成实际任务。",
+      "浏览最热门AI工具和高频效率软件，按办公效率、文件处理、系统实用、数据分析、本地AI应用等场景筛选产品，比较价格、教程、案例、交付方式和适用边界，快速找到适合日常工作流的可靠工具。",
     "account-services":
-      "浏览AI账号服务咨询、AI工具订阅与账号使用支持、合规使用建议和交付说明。使用第三方平台前，请以对应平台官方政策为准。",
+      "了解AI工具访问方式、订阅咨询、账号使用支持、交付边界和平台规则。先确认任务、服务范围、价格、售后、合规提醒、使用风险和替代路径，再决定是否咨询或购买，避免把服务当成绕过规则的捷径。",
     "skill-learning":
-      "学习AI提示词、AI工具实战、本地部署、自动化流程和内容创作课程，用清晰教程把AI能力转化为可复用的工作技能。",
+      "阅读ENHE AI教程与实战指南，覆盖AI工具使用、视频图片语音生成、AI智能体、自动化工作流、本地部署、ComfyUI及常用模型操作，按真实任务查找已发布教程和课程，并结合操作步骤、常见问题和适用边界减少试错。",
     "ai-news":
-      "关注全球AI智能体、本地部署AI应用、开源模型、AI工具、AI技能教程与行业趋势，帮助你把AI变化转化为实际生产力。",
+      "阅读AI前沿资讯和趋势解读，理解工具、模型和平台变化对工作效率、内容创作、资料整理、学习技能和安全使用的实际影响。结合来源、时间、相关工具和下一步行动，判断这条信息是否值得普通AI用户跟进。",
     pricing:
-      "查看ENHE AI付费软件、课程与服务的购买流程、权益说明、支付审核、售后边界和退款规则，购买前先了解交付与使用方式。",
+      "查看ENHE AI软件、课程与账号服务报价结构、购买流程、权益说明、支付审核、交付方式、售后边界、退款规则、适合人群和服务范围，购买前先确认价格、使用方式、交付条件、风险提醒和是否适合当前任务。",
     tutorials:
-      "阅读ENHE AI工具教程、软件使用指南、AI技能实战步骤和常见问题处理方法，把工具能力转化为可执行的工作流程。",
+      "阅读ENHE AI工具教程、软件使用指南、AI技能实战步骤、常见问题和工作流案例，快速掌握下载、配置、使用和复盘方法，把工具能力转化为可执行成果，减少购买、部署或学习前的试错时间成本。",
   } as const;
   const enDescriptions = {
     software:
-      "Explore AI software apps for local deployment, productivity workflows, content creation, automation, audio, video, and daily work. Compare features, pricing, and access.",
+      "Browse popular AI software tools for office workflows, file processing, system utilities, data analysis, and local AI apps. Compare fit.",
     "account-services":
-      "Browse AI account service guidance, subscription support, account usage notes, compliance reminders, pricing, and delivery boundaries for AI tools.",
+      "Browse AI account service guidance for subscriptions, access notes, compliance reminders, delivery scope, support boundaries, pricing, and safer use.",
     "skill-learning":
-      "Learn prompt engineering, AI tool workflows, local AI deployment, automation, and content creation through practical ENHE AI skill courses.",
+      "Read practical ENHE AI tutorials for tools, media generation, AI agents, automation workflows, local deployment, ComfyUI, and widely used AI models.",
     "ai-news":
-      "Follow global AI agents, local AI deployment, open models, AI tools, tutorials, and industry trends so new AI changes become practical productivity.",
+      "Follow global AI agents, open models, local deployment, AI tools, tutorials, and industry trends so creators can turn AI changes into productivity.",
     pricing:
-      "Review ENHE AI paid software, courses, service access, payment review, delivery boundaries, after-sales support, and refund rules before purchase.",
+      "Review ENHE AI software, course, and account service pricing, payment review, delivery boundaries, support scope, and refund rules before purchase.",
     tutorials:
-      "Read ENHE AI tutorials, software guides, AI workflow steps, and practical troubleshooting notes to turn tools into repeatable outcomes.",
+      "Read ENHE AI tutorials, software guides, workflow steps, setup notes, and troubleshooting tips to turn AI tools into repeatable creator outcomes.",
   } as const;
 
   return locale === "en" ? enDescriptions[kind] : zhDescriptions[kind];
+}
+
+export function buildTopicMetaDescription({
+  title,
+  description,
+  locale,
+  kind = "ai-topic",
+  maxLength = 150,
+}: TopicMetaDescriptionInput) {
+  const normalizedDescription = normalizeWhitespace(description ?? "");
+  const normalizedTitle = normalizeWhitespace(title);
+  const minLength = locale === "en" ? 110 : 80;
+
+  if (normalizedDescription.length >= minLength) {
+    return buildMetaDescription(normalizedDescription, defaultSiteDescription, maxLength);
+  }
+
+  const fallbackSource =
+    normalizedDescription ||
+    (locale === "en"
+      ? `${normalizedTitle || "AI topic"} guide.`
+      : `${normalizedTitle || "AI主题"}指南。`);
+
+  if (locale === "en") {
+    const suffix =
+      kind === "ai-news-topic"
+        ? "On ENHE AI, review sources, dates, related news, tools, tutorials, and next steps so everyday AI users can judge the practical impact."
+        : "On ENHE AI, review use cases, decision criteria, FAQs, related tools, courses, and next steps before choosing a practical AI workflow.";
+
+    return buildMetaDescription(`${fallbackSource} ${suffix}`, defaultSiteDescription, maxLength);
+  }
+
+  const suffix =
+    kind === "ai-news-topic"
+      ? "在 ENHE AI 查看来源、时间、相关资讯、工具、教程和下一步行动建议，判断它对工作效率、内容创作、学习或账号合规是否有影响。"
+      : "在 ENHE AI 查看适用场景、对比维度、常见问题、相关工具、课程和下一步路径，先判断它是否能解决当前工作、创作或学习任务。";
+
+  return buildMetaDescription(`${fallbackSource} ${suffix}`, defaultSiteDescription, maxLength);
 }
 
 const accountServiceRiskWords =
@@ -379,6 +488,8 @@ const accountServiceRiskTermPatterns = [
 
 const safeZhAccountServiceCopy =
   "AI\u5de5\u5177\u8ba2\u9605\u4e0e\u8d26\u53f7\u4f7f\u7528\u652f\u6301\uff0c\u63d0\u4f9b\u8ba2\u9605\u54a8\u8be2\u3001\u8d26\u53f7\u4f7f\u7528\u5efa\u8bae\u3001\u4ea4\u4ed8\u8bf4\u660e\u4e0e\u552e\u540e\u8fb9\u754c\u3002\u4f7f\u7528\u524d\u8bf7\u9075\u5b88\u5bf9\u5e94\u5e73\u53f0\u89c4\u5219\uff1b\u5982\u6d89\u53ca\u7b2c\u4e09\u65b9\u5e73\u53f0\uff0c\u8bf7\u4ee5\u5b98\u65b9\u653f\u7b56\u4e3a\u51c6\u3002";
+const safeEnAccountServiceCopy =
+  "AI tool subscription and account usage support with access guidance, delivery notes, and compliance reminders. Please follow the rules of each platform; for third-party services, the official policy should prevail.";
 
 export function hasAccountServiceRiskTerms(value: string | null | undefined) {
   const normalized = normalizeWhitespace(value ?? "");
@@ -405,10 +516,39 @@ export function sanitizeAccountServiceCopy(
     return normalized;
 
   if (locale === "en") {
-    return "AI tool subscription and account usage support with access guidance, delivery notes, and compliance reminders. Please follow the rules of each platform; for third-party services, the official policy should prevail.";
+    return safeEnAccountServiceCopy;
   }
 
   return safeZhAccountServiceCopy;
+}
+
+function isGenericAccountServiceMetaDescription(
+  value: string,
+  locale: Locale,
+) {
+  if (locale === "en") {
+    return (
+      value === safeEnAccountServiceCopy ||
+      /^AI tool subscription and account usage support\b/i.test(value)
+    );
+  }
+
+  return (
+    value === safeZhAccountServiceCopy ||
+    (value.includes("\u8ba2\u9605\u54a8\u8be2") &&
+      value.includes("\u5e73\u53f0\u89c4\u5219"))
+  );
+}
+
+function buildUniqueAccountServiceMetaDescription(
+  primaryName: string,
+  locale: Locale,
+) {
+  if (locale === "en") {
+    return `${primaryName} account service guidance: review access paths, delivery notes, support boundaries, pricing context, and platform-policy reminders before use.`;
+  }
+
+  return `${primaryName} AI\u8d26\u53f7\u670d\u52a1\u54a8\u8be2\uff1a\u63d0\u4f9bAI\u5de5\u5177\u8ba2\u9605\u4e0e\u8d26\u53f7\u4f7f\u7528\u652f\u6301\uff0c\u5305\u542b\u8bbf\u95ee\u8def\u5f84\u3001\u4ea4\u4ed8\u8bf4\u660e\u3001\u4ef7\u683c\u8303\u56f4\u3001\u552e\u540e\u8fb9\u754c\u3001\u5e73\u53f0\u89c4\u5219\u548c\u5408\u89c4\u63d0\u9192\uff0c\u8d2d\u4e70\u6216\u54a8\u8be2\u524d\u5148\u5224\u65ad\u662f\u5426\u9002\u5408\u5f53\u524d\u4efb\u52a1\u3002`;
 }
 
 function resolveToolTitleNames(
@@ -471,6 +611,24 @@ function resolveToolTypeLabel(
   if (type === "online") return "AI账号服务";
   if (type === "skill_learning") return "AI技能课程";
   return "AI软件应用";
+}
+
+function hasControlledAiWorkflowCue(value: string) {
+  return /本地部署|私有化|不受限制|无限制|随心所欲|随时所欲|离线|隐私|敏感素材|private|local deployment|unrestricted/i.test(
+    value,
+  );
+}
+
+function buildControlledAiWorkflowDescription(
+  primaryName: string,
+  brand: string,
+  locale: Locale,
+) {
+  if (locale === "en") {
+    return `${primaryName} helps users build safer, more private, stable, and controlled AI workflows. Review pricing, tutorials, delivery scope, and system requirements on ${brand} before use.`;
+  }
+
+  return `${primaryName}适合需要安全、隐私、稳定、可控 AI 流程的用户。购买前在 ${brand} 确认价格、教程、交付方式、设备要求和隐私边界。`;
 }
 
 export function buildToolMetadataTitle({
@@ -545,14 +703,41 @@ export function buildToolMetaDescription({
   const { primaryName } = resolveToolTitleNames(name, englishName, locale);
   const typeLabel = resolveToolTypeLabel(type, locale);
   const targetMaxLength = Math.min(maxLength, locale === "en" ? 135 : 145);
+  const shortDescriptionLimit = locale === "en" ? 95 : 90;
+  const shouldNameGenericAccountServiceCopy =
+    type === "online" &&
+    normalizedDescription &&
+    isGenericAccountServiceMetaDescription(normalizedDescription, locale);
 
   if (locale === "en") {
-    if (normalizedDescription)
+    if (normalizedDescription) {
+      if (hasControlledAiWorkflowCue(normalizedDescription)) {
+        return buildMetaDescription(
+          buildControlledAiWorkflowDescription(primaryName, brand, locale),
+          defaultSiteDescription,
+          targetMaxLength,
+        );
+      }
+
+      if (
+        !shouldNameGenericAccountServiceCopy &&
+        normalizedDescription.length < shortDescriptionLimit
+      ) {
+        return buildMetaDescription(
+          `${normalizedDescription} On ${brand}, review ${primaryName} features, pricing, tutorials, access notes, and creator workflow fit before use.`,
+          defaultSiteDescription,
+          targetMaxLength,
+        );
+      }
+
       return buildMetaDescription(
-        normalizedDescription,
+        shouldNameGenericAccountServiceCopy
+          ? buildUniqueAccountServiceMetaDescription(primaryName, locale)
+          : normalizedDescription,
         defaultSiteDescription,
         targetMaxLength,
       );
+    }
 
     return buildMetaDescription(
       `${primaryName}: ${typeLabel} on ${brand}. Review features, pricing, tutorials, and access.`,
@@ -562,11 +747,30 @@ export function buildToolMetaDescription({
   }
 
   if (normalizedDescription) {
+    if (shouldNameGenericAccountServiceCopy) {
+      return buildMetaDescription(
+        buildUniqueAccountServiceMetaDescription(primaryName, locale),
+        defaultSiteDescription,
+        targetMaxLength,
+      );
+    }
+
+    if (hasControlledAiWorkflowCue(normalizedDescription)) {
+      return buildMetaDescription(
+        buildControlledAiWorkflowDescription(primaryName, brand, locale),
+        defaultSiteDescription,
+        targetMaxLength,
+      );
+    }
+
     const brandLower = normalizeWhitespace(brand).toLowerCase();
     const descriptionLower = normalizedDescription.toLowerCase();
-    const compactDescription = descriptionLower.includes(brandLower)
-      ? normalizedDescription
-      : `${normalizedDescription} 在 ${brand} 查看使用建议。`;
+    const compactDescription =
+      normalizedDescription.length < shortDescriptionLimit
+        ? `${normalizedDescription} 在 ${brand} 查看${primaryName}价格、教程、交付方式、隐私边界和适用任务，判断是否适合当前创作或效率工作流。`
+        : descriptionLower.includes(brandLower)
+          ? normalizedDescription
+          : `${normalizedDescription} 在 ${brand} 查看使用建议。`;
 
     return buildMetaDescription(
       compactDescription,
@@ -576,7 +780,7 @@ export function buildToolMetaDescription({
   }
 
   return buildMetaDescription(
-    `在 ${brand} 查看 ${primaryName} 的功能亮点、价格、教程与使用方式，快速了解这款${typeLabel}。`,
+    `在 ${brand} 查看 ${primaryName} 的价格、教程、交付方式、使用边界和适用任务，判断这款${typeLabel}是否值得使用。`,
     defaultSiteDescription,
     targetMaxLength,
   );
@@ -638,6 +842,9 @@ export function buildOrganizationSchema({
   name,
   logo,
   url = absoluteUrl("/"),
+  description,
+  sameAs = [],
+  contactPoint,
   schemaType = "Organization",
 }: OrganizationSchemaInput) {
   return {
@@ -645,7 +852,22 @@ export function buildOrganizationSchema({
     "@type": schemaType,
     name,
     url,
+    ...(description ? { description: buildMetaDescription(description) } : {}),
     ...(logo ? { logo: absoluteUrl(logo) } : {}),
+    ...(sameAs.length ? { sameAs } : {}),
+    ...(contactPoint?.email
+      ? {
+          contactPoint: {
+            "@type": "ContactPoint",
+            email: contactPoint.email,
+            contactType: contactPoint.contactType ?? "customer support",
+            availableLanguage: contactPoint.availableLanguage ?? [
+              "zh-CN",
+              "en-US",
+            ],
+          },
+        }
+      : {}),
   };
 }
 
@@ -876,6 +1098,56 @@ export function buildToolStructuredData({
       ...structuredOffers,
     },
     ...structuredOffers,
+  };
+}
+
+export function buildProductStructuredData({
+  name,
+  description,
+  url,
+  image,
+  brand = siteName,
+  category,
+  price,
+  currency = "CNY",
+  priceSpecs = [],
+}: ProductStructuredDataInput) {
+  const normalizedPriceSpecs = priceSpecs
+    .map((spec) => ({
+      name: normalizeWhitespace(spec.name),
+      price: Number(spec.price),
+    }))
+    .filter(
+      (spec) => spec.name && Number.isFinite(spec.price) && spec.price > 0,
+    );
+  const offer =
+    typeof price === "number" && Number.isFinite(price) && price > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: price.toFixed(2),
+            priceCurrency: currency,
+            availability: "https://schema.org/InStock",
+            url: absoluteUrl(url),
+          },
+        }
+      : {};
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name,
+    description: buildMetaDescription(description),
+    url: absoluteUrl(url),
+    ...(image ? { image: absoluteUrl(image) } : {}),
+    ...(category ? { category } : {}),
+    brand: {
+      "@type": "Brand",
+      name: brand,
+    },
+    ...(normalizedPriceSpecs.length
+      ? buildOfferData(url, currency, normalizedPriceSpecs)
+      : offer),
   };
 }
 

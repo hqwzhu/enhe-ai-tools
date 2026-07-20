@@ -90,10 +90,18 @@ cd /opt/enhe-ai-tools
 docker compose -f deploy/enhe-ai-tools/docker-compose.yml up -d --build
 ```
 
-App 容器启动时会自动执行：
+App 容器启动时默认跳过 Prisma migration，避免页面更新、只读更新、EBOS 报告更新触发数据库 schema 变更。
+
+只有在已完成 migration 审查并获得显式授权后，才允许设置：
 
 ```bash
-npx prisma migrate deploy
+RUN_PRISMA_MIGRATE=1
+```
+
+未设置为 `1` 时，App 日志应出现：
+
+```text
+Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1.
 ```
 
 ## 首次导入演示数据

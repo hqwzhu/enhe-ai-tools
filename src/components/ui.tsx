@@ -1,5 +1,6 @@
 import { PrefetchLink } from "@/components/prefetch-link";
 import { cn } from "@/lib/utils";
+import type { ComponentProps } from "react";
 
 export function Container({ className, children }: React.PropsWithChildren<{ className?: string }>) {
   return <div className={cn("mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8", className)}>{children}</div>;
@@ -17,10 +18,18 @@ export function ButtonLink({
   href,
   children,
   variant = "primary",
-  className
-}: React.PropsWithChildren<{ href: string; variant?: "primary" | "ghost"; className?: string }>) {
+  className,
+  ...props
+}: React.PropsWithChildren<
+  Omit<ComponentProps<typeof PrefetchLink>, "children" | "className" | "href"> & {
+    href: string;
+    variant?: "primary" | "ghost";
+    className?: string;
+  }
+>) {
   return (
     <PrefetchLink
+      {...props}
       className={cn(
         "cursor-target inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-bold transition duration-200 hover:-translate-y-0.5",
         variant === "primary"

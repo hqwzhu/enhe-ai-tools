@@ -42,6 +42,8 @@ services:
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
       AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME}
       AUTH_SECRET: ${AUTH_SECRET}
+      RUN_PRISMA_MIGRATE: ${RUN_PRISMA_MIGRATE:-0}
+      AI_TRENDS_REVALIDATE_TOKEN: ${AI_TRENDS_REVALIDATE_TOKEN:-}
       UPLOAD_DIR: /app/public/uploads
       BAIDU_PUSH_TOKEN: ${BAIDU_PUSH_TOKEN:-}
       BAIDU_PUSH_SITE_URL: ${BAIDU_PUSH_SITE_URL:-https://www.enhe-tech.com.cn}
@@ -53,6 +55,7 @@ services:
       - "3001:3000"
     volumes:
       - ./uploads:/app/public/uploads
+      - ./secrets:/app/secrets:ro
     networks:
       - enhe-ai-tools-net
 

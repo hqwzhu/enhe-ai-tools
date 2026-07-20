@@ -33,9 +33,13 @@ describe("launch readiness source coverage", () => {
     expect(legacyToolDetail).toContain("buildLegacyToolDetailRedirectResponse");
   });
 
-  it("makes paid downloads, home cards, mobile nav, and tool detail more conversion-ready", () => {
+  it("makes pricing entry, home cards, mobile nav, and tool detail more conversion-ready", () => {
     const pricing = read("src/app/pricing/page-shell.tsx");
-    expect(pricing).toContain("Paid downloads");
+    expect(pricing).toContain("Before you buy");
+    expect(pricing).toContain("Buy from the detail page");
+    expect(pricing).toContain("AI pricing and purchase entry");
+    expect(pricing).toContain("OfferCatalog");
+    expect(pricing).toContain("getPricingOfferItems");
     expect(pricing).toContain('href={forceLocale === "en" ? "/en/software" : "/software"}');
     expect(pricing).not.toContain("createOrderAction");
 

@@ -1,33 +1,82 @@
 # ENHE AI Pricing and Service Access
 
-This file gives AI agents and search systems a structured summary of ENHE AI paid access categories. Final prices, delivery notes, and availability are shown on the relevant public detail pages and may change as products are updated.
+This file gives AI agents and search systems a structured summary of current ENHE AI paid software, service, and course entries. Final availability, delivery notes, and support boundaries are shown on the matching public detail page.
 
-## AI software apps
+## Product-level offers
 
-- Category: downloadable or guided AI software applications.
-- Includes: local deployment tools, productivity utilities, creative workflows, automation aids, and practical AI apps.
-- Pricing: shown on each software detail page when a paid package is available.
-- Access path: https://www.enhe-tech.com.cn/software
-- Notes: users should review feature scope, platform requirements, screenshots, tutorials, and support boundaries before purchase.
+### Lumi-OS | AI companion workspace
 
-## AI account service guidance
+- Type: AI software app
+- Price: CNY 50.00
+- URL: https://www.enhe-tech.com.cn/software/windows-ai
+- Delivery: download and setup notes after payment review.
+- Best for: users who want AI memory, task support, creative assistance, and a more private desktop workflow.
 
-- Category: AI tool subscription and account usage support.
-- Includes: access guidance, subscription usage notes, delivery instructions, compliance reminders, and platform policy reminders.
-- Pricing: shown on each account service detail page when a paid support package is available.
-- Access path: https://www.enhe-tech.com.cn/account-services
-- Compliance note: users should follow the rules of each third-party platform. If a third-party platform is involved, the official platform policy prevails.
+### Local AI voice generator
 
-## AI skill courses
+- Type: AI software app
+- Price: CNY 30.00
+- URL: https://www.enhe-tech.com.cn/software/local-ai-voice-generator-for-voiceover-materials
+- Delivery: download and setup notes after payment review.
+- Best for: creators who need narration, dubbing, multi-role dialogue, and reusable voiceover materials.
 
-- Category: AI skill courses and practical tutorials.
-- Includes: prompt engineering, AI tool workflows, local AI deployment, content production, automation, and workplace productivity lessons.
-- Pricing: shown on each course detail page when a paid course is available.
-- Access path: https://www.enhe-tech.com.cn/skill-learning
-- Outcome: courses are designed to turn AI knowledge into documents, assets, workflows, templates, and repeatable work methods.
+### AI video generation suite
+
+- Type: AI software app
+- Price: CNY 35.00
+- URL: https://www.enhe-tech.com.cn/software/ultimate-edition-ai-video-generation-suite
+- Delivery: download and setup notes after payment review.
+- Best for: creators who need text-to-video, image-to-video, and local material management.
+
+### Gmail and Google ecosystem guidance
+
+- Type: AI account service guidance
+- Price: CNY 30.80
+- URL: https://www.enhe-tech.com.cn/account-services/gmail-google
+- Delivery: service notes and support entry after payment review.
+- Best for: users who need to understand Gmail and Google ecosystem use cases, access paths, and service boundaries.
+
+### ChatGPT, Codex, and DALL-E guidance
+
+- Type: AI account service guidance
+- Price: CNY 58.80
+- URL: https://www.enhe-tech.com.cn/account-services/chatgpt-codex-dalle
+- Delivery: service notes and support entry after payment review.
+- Best for: users who need to understand ChatGPT, Codex, and DALL-E access paths, use cases, and boundaries.
+
+### Gemini Pro guidance
+
+- Type: AI account service guidance
+- Price: CNY 219.00
+- URL: https://www.enhe-tech.com.cn/account-services/gemini-pro
+- Delivery: service notes and support entry after payment review.
+- Best for: users who need to confirm Gemini Pro access paths, benefit scope, cycle notes, and platform rules.
+
+### Practical AI side project course
+
+- Type: AI skill course
+- Price: CNY 10.00
+- URL: https://www.enhe-tech.com.cn/skill-learning/ai-monetization-side-hustle-course
+- Delivery: course access after payment review.
+- Best for: users who want to turn AI tool use into executable side-project tasks and reusable workflows.
+
+### High-frequency AI prompts
+
+- Type: AI skill course
+- Price: CNY 10.00
+- URL: https://www.enhe-tech.com.cn/skill-learning/high-frequency-ai-prompts-for-work-learning-and-teaching
+- Delivery: course access after payment review.
+- Best for: users who need reusable prompt patterns for writing, learning, teaching, and everyday productivity tasks.
+
+## Purchase notes
+
+- Prices are listed in CNY.
+- Users should review the matching detail page before purchase.
+- Payment proof review is required before paid download, course, or service access is unlocked.
+- Third-party platform services must follow the official rules of that platform.
 
 ## Support
 
-- Company: 深圳市龙岗区恩禾网络科技工作室
+- Company: ENHE AI
 - Email: ENHEAI.life@protonmail.com
 - Website: https://www.enhe-tech.com.cn/

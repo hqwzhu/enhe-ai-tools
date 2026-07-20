@@ -27,11 +27,18 @@ export async function assertDownloadAccess(toolId: string) {
   const { tool, user, ip, userAgent } = await assertBaseToolAccess(toolId);
   if (!tool.downloadFileId || !tool.downloadFile) throw new Error("工具尚未配置下载文件");
 
-  if (tool.isDownloadPaid) {
+  const downloadPrice = getPrimaryToolPrice(tool.priceSpecs, tool.downloadPrice);
+  if (tool.isDownloadPaid && downloadPrice > 0) {
     const purchase = await prisma.toolPurchase.findUnique({
       where: { userId_toolId: { userId: user.id, toolId: tool.id } }
     });
-    if (!canDownloadPaidTool({ isDownloadPaid: tool.isDownloadPaid, hasDownloadPurchase: Boolean(purchase) })) {
+    if (
+      !canDownloadPaidTool({
+        isDownloadPaid: tool.isDownloadPaid,
+        downloadPrice,
+        hasDownloadPurchase: Boolean(purchase)
+      })
+    ) {
       redirect(`${buildCanonicalToolPath(tool, "zh")}?download=pay-required`);
     }
   }
@@ -59,7 +66,7 @@ export async function assertDownloadAccess(toolId: string) {
 
 export async function assertOnlineToolAccess(toolId: string) {
   const { tool, user, ip, userAgent } = await assertBaseToolAccess(toolId);
-  const servicePrice = getPrimaryToolPrice(tool.priceSpecs, tool.downloadPrice);
+  const servicePrice = getPrimaryToolPrice(tool.priceSpecs, 0);
   if (tool.type === "online" && servicePrice > 0) {
     const purchase = await prisma.toolPurchase.findUnique({
       where: { userId_toolId: { userId: user.id, toolId: tool.id } }

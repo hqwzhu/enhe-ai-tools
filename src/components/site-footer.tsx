@@ -21,9 +21,9 @@ const companyContact = {
 
 const footerSocialLinks: { label: string; href?: string; icon: LucideIcon }[] = [
   { label: "Gmail", href: companyContact.emailHref, icon: Mail },
-  { label: "小红书", icon: NotebookText },
+  { label: "小红书", href: companyContact.phoneHref, icon: NotebookText },
   { label: "抖音", icon: Music2 },
-  { label: "YouTube", icon: Youtube }
+  { label: "YouTube", href: "https://www.youtube.com/@ENHE-AI", icon: Youtube }
 ];
 
 export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
@@ -64,6 +64,10 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
       title: locale === "en" ? "Resources" : "资源支持",
       links: [
         { label: t.nav.updates, href: buildLocalePath("/#updates", locale) },
+        {
+          label: locale === "en" ? "Build Your Own X Navigator" : "Build Your Own X 项目导航器",
+          href: buildLocalePath("/build-your-own-x", locale)
+        },
         { label: t.nav.aiTrends, href: buildLocalePath("/ai-trends", locale) },
         { label: t.nav.pricing, href: buildLocalePath("/pricing", locale) },
         { label: t.nav.tutorials, href: buildLocalePath("/tutorials", locale) },
@@ -97,10 +101,13 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
             </div>
             <p className="site-footer-summary">
               {locale === "en"
-                ? "AI software, account services, skill learning, and frontier AI insight in one ENHE AI hub."
-                : "汇集AI前沿资讯、AI软件应用、AI账号服务与AI技能学习，让用户从信息判断走向可执行成果。"}
+                ? "AI news, trend analysis, software apps, account guidance, skill learning, and tutorials in one ENHE AI hub."
+                : "汇集AI前沿资讯、AI趋势分析、AI软件应用、AI账号服务、AI技能学习与使用教程，让用户从信息判断走向可执行成果。"}
             </p>
-            <div className="site-footer-socials" aria-label={locale === "en" ? "ENHE AI social channels" : "ENHE AI 社交渠道"}>
+          </div>
+
+          <div className="site-footer-newsletter" aria-label={locale === "en" ? "ENHE AI contact channels" : "ENHE AI 联系渠道"}>
+            <div className="site-footer-newsletter-socials">
               {footerSocialLinks.map(({ label, href, icon: Icon }) =>
                 href ? (
                   <a key={label} href={href} className="site-footer-social-link cursor-target" aria-label={label}>
@@ -114,20 +121,13 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
               )}
             </div>
           </div>
-
-          <div className="site-footer-newsletter" aria-label={locale === "en" ? "Contact ENHE AI" : "联系 ENHE AI"}>
-            <p className="site-footer-kicker">{locale === "en" ? "Contact" : "联系咨询"}</p>
-            <a href={companyContact.emailHref} className="site-footer-contact-button cursor-target">
-              {companyContact.email}
-            </a>
-          </div>
         </div>
 
         <div className="site-footer-grid">
           {footerGroups.map((group, index) => (
             <nav key={group.title} className="site-footer-group" aria-label={group.title}>
               <h2 className="site-footer-group-title site-footer-group-title-desktop">{group.title}</h2>
-              <details className="site-footer-disclosure" open={index < 2}>
+              <details className="site-footer-disclosure" open>
                 <summary className="site-footer-group-title">{group.title}</summary>
               <ul className="site-footer-link-list">
                 {group.links.map((link) => (
@@ -144,33 +144,47 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
 
           <address id="footer-contact" className="site-footer-contact not-italic">
             <h2 className="site-footer-group-title site-footer-group-title-desktop">{locale === "en" ? "Company" : "公司信息"}</h2>
-            <details className="site-footer-disclosure">
+            <details className="site-footer-disclosure" open>
               <summary className="site-footer-group-title">{locale === "en" ? "Company" : "公司信息"}</summary>
-              <span>
-                {contactLabels.company}: {companyName}
-              </span>
-              <span>
-                {contactLabels.address}: {companyAddress}
-              </span>
-              <a href={companyContact.phoneHref} className="site-footer-link cursor-target">
-                {contactLabels.phone}: {companyContact.phone}
-              </a>
-              <a href={companyContact.emailHref} className="site-footer-link cursor-target">
-                {contactLabels.email}: {companyContact.email}
-              </a>
+              <dl className="site-footer-company-list">
+                <div className="site-footer-company-row">
+                  <dt>{contactLabels.company}</dt>
+                  <dd>{companyName}</dd>
+                </div>
+                <div className="site-footer-company-row">
+                  <dt>{contactLabels.address}</dt>
+                  <dd>{companyAddress}</dd>
+                </div>
+                <div className="site-footer-company-row">
+                  <dt>{contactLabels.phone}</dt>
+                  <dd>
+                    <a href={companyContact.phoneHref} className="site-footer-link cursor-target">
+                      {companyContact.phone}
+                    </a>
+                  </dd>
+                </div>
+                <div className="site-footer-company-row">
+                  <dt>{contactLabels.email}</dt>
+                  <dd>
+                    <a href={companyContact.emailHref} className="site-footer-link cursor-target">
+                      {companyContact.email}
+                    </a>
+                  </dd>
+                </div>
+                <div className="site-footer-company-row">
+                  <dt>{locale === "en" ? "Profile" : "档案"}</dt>
+                  <dd>
+                    <PrefetchLink href={buildLocalePath("/about", locale)} className="site-footer-link cursor-target">
+                      {locale === "en" ? "ENHE AI brand profile" : "恩禾ENHE AI 品牌档案"}
+                    </PrefetchLink>
+                  </dd>
+                </div>
+              </dl>
             </details>
           </address>
         </div>
 
         <div className="site-footer-gradient-mark" aria-hidden="true">
-          <Image
-            src="/images/brand/enhe-icon-gradient-transparent-cropped.png"
-            alt={`${siteName} gradient logo`}
-            width={96}
-            height={64}
-            className="site-footer-gradient-icon"
-            unoptimized
-          />
           <span className="site-footer-gradient-word">ENHE AI</span>
         </div>
 
