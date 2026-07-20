@@ -38,7 +38,7 @@ export const dictionaries = {
       title: "ENHE AI",
       titleSecondLine: "把 AI 用到真实任务里，让工作、创作和学习更可控",
       titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows",
-      intro: "让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。",
+      intro: "让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。",
       positioning: "恩禾 ENHE AI 是面向中文用户的 AI 工具与技能学习平台，聚合 AI工具、本地部署AI应用、AI智能体、AI技能教程、AI账号服务、AI最新资讯和 AI趋势分析，帮助用户把 AI 信息转化为可执行成果。",
       softwareButton: "热门AI工具",
       onlineButton: "生成图片/视频/音频",

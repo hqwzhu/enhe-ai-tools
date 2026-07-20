@@ -14,12 +14,12 @@ function StaticTitle({ text }: { text: string }) {
 
 const ASCIIText = dynamic(() => import("@/components/home/ascii-text.client"), {
   ssr: false,
-  loading: () => <StaticTitle text="ENHE AI" />,
+  loading: () => null,
 });
 
-type RenderMode = "static" | "mobile" | "tablet" | "desktop";
+type RenderMode = "pending" | "static" | "mobile" | "tablet" | "desktop";
 
-const TITLE_SCALE = 1.7;
+const TITLE_SCALE = 1.9;
 
 function supportsWebGL() {
   if (typeof window.WebGLRenderingContext === "undefined") return false;
@@ -30,7 +30,7 @@ function supportsWebGL() {
 }
 
 export function ASCIIHeroTitle({ text }: { text: string }) {
-  const [renderMode, setRenderMode] = useState<RenderMode>("static");
+  const [renderMode, setRenderMode] = useState<RenderMode>("pending");
 
   useEffect(() => {
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -65,7 +65,7 @@ export function ASCIIHeroTitle({ text }: { text: string }) {
 
   return (
     <div className={styles.heroTitleShell} aria-hidden="true">
-      {renderMode === "static" ? (
+      {renderMode === "pending" ? null : renderMode === "static" ? (
         <StaticTitle text={text} />
       ) : (
         <div className={styles.interactiveSurface}>

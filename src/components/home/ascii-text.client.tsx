@@ -319,6 +319,8 @@ export type ASCIITextProps = {
   enableWaves?: boolean;
 };
 
+type RenderStatus = "loading" | "ready" | "failed";
+
 export default function ASCIIText({
   text = "ENHE AI",
   asciiFontSize = 8,
@@ -328,7 +330,7 @@ export default function ASCIIText({
   enableWaves = true,
 }: ASCIITextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isReady, setIsReady] = useState(false);
+  const [renderStatus, setRenderStatus] = useState<RenderStatus>("loading");
 
   useEffect(() => {
     const container = containerRef.current;
@@ -357,10 +359,10 @@ export default function ASCIIText({
           }
           instance = candidate;
           instance.setActive(isVisible);
-          setIsReady(true);
+          setRenderStatus("ready");
         })
         .catch(() => {
-          if (!cancelled) setIsReady(false);
+          if (!cancelled) setRenderStatus("failed");
         });
     };
 
@@ -401,7 +403,8 @@ export default function ASCIIText({
     <div
       ref={containerRef}
       className={styles.asciiTextContainer}
-      data-ready={isReady ? "true" : "false"}
+      data-ready={renderStatus === "ready" ? "true" : "false"}
+      data-status={renderStatus}
       aria-hidden="true"
     >
       <span className={styles.staticWordmark}>{text}</span>

@@ -22,7 +22,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-outcome-shell"));
     expect(page).toContain("const heroTitle =");
     expect(page).toContain("ENHE AI");
-    expect(page).toContain("让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。");
+    expect(page).toContain("让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。");
     expect(page).toContain("Helping everyone use AI with confidence—turn ideas into creations and productivity into value.");
     expect(page).toContain("const heroIntro =");
     expect(page).not.toContain("home-hero-metrics");
@@ -100,6 +100,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-particles-fallback");
     expect(css).toContain(".home-hero-stage");
     expect(css).toContain(".home-hero-centered");
+    expect(css).toMatch(/\.home-hero-positioning\s*{[^}]*font-weight: 400;/);
     expect(css).toContain(".home-hero-title-simple");
     expect(css).not.toContain(".home-hero-metrics");
     expect(css).toContain(".home-featured-shell");

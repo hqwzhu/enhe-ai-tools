@@ -1839,7 +1839,7 @@ select option:disabled {
   margin: clamp(1.1rem, 2.4vw, 1.8rem) auto 0;
   color: color-mix(in srgb, var(--marketing-text) 84%, var(--marketing-muted));
   font-size: clamp(0.95rem, 1.25vw, 1.08rem);
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.9;
   text-align: center;
 }

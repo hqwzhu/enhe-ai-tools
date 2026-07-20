@@ -1,10 +1,11 @@
 .heroTitleShell {
   position: relative;
-  width: min(100%, 980px);
+  width: min(100%, 1100px);
   height: clamp(240px, 22vw, 310px);
   margin: 0 auto;
   isolation: isolate;
   pointer-events: none;
+  transform: translateY(12px);
 }
 
 .interactiveSurface,
@@ -86,6 +87,7 @@
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1.05;
+  opacity: 0;
   text-align: center;
   text-shadow:
     0 0 1px rgba(255, 255, 255, 0.64),
@@ -94,8 +96,9 @@
   white-space: nowrap;
 }
 
-.asciiTextContainer[data-ready="true"] .staticWordmark {
-  opacity: 0;
+.staticOnly .staticWordmark,
+.asciiTextContainer[data-status="failed"] .staticWordmark {
+  opacity: 1;
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
@@ -107,7 +110,8 @@
 @media (max-width: 767px) {
   .heroTitleShell {
     width: min(100%, calc(100vw - 2rem));
-    height: clamp(118px, 34vw, 148px);
+    height: clamp(110px, 30.5vw, 132px);
+    transform: translateY(8px);
   }
 
   .interactiveSurface {

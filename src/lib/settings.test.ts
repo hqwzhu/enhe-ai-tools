@@ -13,7 +13,7 @@ import {
 
 describe("public site settings", () => {
   const currentHeroSubtitle = "真实任务 · 高效创作 · 安全可控";
-  const currentHeroIntro = "让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。";
+  const currentHeroIntro = "让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。";
   const currentHeroSubtitleEn = "Real Tasks · Creation · Safer AI";
   const currentHeroIntroEn = "Helping everyone use AI with confidence—turn ideas into creations and productivity into value.";
 

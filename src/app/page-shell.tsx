@@ -190,7 +190,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const heroIntro =
     forceLocale === "en"
       ? "Helping everyone use AI with confidence—turn ideas into creations and productivity into value."
-      : "让每一个普通人，都能轻松用好 AI，把想法变成作品，把效率变成价值。";
+      : "让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。";
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
   });
