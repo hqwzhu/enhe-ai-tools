@@ -134,7 +134,10 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('import DecryptedText from "@/components/home/decrypted-text";');
     expect(page).not.toContain('import TextPressure from "@/components/home/text-pressure";');
     expect(page).not.toContain('<p className="home-hero-brand">ENHE AI</p>');
-    expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
+    expect(page).toContain('import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";');
+    expect(page).toContain('<h1 className="sr-only">{heroTitle}</h1>');
+    expect(page).toContain('<ASCIIHeroTitle text={heroTitle} />');
+    expect(page).not.toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
     expect(page).toContain('<p className="home-hero-positioning">');
     expect(page).toContain("text={heroIntro}");
     expect(page).toContain('animateOn="view"');
@@ -173,11 +176,13 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("<span>{item.action}</span>");
   });
 
-  it("keeps the homepage hero title as static DOM text after removing TextPressure", () => {
+  it("keeps the homepage hero title semantic while upgrading the visual wordmark", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
-    expect(page).toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
+    expect(page).toContain('<h1 className="sr-only">{heroTitle}</h1>');
+    expect(page).toContain('<ASCIIHeroTitle text={heroTitle} />');
+    expect(page).not.toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
     expect(page).not.toContain("TextPressure");
     expect(css).not.toContain("text-pressure");
     expect(css).not.toContain("Roboto Flex ENHE");

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
+import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";
 import DecryptedText from "@/components/home/decrypted-text";
 import { HomeParticlesBackground } from "@/components/home/home-particles-background";
 import { ProductDemoCard } from "@/components/product-demo-card";
@@ -221,7 +222,8 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         <Container className="home-hero-reference-frame">
           <div className="home-hero-stage">
             <div className="home-hero-centered">
-              <h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>
+              <h1 className="sr-only">{heroTitle}</h1>
+              <ASCIIHeroTitle text={heroTitle} />
               <p className="home-hero-positioning">
                 <DecryptedText
                   text={heroIntro}
