@@ -56,6 +56,14 @@ type AdminOperationEmail = {
   subject: string;
   text: string;
   html: string;
+  replyTo?: string;
+};
+
+export type CustomerSupportEmailInput = {
+  message: string;
+  email?: string;
+  locale: "zh" | "en";
+  pagePath: string;
 };
 
 type Mailer = Pick<Transporter, "sendMail">;
@@ -204,6 +212,40 @@ export function buildAdminOperationEmail(input: AdminOperationEmailInput): Admin
   return { subject, text, html };
 }
 
+export function buildCustomerSupportEmail(input: CustomerSupportEmailInput): AdminOperationEmail {
+  const isEnglish = input.locale === "en";
+  const pagePath = input.pagePath.replace(/[\r\n]/g, " ").trim() || "/";
+  const replyTo = input.email?.trim() && !/[\r\n]/.test(input.email) ? input.email.trim() : undefined;
+  const submittedAt = new Date().toLocaleString(isEnglish ? "en-US" : "zh-CN");
+  const subject = `[ENHE AI] ${isEnglish ? "New customer support message" : "新客服留言"} - ${pagePath}`;
+  const lines: Array<[string, string]> = [
+    [isEnglish ? "Message" : "留言内容", input.message],
+    [isEnglish ? "Contact email" : "联系邮箱", replyTo ?? (isEnglish ? "Not provided" : "未填写")],
+    [isEnglish ? "Source page" : "来源页面", pagePath],
+    [isEnglish ? "Language" : "当前语言", input.locale],
+    [isEnglish ? "Submitted at" : "提交时间", submittedAt]
+  ];
+  const text = [subject, "", ...lines.map(([label, value]) => `${label}: ${value}`)].join("\n");
+  const html = `
+    <div style="font-family:Arial,'Microsoft YaHei',sans-serif;line-height:1.7;color:#0f172a">
+      <h2 style="margin:0 0 12px">${isEnglish ? "ENHE AI customer support message" : "ENHE AI 客服留言"}</h2>
+      <table style="border-collapse:collapse;width:100%;max-width:720px">
+        ${lines
+          .map(
+            ([label, value]) => `
+              <tr>
+                <td style="border:1px solid #e2e8f0;background:#f8fafc;padding:8px 10px;width:120px;font-weight:600">${escapeHtml(label)}</td>
+                <td style="border:1px solid #e2e8f0;padding:8px 10px;white-space:pre-wrap">${escapeHtml(value)}</td>
+              </tr>`
+          )
+          .join("")}
+      </table>
+    </div>
+  `;
+
+  return { subject, text, html, replyTo };
+}
+
 export function buildAdminMailOptions(
   config: { from?: string; recipients: string[] },
   email: AdminOperationEmail
@@ -214,6 +256,7 @@ export function buildAdminMailOptions(
     subject: email.subject,
     text: email.text,
     html: email.html,
+    replyTo: email.replyTo,
     encoding: "utf-8",
     textEncoding: "base64",
     headers: {
@@ -224,6 +267,16 @@ export function buildAdminMailOptions(
 
 export async function sendNewOrderAdminEmail(orderId: string) {
   await sendOrderAdminEmail(orderId, "order_created");
+}
+
+export async function sendCustomerSupportAdminEmail(input: CustomerSupportEmailInput) {
+  const config = getAdminAlertEmailConfig();
+  if (!config.enabled) {
+    throw new Error(config.skipReason ?? "admin email notifications are disabled");
+  }
+
+  const transporter = createTransporter(config);
+  await transporter.sendMail(buildAdminMailOptions(config, buildCustomerSupportEmail(input)));
 }
 
 export async function sendOrderReceiptAdminEmail(
