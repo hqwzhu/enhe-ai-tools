@@ -1,6 +1,8 @@
 import { StructuredData } from "@/components/structured-data";
+import { CustomerSupportWidget } from "@/components/customer-support-widget";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getCustomerSupportFaqs } from "@/lib/customer-support";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
 import {
   buildLanguageAlternates,
@@ -59,6 +61,7 @@ export async function PublicSiteChrome({
       <StructuredData data={[websiteSchema, organizationSchema]} />
       <SiteHeader forceLocale={forceLocale} />
       <div className="fade-in">{children}</div>
+      <CustomerSupportWidget locale={forceLocale} faqs={getCustomerSupportFaqs(forceLocale)} />
       <SiteFooter forceLocale={forceLocale} />
     </>
   );

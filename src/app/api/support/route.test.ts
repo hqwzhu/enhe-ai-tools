@@ -3,18 +3,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
 const { consumeRateLimitMock, getConfigMock, sendMailMock } = vi.hoisted(() => ({
-  consumeRateLimitMock: vi.fn(() => true),
+  consumeRateLimitMock: vi.fn((_key: string) => true),
   getConfigMock: vi.fn(),
   sendMailMock: vi.fn()
 }));
 
 vi.mock("@/lib/admin-email-notifications", () => ({
-  getAdminAlertEmailConfig: (...args: unknown[]) => getConfigMock(...args),
-  sendCustomerSupportAdminEmail: (...args: unknown[]) => sendMailMock(...args)
+  getAdminAlertEmailConfig: () => getConfigMock(),
+  sendCustomerSupportAdminEmail: (input: unknown) => sendMailMock(input)
 }));
 
 vi.mock("@/lib/customer-support-rate-limit", () => ({
-  consumeCustomerSupportRateLimit: (...args: unknown[]) => consumeRateLimitMock(...args)
+  consumeCustomerSupportRateLimit: (key: string) => consumeRateLimitMock(key)
 }));
 
 beforeEach(() => {
