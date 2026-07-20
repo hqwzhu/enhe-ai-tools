@@ -1,0 +1,203 @@
+.card {
+  --edge-proximity: 0;
+  --border-glow-strength: 0;
+  --cursor-angle: 110deg;
+  --border-radius: 18px;
+  --glow-padding: 42px;
+  --cone-spread: 22;
+  --fill-opacity: 0.16;
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-width: 0;
+  border-radius: var(--border-radius);
+  overflow: visible;
+  transform: translate3d(0, 0, 0.01px);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card::before,
+.card::after,
+.edgeLight,
+.edgeLight::before {
+  position: absolute;
+  border-radius: inherit;
+  content: "";
+  pointer-events: none;
+}
+
+.card::before {
+  inset: 0;
+  z-index: 2;
+  padding: 1px;
+  background: conic-gradient(
+    from calc(var(--cursor-angle) - (var(--cone-spread) * 1deg)),
+    transparent 0deg,
+    var(--gradient-one) calc(var(--cone-spread) * 0.8deg),
+    var(--gradient-two) calc(var(--cone-spread) * 1.7deg),
+    var(--gradient-three) calc(var(--cone-spread) * 2.55deg),
+    transparent calc(var(--cone-spread) * 3.4deg),
+    transparent 360deg
+  );
+  opacity: calc(0.2 + (var(--border-glow-strength) * 0.78));
+  transition: opacity 260ms ease;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.card::after {
+  inset: 1px;
+  z-index: 0;
+  background:
+    conic-gradient(
+      from var(--cursor-angle),
+      transparent 0deg,
+      color-mix(in srgb, var(--gradient-one) 58%, transparent) 18deg,
+      color-mix(in srgb, var(--gradient-two) 44%, transparent) 42deg,
+      transparent 78deg
+    ),
+    var(--card-bg);
+  filter: blur(12px);
+  opacity: calc(var(--fill-opacity) * var(--border-glow-strength));
+  transition: opacity 260ms ease;
+}
+
+.edgeLight {
+  inset: calc(var(--glow-padding) * -1);
+  z-index: 0;
+  opacity: var(--border-glow-strength);
+  transition: opacity 260ms ease;
+  -webkit-mask-image: conic-gradient(
+    from var(--cursor-angle) at center,
+    #000 2.5%,
+    transparent 10%,
+    transparent 90%,
+    #000 97.5%
+  );
+  mask-image: conic-gradient(
+    from var(--cursor-angle) at center,
+    #000 2.5%,
+    transparent 10%,
+    transparent 90%,
+    #000 97.5%
+  );
+  mix-blend-mode: plus-lighter;
+}
+
+.edgeLight::before {
+  inset: var(--glow-padding);
+  box-shadow:
+    inset 0 0 0 1px var(--glow-color),
+    inset 0 0 4px var(--glow-color-50),
+    inset 0 0 12px var(--glow-color-30),
+    0 0 4px var(--glow-color-40),
+    0 0 14px var(--glow-color-20),
+    0 0 30px var(--glow-color-10);
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-width: 0;
+  min-height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.button {
+  width: max-content;
+  min-width: 176px;
+  border-radius: var(--border-radius);
+}
+
+.button:hover {
+  transform: translate3d(0, -1px, 0.01px);
+}
+
+.button .inner > :global(.home-hero-cta) {
+  width: 100%;
+  min-width: 0;
+  transform: none;
+}
+
+.button .inner > :global(.home-hero-cta:hover) {
+  transform: none;
+}
+
+.demandCard {
+  height: 100%;
+}
+
+.demandCard:hover {
+  transform: translateY(-2px);
+}
+
+.demandCard .inner > :global(.home-outcome-card) {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  transform: none;
+}
+
+.demandCard .inner > :global(.home-outcome-card:hover) {
+  transform: none;
+}
+
+.card:focus-within::before,
+.sweepActive::before {
+  opacity: 0.92;
+}
+
+@media (max-width: 720px) {
+  .button {
+    flex: 1 1 calc(50% - 10px);
+    max-width: 228.8px;
+    min-width: 0;
+  }
+}
+
+@media (pointer: coarse) {
+  .card::before {
+    opacity: 0.34;
+  }
+
+  .edgeLight {
+    display: none;
+  }
+
+  .button:active {
+    transform: translate3d(0, 1px, 0.01px);
+  }
+
+  .demandCard:active {
+    transform: translateY(1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card::before,
+  .card::after,
+  .edgeLight {
+    transition: none;
+  }
+
+  .card::before {
+    opacity: 0.34;
+  }
+
+  .edgeLight {
+    display: none;
+  }
+
+  .button:hover,
+  .button:active,
+  .demandCard:hover,
+  .demandCard:active {
+    transform: none;
+  }
+}

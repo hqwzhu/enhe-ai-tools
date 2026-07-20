@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";
+import BorderGlow from "@/components/home/border-glow";
 import DecryptedText from "@/components/home/decrypted-text";
 import { HomeParticlesBackground } from "@/components/home/home-particles-background";
 import { ProductDemoCard } from "@/components/product-demo-card";
@@ -240,26 +241,50 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               </p>
 
               <div className="home-hero-actions">
-                <ButtonLink
-                  href={buildLocalePath("/software", forceLocale)}
-                  variant="primary"
-                  className="home-hero-cta home-hero-cta-primary"
-                  data-analytics-event="home_hot_ai_tools_cta_click"
-                  data-analytics-meta-target="software"
-                  data-analytics-meta-placement="home-hero"
+                <BorderGlow
+                  variant="button"
+                  edgeSensitivity={34}
+                  glowColor="190 80 72"
+                  borderRadius={9}
+                  glowRadius={24}
+                  glowIntensity={0.55}
+                  coneSpread={18}
+                  colors={["#56bfd0", "#41c5db", "#20bbd6"]}
+                  fillOpacity={0.18}
                 >
-                  {forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"}
-                </ButtonLink>
-                <ButtonLink
-                  href={buildLocalePath("/skill-learning", forceLocale)}
-                  variant="ghost"
-                  className="home-hero-cta home-hero-cta-accent"
-                  data-analytics-event="home_free_claim_cta_click"
-                  data-analytics-meta-target="skill-learning"
-                  data-analytics-meta-placement="home-hero"
+                  <ButtonLink
+                    href={buildLocalePath("/software", forceLocale)}
+                    variant="primary"
+                    className="home-hero-cta home-hero-cta-primary"
+                    data-analytics-event="home_hot_ai_tools_cta_click"
+                    data-analytics-meta-target="software"
+                    data-analytics-meta-placement="home-hero"
+                  >
+                    {forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"}
+                  </ButtonLink>
+                </BorderGlow>
+                <BorderGlow
+                  variant="button"
+                  edgeSensitivity={34}
+                  glowColor="190 80 72"
+                  borderRadius={9}
+                  glowRadius={24}
+                  glowIntensity={0.55}
+                  coneSpread={18}
+                  colors={["#56bfd0", "#41c5db", "#20bbd6"]}
+                  fillOpacity={0.18}
                 >
-                  {forceLocale === "en" ? "Claim Free" : "免费领取"}
-                </ButtonLink>
+                  <ButtonLink
+                    href={buildLocalePath("/skill-learning", forceLocale)}
+                    variant="ghost"
+                    className="home-hero-cta home-hero-cta-accent"
+                    data-analytics-event="home_free_claim_cta_click"
+                    data-analytics-meta-target="skill-learning"
+                    data-analytics-meta-placement="home-hero"
+                  >
+                    {forceLocale === "en" ? "Claim Free" : "免费领取"}
+                  </ButtonLink>
+                </BorderGlow>
               </div>
             </div>
           </div>
@@ -272,11 +297,25 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
             <h2 id="home-outcome-title">{forceLocale === "en" ? "Choose by need" : "按需求选择"}</h2>
           </div>
           <div className="home-outcome-grid home-product-path-grid">
-            {homeProductPaths[forceLocale].map((item) => (
-              <Link key={item.title} href={buildLocalePath(item.href, forceLocale)} className="home-outcome-card">
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </Link>
+            {homeProductPaths[forceLocale].map((item, index) => (
+              <BorderGlow
+                key={item.title}
+                variant="card"
+                animated={index === 0}
+                edgeSensitivity={28}
+                glowColor="190 85 70"
+                borderRadius={18}
+                glowRadius={42}
+                glowIntensity={0.75}
+                coneSpread={22}
+                colors={["#56bfd0", "#41c5db", "#20bbd6"]}
+                fillOpacity={0.16}
+              >
+                <Link href={buildLocalePath(item.href, forceLocale)} className="home-outcome-card">
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </Link>
+              </BorderGlow>
             ))}
           </div>
         </Container>
