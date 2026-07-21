@@ -39,6 +39,7 @@ describe("homepage BorderGlow source contract", () => {
     expect(component).toContain("cancelAnimationFrame");
     expect(component).toContain('window.matchMedia("(pointer: coarse)")');
     expect(component).toContain('window.matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(component).toMatch(/if \(!animated \|\| !card \|\| coarsePointer\.matches \|\| reducedMotion\.matches\)/);
     expect(component).toContain("onPointerMove={handlePointerMove}");
     expect(component).toContain("onPointerLeave={handlePointerLeave}");
     expect(component).toContain('aria-hidden="true"');

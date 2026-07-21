@@ -137,7 +137,10 @@ export default function BorderGlow({
 
   useEffect(() => {
     const card = cardRef.current;
-    if (!animated || !card || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const coarsePointer = window.matchMedia("(pointer: coarse)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (!animated || !card || coarsePointer.matches || reducedMotion.matches) {
       return;
     }
 
