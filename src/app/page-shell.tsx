@@ -8,9 +8,7 @@ import DecryptedText from "@/components/home/decrypted-text";
 import { HomeParticlesBackground } from "@/components/home/home-particles-background";
 import { ProductDemoCard } from "@/components/product-demo-card";
 import { ButtonLink, Container } from "@/components/ui";
-import { ToolCard } from "@/components/tool-card";
 import { getDictionary, type Locale } from "@/lib/dictionaries";
-import { getHomeRecommendedTools } from "@/lib/public-content";
 import { getHomeProductDemos } from "@/lib/product-demos";
 import {
   buildBreadcrumbSchema,
@@ -179,10 +177,7 @@ export async function generateHomePageMetadata(forceLocale: Locale): Promise<Met
 }
 
 export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
-  const [recommendedTools, homeProductDemos] = await Promise.all([
-    getHomeRecommendedTools(),
-    getHomeProductDemos(),
-  ]);
+  const homeProductDemos = await getHomeProductDemos();
   const t = getDictionary(forceLocale);
   const heroTitle =
     forceLocale === "en"
@@ -214,6 +209,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   return (
     <main className="home-page-shell">
       <StructuredData data={[breadcrumbSchema, webPageSchema, faqSchema]} />
+      <div className="home-pointer-glow" aria-hidden="true" />
       <section className="home-hero-shell">
         <div className="home-hero-liquid-layer" aria-hidden="true">
           <HomeParticlesBackground />
@@ -348,39 +344,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
           </Container>
         </section>
       ) : null}
-
-      <section id="updates" className="home-featured-shell" aria-label="ENHE AI recommended content preview">
-        <Container className="home-hero-reference-frame">
-          <div className="home-product-preview backdrop-blur-xl backdrop-saturate-150">
-            <div className="home-product-preview-header">
-              <div>
-                <h2>{t.home.featuredContentTitle}</h2>
-              </div>
-            </div>
-            {recommendedTools.length > 0 ? (
-              <div className="home-recommended-tool-grid">
-                {recommendedTools.map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} locale={forceLocale} variant="homeFeatured" />
-                ))}
-              </div>
-            ) : (
-              <div className="home-fallback-link-grid">
-                {[
-                  { label: t.home.aiNewsButton, href: forceLocale === "en" ? "/en/ai-news" : "/ai-news" },
-                  { label: t.home.softwareButton, href: forceLocale === "en" ? "/en/software" : "/software" },
-                  { label: t.home.onlineButton, href: forceLocale === "en" ? "/en/account-services" : "/account-services" },
-                  { label: t.home.skillLearningButton, href: forceLocale === "en" ? "/en/skill-learning" : "/skill-learning" }
-                ].map((item) => (
-                  <ButtonLink key={item.href} href={item.href} variant="ghost" className="home-fallback-link">
-                    {item.label}
-                    <ArrowUpRight size={16} />
-                  </ButtonLink>
-                ))}
-              </div>
-            )}
-          </div>
-        </Container>
-      </section>
 
       <section className="home-support-shell" aria-label={forceLocale === "en" ? "Supporting ENHE AI paths" : "ENHE AI 支撑路径"}>
         <Container className="home-hero-reference-frame">

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("public content cache contract", () => {
-  it("caches homepage, listing pages, and tutorials through shared unstable_cache helpers", () => {
+  it("caches listing pages and tutorials through shared unstable_cache helpers", () => {
     const source = readFileSync(new URL("./public-content.ts", import.meta.url), "utf8");
     const home = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const software = readFileSync(new URL("../app/software/page-shell.tsx", import.meta.url), "utf8");
@@ -16,7 +16,8 @@ describe("public content cache contract", () => {
     expect(source).toContain("getPublicToolListing");
     expect(source).toContain("getPublicTutorials");
 
-    expect(home).toContain("getHomeRecommendedTools");
+    expect(home).not.toContain("getHomeRecommendedTools");
+    expect(home).toContain("getHomeProductDemos");
     expect(software).toContain("getPublicToolCategories");
     expect(software).toContain("getPublicToolListing");
     expect(onlineTools).toContain("getPublicToolCategories");

@@ -77,8 +77,7 @@ describe("public a11y smoke source contract", () => {
     expect(sharedLayout).toContain('rel="preload"');
     expect(sharedLayout).toContain("montserrat-latin-800-normal.woff2");
     expect(sharedLayout).toContain("montserrat-latin-900-normal.woff2");
-    expect(css).toContain("content-visibility: auto");
-    expect(css).toContain("contain-intrinsic-size: 1100px");
+    expect(css).not.toContain(".home-featured-shell");
     expect(player).toContain('preload="none"');
     expect(player).toContain("IntersectionObserver");
     expect(player).toContain("video.src = src");

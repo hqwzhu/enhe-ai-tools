@@ -1794,8 +1794,13 @@ select option:disabled {
   padding-top: 0;
 }
 
+.fade-in:has(.home-page-shell) {
+  animation: home-fade-in 0.45s ease both;
+}
+
 .home-page-shell {
   position: relative;
+  background: #101821;
 }
 
 .home-hero-shell {
@@ -1884,7 +1889,7 @@ select option:disabled {
 .home-hero-reference-frame {
   position: relative;
   max-width: 1280px;
-  z-index: 3;
+  z-index: 4;
 }
 
 .home-hero-stage {
@@ -2261,12 +2266,6 @@ select option:disabled {
   transform: translateY(-1px);
 }
 
-.home-featured-shell {
-  position: relative;
-  padding: clamp(1rem, 2vw, 1.8rem) 0 5rem;
-  scroll-margin-top: 96px;
-}
-
 .home-product-demo-shell {
   position: relative;
   padding: clamp(1rem, 2.2vw, 1.8rem) 0;
@@ -2302,6 +2301,23 @@ select option:disabled {
 .home-outcome-shell > * {
   position: relative;
   z-index: 1;
+}
+
+.home-pointer-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.home-pointer-glow,
+.site-footer::after {
+  background:
+    radial-gradient(360px circle at var(--mouse-x) var(--mouse-y), rgba(65, 197, 219, 0.22), transparent 72%),
+    radial-gradient(180px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.1), transparent 68%);
+  background-attachment: fixed;
+  mix-blend-mode: screen;
+  opacity: 0.78;
 }
 
 .home-section-heading {
@@ -2634,18 +2650,6 @@ select option:disabled {
   -webkit-backdrop-filter: blur(18px) saturate(150%);
 }
 
-.home-recommended-tool-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.home-recommended-tool-grid .surface-panel {
-  min-height: 100%;
-  border-color: rgba(218, 244, 255, 0.16);
-  background-color: rgba(16, 29, 39, 0.68);
-}
-
 .home-product-demo-panel {
   margin-top: 0;
 }
@@ -2921,10 +2925,6 @@ select option:disabled {
   gap: 1rem;
 }
 
-.home-recommended-tool-grid-wide {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 .home-feature-sections {
   position: relative;
   z-index: 1;
@@ -3102,13 +3102,13 @@ select option:disabled {
 
 .site-footer {
   position: relative;
+  margin-top: -1px;
   overflow: hidden;
   isolation: isolate;
   scroll-margin-top: 96px;
   background:
     radial-gradient(circle at 9% 100%, rgba(65, 197, 219, 0.2), transparent 32rem),
-    radial-gradient(circle at 52% -18%, rgba(86, 191, 208, 0.13), transparent 30rem),
-    linear-gradient(180deg, rgba(16, 24, 33, 0.2) 0%, rgba(13, 22, 31, 0.88) 32%, #0b1118 72%, #080d12 100%);
+    linear-gradient(180deg, #101821 0%, #101821 18%, #0b1118 72%, #080d12 100%);
   color: var(--marketing-muted);
   font-size: 14px;
 }
@@ -3126,15 +3126,6 @@ select option:disabled {
   background:
     linear-gradient(180deg, rgba(16, 24, 33, 0) 0%, rgba(16, 24, 33, 0.5) 22%, transparent 46%),
     linear-gradient(180deg, transparent 52%, rgba(65, 197, 219, 0.14) 84%, rgba(65, 197, 219, 0.2) 100%);
-}
-
-.site-footer::after {
-  background:
-    radial-gradient(360px circle at var(--mouse-x) var(--mouse-y), rgba(65, 197, 219, 0.22), transparent 72%),
-    radial-gradient(180px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.1), transparent 68%);
-  background-attachment: fixed;
-  mix-blend-mode: screen;
-  opacity: 0.78;
 }
 
 .site-footer-inner {
@@ -3530,11 +3521,6 @@ select option:disabled {
   display: block;
 }
 
-.home-featured-shell {
-  content-visibility: auto;
-  contain-intrinsic-size: 1100px;
-}
-
 @media (min-width: 768px) {
   .tool-detail-payment-help {
     white-space: nowrap;
@@ -3580,8 +3566,6 @@ select option:disabled {
     gap: 8px;
   }
 
-  .home-recommended-tool-grid,
-  .home-recommended-tool-grid-wide,
   .home-fallback-link-grid,
   .product-demo-list-grid {
     grid-template-columns: 1fr;
@@ -3758,6 +3742,7 @@ select option:disabled {
     transition: none;
   }
 
+  .home-pointer-glow,
   .site-footer::after {
     display: none;
   }
@@ -4026,10 +4011,6 @@ select option:disabled {
     font-size: clamp(12.4px, 3.2vw, 13.4px) !important;
   }
 
-  .home-featured-shell {
-    padding-top: 1rem;
-  }
-
   .home-outcome-grid,
   .home-workflow-grid,
   .home-product-path-grid,
@@ -4131,6 +4112,7 @@ select option:disabled {
     transition: none !important;
   }
 
+  .home-pointer-glow,
   .site-footer::after {
     display: none;
   }
@@ -4979,6 +4961,15 @@ select option:disabled {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes home-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

@@ -22,14 +22,16 @@ describe("site audit regression coverage", () => {
     expect(dictionaries.zh.pricing.intro.length).toBeGreaterThanOrEqual(50);
   });
 
-  it("keeps the homepage featured fallback as useful internal links", () => {
+  it("keeps useful internal links after removing homepage featured content", () => {
     const homeShell = read("src/app/page-shell.tsx");
 
     expect(dictionaries.zh.home.featuredContentEmpty).not.toContain("后台设置");
     expect(dictionaries.en.home.featuredContentEmpty).not.toContain("admin panel");
-    expect(homeShell).toContain("home-fallback-link-grid");
+    expect(homeShell).not.toContain("home-fallback-link-grid");
+    expect(homeShell).not.toContain("home-featured-shell");
+    expect(homeShell).toContain("home-support-link-grid");
     expect(homeShell).toContain('"/ai-news"');
-    expect(homeShell).toContain('"/account-services"');
+    expect(homeShell).toContain('"/pricing"');
   });
 
   it("keeps the homepage growth hub linked to major SEO and conversion paths", () => {
@@ -40,7 +42,9 @@ describe("site audit regression coverage", () => {
       '"/ai-trends"',
       '"/software"',
       '"/skill-learning"',
-      '"/account-services"',
+      '"/product-paths/work-efficiency"',
+      '"/product-paths/media-generation"',
+      '"/product-paths/future-ai"',
       '"/pricing"',
       '"/tutorials"',
       '"/build-your-own-x"',

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("homepage SaaS redesign source", () => {
-  it("uses a simplified task-first homepage while keeping recommended tools and SEO support links", () => {
+  it("uses a simplified task-first homepage without recommended cards while keeping SEO support links", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("../components/site-header.tsx", import.meta.url), "utf8");
     const dictionaries = readFileSync(new URL("../lib/dictionaries.ts", import.meta.url), "utf8");
@@ -18,8 +18,8 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain('className="home-hero-intro"');
     expect(page).not.toContain("home-hero-background");
     expect(page).not.toContain("home-hero-unicorn-remix");
-    expect(page).toContain('id="updates" className="home-featured-shell"');
-    expect(page.indexOf("home-featured-shell")).toBeGreaterThan(page.indexOf("home-outcome-shell"));
+    expect(page).not.toContain("home-featured-shell");
+    expect(page).not.toContain("ENHE AI recommended content preview");
     expect(page).toContain("const heroTitle =");
     expect(page).toContain("ENHE AI");
     expect(page).toContain("让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。");
@@ -29,10 +29,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("t.home.metricsExploreTitle");
     expect(page).not.toContain("t.home.metricsExplore");
     expect(page).not.toContain("t.home.metricsOutcome");
-    expect(page).toContain("t.home.softwareButton");
-    expect(page).toContain("t.home.onlineButton");
-    expect(page).toContain("t.home.aiNewsButton");
-    expect(page).toContain("t.home.skillLearningButton");
+    expect(page).not.toContain("t.home.featuredContentTitle");
     expect(page).not.toContain("HomeGooeyNav");
     expect(page).not.toContain("const heroCtaItems = [");
     expect(page).toContain('className="home-hero-actions"');
@@ -56,11 +53,11 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('className="home-seo-disclosure"');
     expect(page).not.toContain('className="home-workflow-shell"');
     expect(page).not.toContain('className="home-byox-spotlight"');
-    expect(page).toContain("t.home.featuredContentTitle");
     expect(page).not.toContain("t.home.featuredContentIntro");
     expect(page).not.toContain("take: 40");
     expect(page).not.toContain("recommendedTools.slice(previewTools.length)");
-    expect(page).toContain("getHomeRecommendedTools");
+    expect(page).not.toContain("getHomeRecommendedTools");
+    expect(page).not.toContain("ToolCard");
     expect(page).toContain("getEffectiveLocalizedHomeHeroIntro(settings, forceLocale, t.home.intro)");
     expect(page).not.toContain('href="/account-services" variant="ghost" className="home-preview-link"');
     expect(page).toContain('href: "/product-paths/work-efficiency"');
@@ -69,7 +66,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('href: "/ai-news"');
     expect(page).toContain('href: "/ai-trends"');
     expect(page).toContain('href: "/ai-topics"');
-    expect(page).toContain("home-product-preview backdrop-blur-xl backdrop-saturate-150");
+    expect(page).toContain("home-product-preview home-product-demo-panel backdrop-blur-xl backdrop-saturate-150");
     expect(page).not.toContain("HeroLogoMark");
     expect(page).not.toContain("enhe-orbital-system");
     expect(page).not.toContain("enhe-circuit-line");
@@ -94,7 +91,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("--marketing-accent: #41c5db");
     expect(css).toContain("--font-sans: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
     expect(css).toContain("--font-heading-zh: 'Montserrat', 'Microsoft YaHei', 'Microsoft YaHei UI'");
-    expect(css).toContain(".home-page-shell");
+    expect(css).toContain(".home-page-shell {\n  position: relative;\n  background: #101821;");
     expect(css).toContain(".home-hero-liquid-layer");
     expect(css).toContain(".particles-container");
     expect(css).toContain(".home-particles-fallback");
@@ -103,7 +100,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toMatch(/\.home-hero-positioning\s*{[^}]*font-weight: 400;/);
     expect(css).toContain(".home-hero-title-simple");
     expect(css).not.toContain(".home-hero-metrics");
-    expect(css).toContain(".home-featured-shell");
+    expect(css).not.toContain(".home-featured-shell");
     expect(css).toContain(".home-outcome-shell");
     expect(css).toContain(".home-outcome-grid");
     expect(css).toContain(".home-product-path-grid");
@@ -233,11 +230,11 @@ describe("homepage SaaS redesign source", () => {
     expect(component).toContain("Adapted from React Bits DecryptedText");
   });
 
-  it("uses simplified product cards in the homepage featured preview without changing the full card contract", () => {
+  it("removes homepage featured cards without changing the reusable tool card contract", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const toolCard = readFileSync(new URL("../components/tool-card.tsx", import.meta.url), "utf8");
 
-    expect(page).toContain('<ToolCard key={tool.id} tool={tool} locale={forceLocale} variant="homeFeatured" />');
+    expect(page).not.toContain('<ToolCard key={tool.id} tool={tool} locale={forceLocale} variant="homeFeatured" />');
     expect(toolCard).toContain('variant?: "default" | "homeFeatured"');
     expect(toolCard).toContain('variant = "default"');
     expect(toolCard).toContain('const showMarketingMeta = variant !== "homeFeatured"');
@@ -314,7 +311,8 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("margin-bottom: -1px;");
     expect(css).toContain("top: clamp(-20rem, -24vw, -12rem);");
     expect(css).toContain("background: radial-gradient(ellipse at 50% 54%, rgba(65, 197, 219, 0.08), transparent 34rem)");
-    expect(css).toContain(".home-recommended-tool-grid .surface-panel");
+    expect(css).not.toContain(".home-recommended-tool-grid");
+    expect(css).toContain("linear-gradient(180deg, #101821 0%, #101821 18%, #0b1118 72%, #080d12 100%)");
     expect(css).toContain(".site-footer-logo {\n  width: 48px;\n  height: 32px;\n  object-fit: contain;\n  filter: brightness(0) invert(1)");
     expect(css).not.toContain(".home-gooey-effect.filter");
     expect(css).not.toContain(".home-gooey-particle");
