@@ -36,4 +36,23 @@ describe("public navigation active path matching", () => {
       ),
     ).toBe(false);
   });
+
+  it("supports exact matching for a base dropdown child", () => {
+    expect(
+      isActivePublicPath(
+        "/skill-learning/ai-prompt-management",
+        "/skill-learning",
+        new URLSearchParams(),
+        true,
+      ),
+    ).toBe(false);
+    expect(
+      isActivePublicPath(
+        "/skill-learning",
+        "/skill-learning",
+        new URLSearchParams(),
+        true,
+      ),
+    ).toBe(true);
+  });
 });

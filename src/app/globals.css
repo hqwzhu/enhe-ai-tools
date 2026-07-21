@@ -1239,6 +1239,17 @@ select option:disabled {
   transform: translateX(-50%) translateY(0);
 }
 
+.site-nav-dropdown.is-dismissed .site-nav-dropdown-trigger svg {
+  opacity: 0.68;
+  transform: rotate(0);
+}
+
+.site-nav-dropdown.is-dismissed .site-nav-dropdown-panel {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-4px);
+}
+
 .site-nav-dropdown-link {
   display: grid;
   gap: 4px;

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 type PublicNavLinkProps = Omit<ComponentProps<typeof PrefetchLink>, "href"> & {
   href: string;
+  exact?: boolean;
 };
 
 type SearchParamsLike = Pick<URLSearchParams, "getAll">;
@@ -15,6 +16,7 @@ export function isActivePublicPath(
   pathname: string,
   href: string,
   currentSearchParams?: SearchParamsLike,
+  exact = false,
 ) {
   const hrefWithoutHash = href.split("#", 1)[0];
   const queryIndex = hrefWithoutHash.indexOf("?");
@@ -29,19 +31,21 @@ export function isActivePublicPath(
     );
   }
 
+  if (exact) return pathname === hrefPath;
   if (hrefPath === "/" || hrefPath === "/en") return pathname === hrefPath;
   return pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
 }
 
 export function PublicNavLink({
   href,
+  exact = false,
   className,
   children,
   ...props
 }: PublicNavLinkProps) {
   const pathname = usePathname() ?? "/";
   const searchParams = useSearchParams();
-  const isActive = isActivePublicPath(pathname, href, searchParams);
+  const isActive = isActivePublicPath(pathname, href, searchParams, exact);
 
   return (
     <PrefetchLink

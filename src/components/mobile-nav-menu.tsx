@@ -50,7 +50,12 @@ export function MobileNavMenu({
               </PublicNavLink>
               <div className="mobile-nav-submenu">
                 {item.children.map((child) => (
-                  <PublicNavLink key={child.href} href={child.href} className="mobile-nav-sublink cursor-target">
+                  <PublicNavLink
+                    key={child.href}
+                    href={child.href}
+                    exact={child.href === item.href}
+                    className="mobile-nav-sublink cursor-target"
+                  >
                     <span>{child.label}</span>
                   </PublicNavLink>
                 ))}

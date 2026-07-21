@@ -91,17 +91,31 @@ describe("site header navigation", () => {
       new URL("../components/site-header.tsx", import.meta.url),
       "utf8",
     );
+    const dropdownSource = readFileSync(
+      new URL("../components/public-nav-dropdown.tsx", import.meta.url),
+      "utf8",
+    );
+    const mobileSource = readFileSync(
+      new URL("../components/mobile-nav-menu.tsx", import.meta.url),
+      "utf8",
+    );
     const css = readFileSync(
       new URL("../app/globals.css", import.meta.url),
       "utf8",
     ).replace(/\r\n/g, "\n");
 
     expect(source).not.toContain("<details key={item.href} className=\"site-nav-dropdown\">");
-    expect(source).toContain('<div key={item.href} className="site-nav-dropdown">');
+    expect(source).toContain("<PublicNavDropdown");
+    expect(source).toContain("exact={child.href === item.href}");
+    expect(mobileSource).toContain("exact={child.href === item.href}");
+    expect(dropdownSource).toContain("useState(false)");
+    expect(dropdownSource).toContain("onPointerEnter");
+    expect(dropdownSource).toContain("inert={dismissed ? true : undefined}");
     expect(css).toContain(".site-nav-dropdown::after {");
     expect(css).toContain("height: 12px;");
     expect(css).toContain(".site-nav-dropdown:hover .site-nav-dropdown-panel,");
     expect(css).toContain(".site-nav-dropdown:focus-within .site-nav-dropdown-panel");
+    expect(css).toContain(".site-nav-dropdown.is-dismissed .site-nav-dropdown-panel");
     expect(css).not.toContain(".site-nav-dropdown[open] .site-nav-dropdown-panel");
     expect(css).not.toContain(".site-nav-dropdown[open] .site-nav-dropdown-trigger");
   });
