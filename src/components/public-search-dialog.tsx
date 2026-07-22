@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowUpRight, Search, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useTransition } from "react";
 import type { FormEvent } from "react";
@@ -9,6 +10,14 @@ import type {
   PublicSearchResult,
   PublicSearchResultType,
 } from "@/lib/public-search";
+
+const SearchStrands = dynamic(
+  () => import("@/components/search/search-strands.client"),
+  {
+    ssr: false,
+    loading: () => <div className="public-search-strands-static" />,
+  },
+);
 
 type PublicSearchDialogProps = {
   searchPath: string;
@@ -40,6 +49,7 @@ export function PublicSearchDialog({
   labels,
 }: PublicSearchDialogProps) {
   const router = useRouter();
+  const pageRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
@@ -77,6 +87,70 @@ export function PublicSearchDialog({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [closeDialog]);
 
+  useEffect(() => {
+    const page = pageRef.current;
+    if (!page) return;
+
+    const interactivePointer = window.matchMedia(
+      "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)",
+    );
+    const restingPoint = { x: 0.5, y: 0.3 };
+    const target = { ...restingPoint };
+    const current = { ...restingPoint };
+    let frameId = 0;
+
+    const renderPointer = () => {
+      frameId = 0;
+      current.x += (target.x - current.x) * 0.09;
+      current.y += (target.y - current.y) * 0.09;
+
+      page.style.setProperty("--search-pointer-x", `${current.x * 100}%`);
+      page.style.setProperty("--search-pointer-y", `${current.y * 100}%`);
+      page.style.setProperty("--search-parallax-x", `${(current.x - 0.5) * 16}px`);
+      page.style.setProperty("--search-parallax-y", `${(current.y - 0.3) * 12}px`);
+
+      if (
+        Math.abs(target.x - current.x) > 0.0005 ||
+        Math.abs(target.y - current.y) > 0.0005
+      ) {
+        frameId = window.requestAnimationFrame(renderPointer);
+      }
+    };
+
+    const queuePointerRender = () => {
+      if (!frameId) frameId = window.requestAnimationFrame(renderPointer);
+    };
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (!interactivePointer.matches) return;
+      const rect = page.getBoundingClientRect();
+      target.x = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
+      target.y = Math.min(Math.max((event.clientY - rect.top) / rect.height, 0), 1);
+      queuePointerRender();
+    };
+
+    const resetPointer = () => {
+      target.x = restingPoint.x;
+      target.y = restingPoint.y;
+      queuePointerRender();
+    };
+
+    const handleInteractionModeChange = () => {
+      if (!interactivePointer.matches) resetPointer();
+    };
+
+    page.addEventListener("pointermove", handlePointerMove, { passive: true });
+    page.addEventListener("pointerleave", resetPointer);
+    interactivePointer.addEventListener("change", handleInteractionModeChange);
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      page.removeEventListener("pointermove", handlePointerMove);
+      page.removeEventListener("pointerleave", resetPointer);
+      interactivePointer.removeEventListener("change", handleInteractionModeChange);
+    };
+  }, []);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -98,7 +172,7 @@ export function PublicSearchDialog({
         : labels.initialText;
 
   return (
-    <div className="public-search-overlay" role="presentation">
+    <div ref={pageRef} className="public-search-overlay" role="presentation">
       <section
         ref={dialogRef}
         className="public-search-dialog"
@@ -106,8 +180,7 @@ export function PublicSearchDialog({
         aria-modal="true"
         aria-labelledby="public-search-title"
       >
-        <header className="public-search-header">
-          <h1 id="public-search-title">{labels.title}</h1>
+        <div className="public-search-toolbar">
           <button
             type="button"
             className="public-search-close cursor-target"
@@ -117,6 +190,14 @@ export function PublicSearchDialog({
           >
             <X size={20} aria-hidden="true" />
           </button>
+        </div>
+
+        <div className="public-search-strands-stage" aria-hidden="true">
+          <SearchStrands />
+        </div>
+
+        <header className="public-search-header">
+          <h1 id="public-search-title">{labels.title}</h1>
         </header>
 
         <form
