@@ -63,6 +63,21 @@ const generatedSlugPatterns = [
   /^e2e-[a-z0-9-]+$/i,
 ] as const;
 
+const englishToolContentOverrides: Record<
+  string,
+  { summary: string; content: string }
+> = {
+  "local-ai-voice-generator-for-voiceover-materials": {
+    summary:
+      "Local AI Voice Generator is an offline Windows desktop tool for text-to-speech, authorized voice cloning, voice design, multi-speaker dialogue, and reusable audio asset management.",
+    content: [
+      "Local AI Voice Generator is an offline Windows desktop application based on the open-source Qwen3-TTS project. It supports text-to-speech, authorized voice cloning, voice design, multi-speaker dialogue, voice management, and model fine-tuning for local audio-production workflows.",
+      "Creators can use it to prepare short-video narration, course explanations, product demonstrations, corporate training material, dialogue prototypes, reading material, podcast drafts, and multilingual voice assets. Generated audio is stored in the local output directory, and the interface supports both Chinese and English.",
+      "Voice cloning must only be used with audio and voices that you are authorized to process. Review the Windows environment requirements, model setup, storage needs, and delivery instructions before purchase or installation.",
+    ].join("\n\n"),
+  },
+};
+
 const cjkPattern = /[\u3400-\u9fff]/;
 const latinWordPattern = /[A-Za-z][A-Za-z0-9'+-]*/g;
 const sentenceBreakPattern = /[。！？!?；;\n]+/;
@@ -128,6 +143,8 @@ function getUserFirstToolCopyOverride(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
+  if (locale === "en") return "";
+
   if (
     tool.type === "online" &&
     (hasAccountServiceRiskCopy(tool.shortDescription) ||
@@ -152,6 +169,21 @@ function normalizeRichText(value: string | null | undefined) {
   );
 }
 
+function isPlaceholderSummary(value: string) {
+  const normalized = normalizeText(value).toLowerCase();
+  if (!normalized) return true;
+
+  return [
+    "draft",
+    "tbd",
+    "todo",
+    "coming soon",
+    "placeholder",
+    "test",
+    "n/a",
+  ].includes(normalized);
+}
+
 function extractLocalizedBlocks(value: string | null | undefined) {
   const source = value ?? "";
   const blocks: Partial<Record<Locale, string>> = {};
@@ -171,13 +203,39 @@ function extractLocalizedBlocks(value: string | null | undefined) {
   };
 }
 
+function extractImplicitLocalizedBlocks(value: string | null | undefined) {
+  const source = normalizeRichText(value);
+  const lines = source
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length < 2) return null;
+
+  const englishStart = lines.findIndex((line, index) => {
+    if (index === 0 || hasCjk(line) || countLatinWords(line) < 6) return false;
+
+    const chineseSection = lines.slice(0, index).join(" ");
+    const englishSection = lines.slice(index).join(" ");
+    return hasCjk(chineseSection) && !hasCjk(englishSection);
+  });
+  if (englishStart < 1) return null;
+
+  return {
+    zh: lines.slice(0, englishStart).join("\n\n"),
+    en: lines.slice(englishStart).join("\n\n"),
+  } satisfies Record<Locale, string>;
+}
+
 function resolveLocalizedInlineCopy(
   value: string | null | undefined,
   locale: Locale,
   normalizer: (value: string | null | undefined) => string,
 ) {
   const localized = extractLocalizedBlocks(value);
-  if (!localized.hasMatch) return normalizer(value);
+  if (!localized.hasMatch) {
+    const implicit = extractImplicitLocalizedBlocks(value);
+    return normalizer(implicit?.[locale] ?? value);
+  }
 
   if (locale === "en") {
     return normalizer(localized.blocks.en);
@@ -246,6 +304,21 @@ function isLocalizedEnglishCopy(value: string, minimumWords = 2) {
     !hasCjk(normalized) &&
     isEnglishLike(normalized, minimumWords)
   );
+}
+
+function buildEnglishSummaryFromContent(value: string | null | undefined) {
+  const localizedContent = resolveLocalizedInlineCopy(
+    value,
+    "en",
+    normalizeRichText,
+  );
+  if (!isLocalizedEnglishCopy(localizedContent, 12)) return "";
+
+  const firstParagraph = localizedContent
+    .split(/\n{2,}/)
+    .map(normalizeText)
+    .find((paragraph) => isLocalizedEnglishCopy(paragraph, 6));
+  return firstParagraph ?? normalizeText(localizedContent);
 }
 
 function isPromotionalName(value: string) {
@@ -346,6 +419,18 @@ function humanizeSlug(slug: string) {
 
 function buildEnglishCategoryFromChinese(name: string, type: ToolType) {
   if (!name) return getDefaultToolLabel(type, "en");
+  if (name.includes("办公效率")) return "Office Productivity Tools";
+  if (name.includes("文件处理")) return "File Processing Tools";
+  if (name.includes("系统实用")) return "System Utilities";
+  if (name.includes("数据分析")) return "Data Analysis Tools";
+  if (name.includes("提升效率")) return "Productivity Tools";
+  if (name.includes("视频/图片处理")) return "Video/Image Processing";
+  if (name.includes("图片")) return "AI Image Tool";
+  if (name.includes("账号订购")) return "Account Subscription";
+  if (name.includes("升级订阅")) return "Subscription Upgrade";
+  if (name.includes("提示词")) return "AI Prompt";
+  if (name.includes("副业变现")) return "AI Side Income";
+  if (name.includes("智能体")) return "AI Agent";
   if (name.includes("自动化")) return "Automation Software";
   if (name.includes("电脑软件") || name.includes("桌面"))
     return "AI Desktop Software";
@@ -542,40 +627,64 @@ export function buildLocalizedToolSummary(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
+  const englishOverride = englishToolContentOverrides[tool.slug];
+  if (locale === "en" && englishOverride) return englishOverride.summary;
+
   const override = getUserFirstToolCopyOverride(tool, locale);
-  if (override) return override;
+  if (locale === "zh" && override) return override;
 
   const shortDescription = resolveLocalizedInlineCopy(
     tool.shortDescription,
     locale,
     normalizeText,
   );
-  return tool.type === "online"
-    ? sanitizeAccountServiceCopy(shortDescription, locale)
-    : shortDescription;
+  if (locale === "zh")
+    return tool.type === "online"
+      ? sanitizeAccountServiceCopy(shortDescription, "zh")
+      : shortDescription;
+  if (
+    isLocalizedEnglishCopy(shortDescription, 4) &&
+    !isPlaceholderSummary(shortDescription)
+  ) {
+    return shortDescription;
+  }
+  const contentSummary = buildEnglishSummaryFromContent(tool.content);
+  if (contentSummary) return contentSummary;
+  return buildEnglishToolSentence(tool);
 }
 
 export function buildLocalizedToolLongContent(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
+  const englishOverride = englishToolContentOverrides[tool.slug];
+  if (locale === "en" && englishOverride) return englishOverride.content;
+
   const content = normalizeRichText(tool.content);
   const localizedContent = resolveLocalizedInlineCopy(
     tool.content,
     locale,
     normalizeRichText,
   );
-  return tool.type === "online"
-    ? sanitizeAccountServiceRichCopy(
-        localizedContent ||
-          resolveLocalizedInlineCopy(
-            tool.shortDescription,
-            locale,
-            normalizeRichText,
-          ),
-        locale,
-      )
-    : localizedContent || content;
+  if (locale === "zh")
+    return tool.type === "online"
+      ? sanitizeAccountServiceRichCopy(
+          localizedContent ||
+            resolveLocalizedInlineCopy(
+              tool.shortDescription,
+              "zh",
+              normalizeRichText,
+            ),
+          "zh",
+        )
+      : localizedContent || content;
+  if (isLocalizedEnglishCopy(localizedContent, 8)) return localizedContent;
+
+  const summary = buildLocalizedToolSummary(tool, locale);
+  return [
+    summary,
+    "This English page gives readers the core overview, access guidance, workflow context, and support guidance needed to evaluate the tool quickly.",
+  ].join(" ");
 }
 
 export function shouldIndexEnglishToolPage(
@@ -587,6 +696,13 @@ export function shouldIndexEnglishToolPage(
   const localizedIdentity = resolveLocalizedToolIdentity(tool, "en");
   const localizedSummary = buildLocalizedToolSummary(tool, "en");
   const localizedContent = buildLocalizedToolLongContent(tool, "en");
+  const englishOverride = englishToolContentOverrides[tool.slug];
+  const sourceSummary =
+    englishOverride?.summary ??
+    resolveLocalizedInlineCopy(tool.shortDescription, "en", normalizeText);
+  const sourceContent =
+    englishOverride?.content ??
+    resolveLocalizedInlineCopy(tool.content, "en", normalizeRichText);
   const defaultLabel = getDefaultToolLabel(tool.type, "en");
   const englishName = normalizeText(tool.englishName);
   const hasReadableEnglishName =
@@ -596,6 +712,10 @@ export function shouldIndexEnglishToolPage(
   return (
     hasReadableEnglishName &&
     Boolean(englishName) &&
+    (isLocalizedEnglishCopy(sourceSummary, 6) ||
+      Boolean(englishOverride) ||
+      Boolean(buildEnglishSummaryFromContent(tool.content))) &&
+    isLocalizedEnglishCopy(sourceContent, 12) &&
     isLocalizedEnglishCopy(localizedSummary, 6) &&
     isLocalizedEnglishCopy(localizedContent, 12)
   );
@@ -631,10 +751,10 @@ export function buildLocalizedToolMetaDescription(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
-  const override = getUserFirstToolCopyOverride(tool, locale);
-  if (override) return override;
-
   if (locale === "zh") {
+    const override = getUserFirstToolCopyOverride(tool, "zh");
+    if (override) return override;
+
     const description =
       resolveLocalizedInlineCopy(tool.shortDescription, "zh", normalizeText) ||
       resolveLocalizedInlineCopy(tool.content, "zh", normalizeText);
@@ -650,7 +770,21 @@ export function buildLocalizedToolPreviewText(
   tool: LocalizedToolInput,
   locale: Locale,
 ) {
-  const summary = buildLocalizedToolSummary(tool, locale);
+  if (locale === "zh") {
+    const override = getUserFirstToolCopyOverride(tool, "zh");
+    if (override) return override.split(sentenceBreakPattern)[0]?.trim() ?? override;
+
+    const preview = resolveLocalizedInlineCopy(
+      tool.shortDescription,
+      "zh",
+      normalizeText,
+    );
+    return tool.type === "online"
+      ? sanitizeAccountServiceCopy(preview, "zh")
+      : preview;
+  }
+
+  const summary = buildLocalizedToolSummary(tool, "en");
   return summary.split(sentenceBreakPattern).find(Boolean)?.trim() ?? summary;
 }
 

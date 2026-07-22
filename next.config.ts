@@ -1,9 +1,24 @@
 import type { NextConfig } from "next";
-import {
-  localeDetectionCacheControl,
-  localeDetectionVaryHeader
-} from "./src/lib/locale-routing";
 import { adminFileUploadBodySizeLimit } from "./src/lib/upload-limits";
+
+const securityHeaders = [
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=31536000; includeSubDomains"
+  },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()"
+  },
+  {
+    key: "Content-Security-Policy-Report-Only",
+    value:
+      "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://lf1-cdn-tos.bytegoofy.com; connect-src 'self' https:; frame-src 'self' https:"
+  }
+];
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -11,12 +26,20 @@ const nextConfig: NextConfig = {
     return [
       { source: "/enhe-ai", destination: "/about", statusCode: 301 },
       { source: "/en/enhe-ai", destination: "/en/about", statusCode: 301 },
+      { source: "/account-services/gemini-pro", destination: "/account-services", statusCode: 301 },
+      { source: "/en/account-services/gemini-pro", destination: "/en/account-services", statusCode: 301 },
       { source: "/ai-news/ai-2", destination: "/ai-news/tencent-cloud-efficiency-agent-tools", statusCode: 301 },
       { source: "/en/ai-news/ai-2", destination: "/en/ai-news/tencent-cloud-efficiency-agent-tools", statusCode: 301 },
       { source: "/ai-news/ai-3", destination: "/ai-news/how-to-choose-ai-tool-website", statusCode: 301 },
       { source: "/en/ai-news/ai-3", destination: "/en/ai-news/how-to-choose-ai-tool-website", statusCode: 301 },
       { source: "/ai-news/enhe-ai", destination: "/ai-news/enhe-ai-tool-station-user-guide", statusCode: 301 },
       { source: "/en/ai-news/enhe-ai", destination: "/en/ai-news/enhe-ai-tool-station-user-guide", statusCode: 301 },
+      { source: "/ai-news/github-copilot-cli-ai-2", destination: "/ai-news/github-copilot-cli-ai", statusCode: 301 },
+      { source: "/en/ai-news/github-copilot-cli-ai-2", destination: "/en/ai-news/github-copilot-cli-ai", statusCode: 301 },
+      { source: "/ai-news/anolisa-ai-2", destination: "/ai-news/anolisa-ai", statusCode: 301 },
+      { source: "/en/ai-news/anolisa-ai-2", destination: "/en/ai-news/anolisa-ai", statusCode: 301 },
+      { source: "/ai-news/ai-7-2", destination: "/ai-news/ai-7", statusCode: 301 },
+      { source: "/en/ai-news/ai-7-2", destination: "/en/ai-news/ai-7", statusCode: 301 },
       { source: "/software/zfb", destination: "/software/zfb-transfer-link-qr-code-generator", statusCode: 301 },
       { source: "/en/software/zfb", destination: "/en/software/zfb-transfer-link-qr-code-generator", statusCode: 301 },
       { source: "/skill-learning/ai-ai-ilo5a5", destination: "/skill-learning/ai-monetization-side-hustle-course", statusCode: 301 },
@@ -64,20 +87,6 @@ const nextConfig: NextConfig = {
         value: "en-US"
       }
     ];
-    const zhRootCacheHeaders = [
-      {
-        key: "Cache-Control",
-        value: localeDetectionCacheControl
-      },
-      {
-        key: "Content-Language",
-        value: "zh-CN"
-      },
-      {
-        key: "Vary",
-        value: localeDetectionVaryHeader
-      }
-    ];
     const publicAssetCacheHeaders = [
       {
         key: "Cache-Control",
@@ -86,6 +95,7 @@ const nextConfig: NextConfig = {
     ];
 
     return [
+      { source: "/:path*", headers: securityHeaders },
       { source: "/robots.txt", headers: publicAssetCacheHeaders },
       { source: "/sitemap.xml", headers: publicAssetCacheHeaders },
       { source: "/llms.txt", headers: publicAssetCacheHeaders },
@@ -97,7 +107,7 @@ const nextConfig: NextConfig = {
       { source: "/okf/build-your-own-x/index.md", headers: publicAssetCacheHeaders },
       { source: "/okf/account-services/index.md", headers: publicAssetCacheHeaders },
       { source: "/okf/skill-learning/index.md", headers: publicAssetCacheHeaders },
-      { source: "/", headers: zhRootCacheHeaders },
+      { source: "/", headers: zhPublicCacheHeaders },
       { source: "/en", headers: enPublicCacheHeaders },
       { source: "/about", headers: zhPublicCacheHeaders },
       { source: "/en/about", headers: enPublicCacheHeaders },

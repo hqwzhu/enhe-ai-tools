@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildBrandSearchResult,
+  buildPublicToolSearchWhere,
   normalizePublicSearchQuery,
 } from "@/lib/public-search";
 
@@ -21,5 +22,15 @@ describe("public search", () => {
       href: "/en/about",
     });
     expect(buildBrandSearchResult("unrelated phrase", "zh")).toBeNull();
+  });
+
+  it("searches product names, categories, summaries, and body copy", () => {
+    const where = JSON.stringify(buildPublicToolSearchWhere("voice"));
+
+    expect(where).toContain('"name"');
+    expect(where).toContain('"englishName"');
+    expect(where).toContain('"category"');
+    expect(where).toContain('"shortDescription"');
+    expect(where).toContain('"content"');
   });
 });

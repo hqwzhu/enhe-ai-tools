@@ -26,7 +26,8 @@ describe("site header navigation", () => {
     expect(source).toContain("t.nav.admin");
     expect(source).toContain("HeaderAdminNavLink");
     expect(source).toContain("HeaderSessionGate");
-    expect(source).toContain("getHeaderUserSnapshot");
+    expect(source).not.toContain("getHeaderUserSnapshot");
+    expect(source).toContain("const headerUser = null");
     expect(accountControlsSource).not.toContain("labels.admin");
     expect(accountControlsSource).not.toContain("site-admin-link");
     expect(source).not.toContain('href: buildLocalePath("/tutorials", locale)');
@@ -137,7 +138,7 @@ describe("site header navigation", () => {
     expect(categorySource).toContain("resolveLocalizedToolCategoryName");
   });
 
-  it("uses a signed header snapshot plus shared client state so header auth does not cold-start as logged-out on every navigation", () => {
+  it("loads shared header session state on the client so public pages remain cacheable", () => {
     const source = readFileSync(
       new URL("../components/site-header.tsx", import.meta.url),
       "utf8",
@@ -180,7 +181,7 @@ describe("site header navigation", () => {
     expect(sessionSource).not.toContain("readHeaderUserCookie");
     expect(sessionGateSource).toContain('showAdmin={user?.role === "admin"}');
     expect(adminNavSource).toContain('if (user?.role !== "admin") return null;');
-    expect(authSource).toContain("getHeaderUserSnapshot");
+    expect(source).not.toContain("getHeaderUserSnapshot");
     expect(authSource).toContain("signHeaderUserCookieValue");
     expect(authSource).toContain("httpOnly: true");
     expect(cookieSource).toContain(

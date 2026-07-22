@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Search } from "lucide-react";
-import { getHeaderUserSnapshot } from "@/lib/auth";
+import { Suspense } from "react";
 import { HeaderAdminNavLink } from "@/components/header-admin-nav-link";
 import { HeaderAccountControls } from "@/components/header-account-controls";
 import { HeaderSessionGate } from "@/components/header-session-gate";
@@ -19,12 +19,20 @@ import {
   softwareNavCategories,
 } from "@/lib/software-category-navigation";
 
-export async function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
-  const [locale, settings, headerUser] = await Promise.all([
+export function SiteHeader({ forceLocale }: { forceLocale?: Locale }) {
+  return (
+    <Suspense fallback={null}>
+      <SiteHeaderContent forceLocale={forceLocale} />
+    </Suspense>
+  );
+}
+
+async function SiteHeaderContent({ forceLocale }: { forceLocale?: Locale }) {
+  const [locale, settings] = await Promise.all([
     forceLocale ? Promise.resolve(forceLocale) : getCurrentLocale(),
     getSettingsMap(),
-    getHeaderUserSnapshot(),
   ]);
+  const headerUser = null;
   const t = getDictionary(locale);
   const brand = getEffectiveLocalizedSiteName(settings, locale, t.brand);
   const brandWordmark = brand.includes("ENHE") ? "ENHE AI" : brand;

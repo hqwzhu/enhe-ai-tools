@@ -253,10 +253,26 @@ export function normalizeWhitespace(value: string) {
 }
 
 export function truncateText(value: string, maxLength: number) {
-  const normalized = normalizeWhitespace(value);
+  const normalized = normalizeWhitespace(value)
+    .replace(/\.{3,}|…+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (normalized.length <= maxLength) return normalized;
-  if (maxLength <= 3) return ".".repeat(Math.max(1, maxLength));
-  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
+  if (maxLength <= 0) return "";
+
+  const candidate = normalized.slice(0, maxLength).trimEnd();
+  const lastNaturalBreak = Math.max(
+    candidate.lastIndexOf(" "),
+    candidate.lastIndexOf(","),
+    candidate.lastIndexOf(";"),
+    candidate.lastIndexOf("，"),
+    candidate.lastIndexOf("；"),
+    candidate.lastIndexOf("。"),
+  );
+
+  return lastNaturalBreak >= Math.floor(maxLength * 0.6)
+    ? candidate.slice(0, lastNaturalBreak).trimEnd()
+    : candidate;
 }
 
 export function truncateDescription(value: string, maxLength = 160) {

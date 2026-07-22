@@ -22,17 +22,17 @@ Core supporting paths:
 - AI Prompt Management System for searching and copying 418 bilingual prompts
 
 Important pages:
-- https://www.enhe-tech.com.cn/
-- https://www.enhe-tech.com.cn/about
-- https://www.enhe-tech.com.cn/ai-news
-- https://www.enhe-tech.com.cn/ai-trends
-- https://www.enhe-tech.com.cn/software
-- https://www.enhe-tech.com.cn/build-your-own-x
-- https://www.enhe-tech.com.cn/account-services
-- https://www.enhe-tech.com.cn/skill-learning
-- https://www.enhe-tech.com.cn/skill-learning/ai-prompt-management
-- https://www.enhe-tech.com.cn/en/skill-learning/ai-prompt-management
-- https://www.enhe-tech.com.cn/tutorials
+- [ENHE AI home](https://www.enhe-tech.com.cn/)
+- [About ENHE AI](https://www.enhe-tech.com.cn/about)
+- [AI news](https://www.enhe-tech.com.cn/ai-news)
+- [AI trends](https://www.enhe-tech.com.cn/ai-trends)
+- [AI software apps](https://www.enhe-tech.com.cn/software)
+- [Build Your Own X Navigator](https://www.enhe-tech.com.cn/build-your-own-x)
+- [AI account service guidance](https://www.enhe-tech.com.cn/account-services)
+- [AI skill learning](https://www.enhe-tech.com.cn/skill-learning)
+- [AI Prompt Management System](https://www.enhe-tech.com.cn/skill-learning/ai-prompt-management)
+- [English AI Prompt Management System](https://www.enhe-tech.com.cn/en/skill-learning/ai-prompt-management)
+- [AI tutorials](https://www.enhe-tech.com.cn/tutorials)
 
 Contact:
 - Email: ENHEAI.life@protonmail.com
@@ -49,11 +49,11 @@ Main columns:
 - AI提示词管理系统: 免费中英文提示词库，覆盖写作、视频、图片、学习、职场、运营和编程场景。
 
 Agent-readable files:
-- https://www.enhe-tech.com.cn/pricing.md
-- https://www.enhe-tech.com.cn/okf/index.md
-- https://www.enhe-tech.com.cn/okf/enhe-ai-overview.md
-- https://www.enhe-tech.com.cn/okf/ai-news/index.md
-- https://www.enhe-tech.com.cn/okf/software/index.md
+- [Pricing reference](https://www.enhe-tech.com.cn/pricing.md)
+- [Open Knowledge Format index](https://www.enhe-tech.com.cn/okf/index.md)
+- [ENHE AI overview](https://www.enhe-tech.com.cn/okf/enhe-ai-overview.md)
+- [AI news concept page](https://www.enhe-tech.com.cn/okf/ai-news/index.md)
+- [AI software concept page](https://www.enhe-tech.com.cn/okf/software/index.md)
 - https://www.enhe-tech.com.cn/okf/build-your-own-x/index.md
 - https://www.enhe-tech.com.cn/okf/account-services/index.md
 - https://www.enhe-tech.com.cn/okf/skill-learning/index.md

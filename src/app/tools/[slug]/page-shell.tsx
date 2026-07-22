@@ -25,6 +25,7 @@ import { publicPageCacheSeconds } from "@/lib/public-routes";
 import { resolvePublicToolSlug } from "@/lib/public-content";
 import {
   buildBreadcrumbSchema,
+  buildAvailableLanguageAlternates,
   buildFaqSchema,
   buildLocalePath,
   buildPageMetadata,
@@ -118,6 +119,10 @@ export async function generateToolDetailPageMetadata(
     image: normalizeImageSrc(tool.coverImage),
     locale: forceLocale === "en" ? "en_US" : "zh_CN",
     localeKey: forceLocale,
+    languageAlternates: buildAvailableLanguageAlternates(
+      canonical,
+      shouldIndexEnglishToolPage(tool) ? ["zh", "en"] : ["zh"],
+    ),
   });
 
   if (forceLocale === "en" && !shouldIndexEnglishToolPage(tool)) {

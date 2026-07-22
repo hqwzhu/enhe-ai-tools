@@ -66,7 +66,7 @@ describe("tool localization helpers", () => {
     });
   });
 
-  it("keeps english product summaries aligned with the Chinese source copy", () => {
+  it("does not expose Chinese-only summaries as English copy", () => {
     const summary = buildLocalizedToolSummary(
       {
         slug: "enhe-copy-cleaner",
@@ -79,11 +79,11 @@ describe("tool localization helpers", () => {
       "en",
     );
 
-    expect(summary).toBe(copyCleanerSummary);
-    expect(summary).not.toContain("AI account service");
+    expect(summary).toContain("AI account service");
+    expect(summary).not.toContain(copyCleanerSummary);
   });
 
-  it("keeps mixed source descriptions instead of replacing them with generated English copy", () => {
+  it("does not expose mixed Chinese source descriptions as English copy", () => {
     const mixedSummary = `${copyCleanerSummary} ENHE Copy Cleaner helps prepare copy before publishing.`;
     const summary = buildLocalizedToolSummary(
       {
@@ -97,11 +97,11 @@ describe("tool localization helpers", () => {
       "en",
     );
 
-    expect(summary).toBe(mixedSummary);
-    expect(summary).not.toContain("Review pricing, version details");
+    expect(summary).toContain("Review pricing, version details");
+    expect(summary).not.toContain(copyCleanerSummary);
   });
 
-  it("does not generate alternate English descriptions from product identity alone", () => {
+  it("uses fallback English descriptions for display but not for indexing", () => {
     const summary = buildLocalizedToolSummary(
       {
         slug: "ai-ai",
@@ -114,13 +114,12 @@ describe("tool localization helpers", () => {
       "en",
     );
 
-    expect(summary).toBe("draft");
-    expect(summary).not.toContain(
+    expect(summary).toContain(
       "AI Voice Generator - Flexible Edition is an AI software app",
     );
   });
 
-  it("keeps english detail copy aligned with the Chinese source content", () => {
+  it("does not expose Chinese-only detail copy on English pages", () => {
     const content = buildLocalizedToolLongContent(
       {
         slug: "enhe-copy-cleaner",
@@ -134,8 +133,8 @@ describe("tool localization helpers", () => {
       "en",
     );
 
-    expect(content).toBe(copyCleanerContent);
-    expect(content).not.toContain("support guidance");
+    expect(content).toContain("support guidance");
+    expect(content).not.toContain(copyCleanerContent);
   });
 
   it("selects English summary and content blocks for English tool pages", () => {

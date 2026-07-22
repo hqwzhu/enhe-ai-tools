@@ -20,6 +20,7 @@ import {
   resolveLocalizedToolIdentity,
   shouldIndexEnglishToolPage,
 } from "@/lib/tool-localization";
+import type { Prisma } from "@prisma/client";
 
 export type PublicSearchResultType =
   | "tool"
@@ -45,6 +46,26 @@ export function normalizePublicSearchQuery(value: unknown) {
     .trim()
     .slice(0, 80)
     .trim();
+}
+
+export function buildPublicToolSearchWhere(
+  query: string,
+): Prisma.ToolWhereInput {
+  return {
+    status: "published",
+    type: { not: "skill_learning" },
+    OR: [
+      { name: { contains: query, mode: "insensitive" } },
+      { englishName: { contains: query, mode: "insensitive" } },
+      { shortDescription: { contains: query, mode: "insensitive" } },
+      { content: { contains: query, mode: "insensitive" } },
+      {
+        category: {
+          is: { name: { contains: query, mode: "insensitive" } },
+        },
+      },
+    ],
+  };
 }
 
 function toPlainExcerpt(value: string | null | undefined, fallback: string) {
@@ -81,16 +102,7 @@ export function buildBrandSearchResult(
 
 async function searchTools(query: string, locale: Locale) {
   const tools = await prisma.tool.findMany({
-    where: {
-      status: "published",
-      type: { not: "skill_learning" },
-      OR: [
-        { name: { contains: query, mode: "insensitive" } },
-        { englishName: { contains: query, mode: "insensitive" } },
-        { shortDescription: { contains: query, mode: "insensitive" } },
-        { content: { contains: query, mode: "insensitive" } },
-      ],
-    },
+    where: buildPublicToolSearchWhere(query),
     select: {
       id: true,
       slug: true,
@@ -99,6 +111,7 @@ async function searchTools(query: string, locale: Locale) {
       shortDescription: true,
       content: true,
       type: true,
+      category: { select: { name: true } },
     },
     orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
     take: resultLimitPerType,
@@ -106,16 +119,24 @@ async function searchTools(query: string, locale: Locale) {
 
   return tools
     .filter((tool) => locale === "zh" || shouldIndexEnglishToolPage(tool))
-    .map((tool): PublicSearchResult => ({
-      id: `tool-${tool.id}`,
-      type: "tool",
-      title: resolveLocalizedToolIdentity(tool, locale).primaryName,
-      excerpt: toPlainExcerpt(
-        buildLocalizedToolSummary(tool, locale),
-        locale === "en" ? "View this published AI tool." : "查看这款已发布的 AI 工具。",
-      ),
-      href: buildCanonicalToolPath(tool, locale),
-    }));
+    .map((tool): PublicSearchResult => {
+      const localizationInput = {
+        ...tool,
+        categoryName: tool.category?.name,
+      };
+      return {
+        id: `tool-${tool.id}`,
+        type: "tool",
+        title: resolveLocalizedToolIdentity(tool, locale).primaryName,
+        excerpt: toPlainExcerpt(
+          buildLocalizedToolSummary(localizationInput, locale),
+          locale === "en"
+            ? "View this published AI tool."
+            : "查看这款已发布的 AI 工具。",
+        ),
+        href: buildCanonicalToolPath(tool, locale),
+      };
+    });
 }
 
 async function searchTutorials(query: string, locale: Locale) {

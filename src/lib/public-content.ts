@@ -414,10 +414,9 @@ const getCachedPublicNewsSlugIndex = unstable_cache(
 
 function findSlugMatch(items: PublicSlugMatch[], requestedSlug: string) {
   return (
-    items.find(
-      (item) =>
-        item.slug === requestedSlug || item.canonicalSlug === requestedSlug,
-    ) ?? null
+    items.find((item) => item.slug === requestedSlug) ??
+    items.find((item) => item.canonicalSlug === requestedSlug) ??
+    null
   );
 }
 

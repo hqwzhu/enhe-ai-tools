@@ -11,7 +11,10 @@ const explicitToolCanonicalSlugs: Record<string, string> = {
 const explicitAiNewsCanonicalSlugs: Record<string, string> = {
   "ai-2": "tencent-cloud-efficiency-agent-tools",
   "ai-3": "how-to-choose-ai-tool-website",
+  "ai-7-2": "ai-7",
+  "anolisa-ai-2": "anolisa-ai",
   "enhe-ai": "enhe-ai-tool-station-user-guide",
+  "github-copilot-cli-ai-2": "github-copilot-cli-ai",
 };
 
 export function getCanonicalToolSlug(tool: {

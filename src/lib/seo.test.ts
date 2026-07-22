@@ -14,8 +14,15 @@ import {
 
 describe("seo helpers", () => {
   it("normalizes and truncates metadata descriptions", () => {
-    expect(buildMetaDescription("  AI \n helper    for teams  ", "fallback", 17)).toBe("AI helper for...");
+    expect(buildMetaDescription("  AI \n helper    for teams  ", "fallback", 17)).toBe("AI helper for");
     expect(buildMetaDescription("   ", "fallback")).toBe("fallback");
+    expect(
+      buildMetaDescription(
+        "AI tools... help teams coordinate research, writing, and review workflows.",
+        "fallback",
+        48,
+      ),
+    ).not.toMatch(/\.{3}|…/);
   });
 
   it("keeps public page metadata descriptions concise", () => {
@@ -94,6 +101,7 @@ describe("seo helpers", () => {
     expect(longTitle.endsWith(" | ENHE AI")).toBe(true);
     expect(longTitle.length).toBeLessThanOrEqual(42);
     expect(longTitle).not.toContain("·");
+    expect(longTitle).not.toContain("...");
 
     const longZhTitle = buildToolMetadataTitle({
       name: "A very long product name for creators and operators",
