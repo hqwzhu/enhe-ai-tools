@@ -278,10 +278,10 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
             ariaLabel={t.home.categoryMenu.ariaLabel}
             speed={16}
             textColor="#f7fbff"
-            bgColor="#0b1720"
+            bgColor="transparent"
             marqueeBgColor="#56bfd0"
             marqueeTextColor="#07131a"
-            borderColor="rgba(86, 191, 208, 0.28)"
+            borderColor="#ffffff"
           />
         </Container>
       </section>

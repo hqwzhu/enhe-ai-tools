@@ -66,6 +66,33 @@ describe("homepage FlowingMenu source contract", () => {
     expect(css).not.toMatch(/(^|\n)\.marquee(?:\s|\{|__)/);
   });
 
+  it("uses a transparent surface, white internal dividers, and half-size type", () => {
+    const page = readSource("../app/page-shell.tsx");
+    const css = readSource("../components/home/flowing-menu.module.css");
+
+    expect(page).toContain('bgColor="transparent"');
+    expect(page).toContain('borderColor="#ffffff"');
+    expect(css).not.toContain("border-block:");
+    expect(css).toContain("border-top: 1px solid var(--enhe-flowing-border);");
+    expect(css).toMatch(
+      /\.enhe-flowing-menu__link \{[^}]*font-size: 2rem;/,
+    );
+    expect(css).toMatch(
+      /\.enhe-flowing-menu__marquee-text \{[^}]*font-size: 1\.75rem;/,
+    );
+
+    for (const fontSize of [
+      "1.625rem",
+      "1.5rem",
+      "1.375rem",
+      "1.25rem",
+      "1rem",
+      "0.875rem",
+    ]) {
+      expect(css).toContain(`font-size: ${fontSize};`);
+    }
+  });
+
   it("uses four compressed local WebP assets with recorded Pexels sources", () => {
     const assetNames = ["productivity", "content-creation", "ai-learning", "ai-news"];
     const sourceRecord = readSource("../../docs/asset-sources/home-flowing-menu.md");
