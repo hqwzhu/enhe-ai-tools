@@ -47,6 +47,10 @@ describe("site audit priority fixes", () => {
     expect(config).toContain("Strict-Transport-Security");
     expect(config).toContain("X-Content-Type-Options");
     expect(config).toContain("Content-Security-Policy-Report-Only");
+    expect(config).toContain("report-uri /api/csp-report");
+    expect(config).toContain("report-to csp-endpoint");
+    expect(config).toContain('key: "Reporting-Endpoints"');
+    expect(config).toContain('key: "Report-To"');
     expect(config).not.toContain('key: "Content-Security-Policy",');
   });
 

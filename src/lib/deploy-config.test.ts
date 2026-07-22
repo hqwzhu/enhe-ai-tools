@@ -29,6 +29,17 @@ describe("server deployment compose config", () => {
     expect(dockerfile).toContain("COPY --from=builder /app/tsconfig.json ./tsconfig.json");
   });
 
+  it("keeps AUTH_SECRET runtime-only during Docker builds", () => {
+    const compose = readFileSync(resolve(root, "deploy/enhe-ai-tools/docker-compose.yml"), "utf8");
+    const dockerfile = readFileSync(resolve(root, "deploy/enhe-ai-tools/Dockerfile"), "utf8");
+
+    expect(dockerfile).not.toMatch(/^ARG AUTH_SECRET=/m);
+    expect(dockerfile).not.toMatch(/^ENV AUTH_SECRET=/m);
+    expect(dockerfile).not.toContain("AUTH_SECRET");
+    expect(compose).toContain("AUTH_SECRET: ${AUTH_SECRET}");
+    expect(compose).not.toMatch(/^\s{8}AUTH_SECRET:\s*\$\{AUTH_SECRET\}\s*$/m);
+  });
+
   it("keeps the shared Tencent Cloud nginx proxy aligned with admin upload limits", () => {
     const deployScript = readFileSync(resolve(root, "deploy.sh"), "utf8");
 

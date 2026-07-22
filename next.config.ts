@@ -1,6 +1,24 @@
 import type { NextConfig } from "next";
 import { adminFileUploadBodySizeLimit } from "./src/lib/upload-limits";
 
+const defaultAppUrl = "https://www.enhe-tech.com.cn";
+
+function getCspReportingEndpoint() {
+  try {
+    const appUrl = new URL(
+      process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL ?? defaultAppUrl,
+    );
+    if (appUrl.protocol !== "https:" && appUrl.protocol !== "http:") {
+      return `${defaultAppUrl}/api/csp-report`;
+    }
+    return new URL("/api/csp-report", appUrl.origin).toString();
+  } catch {
+    return `${defaultAppUrl}/api/csp-report`;
+  }
+}
+
+const cspReportingEndpoint = getCspReportingEndpoint();
+
 const securityHeaders = [
   {
     key: "Strict-Transport-Security",
@@ -14,9 +32,21 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=()"
   },
   {
+    key: "Reporting-Endpoints",
+    value: `csp-endpoint="${cspReportingEndpoint}"`
+  },
+  {
+    key: "Report-To",
+    value: JSON.stringify({
+      group: "csp-endpoint",
+      max_age: 10886400,
+      endpoints: [{ url: cspReportingEndpoint }]
+    })
+  },
+  {
     key: "Content-Security-Policy-Report-Only",
     value:
-      "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://lf1-cdn-tos.bytegoofy.com; connect-src 'self' https:; frame-src 'self' https:"
+      "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://lf1-cdn-tos.bytegoofy.com; connect-src 'self' https:; frame-src 'self' https:; report-uri /api/csp-report; report-to csp-endpoint"
   }
 ];
 
