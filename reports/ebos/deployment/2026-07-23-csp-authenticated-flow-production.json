@@ -1,0 +1,73 @@
+{
+  "reportType": "csp_authenticated_flow_audit",
+  "generatedAt": "2026-07-22T17:22:19.418Z",
+  "baseUrl": "https://www.enhe-tech.com.cn",
+  "cspMode": "report_only",
+  "testAccount": {
+    "accountTag": "011e8bf9a4ea12fc",
+    "domain": "example.invalid",
+    "disposable": true,
+    "created": true,
+    "credentialsPrinted": false,
+    "credentialsPersisted": false,
+    "cleanupStatus": "manual_exact_record_cleanup_required"
+  },
+  "registration": {
+    "passed": true,
+    "finalUrl": "https://www.enhe-tech.com.cn/user",
+    "accountCreated": true,
+    "error": null
+  },
+  "paymentHandoff": {
+    "passed": true,
+    "finalUrl": "https://www.enhe-tech.com.cn/orders/[redacted]/pay",
+    "orderCreated": true,
+    "pendingPaymentRouteReached": true,
+    "providerArtifactDetected": true,
+    "paymentCompleted": false,
+    "error": null
+  },
+  "proofUpload": {
+    "passed": true,
+    "status": 303,
+    "redirectUrl": "https://www.enhe-tech.com.cn/orders/[redacted]",
+    "syntheticImage": true,
+    "fileName": "SYNTHETIC_CSP_TEST_NOT_PAYMENT_PROOF.png",
+    "fileBytes": 16232,
+    "orderPageStatus": 200,
+    "error": null
+  },
+  "freeDownload": {
+    "passed": true,
+    "authenticatedSessionConfirmed": true,
+    "deliveryMode": "external_public_link",
+    "route": "https://pan.baidu.com/s/1zk-l_vgXVvbOSAc-vrvUnA",
+    "status": 302,
+    "destination": "https://pan.baidu.com/share/init",
+    "deliveryReachable": true,
+    "successfulDownloadRecorded": false,
+    "error": null
+  },
+  "cspEvidence": {
+    "eventViolations": [],
+    "consoleViolations": [],
+    "browserReportRequests": [],
+    "violationCount": 0
+  },
+  "safety": {
+    "realPaymentCompleted": false,
+    "refundTriggered": false,
+    "customerDataUsed": false,
+    "realPaymentProofUsed": false,
+    "syntheticPaymentProofUsed": true,
+    "credentialValuesRecorded": false
+  },
+  "summary": {
+    "flowCount": 4,
+    "passedFlowCount": 4,
+    "allFlowsPassed": true,
+    "cspViolationCount": 0,
+    "safeToEvaluateEnforcedCsp": true,
+    "recommendation": "continue_report_only_until_24h_and_72h_observation_complete"
+  }
+}

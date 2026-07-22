@@ -1,0 +1,115 @@
+{
+  "reportType": "csp_authenticated_flow_and_observation_gate",
+  "generatedAt": "2026-07-23T01:26:46.9371987+08:00",
+  "baseUrl": "https://www.enhe-tech.com.cn",
+  "isolatedWorktree": "C:\\Users\\HU\\Documents\\New project 2-csp-reporting",
+  "productionCommit": "0e9ae8a",
+  "cspMode": "report_only",
+  "centralRetention": {
+    "configured": true,
+    "containerPath": "/app/logs/csp-report.jsonl",
+    "hostPath": "/opt/enhe-ai-tools/deploy/enhe-ai-tools/logs/csp-report.jsonl",
+    "survivedContainerRecreation": true,
+    "logrotate": {
+      "daily": true,
+      "maxSize": "10M",
+      "retainedRotations": 7
+    }
+  },
+  "proxyRateLimit": {
+    "configured": true,
+    "requestBodyLimit": "32K",
+    "perIpRate": "1r/s",
+    "burst": 10,
+    "limitedStatus": 429,
+    "verificationRequests": 30,
+    "status204": 11,
+    "status429": 19
+  },
+  "observationBaseline": {
+    "beforeAuthenticatedFlow": {
+      "eventCount": 43,
+      "syntheticProbeCount": 43,
+      "organicEventCount": 0,
+      "invalidLineCount": 0
+    },
+    "afterAuthenticatedFlow": {
+      "eventCount": 43,
+      "syntheticProbeCount": 43,
+      "organicEventCount": 0,
+      "invalidLineCount": 0
+    },
+    "newEvents": 0,
+    "newOrganicEvents": 0
+  },
+  "authenticatedAudit": {
+    "attemptCount": 2,
+    "finalFlowCount": 4,
+    "finalPassedFlowCount": 4,
+    "registrationPassed": true,
+    "pendingOrderAndProviderHandoffPassed": true,
+    "realPaymentCompleted": false,
+    "syntheticPaymentProofUploadPassed": true,
+    "paymentProofUploadStatus": 303,
+    "paymentProofOrderPageStatus": 200,
+    "authenticatedFreeDeliveryPassed": true,
+    "freeDeliveryMode": "external_public_link",
+    "freeDeliveryStatus": 302,
+    "successfulInternalDownloadRecorded": false,
+    "browserCspViolationCount": 0,
+    "credentialsPrinted": false,
+    "credentialsPersisted": false,
+    "artifact": "reports/ebos/deployment/2026-07-23-csp-authenticated-flow-production.json"
+  },
+  "disposableRecordAudit": {
+    "readOnly": true,
+    "accounts": 2,
+    "orders": 2,
+    "paymentProofs": 2,
+    "downloadLogs": 0,
+    "cleanupStatus": "manual_exact_record_cleanup_required"
+  },
+  "observationAutomation": {
+    "id": "enhe-csp-24-72",
+    "status": "active",
+    "checkpointHours": [24, 48, 72],
+    "readOnly": true,
+    "enforcementChangesAllowed": false
+  },
+  "enforcementGate": {
+    "authenticatedFlowGatePassed": true,
+    "observation24HourComplete": false,
+    "observation72HourComplete": false,
+    "readyToEnableEnforcedCsp": false,
+    "decision": "keep_report_only_pending_24h_and_72h_observation"
+  },
+  "qualityChecks": {
+    "focusedTestFilesPassed": 5,
+    "focusedTestsPassed": 20,
+    "lint": "passed",
+    "typecheck": "passed",
+    "build": "passed",
+    "buildWarning": "DATABASE_URL was not configured for local static-data reads; the build used existing fallbacks and exited 0."
+  },
+  "safety": {
+    "customerDataUsed": false,
+    "realPaymentProofUsed": false,
+    "refundTriggered": false,
+    "migrationExecuted": false,
+    "seedExecuted": false,
+    "enforcedCspEnabled": false
+  },
+  "warnings": [
+    "The first strict internal-download attempt found that the current Codex API delivery is an external public link, so the corrected integrated audit created a second disposable account and test order.",
+    "The external public delivery check does not claim an internal download-log record.",
+    "Disposable account and test-record cleanup needs a separate exact-record review; no broad or guessed deletion was performed.",
+    "The running image contains the persistent collector; the latest summary-CLI build fix remains available in the server checkout and local automation uses the fixed checkout implementation."
+  ],
+  "nextActions": [
+    "Collect the 24-hour read-only CSP summary.",
+    "Collect the 48-hour intermediate CSP summary.",
+    "Collect the 72-hour CSP summary and review any organic violations.",
+    "Evaluate enforced CSP only if the observation gates remain clean.",
+    "Review exact disposable test records before any cleanup."
+  ]
+}

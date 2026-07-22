@@ -46,10 +46,16 @@ The script renders Chinese and English login, registration, pricing, paid-produc
 
 ## Manual coverage gate
 
-The following checks require explicit authorization and disposable production-safe test data:
+The following checks require explicit authorization and disposable production-safe test data. Run them with:
+
+```powershell
+node scripts/audit-csp-authenticated-flows.mjs --base-url https://www.enhe-tech.com.cn --output output/playwright/csp-authenticated-flow-audit.json
+```
 
 1. Successful authenticated order creation and payment-provider handoff.
-2. Payment-proof upload against a disposable unpaid order.
-3. Successful protected download after entitlement is granted.
+2. A clearly labelled synthetic payment-proof upload against the disposable unpaid order.
+3. Successful authenticated free delivery. A protected internal route records a download; a public external delivery link, such as the current Codex API GitHub entry, is reported separately and does not claim an internal download-log record.
 
-Do not use a real customer, real payment, real proof image, or real paid entitlement for this gate. Keep CSP in Report-Only mode while any item remains `manual_required` or while collected violations remain unresolved.
+The script creates a unique `example.invalid` account, does not print or persist credentials, does not open the external cashier, and never completes a payment or refund. The account and its exact test records require a separate, explicitly reviewed cleanup step.
+
+Do not use a real customer, real payment, real proof image, or real paid entitlement for this gate. Keep CSP in Report-Only mode while any item remains `manual_required`, while collected violations remain unresolved, or until both the 24-hour and 72-hour persistent-log reviews are complete.
