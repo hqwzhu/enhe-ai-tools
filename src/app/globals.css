@@ -2286,18 +2286,6 @@ select option:disabled {
   background: none;
 }
 
-.home-outcome-shell::before {
-  position: absolute;
-  top: clamp(-20rem, -24vw, -12rem);
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 0;
-  background: radial-gradient(ellipse at 50% 54%, rgba(65, 197, 219, 0.08), transparent 34rem);
-  content: "";
-  pointer-events: none;
-}
-
 .home-outcome-shell > * {
   position: relative;
   z-index: 1;

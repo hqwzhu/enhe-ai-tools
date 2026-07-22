@@ -309,8 +309,8 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-outcome-shell {\n  margin-top: clamp(-6rem, -8vw, -4rem);");
     expect(css).toContain("linear-gradient(180deg, rgba(16, 24, 33, 0) 0%, rgba(16, 24, 33, 0) 54%, rgba(16, 24, 33, 0.32) 72%, rgba(16, 24, 33, 0.82) 91%, #101821 100%)");
     expect(css).toContain("margin-bottom: -1px;");
-    expect(css).toContain("top: clamp(-20rem, -24vw, -12rem);");
-    expect(css).toContain("background: radial-gradient(ellipse at 50% 54%, rgba(65, 197, 219, 0.08), transparent 34rem)");
+    expect(css).not.toContain(".home-outcome-shell::before");
+    expect(css).not.toContain("radial-gradient(ellipse at 50% 54%, rgba(65, 197, 219, 0.08), transparent 34rem)");
     expect(css).not.toContain(".home-recommended-tool-grid");
     expect(css).toContain("linear-gradient(180deg, #101821 0%, #101821 18%, #0b1118 72%, #080d12 100%)");
     expect(css).toContain(".site-footer-logo {\n  width: 48px;\n  height: 32px;\n  object-fit: contain;\n  filter: brightness(0) invert(1)");
