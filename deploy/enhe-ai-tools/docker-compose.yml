@@ -43,6 +43,7 @@ services:
       AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME}
       AUTH_SECRET: ${AUTH_SECRET}
       RUN_PRISMA_MIGRATE: ${RUN_PRISMA_MIGRATE:-0}
+      CSP_REPORT_LOG_PATH: ${CSP_REPORT_LOG_PATH:-/app/logs/csp-report.jsonl}
       AI_TRENDS_REVALIDATE_TOKEN: ${AI_TRENDS_REVALIDATE_TOKEN:-}
       UPLOAD_DIR: /app/public/uploads
       BAIDU_PUSH_TOKEN: ${BAIDU_PUSH_TOKEN:-}
@@ -56,6 +57,7 @@ services:
     volumes:
       - ./uploads:/app/public/uploads
       - ./secrets:/app/secrets:ro
+      - ./logs:/app/logs
     networks:
       - enhe-ai-tools-net
 

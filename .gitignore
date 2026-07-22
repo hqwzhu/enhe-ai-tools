@@ -7,6 +7,7 @@ zpay.env
 dist
 coverage
 /uploads
+/deploy/enhe-ai-tools/logs/
 public/uploads
 test-results
 playwright-report

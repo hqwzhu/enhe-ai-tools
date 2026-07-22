@@ -1,3 +1,6 @@
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/csp-report/route";
 import { CSP_REPORT_MAX_BODY_BYTES } from "@/lib/csp-report";
@@ -14,8 +17,16 @@ function createRequest(body: string, contentType: string, contentLength?: number
   });
 }
 
-afterEach(() => {
+const temporaryDirectories: string[] = [];
+
+afterEach(async () => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+  await Promise.all(
+    temporaryDirectories.splice(0).map((path) =>
+      rm(path, { recursive: true, force: true }),
+    ),
+  );
 });
 
 describe("POST /api/csp-report", () => {
@@ -87,5 +98,27 @@ describe("POST /api/csp-report", () => {
     expect(malformed.status).toBe(400);
     expect(declaredTooLarge.status).toBe(413);
     expect(streamedTooLarge.status).toBe(413);
+  });
+
+  it("returns 503 when persistent report storage is unavailable", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const directory = await mkdtemp(join(tmpdir(), "enhe-csp-route-"));
+    temporaryDirectories.push(directory);
+    vi.stubEnv("CSP_REPORT_LOG_PATH", directory);
+    const request = createRequest(
+      JSON.stringify({
+        "csp-report": {
+          "document-uri": "https://www.enhe-tech.com.cn/login",
+          "blocked-uri": "https://example.invalid/app.js",
+        },
+      }),
+      "application/csp-report",
+    );
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("cache-control")).toBe("no-store");
   });
 });

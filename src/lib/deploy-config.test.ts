@@ -29,6 +29,38 @@ describe("server deployment compose config", () => {
     expect(dockerfile).toContain("COPY --from=builder /app/tsconfig.json ./tsconfig.json");
   });
 
+  it("persists CSP reports outside the replaceable app container", () => {
+    const compose = readFileSync(resolve(root, "deploy/enhe-ai-tools/docker-compose.yml"), "utf8");
+    const gitignore = readFileSync(resolve(root, ".gitignore"), "utf8");
+
+    expect(compose).toContain(
+      "CSP_REPORT_LOG_PATH: ${CSP_REPORT_LOG_PATH:-/app/logs/csp-report.jsonl}",
+    );
+    expect(compose).toContain("./logs:/app/logs");
+    expect(gitignore).toContain("/deploy/enhe-ai-tools/logs/");
+  });
+
+  it("defines a bounded proxy rate limit for the public CSP collector", () => {
+    const httpConfig = readFileSync(
+      resolve(root, "deploy/enhe-ai-tools/nginx/csp-report-rate-limit-http.conf"),
+      "utf8",
+    );
+    const locationConfig = readFileSync(
+      resolve(root, "deploy/enhe-ai-tools/nginx/csp-report-rate-limit-location.conf"),
+      "utf8",
+    );
+
+    expect(httpConfig).toContain(
+      "limit_req_zone $binary_remote_addr zone=enhe_csp_report_per_ip:10m rate=1r/s;",
+    );
+    expect(locationConfig).toContain("location = /api/csp-report");
+    expect(locationConfig).toContain(
+      "limit_req zone=enhe_csp_report_per_ip burst=10 nodelay;",
+    );
+    expect(locationConfig).toContain("limit_req_status 429;");
+    expect(locationConfig).toContain("client_max_body_size 32k;");
+  });
+
   it("keeps AUTH_SECRET runtime-only during Docker builds", () => {
     const compose = readFileSync(resolve(root, "deploy/enhe-ai-tools/docker-compose.yml"), "utf8");
     const dockerfile = readFileSync(resolve(root, "deploy/enhe-ai-tools/Dockerfile"), "utf8");

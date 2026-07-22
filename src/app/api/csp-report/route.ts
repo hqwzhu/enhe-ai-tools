@@ -3,6 +3,10 @@ import {
   parseCspReportPayload,
   readCspReportBody,
 } from "@/lib/csp-report";
+import {
+  createCspViolationEvents,
+  writeCspViolationEvents,
+} from "@/lib/csp-report-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,22 +40,25 @@ export async function POST(request: Request) {
     const rawBody = await readCspReportBody(request);
     const payload: unknown = JSON.parse(rawBody);
     const reports = parseCspReportPayload(payload, contentType as AcceptedContentType);
-
-    for (const report of reports) {
-      console.warn(
-        JSON.stringify({
-          event: "csp_violation",
-          collectedAt: new Date().toISOString(),
-          ...report,
-        }),
-      );
-    }
+    await writeCspViolationEvents(createCspViolationEvents(reports));
 
     return noStoreResponse(204);
   } catch (error) {
     if (error instanceof CspReportBodyTooLargeError) {
       return noStoreResponse(413, "CSP report body is too large");
     }
-    return noStoreResponse(400, "Invalid CSP report payload");
+    if (error instanceof SyntaxError) {
+      return noStoreResponse(400, "Invalid CSP report payload");
+    }
+    if (error instanceof Error && error.message === "Invalid CSP report payload") {
+      return noStoreResponse(400, "Invalid CSP report payload");
+    }
+    console.error(
+      JSON.stringify({
+        event: "csp_report_persistence_error",
+        collectedAt: new Date().toISOString(),
+      }),
+    );
+    return noStoreResponse(503, "CSP report storage is unavailable");
   }
 }
