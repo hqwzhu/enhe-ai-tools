@@ -212,11 +212,15 @@ function extractImplicitLocalizedBlocks(value: string | null | undefined) {
   if (lines.length < 2) return null;
 
   const englishStart = lines.findIndex((line, index) => {
-    if (index === 0 || hasCjk(line) || countLatinWords(line) < 6) return false;
+    if (index === 0 || hasCjk(line) || countLatinWords(line) < 3) return false;
 
     const chineseSection = lines.slice(0, index).join(" ");
     const englishSection = lines.slice(index).join(" ");
-    return hasCjk(chineseSection) && !hasCjk(englishSection);
+    return (
+      hasCjk(chineseSection) &&
+      !hasCjk(englishSection) &&
+      countLatinWords(englishSection) >= 12
+    );
   });
   if (englishStart < 1) return null;
 
@@ -304,6 +308,15 @@ function isLocalizedEnglishCopy(value: string, minimumWords = 2) {
     !hasCjk(normalized) &&
     isEnglishLike(normalized, minimumWords)
   );
+}
+
+export function buildLocalizedToolOptionalText(
+  value: string | null | undefined,
+  locale: Locale,
+) {
+  const localized = resolveLocalizedInlineCopy(value, locale, normalizeText);
+  if (locale === "en" && !isLocalizedEnglishCopy(localized, 1)) return "";
+  return localized;
 }
 
 function buildEnglishSummaryFromContent(value: string | null | undefined) {

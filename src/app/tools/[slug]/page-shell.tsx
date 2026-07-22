@@ -40,6 +40,7 @@ import {
   buildLocalizedToolMetaDescription,
   buildLocalizedToolMetaHeading,
   buildLocalizedToolOfferName,
+  buildLocalizedToolOptionalText,
   buildLocalizedToolSummary,
   buildLocalizedToolTagItems,
   buildLocalizedToolTutorialItems,
@@ -221,7 +222,18 @@ export async function ToolDetailPageShell({
   );
   const visibleFaqPreview = visibleFaqs.slice(0, 3);
   const visibleChangelogs = tool.changelogs;
-  const visibleComments = tool.comments;
+  const visibleComments = tool.comments
+    .map((comment) => ({
+      ...comment,
+      localizedAuthor:
+        buildLocalizedToolOptionalText(comment.user.nickname, forceLocale) ||
+        comment.user.email,
+      localizedContent: buildLocalizedToolOptionalText(
+        comment.content,
+        forceLocale,
+      ),
+    }))
+    .filter((comment) => Boolean(comment.localizedContent));
   const isAccountService = tool.type === "online";
   const isSkillLearning = tool.type === "skill_learning";
   const activePriceSpecs = tool.priceSpecs.filter(
@@ -273,7 +285,14 @@ export async function ToolDetailPageShell({
       title: tool.videoTitle3,
       description: tool.videoDescription3,
     },
-  ]);
+  ]).map((video) => ({
+    ...video,
+    title: buildLocalizedToolOptionalText(video.title, forceLocale),
+    description: buildLocalizedToolOptionalText(
+      video.description,
+      forceLocale,
+    ),
+  }));
   const hasDownloadPurchase = user
     ? await prisma.toolPurchase
         .findUnique({
@@ -286,6 +305,16 @@ export async function ToolDetailPageShell({
     (isPurchasableAccountService && !hasDownloadPurchase) ||
     (paidSkillCourse && !hasDownloadPurchase);
   const downloadLinkContent = getDownloadLinkContent(tool.downloadFile);
+  const visibleDownloadLinkContent =
+    buildLocalizedToolOptionalText(downloadLinkContent, forceLocale) ||
+    (forceLocale === "en"
+      ? "Use the download button below to open the current delivery entry."
+      : downloadLinkContent);
+  const visibleDownloadFileName =
+    buildLocalizedToolOptionalText(
+      tool.downloadFile?.fileName,
+      forceLocale,
+    ) || td.noDownloadFileName;
   const hasDownloadLink = Boolean(
     tool.downloadFileId && tool.downloadFile && downloadLinkContent,
   );
@@ -1134,12 +1163,12 @@ export async function ToolDetailPageShell({
                   className="rounded-2xl border border-white/10 bg-white/8 p-4"
                 >
                   <p className="text-sm text-[#8F9DB2]">
-                    {comment.user.nickname ?? comment.user.email}{" "}
+                    {comment.localizedAuthor}{" "}
                     {comment.isPinned ? (
                       <span className="text-[#FFB86B]">· {td.pinned}</span>
                     ) : null}
                   </p>
-                  <p className="mt-2 leading-7">{comment.content}</p>
+                  <p className="mt-2 leading-7">{comment.localizedContent}</p>
                 </div>
               ))}
             </div>
@@ -1159,9 +1188,11 @@ export async function ToolDetailPageShell({
                   <p className="text-sm text-[#8F9DB2]">
                     {td.protectedDownloadLink}
                   </p>
-                  <LinkedDownloadLinkContent content={downloadLinkContent} />
+                  <LinkedDownloadLinkContent
+                    content={visibleDownloadLinkContent}
+                  />
                   <p className="mt-2 text-sm text-[#8F9DB2]">
-                    {tool.downloadFile?.fileName ?? td.noDownloadFileName}
+                    {visibleDownloadFileName}
                   </p>
                 </div>
                 {canOpenDownloadEntry ? (

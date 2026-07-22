@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildLocalizedToolOptionalText,
   buildLocalizedToolFaqItems,
   buildLocalizedToolLongContent,
   buildLocalizedToolSummary,
@@ -134,5 +135,45 @@ describe("tool localization bilingual blocks", () => {
       "支持文字转语音",
     );
     expect(shouldIndexEnglishToolPage(tool)).toBe(true);
+  });
+
+  it("recognizes short English bullet sections after Chinese product copy", () => {
+    const tool = {
+      slug: "infinitetalk-ai",
+      name: "InfiniteTalk 本地数字人视频生成工具",
+      englishName: "InfiniteTalk AI Digital Human Video Generator",
+      shortDescription:
+        "本地数字人视频生成工具。 InfiniteTalk is a local AI digital human video generator for Windows.",
+      content: [
+        "图片生成数字人口播视频",
+        "音频驱动口型同步",
+        "AI Talking Avatar Generation",
+        "Audio-Driven Lip Sync",
+        "Facial Animation",
+        "Single and Dual Avatar Mode",
+        "Batch Video Generation",
+        "Local Windows Deployment",
+      ].join("\n"),
+      type: "software" as const,
+      categoryName: "AI video",
+    };
+
+    expect(buildLocalizedToolLongContent(tool, "en")).toContain(
+      "AI Talking Avatar Generation",
+    );
+    expect(shouldIndexEnglishToolPage(tool)).toBe(true);
+  });
+
+  it("omits unlocalized auxiliary copy from English product pages", () => {
+    expect(buildLocalizedToolOptionalText("Product introduction", "en")).toBe(
+      "Product introduction",
+    );
+    expect(buildLocalizedToolOptionalText("产品介绍", "en")).toBe("");
+    expect(
+      buildLocalizedToolOptionalText(
+        "[[zh]]产品介绍[[/zh]][[en]]Product overview[[/en]]",
+        "en",
+      ),
+    ).toBe("Product overview");
   });
 });

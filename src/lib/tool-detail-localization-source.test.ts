@@ -8,6 +8,7 @@ describe("tool detail localization source", () => {
 
     expect(source).toContain('from "@/lib/tool-localization"');
     expect(source).toContain("buildLocalizedToolLongContent");
+    expect(source).toContain("buildLocalizedToolOptionalText");
     expect(source).toContain("buildLocalizedToolSummary");
     expect(source).toContain("buildLocalizedToolFaqItems");
     expect(source).toContain("buildLocalizedToolOfferName");
@@ -20,6 +21,9 @@ describe("tool detail localization source", () => {
     expect(source).toContain("visibleFaqs");
     expect(source).toContain("visibleChangelogs");
     expect(source).toContain("visibleComments");
+    expect(source).toContain("localizedContent");
+    expect(source).toContain("visibleDownloadLinkContent");
+    expect(source).toContain("visibleDownloadFileName");
     expect(source).toContain("localizedTool.primaryName");
     expect(source).toContain("localizedTagItems");
     expect(source).toContain("localizedPriceSpecs");
