@@ -1823,9 +1823,7 @@ select option:disabled {
   bottom: -1px;
   left: 0;
   z-index: 2;
-  background:
-    radial-gradient(ellipse at 50% 78%, rgba(65, 197, 219, 0.09), transparent 34%),
-    linear-gradient(180deg, rgba(16, 24, 33, 0) 0%, rgba(16, 24, 33, 0) 54%, rgba(16, 24, 33, 0.32) 72%, rgba(16, 24, 33, 0.82) 91%, #101821 100%);
+  background: linear-gradient(180deg, rgba(16, 24, 33, 0) 0%, rgba(16, 24, 33, 0) 54%, rgba(16, 24, 33, 0.32) 72%, rgba(16, 24, 33, 0.82) 91%, #101821 100%);
   content: "";
   pointer-events: none;
 }
