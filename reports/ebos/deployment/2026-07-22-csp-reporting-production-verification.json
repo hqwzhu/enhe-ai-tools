@@ -1,0 +1,62 @@
+{
+  "reportType": "csp_reporting_production_verification",
+  "targetDate": "2026-07-22",
+  "generatedAt": "2026-07-22T15:54:48.6530472+00:00",
+  "baseUrl": "https://www.enhe-tech.com.cn",
+  "commits": [
+    "673a9cb53d0e72e50e403ee5fc631f840b2cd5b7",
+    "db0a590"
+  ],
+  "deployment": {
+    "gitPull": "passed",
+    "dockerBuild": "passed",
+    "dockerUp": "passed",
+    "authSecretImageHistoryMatches": 0,
+    "runPrismaMigrate": "0",
+    "migrationSkippedEvidence": "Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1.",
+    "migrationExecuted": false,
+    "seedExecuted": false,
+    "nginxCommandExecuted": false
+  },
+  "reportingEndpoint": {
+    "path": "/api/csp-report",
+    "syntheticLegacyReportStatus": 204,
+    "cacheControl": "no-store",
+    "syntheticReportsCollected": 1,
+    "queryFragmentOrCredentialLeakDetected": false,
+    "databasePersistence": false
+  },
+  "criticalFlowAudit": {
+    "artifact": "output/playwright/2026-07-22-csp-critical-flow-production.json",
+    "pageChecks": 9,
+    "pageChecksPassed": 9,
+    "apiChecks": 5,
+    "apiChecksPassed": 5,
+    "eventViolationCount": 0,
+    "browserReportRequests": 0,
+    "flows": [
+      "authentication",
+      "payment",
+      "upload",
+      "download"
+    ],
+    "authenticatedMutationCoverage": "manual_required",
+    "realOrderCreated": false,
+    "paymentSubmitted": false,
+    "fileUploaded": false,
+    "successfulDownloadRecorded": false,
+    "userCreatedOrChanged": false,
+    "failedLoginTelemetryCreated": true
+  },
+  "cspMode": "report_only",
+  "enforcementDecision": "keep_report_only_pending_authenticated_mutation_coverage",
+  "warnings": [
+    "No organic browser CSP reports were observed during this short verification window.",
+    "Authenticated payment creation, payment-proof upload, and successful entitlement download require a separately authorized disposable test account and test data."
+  ],
+  "nextActions": [
+    "Observe sanitized csp_violation logs over a representative traffic window.",
+    "Run authenticated mutation-flow coverage only with explicit approval and disposable test data.",
+    "Switch to enforced CSP only after both gates are complete and reviewed."
+  ]
+}
