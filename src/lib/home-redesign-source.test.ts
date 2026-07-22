@@ -22,9 +22,9 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("ENHE AI recommended content preview");
     expect(page).toContain("const heroTitle =");
     expect(page).toContain("ENHE AI");
-    expect(page).toContain("让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。");
-    expect(page).toContain("Helping everyone use AI with confidence—turn ideas into creations and productivity into value.");
-    expect(page).toContain("const heroIntro =");
+    expect(dictionaries).toContain("让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。");
+    expect(dictionaries).toContain("Helping everyone use AI with confidence—turn ideas into creations and productivity into value.");
+    expect(page).toContain("const heroIntro = t.home.intro;");
     expect(page).not.toContain("home-hero-metrics");
     expect(page).not.toContain("t.home.metricsExploreTitle");
     expect(page).not.toContain("t.home.metricsExplore");
@@ -129,7 +129,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain("const heroVelocityTexts =");
     expect(page).not.toContain("texts={heroVelocityTexts}");
     expect(page).toContain('import { HomeParticlesBackground } from "@/components/home/home-particles-background";');
-    expect(page).toContain('import DecryptedText from "@/components/home/decrypted-text";');
+    expect(page).toContain('import { HeroGradientSubtitle } from "@/components/home/hero-gradient-subtitle";');
     expect(page).not.toContain('import TextPressure from "@/components/home/text-pressure";');
     expect(page).not.toContain('<p className="home-hero-brand">ENHE AI</p>');
     expect(page).toContain('import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";');
@@ -137,17 +137,15 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('<ASCIIHeroTitle text={heroTitle} />');
     expect(page).not.toContain('<h1 className="home-hero-title home-hero-title-simple">{heroTitle}</h1>');
     expect(page).toContain('<p className="home-hero-positioning">');
-    expect(page).toContain("text={heroIntro}");
-    expect(page).toContain('animateOn="view"');
-    expect(page).toContain("useOriginalCharsOnly");
-    expect(page).toContain("home-hero-decrypted-text");
+    expect(page).toContain("<HeroGradientSubtitle>{heroIntro}</HeroGradientSubtitle>");
+    expect(page).not.toContain("DecryptedText");
     expect(css).not.toContain(".home-hero-brand");
     expect(css).toContain(".home-hero-title-simple");
     expect(css).not.toContain("Roboto Flex ENHE");
     expect(css).not.toContain(".home-hero-title-pressure");
     expect(css).not.toContain(".text-pressure-title");
-    expect(css).toContain(".home-hero-decrypted-text");
-    expect(css).toContain(".home-hero-encrypted-letter");
+    expect(css).toContain(".enhe-hero-gradient-subtitle");
+    expect(css).toContain(".enhe-hero-subtitle-static");
     expect(css).toContain("font-size: clamp(4.05rem, 11.1vw, 9.15rem)");
     expect(css).toContain(".site-brand-logo-dark {\n  opacity: 1;\n  filter: brightness(0) invert(1)");
   });
@@ -219,15 +217,28 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-particles-fallback");
   });
 
-  it("uses DecryptedText as a visual-only hero slogan upgrade with reduced-motion fallback", () => {
-    const component = readFileSync(new URL("../components/home/decrypted-text.tsx", import.meta.url), "utf8");
+  it("uses GradientText for the localized hero subtitle with reduced-motion fallback", () => {
+    const component = readFileSync(new URL("../components/home/gradient-text.tsx", import.meta.url), "utf8");
+    const heroSubtitle = readFileSync(new URL("../components/home/hero-gradient-subtitle.tsx", import.meta.url), "utf8");
+    const componentCss = readFileSync(new URL("../components/home/gradient-text.module.css", import.meta.url), "utf8");
 
-    expect(component).toContain('import { motion, useReducedMotion } from "motion/react";');
-    expect(component).toContain("const shouldReduceMotion = useReducedMotion();");
-    expect(component).toContain("<span style={styles.srOnly}>{text}</span>");
-    expect(component).toContain("if (shouldReduceMotion) {");
-    expect(component).toContain("{text}");
-    expect(component).toContain("Adapted from React Bits DecryptedText");
+    expect(component).toContain('from "motion/react"');
+    expect(component).toContain("useAnimationFrame");
+    expect(component).toContain("useMotionValue");
+    expect(component).toContain("useTransform");
+    expect(component).toContain("{children}");
+    expect(componentCss).toContain("background-clip: text");
+    expect(heroSubtitle).toContain('import { useReducedMotion } from "motion/react";');
+    expect(heroSubtitle).toContain("const motionPreference = useReducedMotion();");
+    expect(heroSubtitle).toContain('window.matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(heroSubtitle).toContain("if (shouldReduceMotion !== false || motionPreference)");
+    expect(heroSubtitle).toContain('animationSpeed={7.5}');
+    expect(heroSubtitle).toContain('direction="horizontal"');
+    expect(heroSubtitle).toContain('pauseOnHover={false}');
+    expect(heroSubtitle).toContain("yoyo");
+    expect(heroSubtitle).toContain('showBorder={false}');
+    expect(heroSubtitle).toContain('className="enhe-hero-gradient-subtitle"');
+    expect(heroSubtitle).toContain('className="enhe-hero-subtitle-static"');
   });
 
   it("removes homepage featured cards without changing the reusable tool card contract", () => {

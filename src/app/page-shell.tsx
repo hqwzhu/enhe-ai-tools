@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";
 import BorderGlow from "@/components/home/border-glow";
-import DecryptedText from "@/components/home/decrypted-text";
+import { HeroGradientSubtitle } from "@/components/home/hero-gradient-subtitle";
 import { HomeParticlesBackground } from "@/components/home/home-particles-background";
 import { ProductDemoCard } from "@/components/product-demo-card";
 import { ButtonLink, Container } from "@/components/ui";
@@ -183,10 +183,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
     forceLocale === "en"
       ? "ENHE AI"
       : "ENHE AI";
-  const heroIntro =
-    forceLocale === "en"
-      ? "Helping everyone use AI with confidence—turn ideas into creations and productivity into value."
-      : "让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。";
+  const heroIntro = t.home.intro;
   const breadcrumbSchema = buildBreadcrumbSchema({
     items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
   });
@@ -222,18 +219,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               <h1 className="sr-only">{heroTitle}</h1>
               <ASCIIHeroTitle text={heroTitle} />
               <p className="home-hero-positioning">
-                <DecryptedText
-                  text={heroIntro}
-                  speed={34}
-                  maxIterations={12}
-                  sequential
-                  revealDirection="center"
-                  useOriginalCharsOnly
-                  animateOn="view"
-                  className="home-hero-decrypted-letter"
-                  parentClassName="home-hero-decrypted-text"
-                  encryptedClassName="home-hero-encrypted-letter"
-                />
+                <HeroGradientSubtitle>{heroIntro}</HeroGradientSubtitle>
               </p>
 
               <div className="home-hero-actions">

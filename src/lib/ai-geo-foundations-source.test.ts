@@ -203,11 +203,11 @@ describe("AI GEO foundations", () => {
     expect(middleware).toContain('"x-enhe-locale"');
     expect(middleware).toContain('"Vary", localeDetectionVaryHeader');
     expect(pageShell).toContain("const heroTitle =");
-    expect(pageShell).toContain("const heroIntro =");
+    expect(pageShell).toContain("const heroIntro = t.home.intro;");
     expect(pageShell).toContain('forceLocale === "en"');
     expect(pageShell).toContain("ENHE AI");
-    expect(pageShell).toContain("让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。");
-    expect(pageShell).toContain("Helping everyone use AI with confidence—turn ideas into creations and productivity into value.");
+    expect(dictionaries).toContain("让每一个普通人，都能轻松驾驭AI，把想法变成现实，把效率变成价值。");
+    expect(dictionaries).toContain("Helping everyone use AI with confidence—turn ideas into creations and productivity into value.");
     expect(dictionaries).toContain('titleSecondLine: "把 AI 用到真实任务里，让工作、创作和学习更可控"');
     expect(dictionaries).toContain('titleSecondLineEn: "Use AI for real work, creation, learning, and safer workflows"');
   });
