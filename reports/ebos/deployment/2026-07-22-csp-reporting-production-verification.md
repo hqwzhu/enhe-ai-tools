@@ -11,6 +11,8 @@
 - Docker build: passed
 - Docker app update: passed
 - `AUTH_SECRET` image-history matches: 0
+- Current container start: `2026-07-22T15:54:20.971824928Z`
+- Reverified after a concurrent container rebuild: yes
 - `RUN_PRISMA_MIGRATE`: `0`
 - Entrypoint log confirmed Prisma migration was skipped
 - Prisma migration executed: no
@@ -29,7 +31,7 @@
 - Browser-observed CSP violations: 0
 - Browser-generated report requests: 0
 - Real order/payment/upload/download mutation: none
-- Invalid-login check: one failed-login telemetry row only; no user was created or changed
+- Invalid-login checks: two failed-login telemetry rows across the initial and post-rebuild audits; no user was created or changed
 
 Authenticated payment creation, payment-proof upload, and successful entitlement download remain `manual_required`. They require explicit authorization plus disposable test account, order, and file data.
 

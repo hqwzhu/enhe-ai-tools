@@ -1,7 +1,7 @@
 {
   "reportType": "csp_reporting_production_verification",
   "targetDate": "2026-07-22",
-  "generatedAt": "2026-07-22T15:54:48.6530472+00:00",
+  "generatedAt": "2026-07-22T16:03:43.6832632+00:00",
   "baseUrl": "https://www.enhe-tech.com.cn",
   "commits": [
     "673a9cb53d0e72e50e403ee5fc631f840b2cd5b7",
@@ -12,6 +12,8 @@
     "dockerBuild": "passed",
     "dockerUp": "passed",
     "authSecretImageHistoryMatches": 0,
+    "currentContainerStartedAt": "2026-07-22T15:54:20.971824928Z",
+    "reverifiedAfterConcurrentContainerRebuild": true,
     "runPrismaMigrate": "0",
     "migrationSkippedEvidence": "Prisma migrate deploy skipped because RUN_PRISMA_MIGRATE is not set to 1.",
     "migrationExecuted": false,
@@ -28,6 +30,7 @@
   },
   "criticalFlowAudit": {
     "artifact": "output/playwright/2026-07-22-csp-critical-flow-production.json",
+    "generatedAt": "2026-07-22T16:03:22.857Z",
     "pageChecks": 9,
     "pageChecksPassed": 9,
     "apiChecks": 5,
@@ -46,7 +49,8 @@
     "fileUploaded": false,
     "successfulDownloadRecorded": false,
     "userCreatedOrChanged": false,
-    "failedLoginTelemetryCreated": true
+    "failedLoginTelemetryCreated": true,
+    "failedLoginTelemetryRowsCreatedThisTask": 2
   },
   "cspMode": "report_only",
   "enforcementDecision": "keep_report_only_pending_authenticated_mutation_coverage",
