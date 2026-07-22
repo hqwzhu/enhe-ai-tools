@@ -32,12 +32,19 @@ describe("server deployment compose config", () => {
   it("persists CSP reports outside the replaceable app container", () => {
     const compose = readFileSync(resolve(root, "deploy/enhe-ai-tools/docker-compose.yml"), "utf8");
     const gitignore = readFileSync(resolve(root, ".gitignore"), "utf8");
+    const logrotate = readFileSync(
+      resolve(root, "deploy/enhe-ai-tools/logrotate/enhe-csp-report"),
+      "utf8",
+    );
 
     expect(compose).toContain(
       "CSP_REPORT_LOG_PATH: ${CSP_REPORT_LOG_PATH:-/app/logs/csp-report.jsonl}",
     );
     expect(compose).toContain("./logs:/app/logs");
     expect(gitignore).toContain("/deploy/enhe-ai-tools/logs/");
+    expect(logrotate).toContain("daily");
+    expect(logrotate).toContain("maxsize 10M");
+    expect(logrotate).not.toMatch(/^\s*size\s/m);
   });
 
   it("defines a bounded proxy rate limit for the public CSP collector", () => {

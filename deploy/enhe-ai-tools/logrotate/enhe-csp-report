@@ -1,7 +1,7 @@
 /opt/enhe-ai-tools/deploy/enhe-ai-tools/logs/csp-report.jsonl {
     daily
     rotate 7
-    size 10M
+    maxsize 10M
     missingok
     notifempty
     compress
