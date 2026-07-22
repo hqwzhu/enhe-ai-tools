@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";
 import BorderGlow from "@/components/home/border-glow";
+import FlowingMenu from "@/components/home/flowing-menu.client";
 import { HeroGradientSubtitle } from "@/components/home/hero-gradient-subtitle";
 import { HomeParticlesBackground } from "@/components/home/home-particles-background";
 import { ProductDemoCard } from "@/components/product-demo-card";
@@ -61,42 +62,32 @@ const homeFaqItems = {
   ],
 } as const;
 
-const homeProductPaths = {
-  zh: [
-    {
-      title: "提升工作效率",
-      description: "办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件",
-      href: "/product-paths/work-efficiency",
-    },
-    {
-      title: "生成图片/视频/音频",
-      description: "AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理",
-      href: "/product-paths/media-generation",
-    },
-    {
-      title: "改变你未来的AI",
-      description: "AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现",
-      href: "/product-paths/future-ai",
-    },
-  ],
-  en: [
-    {
-      title: "Improve work efficiency",
-      description: "Office productivity tools, file processing tools, system utilities, data analysis tools, productivity, AI desktop software",
-      href: "/product-paths/work-efficiency",
-    },
-    {
-      title: "Generate image/video/audio",
-      description: "AI video tools, AI image tools, AI audio tools, video generation, voice generation, video/image processing",
-      href: "/product-paths/media-generation",
-    },
-    {
-      title: "AI that changes your future",
-      description: "AI agents, practical AI tools for daily life, agents, account subscriptions, subscription upgrades, AI prompts, AI side-income workflows",
-      href: "/product-paths/future-ai",
-    },
-  ],
-} as const;
+const homeFlowingMenuLinks = [
+  {
+    id: "productivity",
+    copyKey: "productivity",
+    href: "/product-paths/work-efficiency",
+    image: "/images/home/flowing-menu/productivity.webp",
+  },
+  {
+    id: "content-creation",
+    copyKey: "contentCreation",
+    href: "/product-paths/media-generation",
+    image: "/images/home/flowing-menu/content-creation.webp",
+  },
+  {
+    id: "ai-learning",
+    copyKey: "aiLearning",
+    href: "/skill-learning",
+    image: "/images/home/flowing-menu/ai-learning.webp",
+  },
+  {
+    id: "ai-news",
+    copyKey: "aiNews",
+    href: "/ai-news",
+    image: "/images/home/flowing-menu/ai-news.webp",
+  },
+] as const;
 
 const homeSupportLinks = {
   zh: [
@@ -179,6 +170,13 @@ export async function generateHomePageMetadata(forceLocale: Locale): Promise<Met
 export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   const homeProductDemos = await getHomeProductDemos();
   const t = getDictionary(forceLocale);
+  const flowingMenuItems = homeFlowingMenuLinks.map((item) => ({
+    id: item.id,
+    link: buildLocalePath(item.href, forceLocale),
+    text: t.home.categoryMenu.items[item.copyKey].label,
+    image: item.image,
+    imageAlt: t.home.categoryMenu.items[item.copyKey].imageAlt,
+  }));
   const heroTitle =
     forceLocale === "en"
       ? "ENHE AI"
@@ -273,33 +271,18 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         </Container>
       </section>
 
-      <section className="home-outcome-shell" aria-labelledby="home-outcome-title">
-        <Container className="home-hero-reference-frame">
-          <div className="home-section-heading">
-            <h2 id="home-outcome-title">{forceLocale === "en" ? "Choose by need" : "按需求选择"}</h2>
-          </div>
-          <div className="home-outcome-grid home-product-path-grid">
-            {homeProductPaths[forceLocale].map((item, index) => (
-              <BorderGlow
-                key={item.title}
-                variant="card"
-                animated={index === 0}
-                edgeSensitivity={28}
-                glowColor="190 85 70"
-                borderRadius={18}
-                glowRadius={42}
-                glowIntensity={0.75}
-                coneSpread={22}
-                colors={["#56bfd0", "#41c5db", "#20bbd6"]}
-                fillOpacity={0.16}
-              >
-                <Link href={buildLocalePath(item.href, forceLocale)} className="home-outcome-card">
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                </Link>
-              </BorderGlow>
-            ))}
-          </div>
+      <section className="home-flowing-menu-shell">
+        <Container className="home-flowing-menu-container">
+          <FlowingMenu
+            items={flowingMenuItems}
+            ariaLabel={t.home.categoryMenu.ariaLabel}
+            speed={16}
+            textColor="#f7fbff"
+            bgColor="#0b1720"
+            marqueeBgColor="#56bfd0"
+            marqueeTextColor="#07131a"
+            borderColor="rgba(86, 191, 208, 0.28)"
+          />
         </Container>
       </section>
 

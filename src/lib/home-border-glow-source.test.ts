@@ -10,17 +10,16 @@ function readSource(relativePath: string) {
 }
 
 describe("homepage BorderGlow source contract", () => {
-  it("wraps only the two hero CTAs and mapped demand cards without replacing their links", () => {
+  it("keeps BorderGlow on only the two hero CTAs after the category menu upgrade", () => {
     const page = readSource("../app/page-shell.tsx");
 
     expect(page).toContain('import BorderGlow from "@/components/home/border-glow";');
     expect(page.match(/variant="button"/g)).toHaveLength(2);
-    expect(page).toContain("homeProductPaths[forceLocale].map((item, index)");
-    expect(page.match(/variant="card"/g)).toHaveLength(1);
-    expect(page).toContain("animated={index === 0}");
+    expect(page).not.toContain("homeProductPaths[forceLocale].map((item, index)");
+    expect(page.match(/variant="card"/g)).toBeNull();
+    expect(page).toContain("<FlowingMenu");
     expect(page).toMatch(/<ButtonLink\s+href=\{buildLocalePath\("\/software", forceLocale\)\}/);
     expect(page).toMatch(/<ButtonLink\s+href=\{buildLocalePath\("\/skill-learning", forceLocale\)\}/);
-    expect(page).toContain('<Link href={buildLocalePath(item.href, forceLocale)} className="home-outcome-card">');
     expect(page).toContain('data-analytics-event="home_hot_ai_tools_cta_click"');
     expect(page).toContain('data-analytics-event="home_free_claim_cta_click"');
     expect(page).toContain('forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"');

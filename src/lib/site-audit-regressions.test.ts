@@ -44,7 +44,6 @@ describe("site audit regression coverage", () => {
       '"/skill-learning"',
       '"/product-paths/work-efficiency"',
       '"/product-paths/media-generation"',
-      '"/product-paths/future-ai"',
       '"/pricing"',
       '"/tutorials"',
       '"/build-your-own-x"',
@@ -52,7 +51,7 @@ describe("site audit regression coverage", () => {
       expect(homeShell).toContain(path);
     }
 
-    expect(homeShell).toContain("homeProductPaths");
+    expect(homeShell).toContain("homeFlowingMenuLinks");
     expect(homeShell).toContain("homeSupportLinks");
     expect(homeShell).toContain("home-seo-disclosure");
   });

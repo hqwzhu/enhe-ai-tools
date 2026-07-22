@@ -2277,7 +2277,7 @@ select option:disabled {
   scroll-margin-top: 96px;
 }
 
-.home-outcome-shell,
+.home-flowing-menu-shell,
 .home-workflow-shell,
 .home-byox-shell {
   position: relative;
@@ -2285,15 +2285,19 @@ select option:disabled {
   padding: clamp(1.25rem, 3vw, 2.25rem) 0;
 }
 
-.home-outcome-shell {
+.home-flowing-menu-shell {
   margin-top: clamp(-6rem, -8vw, -4rem);
   padding-top: clamp(5.5rem, 9vw, 8rem);
   background: none;
 }
 
-.home-outcome-shell > * {
+.home-flowing-menu-shell > * {
   position: relative;
   z-index: 1;
+}
+
+.home-flowing-menu-container {
+  max-width: 1480px !important;
 }
 
 .home-pointer-glow {
@@ -2334,75 +2338,6 @@ select option:disabled {
   font-size: clamp(0.95rem, 1.18vw, 1.05rem);
   font-weight: 650;
   line-height: 1.8;
-}
-
-.home-outcome-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.home-outcome-card {
-  display: flex;
-  min-height: 238px;
-  flex-direction: column;
-  justify-content: space-between;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 20% 0%, rgba(65, 197, 219, 0.14), transparent 58%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
-    rgba(15, 28, 38, 0.68);
-  padding: clamp(1rem, 1.7vw, 1.25rem);
-  color: var(--marketing-text);
-  text-decoration: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
-}
-
-.home-outcome-card:hover {
-  border-color: rgba(65, 197, 219, 0.54);
-  background:
-    radial-gradient(circle at 20% 0%, rgba(65, 197, 219, 0.22), transparent 60%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.046)),
-    rgba(18, 34, 45, 0.78);
-  transform: translateY(-2px);
-}
-
-.home-outcome-card span {
-  color: var(--marketing-accent);
-  font-size: 0.78rem;
-  font-weight: 900;
-}
-
-.home-outcome-card h3 {
-  margin: auto 0 0.75rem;
-  color: var(--marketing-text);
-  font-size: clamp(1.08rem, 1.45vw, 1.3rem);
-  font-weight: 900;
-  line-height: 1.22;
-}
-
-.home-outcome-card p {
-  margin: 0;
-  color: var(--marketing-muted);
-  font-size: 0.92rem;
-  font-weight: 600;
-  line-height: 1.68;
-}
-
-.home-product-path-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.home-product-path-grid .home-outcome-card {
-  min-height: clamp(158px, 12vw, 176px);
-  justify-content: center;
-  row-gap: 0.45rem;
-}
-
-.home-product-path-grid .home-outcome-card h3 {
-  margin: 0 0 0.55rem;
 }
 
 .home-workflow-panel,
@@ -2556,13 +2491,8 @@ select option:disabled {
 }
 
 @media (max-width: 1120px) {
-  .home-outcome-grid,
   .home-workflow-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .home-product-path-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -4004,14 +3934,11 @@ select option:disabled {
     font-size: clamp(12.4px, 3.2vw, 13.4px) !important;
   }
 
-  .home-outcome-grid,
   .home-workflow-grid,
-  .home-product-path-grid,
   .home-byox-spotlight {
     grid-template-columns: 1fr;
   }
 
-  .home-outcome-card,
   .home-workflow-step {
     min-height: auto;
   }

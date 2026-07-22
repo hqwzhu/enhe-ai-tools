@@ -46,6 +46,27 @@ export const dictionaries = {
       onlineButton: "生成图片/视频/音频",
       skillLearningButton: "改变你未来的AI",
       aiNewsButton: "AI前沿资讯",
+      categoryMenu: {
+        ariaLabel: "按使用场景浏览 ENHE AI 内容",
+        items: {
+          productivity: {
+            label: "工作效率",
+            imageAlt: "AI 工作效率与自动化工作场景"
+          },
+          contentCreation: {
+            label: "内容创作",
+            imageAlt: "AI 图片、视频和音频内容创作场景"
+          },
+          aiLearning: {
+            label: "AI 学习",
+            imageAlt: "AI 技能学习与实操场景"
+          },
+          aiNews: {
+            label: "AI 资讯",
+            imageAlt: "人工智能资讯与行业动态场景"
+          }
+        }
+      },
       metricsExploreTitle: "自由探索",
       metricsExplore: "用 AI 打开更多可能性",
       metricsOutcomeTitle: "灵感落地",
@@ -399,6 +420,27 @@ export const dictionaries = {
       onlineButton: "Generate Images/Video/Audio",
       skillLearningButton: "Change Your AI Future",
       aiNewsButton: "AI News",
+      categoryMenu: {
+        ariaLabel: "Browse ENHE AI by use case",
+        items: {
+          productivity: {
+            label: "Productivity",
+            imageAlt: "AI productivity and workflow automation"
+          },
+          contentCreation: {
+            label: "Content Creation",
+            imageAlt: "AI image, video and audio content creation"
+          },
+          aiLearning: {
+            label: "AI Learning",
+            imageAlt: "Practical AI skills and learning"
+          },
+          aiNews: {
+            label: "AI News",
+            imageAlt: "Artificial intelligence news and industry signals"
+          }
+        }
+      },
       metricsExploreTitle: "Explore Freely",
       metricsExplore: "Open More Possibilities with AI",
       metricsOutcomeTitle: "Ideas to Outcomes",

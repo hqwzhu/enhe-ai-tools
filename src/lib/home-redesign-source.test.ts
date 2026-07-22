@@ -39,14 +39,15 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('href={buildLocalePath("/skill-learning", forceLocale)}');
     expect(page).toContain('forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"');
     expect(page).toContain('forceLocale === "en" ? "Claim Free" : "免费领取"');
-    expect(page).toContain("const homeProductPaths = {");
+    expect(page).toContain("const homeFlowingMenuLinks = [");
     expect(page).toContain("const homeSupportLinks = {");
     expect(page).not.toContain("const creatorOutcomeCards = {");
     expect(page).not.toContain("const creatorWorkflowSteps = {");
     expect(page).not.toContain("const buildYourOwnXSpotlight = {");
     expect(page).toContain('href: "/build-your-own-x"');
-    expect(page).toContain('className="home-outcome-shell"');
-    expect(page).toContain('className="home-outcome-grid home-product-path-grid"');
+    expect(page).toContain('className="home-flowing-menu-shell"');
+    expect(page).toContain('className="home-flowing-menu-container"');
+    expect(page).toContain("<FlowingMenu");
     expect(page).not.toContain("先从软件、课程或账号服务进入，再对比价格、交付方式和购买说明。");
     expect(page).not.toContain("Start with software, courses, or account services, then compare pricing and delivery details before purchase.");
     expect(page).toContain('className="home-support-shell"');
@@ -62,7 +63,7 @@ describe("homepage SaaS redesign source", () => {
     expect(page).not.toContain('href="/account-services" variant="ghost" className="home-preview-link"');
     expect(page).toContain('href: "/product-paths/work-efficiency"');
     expect(page).toContain('href: "/product-paths/media-generation"');
-    expect(page).toContain('href: "/product-paths/future-ai"');
+    expect(page).toContain('href: "/skill-learning"');
     expect(page).toContain('href: "/ai-news"');
     expect(page).toContain('href: "/ai-trends"');
     expect(page).toContain('href: "/ai-topics"');
@@ -101,12 +102,10 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".home-hero-title-simple");
     expect(css).not.toContain(".home-hero-metrics");
     expect(css).not.toContain(".home-featured-shell");
-    expect(css).toContain(".home-outcome-shell");
-    expect(css).toContain(".home-outcome-grid");
-    expect(css).toContain(".home-product-path-grid");
-    expect(css).toContain(".home-product-path-grid .home-outcome-card {\n  min-height: clamp(158px, 12vw, 176px);");
-    expect(css).toContain("justify-content: center;\n  row-gap: 0.45rem;");
-    expect(css).toContain(".home-product-path-grid .home-outcome-card h3 {\n  margin: 0 0 0.55rem;");
+    expect(css).toContain(".home-flowing-menu-shell");
+    expect(css).toContain(".home-flowing-menu-container");
+    expect(css).not.toContain(".home-outcome-grid");
+    expect(css).not.toContain(".home-product-path-grid");
     expect(css).toContain(".home-support-shell");
     expect(css).toContain(".home-seo-disclosure");
     expect(css).toContain("overflow-x: clip");
@@ -150,26 +149,22 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain(".site-brand-logo-dark {\n  opacity: 1;\n  filter: brightness(0) invert(1)");
   });
 
-  it("uses demand-first homepage cards without the old action labels", () => {
+  it("uses the localized FlowingMenu category entry without the old heading or cards", () => {
     const page = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
 
-    expect(page).toContain('forceLocale === "en" ? "Choose by need" : "按需求选择"');
-    expect(page).toContain('title: "提升工作效率"');
+    expect(page).toContain('id: "productivity"');
     expect(page).toContain('href: "/product-paths/work-efficiency"');
-    expect(page).toContain("办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件");
-    expect(page).toContain('title: "生成图片/视频/音频"');
+    expect(page).toContain('id: "content-creation"');
     expect(page).toContain('href: "/product-paths/media-generation"');
-    expect(page).toContain("AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理");
-    expect(page).toContain('title: "改变你未来的AI"');
-    expect(page).toContain('href: "/product-paths/future-ai"');
-    expect(page).toContain("AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现");
-    expect(page).not.toContain('title: "提升工作效率",\n      description: "办公效率工具、文件处理工具、系统实用工具、数据分析工具、提升效率、AI电脑软件",\n      href: "/software"');
-    expect(page).not.toContain('title: "生成图片/视频/音频",\n      description: "AI视频工具、AI图片工具、AI音频工具、视频生成、语音生成、视频/图片处理",\n      href: "/skill-learning"');
-    expect(page).not.toContain('title: "改变你未来的AI",\n      description: "AI 智能体、生活实用AI工具、智能体、账号订购、升级订阅、AI 提示词、AI 副业变现",\n      href: "/account-services"');
-    expect(page).not.toContain("进入软件货架");
-    expect(page).not.toContain("选择课程");
-    expect(page).not.toContain("查看服务");
-    expect(page).not.toContain("<span>{item.action}</span>");
+    expect(page).toContain('id: "ai-learning"');
+    expect(page).toContain('href: "/skill-learning"');
+    expect(page).toContain('id: "ai-news"');
+    expect(page).toContain('href: "/ai-news"');
+    expect(page).toContain("t.home.categoryMenu.items[item.copyKey].label");
+    expect(page).not.toContain("Choose by need");
+    expect(page).not.toContain("按需求选择");
+    expect(page).not.toContain("homeProductPaths");
+    expect(page).not.toContain("home-product-path-grid");
   });
 
   it("keeps the homepage hero title semantic while upgrading the visual wordmark", () => {
@@ -317,11 +312,11 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("background-image: none !important");
     expect(css).toContain(".home-hero-cta-primary,\n.home-hero-cta-accent {\n  background: transparent");
     expect(css).toContain("color: #ffffff");
-    expect(css).toContain(".home-outcome-shell {\n  margin-top: clamp(-6rem, -8vw, -4rem);");
+    expect(css).toContain(".home-flowing-menu-shell {\n  margin-top: clamp(-6rem, -8vw, -4rem);");
     expect(css).toContain("linear-gradient(180deg, rgba(16, 24, 33, 0) 0%, rgba(16, 24, 33, 0) 54%, rgba(16, 24, 33, 0.32) 72%, rgba(16, 24, 33, 0.82) 91%, #101821 100%)");
     expect(css).not.toContain("radial-gradient(ellipse at 50% 78%, rgba(65, 197, 219, 0.09), transparent 34%)");
     expect(css).toContain("margin-bottom: -1px;");
-    expect(css).not.toContain(".home-outcome-shell::before");
+    expect(css).not.toContain(".home-flowing-menu-shell::before");
     expect(css).not.toContain("radial-gradient(ellipse at 50% 54%, rgba(65, 197, 219, 0.08), transparent 34rem)");
     expect(css).not.toContain(".home-recommended-tool-grid");
     expect(css).toContain("linear-gradient(180deg, #101821 0%, #101821 18%, #0b1118 72%, #080d12 100%)");
