@@ -7,6 +7,8 @@ describe("product demo feature source contract", () => {
     const productDemos = readFileSync(new URL("./product-demos.ts", import.meta.url), "utf8");
     const card = readFileSync(new URL("../components/product-demo-card.tsx", import.meta.url), "utf8");
 
+    expect(home).toContain('import { connection } from "next/server";');
+    expect(home).toContain("await connection();");
     expect(home).toContain("getHomeProductDemos");
     expect(home).toContain("homeProductDemos.length");
     expect(home).toContain("ProductDemoCard");

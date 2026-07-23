@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { ArrowUpRight } from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";
@@ -168,6 +169,7 @@ export async function generateHomePageMetadata(forceLocale: Locale): Promise<Met
 }
 
 export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
+  await connection();
   const homeProductDemos = await getHomeProductDemos();
   const t = getDictionary(forceLocale);
   const flowingMenuItems = homeFlowingMenuLinks.map((item) => ({
