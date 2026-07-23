@@ -141,7 +141,7 @@ export async function PricingPageShell({ forceLocale }: { forceLocale: Locale })
             </div>
             <Link
               href={forceLocale === "en" ? "/en/software" : "/software"}
-              className="purchase-guide-button inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold !text-[#050505] transition"
+                  className="purchase-guide-button inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold !text-[#050505] transition-colors"
             >
               {copy.cta}
               <ArrowRight size={16} />

@@ -71,14 +71,15 @@ describe("SEO foundations source contract", () => {
 
   it("uses stable sitemap timestamps and cached public settings", () => {
     const sitemap = read("src/app/sitemap.ts");
+    const discovery = read("src/lib/public-discovery-manifest.ts");
     const settings = read("src/lib/settings.ts");
 
     expect(sitemap).toContain("export const revalidate");
-    expect(sitemap).toContain("staticRouteLastModified");
-    expect(sitemap).toContain('"/skill-learning"');
-    expect(sitemap).toContain('"/en/skill-learning"');
-    expect(sitemap).toContain('"/legal/copyright-complaint"');
-    expect(sitemap).toContain('"/legal/minor-protection"');
+    expect(sitemap).toContain("publicDiscoveryRoutes");
+    expect(discovery).toContain('path: "/skill-learning"');
+    expect(discovery).toContain('path: "/en/skill-learning"');
+    expect(discovery).toContain('path: "/legal/copyright-complaint"');
+    expect(discovery).toContain('path: "/legal/minor-protection"');
     expect(sitemap).not.toContain("const now = new Date()");
 
     expect(settings).toContain("unstable_cache");

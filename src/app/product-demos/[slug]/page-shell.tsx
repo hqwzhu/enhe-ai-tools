@@ -174,7 +174,7 @@ export async function ProductDemoDetailPageShell({ slug, forceLocale }: ProductD
           ]}
         />
         <nav className="mb-6 flex flex-wrap gap-3" aria-label={forceLocale === "en" ? "Breadcrumb" : "面包屑导航"}>
-          <Link href={buildLocalePath("/product-demos", forceLocale)} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-text)]">
+            <Link href={buildLocalePath("/product-demos", forceLocale)} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-[var(--marketing-muted)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-text)]">
             {copy.listing}
           </Link>
         </nav>

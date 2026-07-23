@@ -338,7 +338,7 @@ function AiNewsGeoBlock({ forceLocale }: { forceLocale: Locale }) {
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+                  className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
           >
             {item.label[forceLocale]}
           </Link>
@@ -434,7 +434,7 @@ function FilterBar({
         <option value="hot">{t.aiNews.hot}</option>
         <option value="featured">{t.aiNews.featured}</option>
       </select>
-      <button className="rounded-full bg-[#050505] px-5 py-3 font-bold text-white transition hover:bg-[#161616] lg:col-span-4">
+              <button className="rounded-full bg-[#050505] px-5 py-3 font-bold text-white transition-colors hover:bg-[#161616] lg:col-span-4">
         {t.aiNews.filter}
       </button>
     </form>
@@ -481,7 +481,7 @@ function NewsCard({
 
   return (
     <article
-      className={`glass group overflow-hidden rounded-2xl transition duration-200 hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45 ${featured ? "lg:col-span-1" : ""}`}
+      className={`glass group overflow-hidden rounded-2xl transition-[border-color,transform] duration-200 hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45 ${featured ? "lg:col-span-1" : ""}`}
     >
       <Link href={href} className="block">
         <div className="relative aspect-[16/9] overflow-hidden bg-white/6">
@@ -490,7 +490,7 @@ function NewsCard({
               src={coverImage}
               alt={title}
               fill
-              className="object-cover transition duration-300 group-hover:scale-[1.03]"
+              className="content-thumbnail-outline object-cover transition-transform duration-300 group-hover:scale-[1.03]"
               sizes="(min-width: 1024px) 360px, 100vw"
               unoptimized
             />
@@ -524,8 +524,8 @@ function NewsCard({
             <span>
               {formatDate(article.publishedAt ?? article.createdAt, locale)}
             </span>
-            <span>{article.readingTime} min</span>
-            <span>{article.viewCount} views</span>
+            <span className="tabular-nums">{article.readingTime} min</span>
+            <span className="tabular-nums">{article.viewCount} views</span>
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
             {article.tagLinks.slice(0, 3).map(({ tag }) => (
@@ -563,7 +563,7 @@ function TrendPanel({
             <Link
               key={article.id}
               href={buildCanonicalAiNewsPath(article, locale)}
-              className="block rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45"
+              className="block rounded-xl border border-white/10 bg-white/7 p-4 transition-colors hover:border-[var(--marketing-accent)]/45"
             >
               <span className="text-xs font-bold text-[var(--marketing-accent)]">
                 #{index + 1}
@@ -611,7 +611,7 @@ function KeywordCloud({
           <Link
             key={item.keyword}
             href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(item.query)}`}
-            className="rounded-full border border-white/14 bg-white/7 px-3 py-1 text-xs font-semibold text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+                    className="rounded-full border border-white/14 bg-white/7 px-3 py-1 text-xs font-semibold text-[var(--marketing-muted)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
           >
             {localizeAiNewsDiscoveryLabel(
               item.displayName,
@@ -668,7 +668,7 @@ function TopicCollections({
           <Link
             key={item.key}
             href={item.href}
-            className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+                    className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
           >
             {item.title}
           </Link>
@@ -677,7 +677,7 @@ function TopicCollections({
           <Link
             key={item.key}
             href={`${buildLocalePath("/ai-news", locale)}?q=${encodeURIComponent(item.query)}`}
-            className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+                    className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-muted)] transition-[border-color,color] hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
           >
             {localizeAiNewsDiscoveryLabel(
               item.title,
@@ -710,7 +710,7 @@ function Pagination({
           <Link
             key={nextPage}
             href={`${buildLocalePath("/ai-news", locale)}?page=${nextPage}`}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${page === nextPage ? "border-[var(--marketing-accent)] bg-[var(--marketing-accent)]/14 text-[var(--marketing-accent)]" : "border-white/14 bg-white/7 text-[var(--marketing-muted)] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"}`}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-[background-color,border-color,color] ${page === nextPage ? "border-[var(--marketing-accent)] bg-[var(--marketing-accent)]/14 text-[var(--marketing-accent)]" : "border-white/14 bg-white/7 text-[var(--marketing-muted)] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"}`}
           >
             {nextPage}
           </Link>

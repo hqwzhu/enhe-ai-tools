@@ -105,7 +105,7 @@ function FilterBar({ categories, locale }: { categories: { id: string; name: str
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>
-      <button className="rounded-full bg-[#050505] px-5 py-3 font-bold text-white transition hover:bg-[#161616] md:col-span-3">{t.listing.filter}</button>
+            <button className="rounded-full bg-[#050505] px-5 py-3 font-bold text-white transition-colors hover:bg-[#161616] md:col-span-3">{t.listing.filter}</button>
     </form>
   );
 }

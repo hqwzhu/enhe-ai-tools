@@ -22,7 +22,7 @@ describe("homepage and navigation copy", () => {
     expect(dictionaries.zh.home.skillLearningButton).toBe("改变你未来的AI");
     expect(dictionaries.zh.home.categoryMenu.items.productivity.label).toBe("工作效率");
     expect(dictionaries.zh.home.categoryMenu.items.contentCreation.label).toBe("内容创作");
-    expect(dictionaries.zh.home.categoryMenu.items.aiLearning.label).toBe("AI 学习");
+    expect(dictionaries.zh.home.categoryMenu.items.aiLearning.label).toBe("AI 教程");
     expect(dictionaries.zh.home.categoryMenu.items.aiNews.label).toBe("AI 资讯");
     expect(dictionaries.zh.home.featuredSoftwareEyebrow).toBe("AI Software Apps");
     expect(dictionaries.zh.home.featuredSoftwareTitle).toBe("精选AI软件应用");
@@ -43,7 +43,7 @@ describe("homepage and navigation copy", () => {
     expect(dictionaries.en.home.skillLearningButton).toBe("Change Your AI Future");
     expect(dictionaries.en.home.categoryMenu.items.productivity.label).toBe("Productivity");
     expect(dictionaries.en.home.categoryMenu.items.contentCreation.label).toBe("Content Creation");
-    expect(dictionaries.en.home.categoryMenu.items.aiLearning.label).toBe("AI Learning");
+    expect(dictionaries.en.home.categoryMenu.items.aiLearning.label).toBe("AI Tutorials");
     expect(dictionaries.en.home.categoryMenu.items.aiNews.label).toBe("AI News");
     expect(dictionaries.en.home.featuredSoftwareEyebrow).toBe("AI Software Apps");
     expect(dictionaries.en.home.onlineToolsEyebrow).toBe("AI Account Services");

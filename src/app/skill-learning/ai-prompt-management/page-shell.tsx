@@ -207,7 +207,7 @@ export function AiPromptManagementPageShell({
                 <Link
                   key={item.href}
                   href={buildLocalePath(item.href, forceLocale)}
-                  className="rounded-lg border border-[var(--marketing-border)] bg-white/80 px-4 py-3 text-sm font-bold text-[#15171c] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+            className="rounded-lg border border-[var(--marketing-border)] bg-white/80 px-4 py-3 text-sm font-bold text-[#15171c] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
                 >
                   {item.label}
                 </Link>

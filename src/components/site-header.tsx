@@ -36,8 +36,9 @@ async function SiteHeaderContent({ forceLocale }: { forceLocale?: Locale }) {
   const t = getDictionary(locale);
   const brand = getEffectiveLocalizedSiteName(settings, locale, t.brand);
   const brandWordmark = brand.includes("ENHE") ? "ENHE AI" : brand;
+  const homeHref = buildLocalePath("/", locale);
   const navItems = [
-    { label: t.nav.home, href: buildLocalePath("/", locale) },
+    { label: t.nav.home, href: homeHref },
     {
       label: t.nav.software,
       href: buildLocalePath("/software", locale),
@@ -110,6 +111,7 @@ async function SiteHeaderContent({ forceLocale }: { forceLocale?: Locale }) {
         <Container className="site-header-inner flex max-w-none items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
           <PrefetchLink
             href={buildLocalePath("/", locale)}
+            prefetch={false}
             className="site-brand cursor-target group"
             aria-label={brand}
           >
@@ -154,6 +156,7 @@ async function SiteHeaderContent({ forceLocale }: { forceLocale?: Locale }) {
                 <PublicNavLink
                   key={item.href}
                   href={item.href}
+                  prefetch={item.href === homeHref ? false : undefined}
                   className="site-nav-link cursor-target"
                 >
                   {"icon" in item && item.icon === "search" ? (

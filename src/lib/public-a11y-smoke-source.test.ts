@@ -32,7 +32,17 @@ describe("public a11y smoke source contract", () => {
     expect(script).toContain("home-hero-velocity-copy");
     expect(script).toContain("canonical");
     expect(script).toContain("jsonLdTypes");
+    expect(script).toContain('value["@graph"].flatMap(extractJsonLdTypes)');
     expect(script).toContain("bodyTextLength");
+  });
+
+  it("keeps empty states and prompt cards accessible", () => {
+    const ui = read("src/components/ui.tsx");
+    const promptWorkbench = read("src/components/ai-prompt-management-workbench.tsx");
+
+    expect(ui).toContain('<h2 className="text-lg font-bold text-[var(--marketing-text)]">');
+    expect(ui).not.toContain('<h3 className="text-lg font-bold text-[var(--marketing-text)]">');
+    expect(promptWorkbench).toContain('text-xs font-black text-[#0f766e]');
   });
 
   it("keeps public page landmarks explicit without changing indexable content", () => {

@@ -227,7 +227,7 @@ export function PublicSearchDialog({
           </button>
         </form>
 
-        <p className="public-search-status" aria-live="polite">
+        <p className="public-search-status tabular-nums" aria-live="polite">
           {statusText}
         </p>
 

@@ -14,7 +14,7 @@ function RichTextInline({ text }: { text: string }) {
             href={segment.href}
             target="_blank"
             rel="nofollow noopener noreferrer"
-            className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(65,197,219,0.5)] underline-offset-4 transition hover:text-[#8feaff]"
+      className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(65,197,219,0.5)] underline-offset-4 transition-colors hover:text-[#8feaff]"
           >
             {segment.text}
           </a>

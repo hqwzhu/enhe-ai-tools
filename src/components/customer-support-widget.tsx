@@ -151,7 +151,7 @@ export function CustomerSupportWidget({
               type="button"
               onClick={closePanel}
               aria-label={copy.closeLabel}
-              className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/7 text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+          className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/7 text-[var(--marketing-muted)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
             >
               <X size={17} aria-hidden="true" />
             </button>
@@ -242,7 +242,7 @@ export function CustomerSupportWidget({
                   <button
                     type="submit"
                     disabled={status === "submitting"}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--marketing-accent)] px-4 py-3 text-sm font-black text-[#071218] transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--marketing-accent)] px-4 py-3 text-sm font-black text-[#071218] transition-[filter,opacity] hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
                   >
                     {status === "submitting" ? (
                       <LoaderCircle className="animate-spin" size={17} aria-hidden="true" />
@@ -273,7 +273,7 @@ export function CustomerSupportWidget({
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="inline-flex items-center gap-1 rounded-full border border-[var(--marketing-accent)]/30 bg-[var(--marketing-accent)]/10 px-3 py-2 text-xs font-black text-[var(--marketing-accent)] transition hover:border-[var(--marketing-accent)]"
+              className="inline-flex items-center gap-1 rounded-full border border-[var(--marketing-accent)]/30 bg-[var(--marketing-accent)]/10 px-3 py-2 text-xs font-black text-[var(--marketing-accent)] transition-colors hover:border-[var(--marketing-accent)]"
                       >
                         {link.label}
                         <ChevronRight size={13} aria-hidden="true" />
@@ -285,7 +285,7 @@ export function CustomerSupportWidget({
               <button
                 type="button"
                 onClick={() => setShowMessageForm(true)}
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/14 bg-white/7 px-4 py-3 text-sm font-black text-[var(--marketing-soft-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/14 bg-white/7 px-4 py-3 text-sm font-black text-[var(--marketing-soft-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
               >
                 <MessageCircle size={16} aria-hidden="true" />
                 {copy.leaveMessage}
@@ -300,7 +300,7 @@ export function CustomerSupportWidget({
                     key={faq.id}
                     type="button"
                     onClick={() => selectFaq(faq)}
-                    className="flex w-full items-center justify-between gap-3 py-3 text-left text-sm font-semibold leading-5 text-[var(--marketing-soft-text)] transition hover:text-[var(--marketing-accent)]"
+                    className="flex w-full items-center justify-between gap-3 py-3 text-left text-sm font-semibold leading-5 text-[var(--marketing-soft-text)] transition-colors hover:text-[var(--marketing-accent)]"
                   >
                     <span>{faq.question}</span>
                     <ChevronRight className="shrink-0" size={15} aria-hidden="true" />
@@ -316,7 +316,7 @@ export function CustomerSupportWidget({
           onClick={() => setIsOpen(true)}
           aria-expanded="false"
           aria-controls="customer-support-panel"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--marketing-accent)]/35 bg-[#101821]/95 px-4 py-3 text-sm font-black text-[var(--marketing-text)] shadow-[0_14px_38px_rgba(0,8,14,0.42)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-[var(--marketing-accent)]"
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--marketing-accent)]/35 bg-[#101821]/95 px-4 py-3 text-sm font-black text-[var(--marketing-text)] shadow-[0_14px_38px_rgba(0,8,14,0.42)] backdrop-blur-xl transition-[border-color,transform] hover:-translate-y-0.5 hover:border-[var(--marketing-accent)]"
         >
           <MessageCircle size={18} className="text-[var(--marketing-accent)]" aria-hidden="true" />
           <span>{copy.launcherLabel}</span>

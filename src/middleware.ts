@@ -95,9 +95,6 @@ export function middleware(request: NextRequest) {
     }
   });
   response.headers.set("Content-Language", htmlLocale === "en" ? "en-US" : "zh-CN");
-  if (pathname === "/") {
-    response.headers.set("Vary", localeDetectionVaryHeader);
-  }
 
   if (isEnglishPath && cookieLocale !== "en") {
     response.cookies.set(localeCookieName, "en", {

@@ -10,20 +10,21 @@ function readSource(relativePath: string) {
 }
 
 describe("homepage BorderGlow source contract", () => {
-  it("keeps BorderGlow on only the two hero CTAs after the category menu upgrade", () => {
+  it("keeps BorderGlow on only the primary hero CTA after the category menu upgrade", () => {
     const page = readSource("../app/page-shell.tsx");
 
     expect(page).toContain('import BorderGlow from "@/components/home/border-glow";');
-    expect(page.match(/variant="button"/g)).toHaveLength(2);
+    expect(page.match(/variant="button"/g)).toHaveLength(1);
     expect(page).not.toContain("homeProductPaths[forceLocale].map((item, index)");
     expect(page.match(/variant="card"/g)).toBeNull();
-    expect(page).toContain("<FlowingMenu");
+    expect(page).not.toContain("<FlowingMenu");
+    expect(page).toContain('className="home-task-outcomes-shell"');
     expect(page).toMatch(/<ButtonLink\s+href=\{buildLocalePath\("\/software", forceLocale\)\}/);
-    expect(page).toMatch(/<ButtonLink\s+href=\{buildLocalePath\("\/skill-learning", forceLocale\)\}/);
-    expect(page).toContain('data-analytics-event="home_hot_ai_tools_cta_click"');
-    expect(page).toContain('data-analytics-event="home_free_claim_cta_click"');
-    expect(page).toContain('forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"');
-    expect(page).toContain('forceLocale === "en" ? "Claim Free" : "免费领取"');
+    expect(page).toContain('className="home-hero-secondary-link"');
+    expect(page).toContain('data-analytics-event="home_tool_finder_cta_click"');
+    expect(page).toContain('data-analytics-event="home_practical_ai_learning_click"');
+    expect(page).toContain('forceLocale === "en" ? "Find the right AI tool" : "选择适合我的 AI 工具"');
+    expect(page).toContain('forceLocale === "en" ? "Explore practical AI learning" : "查看 AI 实战学习路径"');
   });
 
   it("keeps the React Bits interaction local, cancellable, and accessible", () => {

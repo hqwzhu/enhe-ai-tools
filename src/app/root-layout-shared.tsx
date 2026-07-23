@@ -58,6 +58,18 @@ export function RootDocument({
           type="font/woff2"
           crossOrigin="anonymous"
         />
+        <link
+          rel="alternate"
+          type="text/plain"
+          href="/llms.txt"
+          title="ENHE AI LLM guidance"
+        />
+        <link
+          rel="alternate"
+          type="text/markdown"
+          href="/okf/index.md"
+          title="ENHE AI Open Knowledge Format"
+        />
         <Script id="ttzz-push-loader" strategy="beforeInteractive">
           {`(function(){
 var el = document.createElement("script");

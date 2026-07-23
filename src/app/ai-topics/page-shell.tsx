@@ -166,7 +166,7 @@ export function AiTopicsHubPageShell({ forceLocale }: { forceLocale: Locale }) {
               <Link
                 key={topic.slug}
                 href={getAiTopicPath(topic.slug, forceLocale)}
-                className="surface-panel-soft block p-5 transition hover:-translate-y-0.5 hover:border-[var(--marketing-accent)]"
+                    className="surface-panel-soft block p-5 transition-[border-color,transform] hover:-translate-y-0.5 hover:border-[var(--marketing-accent)]"
               >
                 <span className="text-sm font-black text-[var(--marketing-accent)]">
                   {content.shortTitle}
@@ -235,7 +235,7 @@ export function AiTopicDetailPageShell({
               <Link
                 key={intent.title}
                 href={buildLocalePath(intent.href, forceLocale)}
-                className="surface-panel-soft block p-5 transition hover:-translate-y-0.5 hover:border-[var(--marketing-accent)]"
+                    className="surface-panel-soft block p-5 transition-[border-color,transform] hover:-translate-y-0.5 hover:border-[var(--marketing-accent)]"
               >
                 <h3 className="text-lg font-black leading-snug text-[var(--marketing-text)]">
                   {intent.title}
@@ -341,7 +341,7 @@ export function AiTopicDetailPageShell({
                 <Link
                   key={link.href}
                   href={buildLocalePath(link.href, forceLocale)}
-                  className="block rounded-2xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]"
+              className="block rounded-2xl border border-white/10 bg-white/7 p-4 transition-colors hover:border-[var(--marketing-accent)]"
                 >
                   <strong className="text-sm font-black text-[var(--marketing-text)]">
                     {link.label}

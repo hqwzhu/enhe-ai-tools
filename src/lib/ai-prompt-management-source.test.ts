@@ -102,9 +102,11 @@ describe("AI prompt management website source contract", () => {
     ).toBe(true);
 
     const sitemap = read("src/app/sitemap.ts");
+    const discovery = read("src/lib/public-discovery-manifest.ts");
     const llms = read("public/llms.txt");
-    expect(sitemap).toContain('"/skill-learning/ai-prompt-management"');
-    expect(sitemap).toContain('"/en/skill-learning/ai-prompt-management"');
+    expect(sitemap).toContain("publicDiscoveryRoutes");
+    expect(discovery).toContain('path: "/skill-learning/ai-prompt-management"');
+    expect(discovery).toContain('path: "/en/skill-learning/ai-prompt-management"');
     expect(llms).toContain("/skill-learning/ai-prompt-management");
   });
 

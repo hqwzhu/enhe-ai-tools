@@ -60,7 +60,7 @@ export function AiNewsInteractions({ slug, labels }: Props) {
           type="button"
           onClick={action}
           className={cn(
-            "rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+    "rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-semibold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
           )}
         >
           {label}

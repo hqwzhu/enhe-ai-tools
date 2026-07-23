@@ -27,10 +27,11 @@ describe("AI trend briefing source contracts", () => {
 
   it("keeps only the evergreen topic page indexable in sitemap", () => {
     const sitemap = read("src/app/sitemap.ts");
+    const discovery = read("src/lib/public-discovery-manifest.ts");
     const robots = read("src/app/robots.ts");
     const topicPage = read("src/app/ai-trends/page-shell.tsx");
 
-    expect(sitemap).toContain('"/ai-trends"');
+    expect(discovery).toContain('path: "/ai-trends"');
     expect(sitemap).not.toContain('"/ai-trends/daily"');
     expect(sitemap).not.toContain('`/ai-trends/daily/');
     expect(robots).not.toContain("/ai-trends/daily");

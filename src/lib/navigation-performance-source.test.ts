@@ -35,6 +35,7 @@ describe("public navigation performance source contract", () => {
     expect(header).toMatch(/<PrefetchLink\s+href={buildLocalePath\("\/", locale\)}/);
     expect(header).toMatch(/<PublicNavLink\s+key={child\.href}\s+href={child\.href}/);
     expect(header).toMatch(/<PublicNavLink\s+key={item\.href}\s+href={item\.href}/);
+    expect(header).toContain("prefetch={item.href === homeHref ? false : undefined}");
     expect(publicNav).toContain("<PrefetchLink");
     expect(toolCard).toMatch(/<PrefetchLink\s+href={buildCanonicalToolPath\(tool, locale\)}/);
     expect(ui).toContain('<PrefetchLink');

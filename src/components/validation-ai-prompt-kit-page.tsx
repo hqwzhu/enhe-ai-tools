@@ -365,8 +365,8 @@ function TrackedCta({
       href={href}
       className={
         primary
-          ? "cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-[#050505] bg-[#050505] px-5 py-3 text-sm font-bold text-white shadow-[0_14px_34px_rgba(0,0,0,0.22)] transition hover:bg-[#161616]"
-          : "cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-white/14 bg-white/7 px-5 py-3 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+                ? "cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-[#050505] bg-[#050505] px-5 py-3 text-sm font-bold text-white shadow-[0_14px_34px_rgba(0,0,0,0.22)] transition-colors hover:bg-[#161616]"
+                : "cursor-target inline-flex min-h-11 items-center justify-center rounded-full border border-white/14 bg-white/7 px-5 py-3 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
       }
       data-analytics-event="validation_ai_prompt_kit_cta_click"
       data-analytics-entity-type="validation_offer"

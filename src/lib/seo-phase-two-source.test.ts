@@ -27,19 +27,20 @@ describe("seo phase two source contracts", () => {
 
   it("keeps sitemap alternates and localized urls in the generated source", () => {
     const sitemap = read("src/app/sitemap.ts");
+    const discovery = read("src/lib/public-discovery-manifest.ts");
 
-    expect(sitemap).toContain('"/en"');
-    expect(sitemap).toContain('"/en/software"');
-    expect(sitemap).toContain('"/en/account-services"');
-    expect(sitemap).not.toContain('"/en/online-tools"');
-    expect(sitemap).toContain('"/en/skill-learning"');
-    expect(sitemap).toContain('"/en/pricing"');
-    expect(sitemap).toContain('"/en/tutorials"');
+    expect(discovery).toContain('path: "/en"');
+    expect(discovery).toContain('path: "/en/software"');
+    expect(discovery).toContain('path: "/en/account-services"');
+    expect(discovery).not.toContain('path: "/en/online-tools"');
+    expect(discovery).toContain('path: "/en/skill-learning"');
+    expect(discovery).toContain('path: "/en/pricing"');
+    expect(discovery).toContain('path: "/en/tutorials"');
     expect(sitemap).toContain("alternates:");
     expect(sitemap).toContain("languages:");
   });
 
-  it("uses locale-specific website schema language and icon assets", () => {
+  it("uses locale-specific website schema language and social-sharing assets", () => {
     const publicChrome = read("src/components/public-site-chrome.tsx");
     const layout = read("src/app/root-layout-shared.tsx");
     const seo = read("src/lib/seo.ts");
@@ -47,7 +48,15 @@ describe("seo phase two source contracts", () => {
     expect(publicChrome).toContain('inLanguage: forceLocale === "en" ? "en-US" : "zh-CN"');
     expect(layout).toContain("icons:");
     expect(seo).toContain('export const defaultBrandIcon = "/images/brand/enhe-icon-gradient-white-bg-cropped.png"');
-    expect(seo).toContain('export const defaultOgImage = "/images/brand/enhe-icon-gradient-transparent-cropped.png"');
+    expect(seo).toContain('export const defaultOgImage = "/images/brand/enhe-ai-og-1200x630.png"');
+    expect(seo).toContain("width: 1200");
+    expect(seo).toContain("height: 630");
+
+    const ogImage = readFileSync(
+      join(process.cwd(), "public/images/brand/enhe-ai-og-1200x630.png"),
+    );
+    expect(ogImage.readUInt32BE(16)).toBe(1200);
+    expect(ogImage.readUInt32BE(20)).toBe(630);
   });
 
   it("keeps user-facing auth redirects locale-aware", () => {
@@ -78,6 +87,7 @@ describe("seo phase two source contracts", () => {
 
   it("keeps AI topic cluster sitemap, locale switching, and internal links discoverable", () => {
     const sitemap = read("src/app/sitemap.ts");
+    const discovery = read("src/lib/public-discovery-manifest.ts");
     const seo = read("src/lib/seo.ts");
     const home = read("src/app/page-shell.tsx");
     const software = read("src/app/software/page-shell.tsx");
@@ -85,8 +95,8 @@ describe("seo phase two source contracts", () => {
     const accountServices = read("src/app/account-services/page-shell.tsx");
 
     expect(sitemap).toContain("aiTopicClusters");
-    expect(sitemap).toContain('"/ai-topics"');
-    expect(sitemap).toContain('"/en/ai-topics"');
+    expect(discovery).toContain('path: "/ai-topics"');
+    expect(discovery).toContain('path: "/en/ai-topics"');
     expect(sitemap).toContain("getAiTopicPath");
     expect(seo).toContain("/^\\/ai-topics$/");
     expect(seo).toContain("/^\\/ai-topics\\/.+$/");

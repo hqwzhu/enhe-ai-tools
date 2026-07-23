@@ -12,6 +12,7 @@ describe("technical seo phase one source", () => {
   it("defines locale-aware public routing, alternates, and sitemap language entries", () => {
     const seo = read("src/lib/seo.ts");
     const sitemap = read("src/app/sitemap.ts");
+    const discovery = read("src/lib/public-discovery-manifest.ts");
     const sharedLayout = read("src/app/root-layout-shared.tsx");
     const zhLayout = read("src/app/(zh-public)/layout.tsx");
 
@@ -28,12 +29,12 @@ describe("technical seo phase one source", () => {
 
     expect(sitemap).toContain("alternates:");
     expect(sitemap).toContain("languages:");
-    expect(sitemap).toContain('"/en"');
-    expect(sitemap).toContain('"/en/about"');
-    expect(sitemap).toContain('"/en/software"');
-    expect(sitemap).toContain('"/en/account-services"');
-    expect(sitemap).not.toContain('"/en/online-tools"');
-    expect(sitemap).toContain('"/en/skill-learning"');
+    expect(discovery).toContain('path: "/en"');
+    expect(discovery).toContain('path: "/en/about"');
+    expect(discovery).toContain('path: "/en/software"');
+    expect(discovery).toContain('path: "/en/account-services"');
+    expect(discovery).not.toContain('path: "/en/online-tools"');
+    expect(discovery).toContain('path: "/en/skill-learning"');
   });
 
   it("keeps the sitemap runtime-generated so database-backed tool URLs are included", () => {
@@ -91,6 +92,7 @@ describe("technical seo phase one source", () => {
     const publicContent = read("src/lib/public-content.ts");
     const sharedLayout = read("src/app/root-layout-shared.tsx");
     const nextConfig = read("next.config.ts");
+    const middleware = read("src/middleware.ts").replace(/\r\n/g, "\n");
     const seo = read("src/lib/seo.ts");
     const robots = read("src/app/robots.ts");
 
@@ -111,10 +113,13 @@ describe("technical seo phase one source", () => {
     expect(robots).toContain("/api/uploads/");
 
     expect(nextConfig).toContain("headers()");
-    expect(nextConfig).toContain("localeDetectionVaryHeader");
-    expect(nextConfig).toContain("localeDetectionCacheControl");
-    expect(nextConfig).toContain("zhRootCacheHeaders");
-    expect(nextConfig).toContain('source: "/", headers: zhRootCacheHeaders');
+    expect(nextConfig).not.toContain("localeDetectionVaryHeader");
+    expect(nextConfig).not.toContain("localeDetectionCacheControl");
+    expect(nextConfig).not.toContain("zhRootCacheHeaders");
+    expect(nextConfig).toContain('source: "/", headers: zhPublicCacheHeaders');
+    expect(middleware).not.toContain(
+      'if (pathname === "/") {\n    response.headers.set("Vary", localeDetectionVaryHeader);\n  }',
+    );
     expect(nextConfig).toContain("Cache-Control");
     expect(nextConfig).toContain("s-maxage=300");
     expect(nextConfig).toContain('source: "/about"');

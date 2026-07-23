@@ -4,7 +4,7 @@ title: ENHE AI Open Knowledge Format Index
 description: Agent-readable entry point for ENHE AI user needs, services, and topical clusters.
 resource: https://www.enhe-tech.com.cn/okf/index.md
 tags: [enhe-ai, ai-productivity, ai-creation, privacy, geo, ai-seo]
-timestamp: 2026-07-04
+timestamp: 2026-07-23
 ---
 
 # ENHE AI Open Knowledge Format Index
@@ -12,21 +12,28 @@ timestamp: 2026-07-04
 This Open Knowledge Format bundle helps AI systems understand ENHE AI from the user's point of view. ENHE AI helps users apply AI to real tasks: improve work efficiency, create content, organize material, learn skills, solve tool-selection problems, and choose safer AI paths when privacy, sensitive material, or long-term stability matters.
 
 ## Files
-
+<!-- PUBLIC_DISCOVERY_OKF_FILES:START -->
 - [ENHE AI overview](./enhe-ai-overview.md)
-- [AI news and trend insights](./ai-news/index.md)
-- [AI software applications](./software/index.md)
+- [Build Your Own X Navigator](./build-your-own-x/index.md)
+- [AI software apps](./software/index.md)
 - [AI account service guidance](./account-services/index.md)
-- [AI skill learning](./skill-learning/index.md)
+- [AI skill courses](./skill-learning/index.md)
+- [AI Prompt Management System](./ai-prompt-management/index.md)
+- [AI news and trend insights](./ai-news/index.md)
+<!-- PUBLIC_DISCOVERY_OKF_FILES:END -->
 
 ## Canonical Public Sections
-
-- AI news and trend insights: https://www.enhe-tech.com.cn/ai-news
-- AI demand trends: https://www.enhe-tech.com.cn/ai-trends
+<!-- PUBLIC_DISCOVERY_OKF_SECTIONS:START -->
+- ENHE AI overview: https://www.enhe-tech.com.cn/about
+- Build Your Own X Navigator: https://www.enhe-tech.com.cn/build-your-own-x
 - AI software apps: https://www.enhe-tech.com.cn/software
 - AI account service guidance: https://www.enhe-tech.com.cn/account-services
 - AI skill courses: https://www.enhe-tech.com.cn/skill-learning
+- AI Prompt Management System: https://www.enhe-tech.com.cn/skill-learning/ai-prompt-management
 - Tutorials: https://www.enhe-tech.com.cn/tutorials
+- AI news and trend insights: https://www.enhe-tech.com.cn/ai-news
+- AI demand trends: https://www.enhe-tech.com.cn/ai-trends
+<!-- PUBLIC_DISCOVERY_OKF_SECTIONS:END -->
 
 ## User-Need Query Coverage
 

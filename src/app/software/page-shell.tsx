@@ -530,7 +530,7 @@ function SoftwareGeoBlock({ forceLocale }: { forceLocale: Locale }) {
           </p>
           <a
             href="#software-list"
-            className="mt-5 inline-flex rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+              className="mt-5 inline-flex rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
           >
             {answer.cta}
           </a>
@@ -556,7 +556,7 @@ function SoftwareGeoBlock({ forceLocale }: { forceLocale: Locale }) {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+                  className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
             >
               {item.label[forceLocale]}
             </Link>
@@ -705,7 +705,7 @@ function SoftwareGeoSupportSections({ forceLocale }: { forceLocale: Locale }) {
                 href={source.href}
                 target="_blank"
                 rel="nofollow noopener noreferrer"
-                className="text-base font-black text-[var(--marketing-text)] transition hover:text-[var(--marketing-accent)]"
+                        className="text-base font-black text-[var(--marketing-text)] transition-colors hover:text-[var(--marketing-accent)]"
               >
                 {source.title}
               </a>
@@ -833,7 +833,7 @@ function FilterBar({
         <option value="latest">{t.listing.latest}</option>
         <option value="hot">{t.listing.hot}</option>
       </select>
-      <button className="rounded-full bg-[#050505] px-5 py-3 font-bold text-white transition hover:bg-[#161616] md:col-span-4">
+              <button className="rounded-full bg-[#050505] px-5 py-3 font-bold text-white transition-colors hover:bg-[#161616] md:col-span-4">
         {t.listing.filter}
       </button>
     </form>

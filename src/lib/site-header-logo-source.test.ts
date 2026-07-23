@@ -9,6 +9,7 @@ describe("site header brand source", () => {
 
     expect(component).toContain("/images/brand/enhe-icon-gradient-transparent-cropped.png");
     expect(component).toContain('href={buildLocalePath("/", locale)}');
+    expect(component).toContain("prefetch={false}");
     expect(component).toContain("site-brand-logo-dark");
     expect(component).not.toContain("/images/brand/enhe-icon-gradient-white-bg-cropped.png");
     expect(component).not.toContain("site-brand-logo-light");

@@ -126,7 +126,7 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
           {footerGroups.map((group, index) => (
             <nav key={group.title} className="site-footer-group" aria-label={group.title}>
               <h2 className="site-footer-group-title site-footer-group-title-desktop">{group.title}</h2>
-              <details className="site-footer-disclosure" open>
+              <details className="site-footer-disclosure">
                 <summary className="site-footer-group-title">{group.title}</summary>
               <ul className="site-footer-link-list">
                 {group.links.map((link) => (
@@ -143,7 +143,7 @@ export async function SiteFooter({ forceLocale }: { forceLocale?: Locale }) {
 
           <address id="footer-contact" className="site-footer-contact not-italic">
             <h2 className="site-footer-group-title site-footer-group-title-desktop">{locale === "en" ? "Company" : "公司信息"}</h2>
-            <details className="site-footer-disclosure" open>
+            <details className="site-footer-disclosure">
               <summary className="site-footer-group-title">{locale === "en" ? "Company" : "公司信息"}</summary>
               <dl className="site-footer-company-list">
                 <div className="site-footer-company-row">

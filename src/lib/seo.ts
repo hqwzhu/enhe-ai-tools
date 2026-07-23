@@ -7,7 +7,7 @@ export const siteName = "ENHE AI";
 export const defaultSiteDescription =
   "ENHE AI helps users apply AI to real tasks: work faster, create content, organize material, learn skills, and choose safer AI paths.";
 export const defaultBrandIcon = "/images/brand/enhe-icon-gradient-white-bg-cropped.png";
-export const defaultOgImage = "/images/brand/enhe-icon-gradient-transparent-cropped.png";
+export const defaultOgImage = "/images/brand/enhe-ai-og-1200x630.png";
 
 type PageMetadataInput = {
   title: string;
@@ -61,11 +61,19 @@ type TopicMetaDescriptionInput = {
 };
 
 type OrganizationSchemaInput = {
+  id?: string;
   name: string;
+  alternateName?: string[];
   logo?: string | null;
   url?: string;
   description?: string | null;
   sameAs?: string[];
+  knowsAbout?: string[];
+  subjectOf?: Array<{
+    name: string;
+    url: string;
+    encodingFormat?: string;
+  }>;
   contactPoint?: {
     email: string;
     contactType?: string;
@@ -75,11 +83,13 @@ type OrganizationSchemaInput = {
 };
 
 type WebSiteSchemaInput = {
+  id?: string;
   name: string;
   description?: string | null;
   url?: string;
   inLanguage?: string;
   searchPathTemplate?: string | null;
+  publisherId?: string;
   schemaType?: "WebSite";
 };
 
@@ -149,6 +159,11 @@ export function getSiteBaseUrl() {
 export function absoluteUrl(path = "/") {
   if (/^https?:\/\//i.test(path)) return path;
   return `${getSiteBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+export function buildPageEntityId(path = "/", fragment = "webpage") {
+  const canonical = absoluteUrl(path).split("#", 1)[0];
+  return `${canonical}#${fragment}`;
 }
 
 export function stripLocalePrefix(path: string) {
@@ -819,7 +834,9 @@ export function buildPageMetadata({
   );
   const canonicalPath = buildLocalePath(path, localeKey);
   const canonical = absoluteUrl(canonicalPath);
-  const imageUrl = absoluteUrl(image ?? defaultOgImage);
+  const imagePath = image ?? defaultOgImage;
+  const imageUrl = absoluteUrl(imagePath);
+  const isDefaultOgImage = imagePath === defaultOgImage;
 
   return {
     title,
@@ -840,6 +857,7 @@ export function buildPageMetadata({
         {
           url: imageUrl,
           alt: title,
+          ...(isDefaultOgImage ? { width: 1200, height: 630 } : {}),
         },
       ],
       locale,
@@ -855,22 +873,41 @@ export function buildPageMetadata({
 }
 
 export function buildOrganizationSchema({
+  id,
   name,
+  alternateName = [],
   logo,
   url = absoluteUrl("/"),
   description,
   sameAs = [],
+  knowsAbout = [],
+  subjectOf = [],
   contactPoint,
   schemaType = "Organization",
 }: OrganizationSchemaInput) {
   return {
     "@context": "https://schema.org",
     "@type": schemaType,
+    ...(id ? { "@id": id } : {}),
     name,
+    ...(alternateName.length ? { alternateName } : {}),
     url,
     ...(description ? { description: buildMetaDescription(description) } : {}),
     ...(logo ? { logo: absoluteUrl(logo) } : {}),
     ...(sameAs.length ? { sameAs } : {}),
+    ...(knowsAbout.length ? { knowsAbout } : {}),
+    ...(subjectOf.length
+      ? {
+          subjectOf: subjectOf.map((resource) => ({
+            "@type": "CreativeWork",
+            name: resource.name,
+            url: absoluteUrl(resource.url),
+            ...(resource.encodingFormat
+              ? { encodingFormat: resource.encodingFormat }
+              : {}),
+          })),
+        }
+      : {}),
     ...(contactPoint?.email
       ? {
           contactPoint: {
@@ -888,22 +925,26 @@ export function buildOrganizationSchema({
 }
 
 export function buildWebsiteSchema({
+  id,
   name,
   description,
   url = absoluteUrl("/"),
   inLanguage = "zh-CN",
   searchPathTemplate = null,
+  publisherId,
   schemaType = "WebSite",
 }: WebSiteSchemaInput) {
   return {
     "@context": "https://schema.org",
     "@type": schemaType,
+    ...(id ? { "@id": id } : {}),
     name,
     url,
     description: buildMetaDescription(description),
     inLanguage,
     publisher: {
       "@type": "Organization",
+      ...(publisherId ? { "@id": publisherId } : {}),
       name,
     },
     ...(searchPathTemplate

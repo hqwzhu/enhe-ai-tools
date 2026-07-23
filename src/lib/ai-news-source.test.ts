@@ -40,13 +40,14 @@ describe("AI news source contracts", () => {
     const seo = read("src/lib/seo.ts");
     const publicContent = read("src/lib/public-content.ts");
     const sitemap = read("src/app/sitemap.ts");
+    const discovery = read("src/lib/public-discovery-manifest.ts");
 
     expect(seo).toContain("/^\\/ai-news$/");
     expect(seo).toContain("/^\\/ai-news\\/.+$/");
     expect(publicContent).toContain("getPublicNewsListing");
     expect(publicContent).toContain("getPublicNewsArticleBySlug");
-    expect(sitemap).toContain('"/ai-news"');
-    expect(sitemap).toContain('"/en/ai-news"');
+    expect(discovery).toContain('path: "/ai-news"');
+    expect(discovery).toContain('path: "/en/ai-news"');
     expect(sitemap).toContain("newsArticle");
   });
 

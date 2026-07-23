@@ -113,7 +113,7 @@ export async function AiTrendDailyArchivePageShell({ forceLocale = "zh" }: { for
                       </span>
                       <span className="inline-flex items-center gap-2">
                         <Signal size={15} strokeWidth={1.8} aria-hidden="true" />
-                        {briefing.sourceCount} {text.sources}
+                  <span className="tabular-nums">{briefing.sourceCount}</span> {text.sources}
                       </span>
                       {!isLoggedIn ? (
                         <span className="inline-flex items-center gap-2">
@@ -151,7 +151,7 @@ export async function AiTrendDailyArchivePageShell({ forceLocale = "zh" }: { for
                   </div>
                   <Link
                     href={buildLocalePath(`/ai-trends/daily/${briefing.slug}`, forceLocale)}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-[var(--marketing-accent)]/40 px-5 py-3 text-sm font-bold text-[var(--marketing-accent)] transition hover:border-[var(--marketing-accent)]"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-[var(--marketing-accent)]/40 px-5 py-3 text-sm font-bold text-[var(--marketing-accent)] transition-colors hover:border-[var(--marketing-accent)]"
                   >
                     {isLoggedIn ? text.readFull : text.readSummary}
                     <ArrowUpRight size={16} strokeWidth={1.8} aria-hidden="true" />

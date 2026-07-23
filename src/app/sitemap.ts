@@ -8,6 +8,7 @@ import {
   buildCanonicalToolPath,
   getCanonicalAiNewsSlug,
 } from "@/lib/public-slugs";
+import { publicDiscoveryRoutes } from "@/lib/public-discovery-manifest";
 import {
   absoluteUrl,
   buildLocalePath,
@@ -18,7 +19,6 @@ import { shouldIndexEnglishToolPage } from "@/lib/tool-localization";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
-const aiTrendTopicPaths = ["/ai-trends", "/en/ai-trends"] as const;
 const aiNewsTopicSitemapPathHints = [
   "/ai-news/topics/ai-agent",
   "/ai-news/topics/local-ai",
@@ -29,99 +29,10 @@ const aiNewsTopicSitemapPathHints = [
   "/ai-news/topics/ai-regulation",
 ] as const;
 
-const staticRoutes = [
-  "/",
-  "/en",
-  "/about",
-  "/en/about",
-  "/build-your-own-x",
-  "/en/build-your-own-x",
-  "/ai-topics",
-  "/en/ai-topics",
-  "/software",
-  "/en/software",
-  "/account-services",
-  "/en/account-services",
-  "/skill-learning",
-  "/en/skill-learning",
-  "/skill-learning/ai-prompt-management",
-  "/en/skill-learning/ai-prompt-management",
-  "/product-paths/work-efficiency",
-  "/en/product-paths/work-efficiency",
-  "/product-paths/media-generation",
-  "/en/product-paths/media-generation",
-  "/product-paths/future-ai",
-  "/en/product-paths/future-ai",
-  "/product-demos",
-  "/en/product-demos",
-  "/pricing",
-  "/en/pricing",
-  "/tutorials",
-  "/en/tutorials",
-  "/ai-news",
-  "/en/ai-news",
-  "/legal/user-agreement",
-  "/en/legal/user-agreement",
-  "/legal/privacy-policy",
-  "/en/legal/privacy-policy",
-  "/legal/membership-refund",
-  "/en/legal/membership-refund",
-  "/legal/disclaimer",
-  "/en/legal/disclaimer",
-  "/legal/copyright-complaint",
-  "/en/legal/copyright-complaint",
-  "/legal/minor-protection",
-  "/en/legal/minor-protection",
-] as const;
-
-const staticRouteLastModified: Record<(typeof staticRoutes)[number], Date> = {
-  "/": new Date("2026-06-17T00:00:00.000Z"),
-  "/en": new Date("2026-06-17T00:00:00.000Z"),
-  "/about": new Date("2026-06-25T00:00:00.000Z"),
-  "/en/about": new Date("2026-06-25T00:00:00.000Z"),
-  "/build-your-own-x": new Date("2026-06-28T00:00:00.000Z"),
-  "/en/build-your-own-x": new Date("2026-06-28T00:00:00.000Z"),
-  "/ai-topics": new Date("2026-06-28T00:00:00.000Z"),
-  "/en/ai-topics": new Date("2026-06-28T00:00:00.000Z"),
-  "/software": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/software": new Date("2026-06-17T00:00:00.000Z"),
-  "/account-services": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/account-services": new Date("2026-06-17T00:00:00.000Z"),
-  "/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/skill-learning": new Date("2026-06-17T00:00:00.000Z"),
-  "/skill-learning/ai-prompt-management": new Date("2026-07-15T00:00:00.000Z"),
-  "/en/skill-learning/ai-prompt-management": new Date("2026-07-15T00:00:00.000Z"),
-  "/product-paths/work-efficiency": new Date("2026-07-04T00:00:00.000Z"),
-  "/en/product-paths/work-efficiency": new Date("2026-07-04T00:00:00.000Z"),
-  "/product-paths/media-generation": new Date("2026-07-04T00:00:00.000Z"),
-  "/en/product-paths/media-generation": new Date("2026-07-04T00:00:00.000Z"),
-  "/product-paths/future-ai": new Date("2026-07-04T00:00:00.000Z"),
-  "/en/product-paths/future-ai": new Date("2026-07-04T00:00:00.000Z"),
-  "/product-demos": new Date("2026-07-01T00:00:00.000Z"),
-  "/en/product-demos": new Date("2026-07-01T00:00:00.000Z"),
-  "/pricing": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/pricing": new Date("2026-06-17T00:00:00.000Z"),
-  "/tutorials": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/tutorials": new Date("2026-06-17T00:00:00.000Z"),
-  "/ai-news": new Date("2026-06-18T00:00:00.000Z"),
-  "/en/ai-news": new Date("2026-06-18T00:00:00.000Z"),
-  "/legal/user-agreement": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/legal/user-agreement": new Date("2026-06-17T00:00:00.000Z"),
-  "/legal/privacy-policy": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/legal/privacy-policy": new Date("2026-06-17T00:00:00.000Z"),
-  "/legal/membership-refund": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/legal/membership-refund": new Date("2026-06-17T00:00:00.000Z"),
-  "/legal/disclaimer": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/legal/disclaimer": new Date("2026-06-17T00:00:00.000Z"),
-  "/legal/copyright-complaint": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/legal/copyright-complaint": new Date("2026-06-17T00:00:00.000Z"),
-  "/legal/minor-protection": new Date("2026-06-17T00:00:00.000Z"),
-  "/en/legal/minor-protection": new Date("2026-06-17T00:00:00.000Z"),
-};
-
 function getPriority(path: string) {
   if (path === "/" || path === "/en") return 1;
   if (path === "/pricing" || path === "/en/pricing") return 0.9;
+  if (path === "/ai-trends" || path === "/en/ai-trends") return 0.76;
   return 0.7;
 }
 
@@ -195,26 +106,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const entries = [
-    ...staticRoutes.map((path) => ({
-      url: absoluteSitemapUrl(path),
-      lastModified: staticRouteLastModified[path],
+    ...publicDiscoveryRoutes.map((route) => ({
+      url: absoluteSitemapUrl(route.path),
+      lastModified: new Date(route.lastModified),
       alternates: {
-        languages: buildLanguageAlternates(getCanonicalSourcePath(path)),
+        languages: buildLanguageAlternates(getCanonicalSourcePath(route.path)),
       },
       changeFrequency:
-        path === "/" || path === "/en"
+        route.path === "/" || route.path === "/en"
           ? ("daily" as const)
           : ("weekly" as const),
-      priority: getPriority(path),
-    })),
-    ...aiTrendTopicPaths.map((path) => ({
-      url: absoluteSitemapUrl(path),
-      lastModified: new Date("2026-06-19T00:00:00.000Z"),
-      alternates: {
-        languages: buildLanguageAlternates("/ai-trends"),
-      },
-      changeFrequency: "weekly" as const,
-      priority: 0.76,
+      priority: getPriority(route.path),
     })),
     ...publicAiNewsTopics.flatMap((topic) =>
       (["zh", "en"] as const).map((locale) => {

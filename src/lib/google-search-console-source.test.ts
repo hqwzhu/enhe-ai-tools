@@ -40,12 +40,13 @@ describe("Google Search Console SEO source contract", () => {
 
   it("keeps sitemap on canonical public URLs and excludes private or legacy paths", () => {
     const sitemap = read("src/app/sitemap.ts");
+    const discovery = read("src/lib/public-discovery-manifest.ts");
 
     expect(sitemap).toContain("buildCanonicalToolPath");
     expect(sitemap).toContain("shouldIndexEnglishToolPage");
-    expect(sitemap).toContain('"/software"');
-    expect(sitemap).toContain('"/skill-learning"');
-    expect(sitemap).toContain('"/account-services"');
+    expect(discovery).toContain('path: "/software"');
+    expect(discovery).toContain('path: "/skill-learning"');
+    expect(discovery).toContain('path: "/account-services"');
     expect(sitemap).not.toContain('const toolDetailBasePath = "/tools";');
     expect(sitemap).not.toContain('"/online-tools"');
     expect(sitemap).not.toContain('"/en/online-tools"');

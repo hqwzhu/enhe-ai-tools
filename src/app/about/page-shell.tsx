@@ -249,7 +249,7 @@ export function AboutPageShell({ forceLocale }: { forceLocale: Locale }) {
             </p>
             <a
               href={copy.officialSite}
-              className="mt-6 inline-flex break-all rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+              className="mt-6 inline-flex break-all rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
             >
               {copy.officialSite}
             </a>
@@ -272,7 +272,7 @@ export function AboutPageShell({ forceLocale }: { forceLocale: Locale }) {
               <Link
                 key={item.href}
                 href={buildLocalePath(item.href, forceLocale)}
-                className="rounded-2xl border border-white/10 bg-white/8 p-5 transition hover:border-[var(--marketing-accent)]/45"
+                    className="rounded-2xl border border-white/10 bg-white/8 p-5 transition-colors hover:border-[var(--marketing-accent)]/45"
               >
                 <h2 className="text-lg font-black text-[var(--marketing-text)]">{item.label}</h2>
                 <p className="mt-3 text-sm leading-7 text-[var(--marketing-muted)]">{item.text}</p>

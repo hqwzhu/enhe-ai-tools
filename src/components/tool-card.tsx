@@ -79,14 +79,14 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
   });
 
   return (
-    <PrefetchLink href={buildCanonicalToolPath(tool, locale)} className="surface-panel group block overflow-hidden transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
+    <PrefetchLink href={buildCanonicalToolPath(tool, locale)} className="surface-panel group block overflow-hidden transition-[border-color,transform] hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
       <div className="relative aspect-[16/9] overflow-hidden border-b border-white/14 bg-[#101821]">
         {coverImage ? (
           <Image
             src={coverImage}
             alt={localizedTool.primaryName}
             fill
-            className="object-cover opacity-90 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-100"
+            className="content-thumbnail-outline object-cover opacity-90 transition-[opacity,transform] duration-500 group-hover:scale-[1.04] group-hover:opacity-100"
             sizes="(min-width: 1024px) 420px, 100vw"
             unoptimized
           />
@@ -114,7 +114,7 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
             <h3 className="text-xl font-bold text-[var(--marketing-text)]">{localizedTool.primaryName}</h3>
             {shouldShowSecondaryName ? <p className="mt-1 text-sm font-medium text-[var(--marketing-accent)]">{localizedTool.secondaryName}</p> : null}
           </div>
-          <ArrowUpRight className="text-[var(--marketing-muted)] transition group-hover:text-[var(--marketing-accent)]" />
+          <ArrowUpRight className="text-[var(--marketing-muted)] transition-colors group-hover:text-[var(--marketing-accent)]" />
         </div>
         <p className="min-h-14 text-sm leading-6 text-[var(--marketing-soft-text)]">
           <span className="font-semibold text-[var(--marketing-accent)]">{t.toolCard.valuePrefix}:</span>
@@ -154,7 +154,7 @@ export function ToolCard({ tool, locale = "zh", variant = "default" }: ToolCardP
           {visibleMetrics.length ? (
             <span className="inline-flex items-center gap-3">
               {visibleMetrics.map((metric) => (
-                <span key={metric.type} className="inline-flex items-center gap-1">
+                <span key={metric.type} className="inline-flex items-center gap-1 tabular-nums">
                   {metric.type === "download" ? (
                     <Download size={14} />
                   ) : (

@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowUpRight } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowUpRight,
+  BookOpenCheck,
+  BriefcaseBusiness,
+  Building2,
+  Clapperboard,
+  FileSearch,
+  GraduationCap,
+  Languages,
+  Newspaper,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 import { StructuredData } from "@/components/structured-data";
 import { ASCIIHeroTitle } from "@/components/home/ascii-hero-title";
 import BorderGlow from "@/components/home/border-glow";
-import FlowingMenu from "@/components/home/flowing-menu.client";
 import { HeroGradientSubtitle } from "@/components/home/hero-gradient-subtitle";
 import { HomeParticlesBackground } from "@/components/home/home-particles-background";
 import { ProductDemoCard } from "@/components/product-demo-card";
@@ -18,6 +30,7 @@ import {
   buildHomeMetaDescription,
   buildHomeMetadataTitle,
   buildLocalePath,
+  buildPageEntityId,
   buildPageMetadata,
   absoluteUrl,
 } from "@/lib/seo";
@@ -63,32 +76,212 @@ const homeFaqItems = {
   ],
 } as const;
 
-const homeFlowingMenuLinks = [
-  {
-    id: "productivity",
-    copyKey: "productivity",
-    href: "/product-paths/work-efficiency",
-    image: "/images/home/flowing-menu/productivity.webp",
+type HomeTrustSignal = {
+  title: string;
+  description: string;
+  href: string;
+  icon: LucideIcon;
+  rawHref?: boolean;
+};
+
+type HomeTaskOutcome = {
+  id: string;
+  title: string;
+  description: string;
+  linkLabel: string;
+  href: string;
+  image: string;
+  imageAlt: string;
+  icon: LucideIcon;
+};
+
+const homeTrustSignals: Record<Locale, HomeTrustSignal[]> = {
+  zh: [
+    {
+      title: "中英双语路径",
+      description: "首页、列表与核心内容提供可切换的中英文入口。",
+      href: "/en",
+      icon: Languages,
+      rawHref: true,
+    },
+    {
+      title: "公开 AI 阅读入口",
+      description: "llms.txt 公开说明品牌、内容范围与机器可读入口。",
+      href: "/llms.txt",
+      icon: FileSearch,
+      rawHref: true,
+    },
+    {
+      title: "真实主体信息",
+      description: "品牌档案、公司信息与联系方式均可公开核验。",
+      href: "/about",
+      icon: Building2,
+    },
+    {
+      title: "清晰隐私边界",
+      description: "在注册、订单与工具使用前先了解信息处理规则。",
+      href: "/legal/privacy-policy",
+      icon: ShieldCheck,
+    },
+  ],
+  en: [
+    {
+      title: "Bilingual paths",
+      description: "Switch between Chinese and English across core public routes.",
+      href: "/",
+      icon: Languages,
+      rawHref: true,
+    },
+    {
+      title: "Open AI guidance",
+      description: "llms.txt documents the brand, content scope, and machine-readable entry points.",
+      href: "/llms.txt",
+      icon: FileSearch,
+      rawHref: true,
+    },
+    {
+      title: "Verifiable identity",
+      description: "Review the public brand profile, company details, and contact channels.",
+      href: "/about",
+      icon: Building2,
+    },
+    {
+      title: "Clear privacy boundaries",
+      description: "Understand information handling before registration, orders, or tool use.",
+      href: "/legal/privacy-policy",
+      icon: ShieldCheck,
+    },
+  ],
+};
+
+const homeTaskOutcomes: Record<Locale, HomeTaskOutcome[]> = {
+  zh: [
+    {
+      id: "productivity",
+      title: "更快完成日常工作",
+      description: "按办公、文件处理、自动化和本地 AI 场景筛选工具。",
+      linkLabel: "进入效率工具路径",
+      href: "/product-paths/work-efficiency",
+      image: "/images/home/flowing-menu/productivity.webp",
+      imageAlt: "AI 工作效率与自动化工作场景",
+      icon: BriefcaseBusiness,
+    },
+    {
+      id: "content-creation",
+      title: "把创意变成内容成果",
+      description: "查找图片、视频、音频和写作工具，并进入对应使用路径。",
+      linkLabel: "进入内容创作路径",
+      href: "/product-paths/media-generation",
+      image: "/images/home/flowing-menu/content-creation.webp",
+      imageAlt: "AI 图片、视频和音频内容创作场景",
+      icon: Clapperboard,
+    },
+    {
+      id: "ai-learning",
+      title: "把教程练成可复用技能",
+      description: "从工具入门到智能体、自动化工作流和本地部署逐步学习。",
+      linkLabel: "进入 AI 学习路径",
+      href: "/skill-learning",
+      image: "/images/home/flowing-menu/ai-learning.webp",
+      imageAlt: "AI 教程学习与实操场景",
+      icon: GraduationCap,
+    },
+    {
+      id: "ai-news",
+      title: "把 AI 变化转成行动判断",
+      description: "阅读工具更新、行业趋势与实用教程，再决定下一步行动。",
+      linkLabel: "查看 AI 前沿资讯",
+      href: "/ai-news",
+      image: "/images/home/flowing-menu/ai-news.webp",
+      imageAlt: "人工智能资讯与行业动态场景",
+      icon: Newspaper,
+    },
+  ],
+  en: [
+    {
+      id: "productivity",
+      title: "Finish everyday work faster",
+      description: "Filter tools for office work, files, automation, and local AI workflows.",
+      linkLabel: "Explore productivity paths",
+      href: "/product-paths/work-efficiency",
+      image: "/images/home/flowing-menu/productivity.webp",
+      imageAlt: "AI productivity and workflow automation",
+      icon: BriefcaseBusiness,
+    },
+    {
+      id: "content-creation",
+      title: "Turn ideas into content outcomes",
+      description: "Find image, video, audio, and writing tools with practical next steps.",
+      linkLabel: "Explore creation paths",
+      href: "/product-paths/media-generation",
+      image: "/images/home/flowing-menu/content-creation.webp",
+      imageAlt: "AI image, video and audio content creation",
+      icon: Clapperboard,
+    },
+    {
+      id: "ai-learning",
+      title: "Build reusable AI skills",
+      description: "Learn tools, agents, automation workflows, and local deployment step by step.",
+      linkLabel: "Explore AI learning",
+      href: "/skill-learning",
+      image: "/images/home/flowing-menu/ai-learning.webp",
+      imageAlt: "Practical AI tutorials and skills",
+      icon: GraduationCap,
+    },
+    {
+      id: "ai-news",
+      title: "Turn AI change into decisions",
+      description: "Review product updates, industry signals, and practical guidance before acting.",
+      linkLabel: "Read AI news",
+      href: "/ai-news",
+      image: "/images/home/flowing-menu/ai-news.webp",
+      imageAlt: "Artificial intelligence news and industry signals",
+      icon: Newspaper,
+    },
+  ],
+};
+
+const homeWorkflowSteps = {
+  zh: [
+    { title: "从真实任务开始", description: "先明确要提升效率、创作内容、学习技能，还是处理隐私与稳定性要求。" },
+    { title: "核对内容与边界", description: "查看演示、教程、平台规则、交付方式和隐私说明，排除不合适的路径。" },
+    { title: "进入可执行路径", description: "进入工具、课程、资讯或账号服务页面，继续完成选择、学习或咨询。" },
+  ],
+  en: [
+    { title: "Start with the real task", description: "Define whether you need productivity, creation, learning, or stronger privacy and stability." },
+    { title: "Review evidence and boundaries", description: "Check demos, tutorials, platform rules, delivery details, and privacy guidance before choosing." },
+    { title: "Follow the practical path", description: "Continue to the relevant tool, course, news, or account-service page to act." },
+  ],
+} as const;
+
+const homeConversionCopy = {
+  zh: {
+    trustEyebrow: "可核验信息",
+    trustTitle: "先确认来源与边界，再选择 AI 路径",
+    trustIntro: "这些入口直接连接到站内公开页面，不使用无法核验的用户数量、客户 Logo 或评价。",
+    taskEyebrow: "按任务选择",
+    taskTitle: "你想完成什么结果？",
+    taskIntro: "从工作、创作、学习与资讯判断出发，进入对应的工具和内容路径。",
+    workflowEyebrow: "三步完成选择",
+    workflowTitle: "从需求到行动，不必先理解所有 AI 术语",
+    workflowIntro: "先看任务，再核对证据和边界，最后进入真正可执行的页面。",
+    finalTitle: "从一个真实任务开始使用 ENHE AI",
+    finalIntro: "先找到适合的工具，或进入实战学习路径，把信息转成下一步行动。",
   },
-  {
-    id: "content-creation",
-    copyKey: "contentCreation",
-    href: "/product-paths/media-generation",
-    image: "/images/home/flowing-menu/content-creation.webp",
+  en: {
+    trustEyebrow: "Verifiable information",
+    trustTitle: "Check the source and boundaries before choosing an AI path",
+    trustIntro: "Each signal links to a public page. No unverifiable user counts, customer logos, or testimonials are used.",
+    taskEyebrow: "Choose by task",
+    taskTitle: "What outcome do you need?",
+    taskIntro: "Start from work, creation, learning, or decision support, then follow the relevant tool and content path.",
+    workflowEyebrow: "A three-step path",
+    workflowTitle: "Move from need to action without learning every AI term first",
+    workflowIntro: "Start with the task, review evidence and boundaries, then continue to a practical page.",
+    finalTitle: "Start ENHE AI with one real task",
+    finalIntro: "Find a suitable tool or follow a practical learning path to turn information into action.",
   },
-  {
-    id: "ai-learning",
-    copyKey: "aiLearning",
-    href: "/skill-learning",
-    image: "/images/home/flowing-menu/ai-learning.webp",
-  },
-  {
-    id: "ai-news",
-    copyKey: "aiNews",
-    href: "/ai-news",
-    image: "/images/home/flowing-menu/ai-news.webp",
-  },
-] as const;
+} as const;
 
 const homeSupportLinks = {
   zh: [
@@ -172,40 +365,73 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
   await connection();
   const homeProductDemos = await getHomeProductDemos();
   const t = getDictionary(forceLocale);
-  const flowingMenuItems = homeFlowingMenuLinks.map((item) => ({
-    id: item.id,
-    link: buildLocalePath(item.href, forceLocale),
-    text: t.home.categoryMenu.items[item.copyKey].label,
-    image: item.image,
-    imageAlt: t.home.categoryMenu.items[item.copyKey].imageAlt,
-  }));
+  const conversionCopy = homeConversionCopy[forceLocale];
   const heroTitle =
     forceLocale === "en"
       ? "ENHE AI"
       : "ENHE AI";
   const heroIntro = t.home.intro;
-  const breadcrumbSchema = buildBreadcrumbSchema({
-    items: [{ name: t.nav.home, path: buildLocalePath("/", forceLocale) }],
-  });
+  const homePath = buildLocalePath("/", forceLocale);
+  const webPageId = buildPageEntityId(homePath);
+  const breadcrumbId = buildPageEntityId(homePath, "breadcrumb");
+  const taskCollectionId = buildPageEntityId(homePath, "task-collection");
+  const taskListId = buildPageEntityId(homePath, "task-list");
+  const breadcrumbSchema = {
+    ...buildBreadcrumbSchema({
+      items: [{ name: t.nav.home, path: homePath }],
+    }),
+    "@id": breadcrumbId,
+  };
   const faqSchema = buildFaqSchema({ items: homeFaqItems[forceLocale] });
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
+    "@id": webPageId,
     name: t.brand,
     description: t.home.positioning,
-    url: absoluteUrl(buildLocalePath("/", forceLocale)),
+    url: absoluteUrl(homePath),
     inLanguage: forceLocale === "en" ? "en-US" : "zh-CN",
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": absoluteUrl("/#website"),
+    },
     mainEntity: {
       "@type": "Organization",
+      "@id": absoluteUrl("/#organization"),
       name: "ENHE AI",
-      description: t.home.positioning,
-      url: absoluteUrl(buildLocalePath("/", forceLocale)),
     },
+    breadcrumb: { "@id": breadcrumbId },
+    hasPart: { "@id": taskCollectionId },
+  };
+  const taskCollectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": taskCollectionId,
+    name: conversionCopy.taskTitle,
+    description: conversionCopy.taskIntro,
+    url: absoluteUrl(homePath),
+    inLanguage: forceLocale === "en" ? "en-US" : "zh-CN",
+    isPartOf: { "@id": webPageId },
+    mainEntity: { "@id": taskListId },
+  };
+  const taskItemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": taskListId,
+    name: conversionCopy.taskTitle,
+    numberOfItems: homeTaskOutcomes[forceLocale].length,
+    itemListElement: homeTaskOutcomes[forceLocale].map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.title,
+      description: item.description,
+      url: absoluteUrl(buildLocalePath(item.href, forceLocale)),
+    })),
   };
 
   return (
     <main className="home-page-shell">
-      <StructuredData data={[breadcrumbSchema, webPageSchema, faqSchema]} />
+      <StructuredData data={[breadcrumbSchema, webPageSchema, taskCollectionSchema, taskItemListSchema, faqSchema]} />
       <div className="home-pointer-glow" aria-hidden="true" />
       <section className="home-hero-shell">
         <div className="home-hero-liquid-layer" aria-hidden="true">
@@ -238,37 +464,103 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                     href={buildLocalePath("/software", forceLocale)}
                     variant="primary"
                     className="home-hero-cta home-hero-cta-primary"
-                    data-analytics-event="home_hot_ai_tools_cta_click"
+                    data-analytics-event="home_tool_finder_cta_click"
                     data-analytics-meta-target="software"
                     data-analytics-meta-placement="home-hero"
                   >
-                    {forceLocale === "en" ? "Popular AI Tools" : "热门AI工具"}
+                    {forceLocale === "en" ? "Find the right AI tool" : "选择适合我的 AI 工具"}
                   </ButtonLink>
                 </BorderGlow>
-                <BorderGlow
-                  variant="button"
-                  edgeSensitivity={34}
-                  glowColor="190 80 72"
-                  borderRadius={9}
-                  glowRadius={24}
-                  glowIntensity={0.55}
-                  coneSpread={18}
-                  colors={["#56bfd0", "#41c5db", "#20bbd6"]}
-                  fillOpacity={0.18}
+                <Link
+                  href={buildLocalePath("/skill-learning", forceLocale)}
+                  className="home-hero-secondary-link"
+                  data-analytics-event="home_practical_ai_learning_click"
+                  data-analytics-meta-target="skill-learning"
+                  data-analytics-meta-placement="home-hero"
                 >
-                  <ButtonLink
-                    href={buildLocalePath("/skill-learning", forceLocale)}
-                    variant="ghost"
-                    className="home-hero-cta home-hero-cta-accent"
-                    data-analytics-event="home_free_claim_cta_click"
-                    data-analytics-meta-target="skill-learning"
-                    data-analytics-meta-placement="home-hero"
-                  >
-                    {forceLocale === "en" ? "Claim Free" : "免费领取"}
-                  </ButtonLink>
-                </BorderGlow>
+                  {forceLocale === "en" ? "Explore practical AI learning" : "查看 AI 实战学习路径"}
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </Link>
               </div>
             </div>
+          </div>
+        </Container>
+      </section>
+
+      <section className="home-trust-shell" aria-labelledby="home-trust-title">
+        <Container className="home-hero-reference-frame">
+          <div className="home-section-heading">
+            <p className="home-section-eyebrow">{conversionCopy.trustEyebrow}</p>
+            <h2 id="home-trust-title">{conversionCopy.trustTitle}</h2>
+            <p>{conversionCopy.trustIntro}</p>
+          </div>
+          <ul className="home-trust-list">
+            {homeTrustSignals[forceLocale].map((item) => {
+              const Icon = item.icon;
+              const href = item.rawHref ? item.href : buildLocalePath(item.href, forceLocale);
+              return (
+                <li key={item.title}>
+                  <Link href={href} className="home-trust-link">
+                    <span className="home-trust-icon" aria-hidden="true">
+                      <Icon size={20} strokeWidth={1.8} />
+                    </span>
+                    <span className="home-trust-copy">
+                      <strong>{item.title}</strong>
+                      <span>{item.description}</span>
+                    </span>
+                    <ArrowUpRight size={17} aria-hidden="true" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </Container>
+      </section>
+
+      <section className="home-task-outcomes-shell" aria-labelledby="home-task-outcomes-title">
+        <Container className="home-hero-reference-frame">
+          <div className="home-section-heading">
+            <p className="home-section-eyebrow">{conversionCopy.taskEyebrow}</p>
+            <h2 id="home-task-outcomes-title">{conversionCopy.taskTitle}</h2>
+            <p>{conversionCopy.taskIntro}</p>
+          </div>
+          <div className="home-task-outcome-grid">
+            {homeTaskOutcomes[forceLocale].map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.id}
+                  href={buildLocalePath(item.href, forceLocale)}
+                  className="home-task-outcome-link cursor-target"
+                  data-analytics-event="home_task_outcome_click"
+                  data-analytics-meta-target={item.id}
+                  data-analytics-meta-placement="home-task-outcomes"
+                >
+                  <span className="home-task-outcome-media">
+                    <Image
+                      src={item.image}
+                      alt={item.imageAlt}
+                      fill
+                      sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 25vw"
+                      className="home-task-outcome-image"
+                    />
+                  </span>
+                  <span className="home-task-outcome-copy">
+                    <span className="home-task-outcome-title-row">
+                      <span className="home-task-outcome-icon" aria-hidden="true">
+                        <Icon size={19} strokeWidth={1.8} />
+                      </span>
+                      <strong>{item.title}</strong>
+                    </span>
+                    <span className="home-task-outcome-description">{item.description}</span>
+                    <span className="home-task-outcome-action">
+                      {item.linkLabel}
+                      <ArrowUpRight size={16} aria-hidden="true" />
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </Container>
       </section>
@@ -298,6 +590,29 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         </section>
       ) : null}
 
+      <section className="home-workflow-shell" aria-labelledby="home-workflow-title">
+        <Container className="home-hero-reference-frame">
+          <div className="home-section-heading">
+            <p className="home-section-eyebrow">{conversionCopy.workflowEyebrow}</p>
+            <h2 id="home-workflow-title">{conversionCopy.workflowTitle}</h2>
+            <p>{conversionCopy.workflowIntro}</p>
+          </div>
+          <ol className="home-workflow-list">
+            {homeWorkflowSteps[forceLocale].map((step, index) => (
+              <li key={step.title}>
+                <span className="home-workflow-number" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Container>
+      </section>
+
       <section className="home-support-shell" aria-label={forceLocale === "en" ? "Supporting ENHE AI paths" : "ENHE AI 支撑路径"}>
         <Container className="home-hero-reference-frame">
           <details className="home-seo-disclosure">
@@ -325,18 +640,35 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         </Container>
       </section>
 
-      <section className="home-flowing-menu-shell">
-        <Container className="home-flowing-menu-container">
-          <FlowingMenu
-            items={flowingMenuItems}
-            ariaLabel={t.home.categoryMenu.ariaLabel}
-            speed={16}
-            textColor="#f7fbff"
-            bgColor="transparent"
-            marqueeBgColor="transparent"
-            marqueeTextColor="#f7fbff"
-            borderColor="rgba(255, 255, 255, 0.95)"
-          />
+      <section className="home-final-cta-shell" aria-labelledby="home-final-cta-title">
+        <Container className="home-hero-reference-frame">
+          <div className="home-final-cta-band">
+            <div>
+              <h2 id="home-final-cta-title">{conversionCopy.finalTitle}</h2>
+              <p>{conversionCopy.finalIntro}</p>
+            </div>
+            <div className="home-final-cta-actions">
+              <ButtonLink
+                href={buildLocalePath("/software", forceLocale)}
+                className="home-final-cta-primary"
+                data-analytics-event="home_tool_finder_cta_click"
+                data-analytics-meta-target="software"
+                data-analytics-meta-placement="home-final-cta"
+              >
+                {forceLocale === "en" ? "Find the right AI tool" : "选择适合我的 AI 工具"}
+              </ButtonLink>
+              <Link
+                href={buildLocalePath("/skill-learning", forceLocale)}
+                className="home-final-cta-secondary"
+                data-analytics-event="home_practical_ai_learning_click"
+                data-analytics-meta-target="skill-learning"
+                data-analytics-meta-placement="home-final-cta"
+              >
+                <BookOpenCheck size={17} strokeWidth={1.8} aria-hidden="true" />
+                {forceLocale === "en" ? "Explore practical AI learning" : "查看 AI 实战学习路径"}
+              </Link>
+            </div>
+          </div>
         </Container>
       </section>
     </main>

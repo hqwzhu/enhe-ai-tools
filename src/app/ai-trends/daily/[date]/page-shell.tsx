@@ -109,7 +109,7 @@ export async function AiTrendDailyDetailPageShell({
     <Container className="py-14">
       <Link
         href={buildLocalePath("/ai-trends/daily", forceLocale)}
-        className="inline-flex items-center gap-2 text-sm font-bold text-[var(--marketing-muted)] transition hover:text-[var(--marketing-accent)]"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--marketing-muted)] transition-colors hover:text-[var(--marketing-accent)]"
       >
         <ArrowLeft size={16} strokeWidth={1.8} aria-hidden="true" />
         {text.back}
@@ -119,7 +119,7 @@ export async function AiTrendDailyDetailPageShell({
         <section className="surface-panel p-7 md:p-10">
           <div className="flex flex-wrap gap-2">
             <Badge className="text-[var(--marketing-accent)]">AI Demand Analysis</Badge>
-            <Badge>{view.sourceCount} source signals</Badge>
+              <Badge><span className="tabular-nums">{view.sourceCount}</span> source signals</Badge>
             {!isLoggedIn ? <Badge>{text.summary}</Badge> : <Badge>{text.fullHtml}</Badge>}
           </div>
           <h1 className="mt-6 max-w-5xl text-4xl font-black leading-tight text-[var(--marketing-text)] md:text-5xl">{view.title}</h1>
@@ -256,7 +256,7 @@ export async function AiTrendDailyDetailPageShell({
                       href={source.url}
                       target="_blank"
                       rel="nofollow noopener noreferrer"
-                      className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45"
+                  className="rounded-xl border border-white/10 bg-white/7 p-4 transition-colors hover:border-[var(--marketing-accent)]/45"
                     >
                       <span className="text-xs font-bold text-[var(--marketing-accent)]">{source.sourceType}</span>
                       <p className="mt-2 text-sm font-bold leading-6 text-[var(--marketing-text)]">{source.title}</p>

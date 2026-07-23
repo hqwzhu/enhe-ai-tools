@@ -160,7 +160,7 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
             <Link
               key={item.href}
               href={forceLocale === "en" ? `/en${item.href}` : item.href}
-              className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+              className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
             >
               {item.label}
             </Link>
@@ -177,7 +177,7 @@ export async function TutorialsPageShell({ forceLocale }: { forceLocale: Locale 
               : tutorial.content;
 
           return (
-            <Link key={tutorial.id} href={buildCanonicalToolPath(tutorial.tool, forceLocale)} className="surface-panel p-6 transition hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
+              <Link key={tutorial.id} href={buildCanonicalToolPath(tutorial.tool, forceLocale)} className="surface-panel p-6 transition-[border-color,transform] hover:-translate-y-1 hover:border-[var(--marketing-accent)]/45">
               <p className="text-sm font-semibold text-[var(--marketing-accent)]">{toolName}</p>
               <h2 className="mt-2 text-2xl font-bold text-[var(--marketing-text)]">{title}</h2>
               <p className="mt-3 line-clamp-3 leading-7 text-[var(--marketing-muted)]">{previewText}</p>

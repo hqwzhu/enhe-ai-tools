@@ -208,7 +208,7 @@ export function AiPromptManagementWorkbench({
                     : "rounded-lg border border-[var(--marketing-border)] bg-white/72 p-4 text-left hover:border-[var(--marketing-accent)]"
                 }
               >
-                <span className="text-xs font-black text-[var(--marketing-accent)]">
+                <span className="text-xs font-black text-[#0f766e]">
                   {prompt.category}
                 </span>
                 <strong className="mt-2 block text-base text-[#15171c]">

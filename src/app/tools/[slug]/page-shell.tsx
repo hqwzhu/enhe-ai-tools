@@ -507,7 +507,7 @@ export async function ToolDetailPageShell({
                     src={coverImage}
                     alt={localizedTool.primaryName}
                     fill
-                    className="object-contain"
+                    className="content-thumbnail-outline object-contain"
                     sizes="(min-width: 1024px) 1120px, 100vw"
                     unoptimized
                   />
@@ -595,6 +595,7 @@ export async function ToolDetailPageShell({
                         <Info
                           label={td.usageCount}
                           value={String(visibleUsageMetric.count)}
+                          numeric
                         />
                       ) : null}
                       <Info label={td.supportEmail} value={supportEmail} />
@@ -613,12 +614,14 @@ export async function ToolDetailPageShell({
                         <Info
                           label={td.downloadCount}
                           value={String(visibleDownloadMetric.count)}
+                          numeric
                         />
                       ) : null}
                       {visibleUsageMetric ? (
                         <Info
                           label={td.usageCount}
                           value={String(visibleUsageMetric.count)}
+                          numeric
                         />
                       ) : null}
                     </>
@@ -682,7 +685,7 @@ export async function ToolDetailPageShell({
                             {localizedPriceSpecs.map((spec, index) => (
                               <label
                                 key={spec.id}
-                                className="tool-price-option group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition hover:border-[var(--marketing-accent)]/45 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--marketing-accent)] has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12"
+                              className="tool-price-option group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-white/12 bg-white/8 p-4 text-sm transition-[background-color,border-color] hover:border-[var(--marketing-accent)]/45 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--marketing-accent)] has-[:checked]:border-[var(--marketing-accent)]/70 has-[:checked]:bg-[var(--marketing-accent)]/12"
                               >
                                 <span>
                                   <span className="block font-semibold text-[#F6FAFF]">
@@ -989,7 +992,7 @@ export async function ToolDetailPageShell({
                               src={imageSrc}
                               alt={`${localizedTool.primaryName} ${td.productImageAlt} ${index + 1}`}
                               fill
-                              className="object-contain"
+                              className="content-thumbnail-outline object-contain"
                               sizes="(min-width: 1024px) 1040px, 100vw"
                               unoptimized
                             />
@@ -1228,11 +1231,11 @@ export async function ToolDetailPageShell({
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({ label, value, numeric = false }: { label: string; value: string; numeric?: boolean }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/8 p-4">
       <p className="text-xs text-[#8F9DB2]">{label}</p>
-      <p className="mt-2 font-semibold text-[#F6FAFF]">{value}</p>
+      <p className={`mt-2 font-semibold text-[#F6FAFF]${numeric ? " tabular-nums" : ""}`}>{value}</p>
     </div>
   );
 }
@@ -1264,7 +1267,7 @@ function LinkedDownloadLinkContent({ content }: { content: string }) {
             href={segment.href}
             target="_blank"
             rel="nofollow noopener noreferrer"
-            className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(65,197,219,0.5)] underline-offset-4 transition hover:text-[#8feaff]"
+      className="break-all text-[var(--marketing-accent)] underline decoration-[rgba(65,197,219,0.5)] underline-offset-4 transition-colors hover:text-[#8feaff]"
           >
             {segment.text}
           </a>

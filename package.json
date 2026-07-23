@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:reset": "powershell -ExecutionPolicy Bypass -File scripts/restart-local-dev.ps1",
-    "build": "node --import tsx scripts/build-ai-news-topic-seed.mjs && prisma generate && next build",
+    "build": "tsx scripts/generate-public-discovery.ts && node --import tsx scripts/build-ai-news-topic-seed.mjs && prisma generate && next build",
     "start": "node scripts/start-standalone.cjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -22,6 +22,7 @@
     "ai-trends:write-artifacts": "tsx scripts/write-ai-trend-briefing-artifacts.ts",
     "audit:performance": "node scripts/audit-public-performance.mjs",
     "audit:a11y": "node scripts/audit-public-a11y.mjs",
+    "generate:public-discovery": "tsx scripts/generate-public-discovery.ts",
     "test": "vitest run"
   },
   "dependencies": {

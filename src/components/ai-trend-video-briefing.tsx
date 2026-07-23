@@ -90,7 +90,7 @@ export function AiTrendVideoBriefing({
 
           <Link
             href={dailyHref}
-            className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[var(--marketing-accent)] transition hover:text-[var(--marketing-text)]"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[var(--marketing-accent)] transition-colors hover:text-[var(--marketing-text)]"
           >
             <PlayCircle size={18} strokeWidth={1.8} aria-hidden="true" />
             {text.cta}

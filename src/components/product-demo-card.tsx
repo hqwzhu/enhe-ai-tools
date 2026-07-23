@@ -41,7 +41,7 @@ export function ProductDemoCard({ demo, locale, variant = "listing" }: ProductDe
             src={coverImage}
             alt={localizedCoverAlt}
             fill
-            className="object-cover"
+            className="content-thumbnail-outline object-cover"
             sizes={variant === "home" ? "(min-width: 1024px) 390px, 84vw" : "(min-width: 1024px) 420px, 90vw"}
             unoptimized
           />

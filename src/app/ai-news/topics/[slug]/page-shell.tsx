@@ -182,7 +182,7 @@ export async function AiNewsTopicPageShell({
                   <Link
                     key={item.href}
                     href={buildLocalePath(item.href, forceLocale)}
-                    className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+              className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
                   >
                     {item.label}
                   </Link>
@@ -223,7 +223,7 @@ export async function AiNewsTopicPageShell({
                     <Link
                       key={article.id}
                       href={buildCanonicalAiNewsPath(article, forceLocale)}
-                      className="surface-panel-soft block p-5 transition hover:border-[var(--marketing-accent)]/45"
+              className="surface-panel-soft block p-5 transition-colors hover:border-[var(--marketing-accent)]/45"
                     >
                       {article.category ? (
                         <Badge>
@@ -286,7 +286,7 @@ export async function AiNewsTopicPageShell({
                   <Link
                     key={keyword}
                     href={`${buildLocalePath("/ai-news", forceLocale)}?q=${encodeURIComponent(keyword)}`}
-                    className="rounded-full border border-white/14 bg-white/7 px-3 py-1 text-xs font-semibold text-[var(--marketing-muted)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+                  className="rounded-full border border-white/14 bg-white/7 px-3 py-1 text-xs font-semibold text-[var(--marketing-muted)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
                   >
                     {keyword}
                   </Link>
@@ -305,7 +305,7 @@ export async function AiNewsTopicPageShell({
                     href={source.url}
                     target="_blank"
                     rel="nofollow noopener noreferrer"
-                    className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+                  className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
                   >
                     {source.title}
                   </a>

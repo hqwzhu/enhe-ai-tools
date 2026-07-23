@@ -51,7 +51,7 @@ describe("site audit regression coverage", () => {
       expect(homeShell).toContain(path);
     }
 
-    expect(homeShell).toContain("homeFlowingMenuLinks");
+    expect(homeShell).toContain("homeTaskOutcomes");
     expect(homeShell).toContain("homeSupportLinks");
     expect(homeShell).toContain("home-seo-disclosure");
   });
@@ -164,16 +164,16 @@ describe("site audit regression coverage", () => {
     expect(pricingMarkdown).toContain("Price: CNY 30.80");
   });
 
-  it("keeps the mobile product-demo carousel inside the viewport", () => {
+  it("keeps product demos in a single-column layout without horizontal scrolling", () => {
     const globals = read("src/app/globals.css");
-    const mobileCarouselBlock = globals.slice(
-      globals.indexOf("  .home-product-demo-grid {"),
-      globals.indexOf("  .home-product-demo-grid .product-demo-card {"),
+    const productDemoGridBlock = globals.slice(
+      globals.indexOf(".home-product-demo-grid {"),
+      globals.indexOf(".product-demo-list-grid {"),
     );
 
-    expect(mobileCarouselBlock).toContain("overflow-x: auto");
-    expect(mobileCarouselBlock).toContain("max-width: 100%");
-    expect(mobileCarouselBlock).toContain("margin-right: 0");
-    expect(mobileCarouselBlock).not.toContain("margin-right: -1rem");
+    expect(productDemoGridBlock).toContain("display: flex");
+    expect(productDemoGridBlock).toContain("flex-direction: column");
+    expect(productDemoGridBlock).not.toContain("overflow-x");
+    expect(productDemoGridBlock).not.toContain("margin-right: -1rem");
   });
 });

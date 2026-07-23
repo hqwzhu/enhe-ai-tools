@@ -117,11 +117,25 @@ async function runAxe(page) {
 
 async function collectSeoSnapshot(page) {
   return page.evaluate(() => {
+    const extractJsonLdTypes = (value) => {
+      if (Array.isArray(value)) return value.flatMap(extractJsonLdTypes);
+      if (!value || typeof value !== "object") return [];
+
+      const ownTypes = Array.isArray(value["@type"])
+        ? value["@type"]
+        : value["@type"]
+          ? [value["@type"]]
+          : [];
+      const graphTypes = Array.isArray(value["@graph"])
+        ? value["@graph"].flatMap(extractJsonLdTypes)
+        : [];
+      return [...ownTypes, ...graphTypes];
+    };
     const jsonLd = [...document.querySelectorAll('script[type="application/ld+json"]')]
       .map((script) => {
         try {
           const parsed = JSON.parse(script.textContent || "{}");
-          return Array.isArray(parsed) ? parsed.map((item) => item?.["@type"]).filter(Boolean) : parsed?.["@type"] || null;
+          return extractJsonLdTypes(parsed);
         } catch {
           return "parse-error";
         }

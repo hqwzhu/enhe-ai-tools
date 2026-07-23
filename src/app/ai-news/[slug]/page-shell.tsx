@@ -225,8 +225,8 @@ export async function AiNewsDetailPageShell({
             <time dateTime={toNewsIsoDate(publishedAt)}>
               {formatDate(publishedAt, forceLocale)}
             </time>
-            <span>{article.readingTime} min</span>
-            <span>{article.viewCount} views</span>
+            <span className="tabular-nums">{article.readingTime} min</span>
+            <span className="tabular-nums">{article.viewCount} views</span>
           </div>
           {coverImage ? (
             <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl border border-white/12 bg-white/6">
@@ -234,7 +234,7 @@ export async function AiNewsDetailPageShell({
                 src={coverImage}
                 alt={localized.title}
                 fill
-                className="object-cover"
+                className="content-thumbnail-outline object-cover"
                 sizes="(min-width: 1024px) 1120px, 100vw"
                 unoptimized
               />
@@ -283,7 +283,7 @@ export async function AiNewsDetailPageShell({
                   href={articleVideo.url}
                   target="_blank"
                   rel="nofollow noopener noreferrer"
-                  className="mt-5 inline-flex break-all rounded-xl border border-[var(--marketing-accent)]/40 px-4 py-3 text-sm font-bold text-[var(--marketing-accent)] transition hover:border-[var(--marketing-accent)]"
+              className="mt-5 inline-flex break-all rounded-xl border border-[var(--marketing-accent)]/40 px-4 py-3 text-sm font-bold text-[var(--marketing-accent)] transition-colors hover:border-[var(--marketing-accent)]"
                 >
                   {articleVideo.url}
                 </a>
@@ -322,7 +322,7 @@ export async function AiNewsDetailPageShell({
                     <Link
                       key={tutorial.id}
                       href={buildCanonicalToolPath(tutorial.tool, forceLocale)}
-                      className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45"
+                    className="rounded-xl border border-white/10 bg-white/7 p-4 transition-colors hover:border-[var(--marketing-accent)]/45"
                     >
                       <p className="font-semibold text-[var(--marketing-text)]">
                         {buildLocalizedTutorialPreviewTitle(
@@ -370,7 +370,7 @@ export async function AiNewsDetailPageShell({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+                    className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
                   >
                     {item.label}
                   </Link>
@@ -388,7 +388,7 @@ export async function AiNewsDetailPageShell({
                     <Link
                       key={item.id}
                       href={buildCanonicalAiNewsPath(item, forceLocale)}
-                      className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45"
+                      className="rounded-xl border border-white/10 bg-white/7 p-4 transition-colors hover:border-[var(--marketing-accent)]/45"
                     >
                       <p className="font-semibold text-[var(--marketing-text)]">
                         {forceLocale === "en"
@@ -447,7 +447,7 @@ export async function AiNewsDetailPageShell({
                       href={source.url}
                       target="_blank"
                       rel="nofollow noopener noreferrer"
-                      className="rounded-xl border border-white/10 bg-white/7 p-4 transition hover:border-[var(--marketing-accent)]/45"
+                  className="rounded-xl border border-white/10 bg-white/7 p-4 transition-colors hover:border-[var(--marketing-accent)]/45"
                     >
                       <p className="font-semibold text-[var(--marketing-text)]">
                         {source.title}
@@ -505,7 +505,7 @@ export async function AiNewsDetailPageShell({
                     <a
                       key={item.id}
                       href={`#${item.id}`}
-                      className={`rounded-lg px-3 py-2 text-sm transition hover:bg-white/8 hover:text-[var(--marketing-accent)] ${item.level === 3 ? "ml-4 text-[var(--marketing-muted)]" : "text-[var(--marketing-text)]"}`}
+                          className={`rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/8 hover:text-[var(--marketing-accent)] ${item.level === 3 ? "ml-4 text-[var(--marketing-muted)]" : "text-[var(--marketing-text)]"}`}
                     >
                       {item.title}
                     </a>
@@ -674,7 +674,7 @@ function NewsContent({ blocks }: { blocks: NewsContentBlock[] }) {
                 alt={block.alt}
                 width={1200}
                 height={675}
-                className="aspect-[16/9] w-full object-cover"
+                className="content-thumbnail-outline aspect-[16/9] w-full object-cover"
                 unoptimized
               />
               {block.caption ? (
@@ -726,7 +726,7 @@ function InlineParts({ parts }: { parts: NewsInlinePart[] }) {
             <Link
               key={`${href}-${index}`}
               href={href}
-              className="font-semibold text-[var(--marketing-accent)] underline decoration-[var(--marketing-accent)]/35 underline-offset-4 transition hover:decoration-[var(--marketing-accent)]"
+      className="font-semibold text-[var(--marketing-accent)] underline decoration-[var(--marketing-accent)]/35 underline-offset-4 transition-[text-decoration-color] hover:decoration-[var(--marketing-accent)]"
             >
               <span dangerouslySetInnerHTML={{ __html: part.text }} />
             </Link>

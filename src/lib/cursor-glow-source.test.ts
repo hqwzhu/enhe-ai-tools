@@ -22,7 +22,10 @@ describe("global cursor glow source contract", () => {
 
   it("extends the footer pointer glow across every homepage section", () => {
     const pageSource = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
-    const cssSource = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+    const cssSource = readFileSync(
+      new URL("../app/globals.css", import.meta.url),
+      "utf8",
+    ).replace(/\r\n/g, "\n");
 
     expect(pageSource.match(/className="home-pointer-glow"/g)).toHaveLength(1);
     expect(pageSource).toMatch(

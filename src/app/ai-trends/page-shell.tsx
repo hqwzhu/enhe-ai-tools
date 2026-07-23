@@ -31,6 +31,7 @@ import {
   buildLocalePath,
   buildMetaDescription,
   buildMetadataTitle,
+  buildPageEntityId,
   defaultOgImage,
   siteName
 } from "@/lib/seo";
@@ -420,6 +421,7 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
+    "@id": buildPageEntityId(buildLocalePath(topicPath, forceLocale)),
     name: copy.title,
     description: copy.description,
     url: absoluteUrl(buildLocalePath(topicPath, forceLocale)),
@@ -617,7 +619,7 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
                   href={source.href}
                   target="_blank"
                   rel="nofollow noopener noreferrer"
-                  className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
+                  className="rounded-xl border border-white/10 bg-white/7 p-4 text-sm font-semibold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)]/45 hover:text-[var(--marketing-accent)]"
                 >
                   {source.title}
                 </a>
@@ -634,7 +636,7 @@ export async function AiTrendTopicPageShell({ forceLocale = "zh" }: { forceLocal
               <Link
                 key={briefing.id}
                 href={buildLocalePath(`/ai-trends/daily/${briefing.slug}`, forceLocale)}
-                className="ai-trends-recent-briefing-card surface-panel-soft group block p-5 transition hover:border-[var(--marketing-accent)]/45"
+                className="ai-trends-recent-briefing-card surface-panel-soft group block p-5 transition-colors hover:border-[var(--marketing-accent)]/45"
               >
                 <time className="text-xs font-bold text-[var(--marketing-accent)]" dateTime={briefing.slug}>
                   {briefing.slug}
@@ -681,7 +683,7 @@ function AiTrendsGeoBlock({ forceLocale }: { forceLocale: Locale }) {
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
+                className="rounded-full border border-white/14 bg-white/7 px-4 py-2 text-sm font-bold text-[var(--marketing-text)] transition-[border-color,color] hover:border-[var(--marketing-accent)] hover:text-[var(--marketing-accent)]"
           >
             {item.label[forceLocale]}
           </Link>
