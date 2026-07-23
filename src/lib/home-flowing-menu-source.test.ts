@@ -76,16 +76,11 @@ describe("homepage FlowingMenu source contract", () => {
     expect(css).not.toContain("border-block:");
     expect(css).toContain("border-top: 1px solid var(--enhe-flowing-border);");
     expect(globalCss).toContain("font-size: 17px !important;");
-    expect(css.match(/font-size: [^;]+;/g)).toEqual([
-      "font-size: 17px;",
-      "font-size: 17px;",
-      "font-size: 17px;",
-      "font-size: 17px;",
-      "font-size: 17px;",
-      "font-size: 17px;",
-      "font-size: 17px;",
-      "font-size: 17px;",
-    ]);
+    expect(css.match(/font-size: 17px;/g)).toHaveLength(7);
+    expect(css).toContain("font-size: 18.2px;");
+    expect(css).toContain("html[lang='en-US'] .enhe-flowing-menu__link");
+    expect(css).toContain("html[lang='en-US'] .enhe-flowing-menu__marquee-text");
+    expect(css.match(/font-size: clamp\(12\.4px, 3\.2vw, 13\.4px\);/g)).toHaveLength(1);
   });
 
   it("uses four compressed local WebP assets with recorded Pexels sources", () => {
