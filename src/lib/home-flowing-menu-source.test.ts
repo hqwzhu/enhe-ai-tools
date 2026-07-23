@@ -27,11 +27,11 @@ describe("homepage FlowingMenu source contract", () => {
     for (const label of [
       'label: "工作效率"',
       'label: "内容创作"',
-      'label: "AI 学习"',
+      'label: "AI 教程"',
       'label: "AI 资讯"',
       'label: "Productivity"',
       'label: "Content Creation"',
-      'label: "AI Learning"',
+      'label: "AI Tutorials"',
       'label: "AI News"',
     ]) {
       expect(dictionaries).toContain(label);
@@ -66,15 +66,29 @@ describe("homepage FlowingMenu source contract", () => {
     expect(css).not.toMatch(/(^|\n)\.marquee(?:\s|\{|__)/);
   });
 
-  it("uses a transparent surface, white internal dividers, and half-size type", () => {
+  it("uses compact transparent rows and 90-percent white internal dividers", () => {
     const page = readSource("../app/page-shell.tsx");
     const css = readSource("../components/home/flowing-menu.module.css");
     const globalCss = readSource("../app/globals.css");
 
     expect(page).toContain('bgColor="transparent"');
-    expect(page).toContain('borderColor="#ffffff"');
+    expect(page).toContain('marqueeBgColor="transparent"');
+    expect(page).toContain('marqueeTextColor="#f7fbff"');
+    expect(page).toContain('borderColor="rgba(255, 255, 255, 0.9)"');
     expect(css).not.toContain("border-block:");
     expect(css).toContain("border-top: 1px solid var(--enhe-flowing-border);");
+    expect(css).toContain("height: 260px;");
+    expect(css).toContain("height: 230px;");
+    expect(css).toContain("height: 208px;");
+    expect(css).toContain("height: 192px;");
+    expect(css).not.toContain("height: 520px;");
+    expect(css).not.toContain("height: 460px;");
+    expect(css).not.toContain("height: 416px;");
+    expect(css).not.toContain("height: 384px;");
+    expect(css).not.toContain("background: rgba(86, 191, 208, 0.12);");
+    expect(globalCss).toContain(".home-flowing-menu-container {");
+    expect(globalCss).toContain("max-width: 1280px !important;");
+    expect(globalCss).not.toContain("max-width: 1480px !important;");
     expect(globalCss).toContain("font-size: 17px !important;");
     expect(css.match(/font-size: 17px;/g)).toHaveLength(7);
     expect(css).toContain("font-size: 18.2px;");

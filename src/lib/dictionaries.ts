@@ -58,8 +58,8 @@ export const dictionaries = {
             imageAlt: "AI 图片、视频和音频内容创作场景"
           },
           aiLearning: {
-            label: "AI 学习",
-            imageAlt: "AI 技能学习与实操场景"
+            label: "AI 教程",
+            imageAlt: "AI 教程学习与实操场景"
           },
           aiNews: {
             label: "AI 资讯",
@@ -432,8 +432,8 @@ export const dictionaries = {
             imageAlt: "AI image, video and audio content creation"
           },
           aiLearning: {
-            label: "AI Learning",
-            imageAlt: "Practical AI skills and learning"
+            label: "AI Tutorials",
+            imageAlt: "Practical AI tutorials and skills"
           },
           aiNews: {
             label: "AI News",
