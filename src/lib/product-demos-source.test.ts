@@ -16,7 +16,10 @@ describe("product demo feature source contract", () => {
     expect(home).not.toContain("AI应用功能演示");
     expect(home).not.toContain("Tool Function Demos");
     expect(home).toContain('aria-label={forceLocale === "en" ? "Product demos" : "产品演示"}');
-    expect(home).toContain("快速了解 AI 应用的真实使用效果");
+    expect(home).toContain("快速了解 AI 工具的真实使用效果");
+    expect(home).not.toContain("快速了解 AI 应用的真实使用效果");
+    expect(home).toContain('forceLocale === "en" ? "View all demos" : "查看全部"');
+    expect(home).not.toContain("查看全部演示");
     expect(home).not.toContain("产品工作流视频");
     expect(home).not.toContain("Product workflow videos");
     expect(home).not.toContain("先看工作流，再选择适合自己的产品");

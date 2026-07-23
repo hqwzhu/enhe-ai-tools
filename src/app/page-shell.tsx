@@ -573,10 +573,10 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                 <p className="home-product-demo-intro">
                   {forceLocale === "en"
                     ? "Quickly understand the real-world effect of AI tools."
-                    : "快速了解 AI 应用的真实使用效果"}
+                    : "快速了解 AI 工具的真实使用效果"}
                 </p>
                 <Link href={buildLocalePath("/product-demos", forceLocale)} className="home-preview-link rounded-full border px-4 py-2 text-sm font-semibold">
-                  {forceLocale === "en" ? "View all demos" : "查看全部演示"}
+                  {forceLocale === "en" ? "View all demos" : "查看全部"}
                   <ArrowUpRight size={15} aria-hidden="true" />
                 </Link>
               </div>
