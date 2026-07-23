@@ -65,6 +65,7 @@ function FlowingMenuRow({
   speed,
 }: MenuItemProps) {
   const itemRef = useRef<HTMLLIElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
   const marqueeRef = useRef<HTMLDivElement>(null);
   const marqueeInnerRef = useRef<HTMLDivElement>(null);
   const firstPartRef = useRef<HTMLDivElement>(null);
@@ -77,9 +78,10 @@ function FlowingMenuRow({
     (visible: boolean, edge: Edge) => {
       if (!animationsEnabled) return;
 
+      const label = labelRef.current;
       const marquee = marqueeRef.current;
       const marqueeInner = marqueeInnerRef.current;
-      if (!marquee || !marqueeInner) return;
+      if (!label || !marquee || !marqueeInner) return;
 
       isOpenRef.current = visible;
       revealTimelineRef.current?.kill();
@@ -92,6 +94,7 @@ function FlowingMenuRow({
         loopTweenRef.current?.play();
         revealTimelineRef.current = gsap
           .timeline({ defaults: { duration: 0.6, ease: "expo.out" } })
+          .set(label, { opacity: 0 }, 0)
           .set(marquee, { y: marqueeOffset })
           .set(marqueeInner, { y: innerOffset })
           .to([marquee, marqueeInner], { y: "0%" }, 0);
@@ -101,7 +104,10 @@ function FlowingMenuRow({
       revealTimelineRef.current = gsap
         .timeline({
           defaults: { duration: 0.6, ease: "expo.inOut" },
-          onComplete: () => loopTweenRef.current?.pause(),
+          onComplete: () => {
+            loopTweenRef.current?.pause();
+            gsap.set(label, { opacity: 1 });
+          },
         })
         .to(marquee, { y: marqueeOffset }, 0)
         .to(marqueeInner, { y: innerOffset }, 0);
@@ -134,6 +140,7 @@ function FlowingMenuRow({
   }, [image, text]);
 
   useEffect(() => {
+    const label = labelRef.current;
     const marquee = marqueeRef.current;
     const marqueeInner = marqueeInnerRef.current;
     const firstPart = firstPartRef.current;
@@ -142,6 +149,9 @@ function FlowingMenuRow({
     revealTimelineRef.current?.kill();
 
     if (!animationsEnabled || !marquee || !marqueeInner || !firstPart) {
+      if (label) {
+        gsap.set(label, { clearProps: "opacity" });
+      }
       if (marquee && marqueeInner) {
         gsap.set([marquee, marqueeInner], { clearProps: "transform" });
       }
@@ -166,7 +176,10 @@ function FlowingMenuRow({
       window.cancelAnimationFrame(frame);
       loopTweenRef.current?.kill();
       revealTimelineRef.current?.kill();
-      gsap.killTweensOf([marquee, marqueeInner]);
+      gsap.killTweensOf([label, marquee, marqueeInner]);
+      if (label) {
+        gsap.set(label, { clearProps: "opacity" });
+      }
     };
   }, [animationsEnabled, image, repetitions, speed, text]);
 
@@ -192,7 +205,7 @@ function FlowingMenuRow({
         onFocus={() => setMarqueeVisibility(true, "bottom")}
         onBlur={() => setMarqueeVisibility(false, "bottom")}
       >
-        <span>{text}</span>
+        <span ref={labelRef}>{text}</span>
         <span className={styles["enhe-flowing-menu__static-image"]}>
           <Image src={image} alt={imageAlt} fill sizes="(max-width: 640px) 92px, 160px" />
         </span>

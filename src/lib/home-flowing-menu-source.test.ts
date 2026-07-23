@@ -50,6 +50,10 @@ describe("homepage FlowingMenu source contract", () => {
     expect(component).toContain('window.matchMedia("(hover: hover) and (pointer: fine)")');
     expect(component).toContain("onFocus={() => setMarqueeVisibility(true, \"bottom\")}");
     expect(component).toContain("onBlur={() => setMarqueeVisibility(false, \"bottom\")}");
+    expect(component).toContain("const labelRef = useRef<HTMLSpanElement>(null)");
+    expect(component).toContain(".set(label, { opacity: 0 }, 0)");
+    expect(component).toContain("gsap.set(label, { opacity: 1 })");
+    expect(component).toContain("<span ref={labelRef}>{text}</span>");
     expect(component).toContain('aria-hidden="true"');
     expect(component).not.toContain("setTimeout(");
   });
@@ -66,7 +70,7 @@ describe("homepage FlowingMenu source contract", () => {
     expect(css).not.toMatch(/(^|\n)\.marquee(?:\s|\{|__)/);
   });
 
-  it("uses compact transparent rows and 90-percent white internal dividers", () => {
+  it("uses compact transparent rows and 95-percent white internal dividers", () => {
     const page = readSource("../app/page-shell.tsx");
     const css = readSource("../components/home/flowing-menu.module.css");
     const globalCss = readSource("../app/globals.css");
@@ -74,7 +78,7 @@ describe("homepage FlowingMenu source contract", () => {
     expect(page).toContain('bgColor="transparent"');
     expect(page).toContain('marqueeBgColor="transparent"');
     expect(page).toContain('marqueeTextColor="#f7fbff"');
-    expect(page).toContain('borderColor="rgba(255, 255, 255, 0.9)"');
+    expect(page).toContain('borderColor="rgba(255, 255, 255, 0.95)"');
     expect(css).not.toContain("border-block:");
     expect(css).toContain("border-top: 1px solid var(--enhe-flowing-border);");
     expect(css).toContain("height: 260px;");
@@ -94,6 +98,7 @@ describe("homepage FlowingMenu source contract", () => {
     expect(css).toContain("font-size: 18.2px;");
     expect(css).toContain("html[lang='en-US'] .enhe-flowing-menu__link");
     expect(css).toContain("html[lang='en-US'] .enhe-flowing-menu__marquee-text");
+    expect(css).toContain("font-weight: 300;");
     expect(css.match(/font-size: clamp\(12\.4px, 3\.2vw, 13\.4px\);/g)).toHaveLength(1);
   });
 

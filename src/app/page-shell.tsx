@@ -281,7 +281,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
             bgColor="transparent"
             marqueeBgColor="transparent"
             marqueeTextColor="#f7fbff"
-            borderColor="rgba(255, 255, 255, 0.9)"
+            borderColor="rgba(255, 255, 255, 0.95)"
           />
         </Container>
       </section>
