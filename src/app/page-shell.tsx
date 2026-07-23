@@ -274,23 +274,20 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
       </section>
 
       {homeProductDemos.length ? (
-        <section className="home-product-demo-shell" aria-labelledby="home-product-demo-title">
+        <section className="home-product-demo-shell" aria-label={forceLocale === "en" ? "Product demos" : "产品演示"}>
           <Container className="home-hero-reference-frame">
             <div className="home-product-preview home-product-demo-panel backdrop-blur-xl backdrop-saturate-150">
               <div className="home-product-preview-header">
-                <div>
-                  <h2 id="home-product-demo-title">{forceLocale === "en" ? "Tool Function Demos" : "AI应用功能演示"}</h2>
-                </div>
+                <p className="home-product-demo-intro">
+                  {forceLocale === "en"
+                    ? "Quickly understand the real-world effect of AI tools."
+                    : "快速了解 AI 应用的真实使用效果"}
+                </p>
                 <Link href={buildLocalePath("/product-demos", forceLocale)} className="home-preview-link rounded-full border px-4 py-2 text-sm font-semibold">
                   {forceLocale === "en" ? "View all demos" : "查看全部演示"}
                   <ArrowUpRight size={15} aria-hidden="true" />
                 </Link>
               </div>
-              <p className="home-product-demo-intro">
-                {forceLocale === "en"
-                  ? "Quickly understand the real-world effect of AI tools."
-                  : "快速了解 AI 应用的真实使用效果"}
-              </p>
               <div className="home-product-demo-grid">
                 {homeProductDemos.map((demo) => (
                   <ProductDemoCard key={demo.id} demo={demo} locale={forceLocale} variant="home" />

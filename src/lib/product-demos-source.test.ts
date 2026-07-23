@@ -6,14 +6,16 @@ describe("product demo feature source contract", () => {
     const home = readFileSync(new URL("../app/page-shell.tsx", import.meta.url), "utf8");
     const productDemos = readFileSync(new URL("./product-demos.ts", import.meta.url), "utf8");
     const card = readFileSync(new URL("../components/product-demo-card.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 
     expect(home).toContain('import { connection } from "next/server";');
     expect(home).toContain("await connection();");
     expect(home).toContain("getHomeProductDemos");
     expect(home).toContain("homeProductDemos.length");
     expect(home).toContain("ProductDemoCard");
-    expect(home).toContain("AI应用功能演示");
-    expect(home).toContain("Tool Function Demos");
+    expect(home).not.toContain("AI应用功能演示");
+    expect(home).not.toContain("Tool Function Demos");
+    expect(home).toContain('aria-label={forceLocale === "en" ? "Product demos" : "产品演示"}');
     expect(home).toContain("快速了解 AI 应用的真实使用效果");
     expect(home).not.toContain("产品工作流视频");
     expect(home).not.toContain("Product workflow videos");
@@ -29,6 +31,14 @@ describe("product demo feature source contract", () => {
     expect(card).not.toContain("loop");
     expect(card).not.toContain("playsInline");
     expect(card).toContain("PlayCircle");
+    expect(card.indexOf('className="product-demo-card-media"')).toBeLessThan(
+      card.indexOf('className="product-demo-card-body"'),
+    );
+    expect(css).toContain(".home-product-demo-grid {\n  display: flex;\n  flex-direction: column;");
+    expect(css).toContain("background-color: rgba(12, 23, 31, 0.24);");
+    expect(css).toContain("background: rgba(255, 255, 255, 0.028);");
+    expect(css).toContain(".home-product-demo-grid .product-demo-card-media {\n  width: 100%;\n  aspect-ratio: 16 / 9;");
+    expect(css).not.toContain("scroll-snap-type: x mandatory");
   });
 
   it("adds admin CRUD actions and local video upload for managed product demos", () => {
