@@ -471,6 +471,28 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                     {forceLocale === "en" ? "Find the right AI tool" : "选择适合我的 AI 工具"}
                   </ButtonLink>
                 </BorderGlow>
+                <div className="home-hero-path-actions" aria-label={forceLocale === "en" ? "Popular task paths" : "热门任务路径"}>
+                  <Link
+                    href={buildLocalePath("/product-paths/work-efficiency", forceLocale)}
+                    className="home-hero-route-cta"
+                    data-analytics-event="home_productivity_path_click"
+                    data-analytics-meta-target="work-efficiency"
+                    data-analytics-meta-placement="home-hero"
+                  >
+                    {forceLocale === "en" ? "Boost work efficiency" : "提升工作效率"}
+                    <ArrowUpRight size={16} aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href={buildLocalePath("/product-paths/media-generation", forceLocale)}
+                    className="home-hero-route-cta"
+                    data-analytics-event="home_content_creation_path_click"
+                    data-analytics-meta-target="media-generation"
+                    data-analytics-meta-placement="home-hero"
+                  >
+                    {forceLocale === "en" ? "Create content with AI" : "内容生成创作"}
+                    <ArrowUpRight size={16} aria-hidden="true" />
+                  </Link>
+                </div>
                 <Link
                   href={buildLocalePath("/skill-learning", forceLocale)}
                   className="home-hero-secondary-link"
