@@ -68,6 +68,15 @@ describe("homepage SaaS redesign source", () => {
     expect(page).toContain('href: "/ai-trends"');
     expect(page).toContain('href: "/ai-topics"');
     expect(page).toContain("home-product-preview home-product-demo-panel backdrop-blur-xl backdrop-saturate-150");
+    expect(page.indexOf('<section className="home-product-demo-shell"')).toBeGreaterThan(
+      page.indexOf('{homeProductDemos.length ?'),
+    );
+    expect(page.indexOf('<section className="home-product-demo-shell"')).toBeLessThan(
+      page.indexOf('<section className="home-flowing-menu-shell"'),
+    );
+    expect(page.indexOf('<section className="home-flowing-menu-shell"')).toBeLessThan(
+      page.indexOf('<section className="home-support-shell"'),
+    );
     expect(page).not.toContain("HeroLogoMark");
     expect(page).not.toContain("enhe-orbital-system");
     expect(page).not.toContain("enhe-circuit-line");
@@ -108,6 +117,10 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-product-path-grid");
     expect(css).toContain(".home-support-shell");
     expect(css).toContain(".home-seo-disclosure");
+    expect(css).toContain(".home-product-demo-shell {\n  position: relative;\n  padding: clamp(1rem, 2.2vw, 1.8rem) 0 0;");
+    expect(css).toContain(".home-flowing-menu-shell {\n  margin-top: 0;\n  padding-top: clamp(11.25rem, 22.5vw, 20.25rem);");
+    expect(css).toContain("border: 1px solid rgba(255, 255, 255, 0.16);");
+    expect(css).toContain("border-radius: 18px;\n  background: rgba(255, 255, 255, 0.045);");
     expect(css).toContain("overflow-x: clip");
     expect(css).toContain("scroll-margin-top: 96px");
     expect(css).toContain(".home-hero-actions {\n  display: flex;");
@@ -116,6 +129,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-gooey-nav-list");
     expect(css).toContain("white-space: pre-line");
     expect(css).toContain(".home-product-preview {\n  width: min(100%, 1280px);\n  margin: 0 auto;");
+    expect(css).toContain(".home-product-preview {\n    border-radius: 14px;\n  }\n\n  .home-seo-disclosure {\n    border-radius: 14px;");
     expect(css).not.toContain(".enhe-orbital-system");
     expect(css).not.toContain(".home-hero-scroll-cue");
   });
@@ -312,7 +326,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).toContain("background-image: none !important");
     expect(css).toContain(".home-hero-cta-primary,\n.home-hero-cta-accent {\n  background: transparent");
     expect(css).toContain("color: #ffffff");
-    expect(css).toContain(".home-flowing-menu-shell {\n  margin-top: clamp(-6rem, -8vw, -4rem);");
+    expect(css).toContain(".home-flowing-menu-shell {\n  margin-top: 0;\n  padding-top: clamp(11.25rem, 22.5vw, 20.25rem);");
     expect(css).toContain("linear-gradient(180deg, rgba(16, 24, 33, 0) 0%, rgba(16, 24, 33, 0) 54%, rgba(16, 24, 33, 0.32) 72%, rgba(16, 24, 33, 0.82) 91%, #101821 100%)");
     expect(css).not.toContain("radial-gradient(ellipse at 50% 78%, rgba(65, 197, 219, 0.09), transparent 34%)");
     expect(css).toContain("margin-bottom: -1px;");

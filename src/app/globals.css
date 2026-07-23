@@ -2415,7 +2415,7 @@ select option:disabled {
 
 .home-product-demo-shell {
   position: relative;
-  padding: clamp(1rem, 2.2vw, 1.8rem) 0;
+  padding: clamp(1rem, 2.2vw, 1.8rem) 0 0;
   scroll-margin-top: 96px;
 }
 
@@ -2428,8 +2428,8 @@ select option:disabled {
 }
 
 .home-flowing-menu-shell {
-  margin-top: clamp(-6rem, -8vw, -4rem);
-  padding-top: clamp(5.5rem, 9vw, 8rem);
+  margin-top: 0;
+  padding-top: clamp(11.25rem, 22.5vw, 20.25rem);
   background: none;
 }
 
@@ -3032,8 +3032,8 @@ select option:disabled {
 .home-seo-disclosure {
   width: min(100%, 1040px);
   margin: 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.045);
   padding: 1rem;
 }
@@ -4102,6 +4102,10 @@ select option:disabled {
   }
 
   .home-product-preview {
+    border-radius: 14px;
+  }
+
+  .home-seo-disclosure {
     border-radius: 14px;
   }
 
