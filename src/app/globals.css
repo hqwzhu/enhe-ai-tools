@@ -3026,7 +3026,7 @@ select option:disabled {
 }
 
 .home-support-shell {
-  padding: 0 0 5rem;
+  padding: clamp(1rem, 2vw, 1.5rem) 0 5rem;
 }
 
 .home-seo-disclosure {

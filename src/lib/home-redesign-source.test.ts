@@ -116,6 +116,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-outcome-grid");
     expect(css).not.toContain(".home-product-path-grid");
     expect(css).toContain(".home-support-shell");
+    expect(css).toContain(".home-support-shell {\n  padding: clamp(1rem, 2vw, 1.5rem) 0 5rem;");
     expect(css).toContain(".home-seo-disclosure");
     expect(css).toContain(".home-product-demo-shell {\n  position: relative;\n  padding: clamp(1rem, 2.2vw, 1.8rem) 0 0;");
     expect(css).toContain(".home-flowing-menu-shell {\n  margin-top: 0;\n  padding-top: clamp(11.25rem, 22.5vw, 20.25rem);");
