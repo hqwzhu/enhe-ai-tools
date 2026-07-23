@@ -3030,7 +3030,7 @@ select option:disabled {
 }
 
 .home-seo-disclosure {
-  width: min(100%, 1040px);
+  width: min(100%, 1280px);
   margin: 0 auto;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 18px;

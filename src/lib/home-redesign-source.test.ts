@@ -72,10 +72,10 @@ describe("homepage SaaS redesign source", () => {
       page.indexOf('{homeProductDemos.length ?'),
     );
     expect(page.indexOf('<section className="home-product-demo-shell"')).toBeLessThan(
-      page.indexOf('<section className="home-flowing-menu-shell"'),
-    );
-    expect(page.indexOf('<section className="home-flowing-menu-shell"')).toBeLessThan(
       page.indexOf('<section className="home-support-shell"'),
+    );
+    expect(page.indexOf('<section className="home-support-shell"')).toBeLessThan(
+      page.indexOf('<section className="home-flowing-menu-shell"'),
     );
     expect(page).not.toContain("HeroLogoMark");
     expect(page).not.toContain("enhe-orbital-system");
@@ -129,6 +129,7 @@ describe("homepage SaaS redesign source", () => {
     expect(css).not.toContain(".home-gooey-nav-list");
     expect(css).toContain("white-space: pre-line");
     expect(css).toContain(".home-product-preview {\n  width: min(100%, 1280px);\n  margin: 0 auto;");
+    expect(css).toContain(".home-seo-disclosure {\n  width: min(100%, 1280px);\n  margin: 0 auto;");
     expect(css).toContain(".home-product-preview {\n    border-radius: 14px;\n  }\n\n  .home-seo-disclosure {\n    border-radius: 14px;");
     expect(css).not.toContain(".enhe-orbital-system");
     expect(css).not.toContain(".home-hero-scroll-cue");

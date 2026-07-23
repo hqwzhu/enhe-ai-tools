@@ -301,21 +301,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         </section>
       ) : null}
 
-      <section className="home-flowing-menu-shell">
-        <Container className="home-flowing-menu-container">
-          <FlowingMenu
-            items={flowingMenuItems}
-            ariaLabel={t.home.categoryMenu.ariaLabel}
-            speed={16}
-            textColor="#f7fbff"
-            bgColor="transparent"
-            marqueeBgColor="transparent"
-            marqueeTextColor="#f7fbff"
-            borderColor="rgba(255, 255, 255, 0.95)"
-          />
-        </Container>
-      </section>
-
       <section className="home-support-shell" aria-label={forceLocale === "en" ? "Supporting ENHE AI paths" : "ENHE AI 支撑路径"}>
         <Container className="home-hero-reference-frame">
           <details className="home-seo-disclosure">
@@ -340,6 +325,21 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               ))}
             </div>
           </details>
+        </Container>
+      </section>
+
+      <section className="home-flowing-menu-shell">
+        <Container className="home-flowing-menu-container">
+          <FlowingMenu
+            items={flowingMenuItems}
+            ariaLabel={t.home.categoryMenu.ariaLabel}
+            speed={16}
+            textColor="#f7fbff"
+            bgColor="transparent"
+            marqueeBgColor="transparent"
+            marqueeTextColor="#f7fbff"
+            borderColor="rgba(255, 255, 255, 0.95)"
+          />
         </Container>
       </section>
     </main>
