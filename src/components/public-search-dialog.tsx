@@ -196,9 +196,9 @@ export function PublicSearchDialog({
           <SearchStrands />
         </div>
 
-        <header className="public-search-header">
-          <h1 id="public-search-title">{labels.title}</h1>
-        </header>
+        <h1 id="public-search-title" className="sr-only">
+          {labels.title}
+        </h1>
 
         <form
           className="public-search-form"

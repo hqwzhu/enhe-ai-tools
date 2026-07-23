@@ -1582,22 +1582,6 @@ select option:disabled {
   );
 }
 
-.public-search-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(0.75rem, 2vh, 1.25rem) 0 1rem;
-}
-
-.public-search-header h1 {
-  margin: 0;
-  color: var(--marketing-text);
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
-  font-weight: 800;
-  letter-spacing: 0;
-  line-height: 1.15;
-}
-
 .public-search-close {
   display: inline-flex;
   width: 44px;
@@ -1791,14 +1775,6 @@ select option:disabled {
     height: clamp(130px, 22vh, 170px);
     margin-top: -0.35rem;
     transform: none;
-  }
-
-  .public-search-header {
-    padding-top: 0.75rem;
-  }
-
-  .public-search-header h1 {
-    font-size: 1.75rem;
   }
 
   .public-search-form {

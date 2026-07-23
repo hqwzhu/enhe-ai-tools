@@ -17,6 +17,8 @@ describe("search Strands experience source contract", () => {
     expect(dialog).toContain('event.key === "Escape"');
     expect(dialog).toContain('event.key === "Tab"');
     expect(dialog).toContain('role="dialog"');
+    expect(dialog).toContain('<h1 id="public-search-title" className="sr-only">');
+    expect(dialog).not.toContain('className="public-search-header"');
     expect(dialog).toContain('ssr: false');
     expect(dialog.match(/<SearchStrands \/>/g)).toHaveLength(1);
   });
@@ -84,6 +86,7 @@ describe("search Strands experience source contract", () => {
     expect(css).toContain(".public-search-submit:focus-visible");
     expect(css).toContain(".public-search-strands-stage");
     expect(css).toContain("pointer-events: none");
+    expect(css).not.toContain(".public-search-header");
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
   });
 });
