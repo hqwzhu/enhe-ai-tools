@@ -26,4 +26,17 @@ describe("site footer source", () => {
     expect(footer).toContain("tel:15715097597");
     expect(footer).toContain("mailto:ENHEAI.life@protonmail.com");
   });
+
+  it("keeps every footer group available through a visible disclosure", () => {
+    const footer = readFileSync(new URL("../components/site-footer.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+
+    expect(footer.match(/<details className="site-footer-disclosure">/g)).toHaveLength(2);
+    expect(footer).toContain("ChevronDown");
+    expect(footer).not.toContain("site-footer-group-title-desktop");
+    expect(css).toContain(
+      ".site-footer-disclosure > summary {\n  display: flex;\n  min-height: 52px;",
+    );
+    expect(css).not.toContain(".site-footer-disclosure {\n    display: contents;");
+  });
 });

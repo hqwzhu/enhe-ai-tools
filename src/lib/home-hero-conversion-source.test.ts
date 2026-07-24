@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("homepage hero conversion contract", () => {
-  it("uses one primary CTA, two task-path buttons, and one learning link", () => {
+  it("uses one row of four task entry actions", () => {
     const source = readFileSync(
       new URL("../app/page-shell.tsx", import.meta.url),
       "utf8",
@@ -21,7 +21,8 @@ describe("homepage hero conversion contract", () => {
     expect(hero).toContain(
       'forceLocale === "en" ? "Find the right AI tool" : "选择适合我的 AI 工具"',
     );
-    expect(hero).toContain('className="home-hero-path-actions"');
+    expect(hero).toContain('className="home-hero-actions"');
+    expect(hero).toContain('className="home-hero-primary-glow"');
     expect(hero.match(/className="home-hero-route-cta"/g)).toHaveLength(2);
     expect(hero).toContain(
       'href={buildLocalePath("/product-paths/work-efficiency", forceLocale)}',
@@ -52,7 +53,28 @@ describe("homepage hero conversion contract", () => {
       hero.indexOf('href={buildLocalePath("/skill-learning", forceLocale)}'),
     );
     expect(source).toContain("taskCollectionSchema, taskItemListSchema");
+    expect(source).not.toContain("taskEyebrow");
     expect(source).not.toContain("home-flowing-menu-shell");
+  });
+
+  it("groups the verification, workflow, and final CTA above the support disclosure", () => {
+    const source = readFileSync(
+      new URL("../app/page-shell.tsx", import.meta.url),
+      "utf8",
+    );
+    const decisionStart = source.indexOf('className="home-decision-card-shell"');
+    const supportStart = source.indexOf('className="home-support-shell"');
+    const decisionCard = source.slice(decisionStart, supportStart);
+
+    expect(decisionStart).toBeGreaterThan(-1);
+    expect(supportStart).toBeGreaterThan(decisionStart);
+    expect(decisionCard).toContain('className="home-decision-card"');
+    expect(decisionCard).toContain('className="home-trust-list"');
+    expect(decisionCard).toContain('className="home-workflow-list"');
+    expect(decisionCard).toContain('className="home-final-cta-band"');
+    expect(source.match(/id="home-trust-title"/g)).toHaveLength(1);
+    expect(source.match(/id="home-workflow-title"/g)).toHaveLength(1);
+    expect(source.match(/id="home-final-cta-title"/g)).toHaveLength(1);
   });
 
   it("leaves a visible preview of the next homepage section", () => {
@@ -80,10 +102,13 @@ describe("homepage hero conversion contract", () => {
       "min-height: calc(100dvh - 64px - 1rem - var(--home-next-section-peek));",
     );
     expect(css).toContain(
-      ".home-hero-path-actions {\n  display: grid;\n  width: min(100%, 480px);\n  grid-template-columns: repeat(2, minmax(0, 1fr));",
+      ".home-hero-actions {\n  display: grid;\n  width: min(100%, 1120px);\n  grid-template-columns: repeat(4, minmax(0, 1fr));",
     );
     expect(css).toContain(
-      ".home-hero-path-actions,\n  .home-hero-secondary-link {\n    width: min(100%, 320px);",
+      ".home-hero-primary-glow {\n  width: 100% !important;\n  min-width: 0 !important;",
+    );
+    expect(css).toContain(
+      ".home-hero-actions {\n    width: 100%;\n    grid-template-columns: repeat(2, minmax(0, 1fr));",
     );
   });
 });

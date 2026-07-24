@@ -259,7 +259,6 @@ const homeConversionCopy = {
     trustEyebrow: "可核验信息",
     trustTitle: "先确认来源与边界，再选择 AI 路径",
     trustIntro: "这些入口直接连接到站内公开页面，不使用无法核验的用户数量、客户 Logo 或评价。",
-    taskEyebrow: "按任务选择",
     taskTitle: "你想完成什么结果？",
     taskIntro: "从工作、创作、学习与资讯判断出发，进入对应的工具和内容路径。",
     workflowEyebrow: "三步完成选择",
@@ -272,7 +271,6 @@ const homeConversionCopy = {
     trustEyebrow: "Verifiable information",
     trustTitle: "Check the source and boundaries before choosing an AI path",
     trustIntro: "Each signal links to a public page. No unverifiable user counts, customer logos, or testimonials are used.",
-    taskEyebrow: "Choose by task",
     taskTitle: "What outcome do you need?",
     taskIntro: "Start from work, creation, learning, or decision support, then follow the relevant tool and content path.",
     workflowEyebrow: "A three-step path",
@@ -451,6 +449,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
               <div className="home-hero-actions">
                 <BorderGlow
                   variant="button"
+                  className="home-hero-primary-glow"
                   edgeSensitivity={34}
                   glowColor="190 80 72"
                   borderRadius={9}
@@ -471,7 +470,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                     {forceLocale === "en" ? "Find the right AI tool" : "选择适合我的 AI 工具"}
                   </ButtonLink>
                 </BorderGlow>
-                <div className="home-hero-path-actions" aria-label={forceLocale === "en" ? "Popular task paths" : "热门任务路径"}>
+                <>
                   <Link
                     href={buildLocalePath("/product-paths/work-efficiency", forceLocale)}
                     className="home-hero-route-cta"
@@ -492,7 +491,7 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
                     {forceLocale === "en" ? "Create content with AI" : "内容生成创作"}
                     <ArrowUpRight size={16} aria-hidden="true" />
                   </Link>
-                </div>
+                </>
                 <Link
                   href={buildLocalePath("/skill-learning", forceLocale)}
                   className="home-hero-secondary-link"
@@ -509,40 +508,9 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         </Container>
       </section>
 
-      <section className="home-trust-shell" aria-labelledby="home-trust-title">
-        <Container className="home-hero-reference-frame">
-          <div className="home-section-heading">
-            <p className="home-section-eyebrow">{conversionCopy.trustEyebrow}</p>
-            <h2 id="home-trust-title">{conversionCopy.trustTitle}</h2>
-            <p>{conversionCopy.trustIntro}</p>
-          </div>
-          <ul className="home-trust-list">
-            {homeTrustSignals[forceLocale].map((item) => {
-              const Icon = item.icon;
-              const href = item.rawHref ? item.href : buildLocalePath(item.href, forceLocale);
-              return (
-                <li key={item.title}>
-                  <Link href={href} className="home-trust-link">
-                    <span className="home-trust-icon" aria-hidden="true">
-                      <Icon size={20} strokeWidth={1.8} />
-                    </span>
-                    <span className="home-trust-copy">
-                      <strong>{item.title}</strong>
-                      <span>{item.description}</span>
-                    </span>
-                    <ArrowUpRight size={17} aria-hidden="true" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Container>
-      </section>
-
       <section className="home-task-outcomes-shell" aria-labelledby="home-task-outcomes-title">
         <Container className="home-hero-reference-frame">
           <div className="home-section-heading">
-            <p className="home-section-eyebrow">{conversionCopy.taskEyebrow}</p>
             <h2 id="home-task-outcomes-title">{conversionCopy.taskTitle}</h2>
             <p>{conversionCopy.taskIntro}</p>
           </div>
@@ -612,26 +580,91 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         </section>
       ) : null}
 
-      <section className="home-workflow-shell" aria-labelledby="home-workflow-title">
+      <section
+        className="home-decision-card-shell"
+        aria-label={forceLocale === "en" ? "Choose an ENHE AI path" : "选择 ENHE AI 路径"}
+      >
         <Container className="home-hero-reference-frame">
-          <div className="home-section-heading">
-            <p className="home-section-eyebrow">{conversionCopy.workflowEyebrow}</p>
-            <h2 id="home-workflow-title">{conversionCopy.workflowTitle}</h2>
-            <p>{conversionCopy.workflowIntro}</p>
-          </div>
-          <ol className="home-workflow-list">
-            {homeWorkflowSteps[forceLocale].map((step, index) => (
-              <li key={step.title}>
-                <span className="home-workflow-number" aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
+          <div className="home-decision-card">
+            <div className="home-decision-card-section" aria-labelledby="home-trust-title">
+              <div className="home-section-heading">
+                <p className="home-section-eyebrow">{conversionCopy.trustEyebrow}</p>
+                <h2 id="home-trust-title">{conversionCopy.trustTitle}</h2>
+                <p>{conversionCopy.trustIntro}</p>
+              </div>
+              <ul className="home-trust-list">
+                {homeTrustSignals[forceLocale].map((item) => {
+                  const Icon = item.icon;
+                  const href = item.rawHref ? item.href : buildLocalePath(item.href, forceLocale);
+                  return (
+                    <li key={item.title}>
+                      <Link href={href} className="home-trust-link">
+                        <span className="home-trust-icon" aria-hidden="true">
+                          <Icon size={20} strokeWidth={1.8} />
+                        </span>
+                        <span className="home-trust-copy">
+                          <strong>{item.title}</strong>
+                          <span>{item.description}</span>
+                        </span>
+                        <ArrowUpRight size={17} aria-hidden="true" />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            <div className="home-decision-card-section" aria-labelledby="home-workflow-title">
+              <div className="home-section-heading">
+                <p className="home-section-eyebrow">{conversionCopy.workflowEyebrow}</p>
+                <h2 id="home-workflow-title">{conversionCopy.workflowTitle}</h2>
+                <p>{conversionCopy.workflowIntro}</p>
+              </div>
+              <ol className="home-workflow-list">
+                {homeWorkflowSteps[forceLocale].map((step, index) => (
+                  <li key={step.title}>
+                    <span className="home-workflow-number" aria-hidden="true">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <h3>{step.title}</h3>
+                      <p>{step.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="home-decision-card-section" aria-labelledby="home-final-cta-title">
+              <div className="home-final-cta-band">
                 <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.description}</p>
+                  <h2 id="home-final-cta-title">{conversionCopy.finalTitle}</h2>
+                  <p>{conversionCopy.finalIntro}</p>
                 </div>
-              </li>
-            ))}
-          </ol>
+                <div className="home-final-cta-actions">
+                  <ButtonLink
+                    href={buildLocalePath("/software", forceLocale)}
+                    className="home-final-cta-primary"
+                    data-analytics-event="home_tool_finder_cta_click"
+                    data-analytics-meta-target="software"
+                    data-analytics-meta-placement="home-final-cta"
+                  >
+                    {forceLocale === "en" ? "Find the right AI tool" : "选择适合我的 AI 工具"}
+                  </ButtonLink>
+                  <Link
+                    href={buildLocalePath("/skill-learning", forceLocale)}
+                    className="home-final-cta-secondary"
+                    data-analytics-event="home_practical_ai_learning_click"
+                    data-analytics-meta-target="skill-learning"
+                    data-analytics-meta-placement="home-final-cta"
+                  >
+                    <BookOpenCheck size={17} strokeWidth={1.8} aria-hidden="true" />
+                    {forceLocale === "en" ? "Explore practical AI learning" : "查看 AI 实战学习路径"}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
         </Container>
       </section>
 
@@ -662,37 +695,6 @@ export async function HomePageShell({ forceLocale }: { forceLocale: Locale }) {
         </Container>
       </section>
 
-      <section className="home-final-cta-shell" aria-labelledby="home-final-cta-title">
-        <Container className="home-hero-reference-frame">
-          <div className="home-final-cta-band">
-            <div>
-              <h2 id="home-final-cta-title">{conversionCopy.finalTitle}</h2>
-              <p>{conversionCopy.finalIntro}</p>
-            </div>
-            <div className="home-final-cta-actions">
-              <ButtonLink
-                href={buildLocalePath("/software", forceLocale)}
-                className="home-final-cta-primary"
-                data-analytics-event="home_tool_finder_cta_click"
-                data-analytics-meta-target="software"
-                data-analytics-meta-placement="home-final-cta"
-              >
-                {forceLocale === "en" ? "Find the right AI tool" : "选择适合我的 AI 工具"}
-              </ButtonLink>
-              <Link
-                href={buildLocalePath("/skill-learning", forceLocale)}
-                className="home-final-cta-secondary"
-                data-analytics-event="home_practical_ai_learning_click"
-                data-analytics-meta-target="skill-learning"
-                data-analytics-meta-placement="home-final-cta"
-              >
-                <BookOpenCheck size={17} strokeWidth={1.8} aria-hidden="true" />
-                {forceLocale === "en" ? "Explore practical AI learning" : "查看 AI 实战学习路径"}
-              </Link>
-            </div>
-          </div>
-        </Container>
-      </section>
     </main>
   );
 }

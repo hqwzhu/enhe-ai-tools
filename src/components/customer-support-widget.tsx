@@ -32,9 +32,9 @@ const widgetCopy = {
     emailNotice: "填写邮箱后，我们可以直接通过邮件回复你。"
   },
   en: {
-    launcherLabel: "Customer support",
-    title: "Support assistant",
-    closeLabel: "Close customer support",
+    launcherLabel: "Chat",
+    title: "Chat",
+    closeLabel: "Close chat",
     greeting: "I can help with products, pricing, tutorials, and purchase steps.",
     commonQuestions: "Common questions",
     backToQuestions: "Back to common questions",
